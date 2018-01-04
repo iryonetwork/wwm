@@ -2,15 +2,6 @@
 // source: common.proto
 // DO NOT EDIT!
 
-/*
-Package specs is a generated protocol buffer package.
-
-It is generated from these files:
-	common.proto
-
-It has these top-level messages:
-	Empty
-*/
 package specs
 
 import proto "github.com/golang/protobuf/proto"
@@ -21,12 +12,6 @@ import math "math"
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-
-// This is a compile-time assertion to ensure that this generated file
-// is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 type ErrorCode int32
 
@@ -44,7 +29,7 @@ var ErrorCode_value = map[string]int32{
 func (x ErrorCode) String() string {
 	return proto.EnumName(ErrorCode_name, int32(x))
 }
-func (ErrorCode) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+func (ErrorCode) EnumDescriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
 
 type Empty struct {
 	Error ErrorCode `protobuf:"varint,1,opt,name=error,enum=specs.ErrorCode" json:"error,omitempty"`
@@ -53,7 +38,7 @@ type Empty struct {
 func (m *Empty) Reset()                    { *m = Empty{} }
 func (m *Empty) String() string            { return proto.CompactTextString(m) }
 func (*Empty) ProtoMessage()               {}
-func (*Empty) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+func (*Empty) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
 
 func (m *Empty) GetError() ErrorCode {
 	if m != nil {
@@ -67,9 +52,9 @@ func init() {
 	proto.RegisterEnum("specs.ErrorCode", ErrorCode_name, ErrorCode_value)
 }
 
-func init() { proto.RegisterFile("common.proto", fileDescriptor0) }
+func init() { proto.RegisterFile("common.proto", fileDescriptor1) }
 
-var fileDescriptor0 = []byte{
+var fileDescriptor1 = []byte{
 	// 104 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xe2, 0xe2, 0x49, 0xce, 0xcf, 0xcd,
 	0xcd, 0xcf, 0xd3, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2d, 0x2e, 0x48, 0x4d, 0x2e, 0x56,

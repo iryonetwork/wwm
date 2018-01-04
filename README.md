@@ -8,8 +8,9 @@ Me foundation.
 
 * docker
 * docker-compose
-* go (1.9+)
-* govendor
+* go (1.9+) (`brew install golang`)
+* govendor (`go get -u github.com/kardianos/govendor`)
+* gomock (`go get -u github.com/golang/mock/gomock`, `github.com/golang/mock/mockgen`)
 
 ## How to set up and work with the repository
 
