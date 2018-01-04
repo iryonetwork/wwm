@@ -1,0 +1,12 @@
+version: "3"
+services:
+  localAuth:
+    image: alpine:latest
+    command:
+      - /wwm/localAuth
+    ports:
+      - 8511:8511
+    volumes:
+      - ./.bin/:/wwm
+    environment:
+      - DEBUG=1
