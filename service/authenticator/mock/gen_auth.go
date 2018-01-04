@@ -84,9 +84,9 @@ func (m *MockStorage) EXPECT() *MockStorageMockRecorder {
 }
 
 // GetUser mocks base method
-func (m *MockStorage) GetUser(arg0 string) (specs.User, error) {
+func (m *MockStorage) GetUser(arg0 string) (*specs.User, error) {
 	ret := m.ctrl.Call(m, "GetUser", arg0)
-	ret0, _ := ret[0].(specs.User)
+	ret0, _ := ret[0].(*specs.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -97,9 +97,9 @@ func (mr *MockStorageMockRecorder) GetUser(arg0 interface{}) *gomock.Call {
 }
 
 // FindACL mocks base method
-func (m *MockStorage) FindACL(arg0, arg1 string, arg2 []specs.ACLAction) ([]specs.ACL, error) {
+func (m *MockStorage) FindACL(arg0, arg1 string, arg2 []specs.ACLAction) ([]*specs.ACL, error) {
 	ret := m.ctrl.Call(m, "FindACL", arg0, arg1, arg2)
-	ret0, _ := ret[0].([]specs.ACL)
+	ret0, _ := ret[0].([]*specs.ACL)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

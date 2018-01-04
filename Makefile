@@ -24,6 +24,15 @@ build/%:
 generate:
 	go generate ./...
 
+generate/%:
+	go generate ./$*
+
+test:
+	go test ./...
+
+test/%:
+	go test ./$*
+
 specs:
 	$(MAKE) -C specs
 
