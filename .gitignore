@@ -1,1 +1,3 @@
 /.bin
+# ignore all subdirectories in /vendor
+/vendor/*/*
