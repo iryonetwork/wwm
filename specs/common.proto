@@ -8,3 +8,7 @@ enum ErrorCode {
 message Empty {
     ErrorCode error = 1;
 }
+
+message ErrorResponse{
+    string error = 1;
+}

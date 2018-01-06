@@ -5,7 +5,7 @@ services:
     command:
       - /wwm/localAuth
     ports:
-      - 8511:8511
+      - 8511:80
     volumes:
       - ./.bin/:/wwm
     environment:

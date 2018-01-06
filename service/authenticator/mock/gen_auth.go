@@ -83,23 +83,23 @@ func (m *MockStorage) EXPECT() *MockStorageMockRecorder {
 	return m.recorder
 }
 
-// GetUser mocks base method
-func (m *MockStorage) GetUser(arg0 string) (*specs.User, error) {
-	ret := m.ctrl.Call(m, "GetUser", arg0)
+// GetUserByUsername mocks base method
+func (m *MockStorage) GetUserByUsername(arg0 string) (*specs.User, error) {
+	ret := m.ctrl.Call(m, "GetUserByUsername", arg0)
 	ret0, _ := ret[0].(*specs.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUser indicates an expected call of GetUser
-func (mr *MockStorageMockRecorder) GetUser(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockStorage)(nil).GetUser), arg0)
+// GetUserByUsername indicates an expected call of GetUserByUsername
+func (mr *MockStorageMockRecorder) GetUserByUsername(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUsername", reflect.TypeOf((*MockStorage)(nil).GetUserByUsername), arg0)
 }
 
 // FindACL mocks base method
-func (m *MockStorage) FindACL(arg0, arg1 string, arg2 []specs.ACLAction) ([]*specs.ACL, error) {
+func (m *MockStorage) FindACL(arg0, arg1 string, arg2 []specs.ACLRuleAction) ([]*specs.ACLRule, error) {
 	ret := m.ctrl.Call(m, "FindACL", arg0, arg1, arg2)
-	ret0, _ := ret[0].([]*specs.ACL)
+	ret0, _ := ret[0].([]*specs.ACLRule)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

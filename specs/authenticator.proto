@@ -4,21 +4,51 @@ import "common.proto";
 
 message User {
     ErrorCode error    = 1;
-    string    userID   = 2;
-    string    account  = 3;
+    string    ID   = 2;
+    string    username = 3;
     string    email    = 4;
     string    password = 5;
 }
 
-message ACL {
+message ACLRule {
     enum action {
         read  = 0;
         write = 1;
     }
 
     ErrorCode       error    = 1;
-    string          userID   = 2;
-    string          resource = 3;
-    repeated action actions  = 4;
-    bool            allow    = 5;
+    string          ID       = 2;
+    string          userID   = 3;
+    string          resource = 4;
+    repeated action actions  = 5;
+    bool            allow    = 6;
+}
+
+message LoginRequest{
+    string username = 1;
+    string password = 2;
+}
+
+message LoginResponse{
+    ErrorCode error = 1;
+    string    token = 2;
+}
+
+message ValidationPair{
+    string resource = 1;
+    repeated ACLRule.action actions = 2;
+}
+
+message ValidationResult{
+    ValidationPair query = 1;
+    bool result = 2;
+}
+
+message ValidationRequest{
+    repeated ValidationPair queries = 1;
+}
+
+message ValidationResponse{
+    ErrorCode error = 1;
+    repeated ValidationResult results = 2;
 }

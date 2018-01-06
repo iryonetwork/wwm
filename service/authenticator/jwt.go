@@ -1,0 +1,111 @@
+package authenticator
+
+import (
+	"crypto/rsa"
+	"time"
+
+	"github.com/iryonetwork/wwm/specs"
+
+	jwt "github.com/dgrijalva/jwt-go"
+)
+
+type Claims struct {
+	KeyID string `json:"kid"`
+	jwt.StandardClaims
+}
+
+var privateKey = `-----BEGIN RSA PRIVATE KEY-----
+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
+-----END RSA PRIVATE KEY-----
+`
+
+var publicKey = `-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA0S7K7ZhdhtidkMlKbNah
+PghL7uXH3kqg76fPhhSpT+E9l8QRX/6WGRJIjLwQVdRpo7WhrlfpbaPmNVj2io0C
+CzIYX5J0/Vv+qdmdAcSjAk6FydyeukoOOe2OGPm3WvsyGddCvKppH2oZqC3uYomk
+KdqXXxiDpDfD8UckDpssFhf67/toOonQnHOorCNC8p0KR32rXa96iCTjEniCfL32
+t/Z8bYX4ZXYUMIh2hL/hCa0grhk9wRcz4tieLos3+PcRjWea3HgMEX16suWLqPhN
+u+8WhK/GYAdIotKDg/IjjSn28Cul5lJji+oDARt4/RHwcbXUUMpQhXRDtA6QNoAH
+/uh0ue9a/xCUFsA0LM6GnT04BaWd7K5JV1+FLRDBv2Y2JwZ0m5koCHoKJITYe2Wr
+bnt1d8NhUYruEbiIb4xnmHrK4h7X1NuvE3IjwAop4usTc4CXDhs5eYLxQzHg0z6C
+a/S2zDXCuQBMF+xUmFbTL0VhWHJOefsR8dAjBVfiNERdt62FlQGXueEEo9cF8/9c
+rj24aZeqCbiZUJkaCoSLZKLoBvyHUa9Op1Jsq07E76Rn6SVsTrFZzCtXWuJrFFGW
+bBfbeInkzimAxM4KjdTaCsLLPFJoHN70/XWEkZaZD9oO+/aQk5S98EP9TuKhcpR7
+m8ahzF+tNNo5j1NPdshjFuMCAwEAAQ==
+-----END PUBLIC KEY-----
+`
+
+var keyID = "1"
+
+// createTokenForUser creates a new token from user's data
+func createTokenForUser(u *specs.User) (string, error) {
+	// get the private key
+	key, err := getPrivateKey()
+	if err != nil {
+		return "", err
+	}
+
+	// compose the claims
+	claims := &Claims{
+		KeyID: keyID,
+		StandardClaims: jwt.StandardClaims{
+			Subject:  u.ID,
+			IssuedAt: time.Now().Unix(),
+		},
+	}
+
+	// create the token
+	return jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(key)
+}
+
+func getPrivateKey() (*rsa.PrivateKey, error) {
+	return jwt.ParseRSAPrivateKeyFromPEM([]byte(privateKey))
+}

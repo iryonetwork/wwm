@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	sampleUser = &specs.User{Account: "username", Password: "password"}
+	sampleUser = &specs.User{Username: "username", Password: "password"}
 )
 
 func TestLogin(t *testing.T) {
@@ -21,34 +21,34 @@ func TestLogin(t *testing.T) {
 	defer ctrl.Finish()
 	storage := mock.NewMockStorage(ctrl)
 	gomock.InOrder(
-		storage.EXPECT().GetUser("username").Times(2).Return(sampleUser, nil),
-		storage.EXPECT().GetUser("missing").Times(1).Return(nil, fmt.Errorf("Not found")))
+		storage.EXPECT().GetUserByUsername("username").Times(2).Return(sampleUser, nil),
+		storage.EXPECT().GetUserByUsername("missing").Times(1).Return(nil, fmt.Errorf("Not found")))
 
 	// initialize service
 	svc := &auth{storage: storage}
 
 	// #1 call with a valid username and password
 	out, err := svc.Login(context.Background(), "username", "password")
-	if out != true {
-		t.Errorf("Expected login to be successful, got %v", out)
+	if out == "" {
+		t.Errorf("Expected login to return a token, got an empty string")
 	}
 	if err != nil {
-		t.Errorf("Expected error to be nil; got %v", err)
+		t.Errorf("Expected error to be nil; got '%v'", err)
 	}
 
 	// #2 call with an invalid password
 	out, err = svc.Login(context.Background(), "username", "wrongPassword")
-	if out != false {
-		t.Errorf("Expected login to fail, got %v", out)
+	if out != "" {
+		t.Errorf("Expected login to return empty token, got %v", out)
 	}
-	if err != nil {
+	if err == nil {
 		t.Errorf("Expected error to be nil; got %v", err)
 	}
 
 	// #3 call with an error from storage
 	out, err = svc.Login(context.Background(), "missing", "password")
-	if out != false {
-		t.Errorf("Expected login to fail, got %v", out)
+	if out != "" {
+		t.Errorf("Expected login to return an empty string, got %v", out)
 	}
 	if err == nil {
 		t.Errorf("Expected error; got nil")

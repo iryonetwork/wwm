@@ -2,7 +2,7 @@
 
 ALL: vendorSync
 
-clean:
+clear:
 	docker-compose down
 	rm -fr .bin
 
@@ -21,11 +21,14 @@ build/%:
 	@mkdir -p .bin
 	GOOS=linux GOARCH=amd64 go build -o ./.bin/$* ./cmd/$*
 
-generate:
+generate: clearGenerate
 	go generate ./...
 
 generate/%:
 	go generate ./$*
+
+clearGenerate:
+	rm -f */mock/gen_*.go */*/mock/gen_*.go */*/*/mock/gen_*.go
 
 test:
 	go test ./...
@@ -36,7 +39,7 @@ test/%:
 specs:
 	$(MAKE) -C specs
 
-vendorSync:
+vendorSync: vendor/vendor.json
 	govendor sync
 
 vendorUpdate:
