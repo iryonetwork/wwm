@@ -1,47 +1,57 @@
 .PHONY: up run stop build specs
 
-ALL: vendorSync
+ALL: help vendorSync
 
-clear:
+clear: ## clears artifacts
 	docker-compose down
 	rm -fr .bin
 
-up: up/localAuth
+up: up/localAuth ## start all basic services
 
-up/%: build/% stop/%
-	docker-compose up -d $*
+up/%: build/% ## start a service in background
+	docker-compose restart $*
 
-run/%: build/% stop/%
+run/%: build/% stop/% ## run a service in foreground
 	docker-compose up $*
 
-stop/%:
+stop: ## stop all services in docker-compose
+	docker-compose stop
+
+stop/%: ## stop a service in docker-compose
 	docker-compose stop $*
 
-build/%:
+build/%: ## builds a specific project
 	@mkdir -p .bin
 	GOOS=linux GOARCH=amd64 go build -o ./.bin/$* ./cmd/$*
 
-generate: clearGenerate
+## show logs
+logs: ## shows docker compose logs
+	$(DC_BIN) logs -f --tail=0 $*
+
+generate: clearGenerate ## run generate on all projects
 	go generate ./...
 
-generate/%:
+generate/%: ## runs generate for a specific project
 	go generate ./$*
 
-clearGenerate:
+clearGenerate: ## clears artifacts created by generate
 	rm -f */mock/gen_*.go */*/mock/gen_*.go */*/*/mock/gen_*.go
 
-test:
+test: ## run all tests
 	go test ./...
 
-test/%:
+test/%: ## run unit tests for a specific project
 	go test ./$*
 
-specs:
+specs: ## rebuild specs
 	$(MAKE) -C specs
 
-vendorSync: vendor/vendor.json
+vendorSync: vendor/vendor.json ## syncs the vendor folder to match vendor.json
 	govendor sync
 
-vendorUpdate:
-	govendor fetch +missing
+vendorUpdate: ## updates the vendor folder
+	govendor fetch +missing +external
 	govendor remove +unused
+
+help: ## displays this message
+	@grep -E '^[a-zA-Z_/%\-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
