@@ -21,6 +21,8 @@ It has these top-level messages:
 	ValidationResult
 	ValidationRequest
 	ValidationResponse
+	KeyRequest
+	KeyResponse
 	Empty
 	ErrorResponse
 */

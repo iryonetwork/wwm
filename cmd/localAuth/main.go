@@ -12,6 +12,8 @@ import (
 	"github.com/iryonetwork/wwm/service/authenticator"
 	"github.com/iryonetwork/wwm/specs"
 	"github.com/iryonetwork/wwm/storage/auth"
+	goji "goji.io"
+	"goji.io/pat"
 )
 
 func main() {
@@ -27,6 +29,9 @@ func main() {
 	// initialize the service
 	authSvc := authenticator.New(storage)
 
+	// setup mux
+	mux := goji.NewMux()
+
 	// setup login handler
 	loginEndpoint := makeLoginEndpoint(authSvc)
 	loginHandler := httptransport.NewServer(
@@ -34,19 +39,29 @@ func main() {
 		decodeLoginRequest,
 		encodeResponse,
 		httptransport.ServerErrorEncoder(errorEncoder))
-	http.Handle("/login", loginHandler)
+	mux.Handle(pat.Post("/login"), loginHandler)
 
+	// setup validate handler
 	validateEndpoint := makeValidateEndpoint(authSvc)
 	validateHandler := httptransport.NewServer(
 		validateEndpoint,
 		decodeValidateRequest,
 		encodeResponse,
 		httptransport.ServerErrorEncoder(errorEncoder))
-	http.Handle("/validate", validateHandler)
+	mux.Handle(pat.Post("/validate"), validateHandler)
+
+	// setup keys handler
+	keysEndpoint := makeKeysEndpoint(authSvc)
+	keysHandler := httptransport.NewServer(
+		keysEndpoint,
+		decodeKeysRequest,
+		encodeResponse,
+		httptransport.ServerErrorEncoder(errorEncoder))
+	mux.Handle(pat.Get("/keys/:keyID"), keysHandler)
 
 	// start the server
 	logger.Log("msg", "HTTP start", "addr", ":80")
-	logger.Log("err", http.ListenAndServe(":80", nil))
+	logger.Log("err", http.ListenAndServe(":80", mux))
 }
 
 func decodeLoginRequest(_ context.Context, r *http.Request) (interface{}, error) {
@@ -59,6 +74,13 @@ func decodeValidateRequest(_ context.Context, r *http.Request) (interface{}, err
 	in := &specs.ValidationRequest{}
 	err := requestToProto(in, r)
 	return in, err
+}
+
+func decodeKeysRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	in := &specs.KeyRequest{
+		KeyID: pat.Param(r, "keyID"),
+	}
+	return in, nil
 }
 
 func encodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {

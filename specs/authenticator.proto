@@ -52,3 +52,12 @@ message ValidationResponse{
     ErrorCode error = 1;
     repeated ValidationResult results = 2;
 }
+
+message KeyRequest{
+    string keyID = 1;
+}
+
+message KeyResponse{
+    ErrorCode error = 1;
+    string key = 2;
+}

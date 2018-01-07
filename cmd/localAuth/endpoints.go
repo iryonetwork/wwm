@@ -24,28 +24,10 @@ func makeValidateEndpoint(svc authenticator.Service) endpoint.Endpoint {
 	}
 }
 
-// type authService interface {
-// 	Login(context.Context, string, string) (string, error)
-// 	Validate(context.Context, string, string)
-// }
-
-// type handler struct {
-// 	svc
-// }
-
-// func startServer() error {
-// 	h := handler{}
-
-// 	http.HandleFunc("/login", h.login)
-// 	http.HandleFunc("/validate", h.validate)
-
-// 	return http.ListenAndServe(":8080", nil)
-// }
-
-// func (h *handler) login(w http.ResponseWriter, r *http.Request) {
-// 	//
-// }
-
-// func (h *handler) validate(w http.ResponseWriter, r *http.Request) {
-// 	//
-// }
+func makeKeysEndpoint(svc authenticator.Service) endpoint.Endpoint {
+	return func(ctx context.Context, req interface{}) (interface{}, error) {
+		r := req.(*specs.KeyRequest)
+		result, err := svc.GetPublicKey(ctx, r.KeyID)
+		return &specs.KeyResponse{Key: result}, err
+	}
+}

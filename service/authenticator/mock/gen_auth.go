@@ -35,9 +35,9 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 }
 
 // Login mocks base method
-func (m *MockService) Login(ctx context.Context, username, password string) (bool, error) {
+func (m *MockService) Login(ctx context.Context, username, password string) (string, error) {
 	ret := m.ctrl.Call(m, "Login", ctx, username, password)
-	ret0, _ := ret[0].(bool)
+	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -48,16 +48,29 @@ func (mr *MockServiceMockRecorder) Login(ctx, username, password interface{}) *g
 }
 
 // Validate mocks base method
-func (m *MockService) Validate(ctx context.Context, resource, action string) (bool, error) {
-	ret := m.ctrl.Call(m, "Validate", ctx, resource, action)
-	ret0, _ := ret[0].(bool)
+func (m *MockService) Validate(ctx context.Context, queries []*specs.ValidationPair) ([]*specs.ValidationResult, error) {
+	ret := m.ctrl.Call(m, "Validate", ctx, queries)
+	ret0, _ := ret[0].([]*specs.ValidationResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Validate indicates an expected call of Validate
-func (mr *MockServiceMockRecorder) Validate(ctx, resource, action interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Validate", reflect.TypeOf((*MockService)(nil).Validate), ctx, resource, action)
+func (mr *MockServiceMockRecorder) Validate(ctx, queries interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Validate", reflect.TypeOf((*MockService)(nil).Validate), ctx, queries)
+}
+
+// GetPublicKey mocks base method
+func (m *MockService) GetPublicKey(ctx context.Context, pubID string) (string, error) {
+	ret := m.ctrl.Call(m, "GetPublicKey", ctx, pubID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPublicKey indicates an expected call of GetPublicKey
+func (mr *MockServiceMockRecorder) GetPublicKey(ctx, pubID interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPublicKey", reflect.TypeOf((*MockService)(nil).GetPublicKey), ctx, pubID)
 }
 
 // MockStorage is a mock of Storage interface
