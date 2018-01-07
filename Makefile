@@ -1,10 +1,11 @@
 .PHONY: up run stop build specs
 
-ALL: help vendorSync
+ALL: vendorSync generate specs
 
-clear: ## clears artifacts
+clear: clearGenerate clearSpecs ## clears artifacts
 	docker-compose down
 	rm -fr .bin
+	rm -fr vendor/*/
 
 up: up/localAuth ## start all basic services
 
@@ -45,6 +46,9 @@ test/%: ## run unit tests for a specific project
 
 specs: ## rebuild specs
 	$(MAKE) -C specs
+
+clearSpecs:
+	$(MAKE) -C specs clear
 
 vendorSync: vendor/vendor.json ## syncs the vendor folder to match vendor.json
 	govendor sync

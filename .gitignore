@@ -1,3 +1,5 @@
 /.bin
 # ignore all subdirectories in /vendor
 /vendor/*/*
+/specs/*.pb.go
+**/mock/gen_*.go
