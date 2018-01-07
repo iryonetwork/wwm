@@ -26,7 +26,7 @@ build/%: ## builds a specific project
 
 ## show logs
 logs: ## shows docker compose logs
-	$(DC_BIN) logs -f --tail=0 $*
+	docker-compose logs -f --tail=0 $*
 
 generate: clearGenerate ## run generate on all projects
 	go generate ./...
