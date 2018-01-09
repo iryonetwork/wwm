@@ -3,7 +3,7 @@ package auth
 import (
 	"fmt"
 
-	"github.com/gogo/protobuf/proto"
+	"github.com/iryonetwork/wwm/gen/models"
 	"github.com/iryonetwork/wwm/specs"
 
 	bolt "github.com/coreos/bbolt"
@@ -64,8 +64,8 @@ func (s *Storage) FindACL(userID, resource string, actions []specs.ACLRuleAction
 }
 
 // GetUserByUsername returns user by the username
-func (s *Storage) GetUserByUsername(username string) (*specs.User, error) {
-	user := &specs.User{}
+func (s *Storage) GetUserByUsername(username string) (*models.User, error) {
+	user := &models.User{}
 
 	// look up the user
 	err := s.db.View(func(tx *bolt.Tx) error {
@@ -82,7 +82,7 @@ func (s *Storage) GetUserByUsername(username string) (*specs.User, error) {
 		}
 
 		// decode the user
-		err := proto.Unmarshal(data, user)
+		err := user.UnmarshalBinary(data)
 		if err != nil {
 			return err
 		}
@@ -94,7 +94,7 @@ func (s *Storage) GetUserByUsername(username string) (*specs.User, error) {
 }
 
 func getSampleUser() ([]byte, []byte, []byte, error) {
-	user := &specs.User{
+	user := &models.User{
 		ID:       "SOME-ID",
 		Username: "username",
 		Password: "password",
@@ -102,7 +102,7 @@ func getSampleUser() ([]byte, []byte, []byte, error) {
 	}
 
 	// encode the object
-	data, err := proto.Marshal(user)
+	data, err := user.MarshalBinary()
 
 	return []byte(user.ID), []byte(user.Username), data, err
 }

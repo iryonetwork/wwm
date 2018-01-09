@@ -6,19 +6,20 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/iryonetwork/wwm/gen/models"
 	"github.com/iryonetwork/wwm/specs"
 )
 
 // Service describes the actions supported by the authenticator service
 type Service interface {
 	Login(ctx context.Context, username, password string) (string, error)
-	Validate(ctx context.Context, queries []*specs.ValidationPair) ([]*specs.ValidationResult, error)
+	Validate(ctx context.Context, queries []*models.ValidationPair) ([]*models.ValidationResult, error)
 	GetPublicKey(ctx context.Context, pubID string) (string, error)
 }
 
 // Storage describes the functionality required for the service to function
 type Storage interface {
-	GetUserByUsername(string) (*specs.User, error)
+	GetUserByUsername(string) (*models.User, error)
 	FindACL(string, string, []specs.ACLRuleAction) ([]*specs.ACLRule, error)
 }
 
@@ -43,7 +44,7 @@ func (a *auth) Login(_ context.Context, username, password string) (string, erro
 
 // Validate checks if the user has the capability to execute the specific
 // actions on a resource
-func (a *auth) Validate(_ context.Context, queries []*specs.ValidationPair) ([]*specs.ValidationResult, error) {
+func (a *auth) Validate(_ context.Context, queries []*models.ValidationPair) ([]*models.ValidationResult, error) {
 	return nil, nil
 }
 

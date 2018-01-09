@@ -1,0 +1,199 @@
+swagger: "2.0"
+
+info:
+  title: IRYO cloud API
+  version: "1.0"
+
+host: iryo.network
+schemes:
+  - https
+basePath: /api
+consumes:
+  - application/json
+produces:
+  - application/json; charset=utf-8
+
+securityDefinitions:
+  token:
+    type: apiKey
+    name: token
+    in: header
+
+security:
+  - token: []
+
+
+
+paths:
+  /auth/login:
+    post:
+      summary: Authenticates user and returns a token.
+      tags:
+        - auth
+      produces:
+        - application/jwt
+        - application/json; charset=utf-8
+      security: [] # allow non authenticated users to access login
+
+      parameters:
+        - in: body
+          name: login
+          schema:
+            type: object
+            required:
+              - username
+              - password
+            properties:
+              username:
+                type: string
+              password:
+                type: string
+
+      responses:
+        200:
+          description: JWT token
+          schema:
+            type: string
+
+        401:
+          $ref: '#/responses/401'
+          
+        500:
+          $ref: '#/responses/500'
+
+
+  /auth/validate:
+    post:
+      summary: Checks if the user has access to perform specific actions on a specific resource.
+      tags:
+        - auth
+
+      parameters:
+        - in: body
+          name: validate
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/ValidationPair"
+
+      responses:
+        200:
+          description: Validation result
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ValidationResult'
+            
+        400:
+          $ref: '#/responses/400'
+          
+        500:
+          $ref: '#/responses/500'
+
+
+  /auth/renew:
+    get:
+      summary: Renew authentication token.
+      tags:
+        - auth
+      produces:
+        - application/jwt
+        - application/json; charset=utf-8
+
+      responses:
+        200:
+          description: JWT token
+          schema:
+            type: string
+
+        500:
+          $ref: '#/responses/500'
+
+
+definitions:
+  ValidationPair:
+    type: object
+    required:
+      - resource
+      - actions
+    properties:
+      resource:
+        type: string
+      actions:
+        type: integer
+
+  ValidationResult:
+    type: object
+    properties:
+      query:
+        $ref: '#/definitions/ValidationPair'
+      result:
+        type: boolean
+
+  User:
+    type: object
+    properties:
+      id:
+        type: string
+      username:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+
+  Error:
+    type: object
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+
+    
+
+responses:
+  400:
+    description: Request is badly formatted
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: bad_request
+        message: Request is badly formatted
+
+  401:
+    description: Unauthorized Access
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: unauthorized
+        message: Unauthorized Access
+
+  403:
+    description: Forbiden
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: forbiden
+        message: You do not have permissions to do this
+
+  404:
+    description: Required entity cannot be found
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: not_found
+        message: Required entity cannot be found
+
+  500:
+    description: Internal server error
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: internal_error
+        message: Internal server error

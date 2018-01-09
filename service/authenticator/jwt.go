@@ -4,9 +4,8 @@ import (
 	"crypto/rsa"
 	"time"
 
-	"github.com/iryonetwork/wwm/specs"
-
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/iryonetwork/wwm/gen/models"
 )
 
 type Claims struct {
@@ -86,7 +85,7 @@ m8ahzF+tNNo5j1NPdshjFuMCAwEAAQ==
 var keyID = "1"
 
 // createTokenForUser creates a new token from user's data
-func createTokenForUser(u *specs.User) (string, error) {
+func createTokenForUser(u *models.User) (string, error) {
 	// get the private key
 	key, err := getPrivateKey()
 	if err != nil {
