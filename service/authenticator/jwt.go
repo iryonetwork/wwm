@@ -83,6 +83,7 @@ m8ahzF+tNNo5j1NPdshjFuMCAwEAAQ==
 `
 
 var keyID = "1"
+var tokenExpiersIn = time.Duration(15) * time.Minute
 
 // createTokenForUser creates a new token from user's data
 func createTokenForUser(u *models.User) (string, error) {
@@ -96,8 +97,9 @@ func createTokenForUser(u *models.User) (string, error) {
 	claims := &Claims{
 		KeyID: keyID,
 		StandardClaims: jwt.StandardClaims{
-			Subject:  u.ID,
-			IssuedAt: time.Now().Unix(),
+			Subject:   u.ID,
+			IssuedAt:  time.Now().Unix(),
+			ExpiresAt: time.Now().Add(tokenExpiersIn).Unix(),
 		},
 	}
 
@@ -107,4 +109,22 @@ func createTokenForUser(u *models.User) (string, error) {
 
 func getPrivateKey() (*rsa.PrivateKey, error) {
 	return jwt.ParseRSAPrivateKeyFromPEM([]byte(privateKey))
+}
+
+// validateToken validates a token and returns user id
+func validateToken(tokenString string) (string, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		private, err := getPrivateKey()
+		if err != nil {
+			return nil, err
+		}
+
+		return private.Public(), nil
+	})
+
+	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
+		return claims.StandardClaims.Subject, nil
+	}
+
+	return "", err
 }

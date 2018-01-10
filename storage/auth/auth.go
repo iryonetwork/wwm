@@ -5,6 +5,7 @@ import (
 
 	"github.com/iryonetwork/wwm/gen/models"
 	"github.com/iryonetwork/wwm/specs"
+	"golang.org/x/crypto/bcrypt"
 
 	bolt "github.com/coreos/bbolt"
 )
@@ -93,11 +94,40 @@ func (s *Storage) GetUserByUsername(username string) (*models.User, error) {
 	return user, err
 }
 
+// GetUserByID returns user by the ID
+func (s *Storage) GetUserByID(id string) (*models.User, error) {
+	user := &models.User{}
+
+	// look up the user
+	err := s.db.View(func(tx *bolt.Tx) error {
+		// read user by id
+		data := tx.Bucket(bucketUsers).Get([]byte(id))
+		if data == nil {
+			return fmt.Errorf("Failed to find user by id = %s", id)
+		}
+
+		// decode the user
+		err := user.UnmarshalBinary(data)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return user, err
+}
+
 func getSampleUser() ([]byte, []byte, []byte, error) {
+	password, err := bcrypt.GenerateFromPassword([]byte("password"), 0)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
 	user := &models.User{
 		ID:       "SOME-ID",
 		Username: "username",
-		Password: "password",
+		Password: string(password),
 		Email:    "info@iryo.io",
 	}
 

@@ -1,13 +1,13 @@
 swagger: "2.0"
 
 info:
-  title: IRYO cloud API
+  title: IRYO cloud authentication API
   version: "1.0"
 
-host: iryo.network
+host: iryo.local
 schemes:
   - https
-basePath: /api
+basePath: /auth
 consumes:
   - application/json
 produces:
@@ -25,13 +25,13 @@ security:
 
 
 paths:
-  /auth/login:
+  /login:
     post:
       summary: Authenticates user and returns a token.
       tags:
         - auth
       produces:
-        - application/jwt
+        - text/plain
         - application/json; charset=utf-8
       security: [] # allow non authenticated users to access login
 
@@ -62,7 +62,7 @@ paths:
           $ref: '#/responses/500'
 
 
-  /auth/validate:
+  /validate:
     post:
       summary: Checks if the user has access to perform specific actions on a specific resource.
       tags:
@@ -91,13 +91,13 @@ paths:
           $ref: '#/responses/500'
 
 
-  /auth/renew:
+  /renew:
     get:
       summary: Renew authentication token.
       tags:
         - auth
       produces:
-        - application/jwt
+        - text/plain
         - application/json; charset=utf-8
 
       responses:

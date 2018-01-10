@@ -1,6 +1,6 @@
 package main
 
-//go:generate sh -c "mkdir -p ../../gen && swagger generate server -A cloudAuth -t ../../gen -f ../../docs/api/cloud.yml --exclude-main --principal models.User"
+//go:generate sh -c "mkdir -p ../../gen && swagger generate server -A cloudAuth -t ../../gen -f ../../docs/api/auth.yml --exclude-main --principal models.User"
 
 import (
 	"log"
@@ -34,9 +34,10 @@ func main() {
 	server.EnabledListeners = []string{"http"}
 	defer server.Shutdown()
 
-	api.AuthGetAuthRenewHandler = getAuthRenew(auth)
-	api.AuthPostAuthLoginHandler = postAuthLogin(auth)
-	api.AuthPostAuthValidateHandler = postAuthValidateHandler(auth)
+	api.TokenAuth = auth.GetUserFromToken
+	api.AuthGetRenewHandler = getRenew(auth)
+	api.AuthPostLoginHandler = postLogin(auth)
+	api.AuthPostValidateHandler = postValidateHandler(auth)
 
 	server.SetHandler(api.Serve(nil))
 

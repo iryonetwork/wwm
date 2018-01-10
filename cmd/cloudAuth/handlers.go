@@ -7,37 +7,45 @@ import (
 	"github.com/iryonetwork/wwm/service/authenticator"
 )
 
-func getAuthRenew(svc authenticator.Service) auth.GetAuthRenewHandler {
-	return auth.GetAuthRenewHandlerFunc(func(params auth.GetAuthRenewParams, principal *models.User) middleware.Responder {
-		return middleware.NotImplemented("aoperation auth.GetAuthRenew has not yet been implemented")
-	})
-}
-
-func postAuthLogin(svc authenticator.Service) auth.PostAuthLoginHandler {
-	return auth.PostAuthLoginHandlerFunc(func(params auth.PostAuthLoginParams) middleware.Responder {
-		token, err := svc.Login(params.HTTPRequest.Context(), *params.Login.Username, *params.Login.Password)
+func getRenew(svc authenticator.Service) auth.GetRenewHandler {
+	return auth.GetRenewHandlerFunc(func(params auth.GetRenewParams, principal *models.User) middleware.Responder {
+		token, err := svc.CreateTokenForUser(params.HTTPRequest.Context(), principal)
 		if err != nil {
-			return auth.NewPostAuthLoginUnauthorized().WithPayload(&models.Error{
-				Code:    "unauthorized",
-				Message: err.Error(),
-			})
-		}
-
-		return auth.NewPostAuthLoginOK().WithPayload(token)
-	})
-}
-
-func postAuthValidateHandler(svc authenticator.Service) auth.PostAuthValidateHandler {
-	return auth.PostAuthValidateHandlerFunc(func(params auth.PostAuthValidateParams, principal *models.User) middleware.Responder {
-		result, err := svc.Validate(params.HTTPRequest.Context(), params.Validate)
-
-		if err != nil {
-			return auth.NewPostAuthValidateInternalServerError().WithPayload(&models.Error{
+			return auth.NewGetRenewInternalServerError().WithPayload(&models.Error{
 				Code:    "server_error",
 				Message: err.Error(),
 			})
 		}
 
-		return auth.NewPostAuthValidateOK().WithPayload(result)
+		return auth.NewGetRenewOK().WithPayload(token)
+	})
+}
+
+func postLogin(svc authenticator.Service) auth.PostLoginHandler {
+	return auth.PostLoginHandlerFunc(func(params auth.PostLoginParams) middleware.Responder {
+		token, err := svc.Login(params.HTTPRequest.Context(), *params.Login.Username, *params.Login.Password)
+		if err != nil {
+			return auth.NewPostLoginUnauthorized().WithPayload(&models.Error{
+				Code:    "unauthorized",
+				Message: err.Error(),
+			})
+		}
+
+		return auth.NewPostLoginOK().WithPayload(token)
+	})
+}
+
+func postValidateHandler(svc authenticator.Service) auth.PostValidateHandler {
+	return auth.PostValidateHandlerFunc(func(params auth.PostValidateParams, principal *models.User) middleware.Responder {
+		result, err := svc.Validate(params.HTTPRequest.Context(), params.Validate)
+
+		if err != nil {
+			return auth.NewPostValidateInternalServerError().WithPayload(&models.Error{
+				Code:    "server_error",
+				Message: err.Error(),
+			})
+		}
+
+		return auth.NewPostValidateOK().WithPayload(result)
 	})
 }
