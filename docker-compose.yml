@@ -67,7 +67,6 @@ services:
     - server
     - /data
     environment:
-<<<<<<< HEAD
     - MINIO_ACCESS_KEY=local
     - MINIO_SECRET_KEY=localminio
     ports:
@@ -100,17 +99,3 @@ services:
     - ./bin/tls/cloudMinio-key.pem:/root/.minio/certs/private.key
     - ./bin/tls/cloudMinio.pem:/root/.minio/certs/public.crt
     - ./.data/cloudMinio:/data
-=======
-      - DEBUG=1
-
-  cloudAuth:
-    image: alpine:latest
-    command:
-      - /wwm/cloudAuth
-    ports:
-      - 8511:80
-    volumes:
-      - ./.bin/:/wwm
-    environment:
-      - DEBUG=1
->>>>>>> Add swagger spec for auth

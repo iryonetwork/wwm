@@ -1,8 +1,8 @@
-swagger: "2.0"
+swagger: '2.0'
 
 info:
   title: IRYO cloud authentication API
-  version: "1.0"
+  version: '1.0'
 
 host: iryo.local
 schemes:
@@ -38,6 +38,7 @@ paths:
       parameters:
         - in: body
           name: login
+          required: true
           schema:
             type: object
             required:
@@ -71,10 +72,11 @@ paths:
       parameters:
         - in: body
           name: validate
+          required: true
           schema:
             type: array
             items:
-              $ref: "#/definitions/ValidationPair"
+              $ref: '#/definitions/ValidationPair'
 
       responses:
         200:
@@ -110,6 +112,350 @@ paths:
           $ref: '#/responses/500'
 
 
+  /users:
+    get:
+      summary: Gets a list of users
+      tags:
+        - users
+
+      parameters:
+        - in: query
+          name: search
+          type: string
+
+      responses:
+        200:
+          description: List of users
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+
+        500:
+          $ref: '#/responses/500'
+
+    post:
+      summary: Creates a new user
+      tags:
+        - users
+
+      parameters:
+        - in: body
+          name: user
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/User'
+
+        500:
+          $ref: '#/responses/500'
+
+
+  /users/{id}:
+    get:
+      summary: Gets user by id
+      tags:
+        - users
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+
+      responses:
+        200:
+          description: User
+          schema:
+            $ref: '#/definitions/User'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    put:
+      summary: Updates user
+      tags:
+        - users
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - in: body
+          name: user
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+
+      responses:
+        204:
+          description: User was updated
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    delete:
+      summary: Deletes user by id
+      tags:
+        - users
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+
+      responses:
+        204:
+          description: User was deleted
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /groups:
+    get:
+      summary: Gets a list of groups
+      tags:
+        - groups
+
+      parameters:
+        - in: query
+          name: search
+          type: string
+
+      responses:
+        200:
+          description: List of groups
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Group'
+
+        500:
+          $ref: '#/responses/500'
+
+    post:
+      summary: Creates a new group
+      tags:
+        - groups
+
+      parameters:
+        - in: body
+          name: group
+          required: true
+          schema:
+            $ref: '#/definitions/Group'
+
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Group'
+
+        500:
+          $ref: '#/responses/500'
+
+  /groups/{id}:
+    get:
+      summary: Gets group by id
+      tags:
+        - groups
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+
+      responses:
+        200:
+          description: User
+          schema:
+            $ref: '#/definitions/Group'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    put:
+      summary: Updates group
+      tags:
+        - groups
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - in: body
+          name: user
+          required: true
+          schema:
+            $ref: '#/definitions/Group'
+
+      responses:
+        204:
+          description: Group was updated
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    delete:
+      summary: Deletes group by id
+      tags:
+        - groups
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+
+      responses:
+        204:
+          description: Group was deleted
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /rules:
+    get:
+      summary: Gets a list of rules
+      tags:
+        - rules
+
+      parameters:
+        - in: query
+          name: subject
+          type: string
+
+      responses:
+        200:
+          description: List of rules
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Group'
+
+        500:
+          $ref: '#/responses/500'
+
+    post:
+      summary: Creates a new rule
+      tags:
+        - rules
+
+      parameters:
+        - in: body
+          name: rule
+          required: true
+          schema:
+            $ref: '#/definitions/Rule'
+
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Rule'
+
+        500:
+          $ref: '#/responses/500'
+
+  /rules/{id}:
+    get:
+      summary: Gets rule by id
+      tags:
+        - rules
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+
+      responses:
+        200:
+          description: Rule
+          schema:
+            $ref: '#/definitions/Rule'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    put:
+      summary: Updates rule
+      tags:
+        - rules
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - in: body
+          name: rule
+          required: true
+          schema:
+            $ref: '#/definitions/Rule'
+
+      responses:
+        204:
+          description: Rule was updated
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    delete:
+      summary: Deletes rule by id
+      tags:
+        - rules
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+
+      responses:
+        204:
+          description: Rule was deleted
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+
 definitions:
   ValidationPair:
     type: object
@@ -132,15 +478,52 @@ definitions:
 
   User:
     type: object
+    required:
+      - username
+      - email
     properties:
       id:
         type: string
+        readOnly: true
       username:
         type: string
       email:
         type: string
       password:
         type: string
+
+  Group:
+    type: object
+    required:
+      - name
+      - users
+    properties:
+      id:
+        type: string
+        readOnly: true
+      name:
+        type: string
+      users:
+        type: array
+        items:
+          type: string
+
+  Rule:
+    type: object
+    required:
+      - subject
+      - resource
+      - action
+    properties:
+      id:
+        type: string
+        readOnly: true
+      subject:
+        type: string
+      resource:
+        type: string
+      action:
+        type: integer
 
   Error:
     type: object
