@@ -24,7 +24,7 @@ type Service interface {
 type Storage interface {
 	GetUserByUsername(string) (*models.User, error)
 	FindACL(string, string, []specs.ACLRuleAction) ([]*specs.ACLRule, error)
-	GetUserByID(id string) (*models.User, error)
+	GetUser(id string) (*models.User, error)
 }
 
 type auth struct {
@@ -63,7 +63,7 @@ func (a *auth) GetUserFromToken(token string) (*models.User, error) {
 		return nil, err
 	}
 
-	return a.storage.GetUserByID(userID)
+	return a.storage.GetUser(userID)
 }
 
 // GetPublicKey returns public key matching the pubID

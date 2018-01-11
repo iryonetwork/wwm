@@ -20,7 +20,7 @@ func main() {
 	}
 
 	// initialize storage
-	storage, err := auth.New()
+	storage, err := auth.New("/tmp/auth.db")
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/go-openapi/swag"
 	"github.com/golang/mock/gomock"
 
+	"github.com/iryonetwork/wwm/gen/models"
 	"github.com/iryonetwork/wwm/service/authenticator/mock"
-	"github.com/iryonetwork/wwm/specs"
 )
 
 var (
-	sampleUser = &specs.User{Username: "username", Password: "password"}
+	sampleUser = &models.User{Username: swag.String("username"), Password: "$2a$10$USp/p1VpbjFETLEbtMkVseGu02NgXpaLDP4eYpZiNV5j/nY/qPviW"}
 )
 
 func TestLogin(t *testing.T) {

@@ -321,6 +321,12 @@
 			"revisionTime": "2018-01-04T19:28:02Z"
 		},
 		{
+			"checksumSHA1": "eDQ6f1EsNf+frcRO/9XukSEchm8=",
+			"path": "github.com/satori/go.uuid",
+			"revision": "36e9d2ebbde5e3f13ab2e25625fd453271d6522e",
+			"revisionTime": "2018-01-03T17:44:51Z"
+		},
+		{
 			"checksumSHA1": "5q4Lyr1RgyO9j66pTmz1M63rQvs=",
 			"path": "github.com/tylerb/graceful",
 			"revision": "d72b0151351a13d0421b763b88f791469c4f5dc7",
