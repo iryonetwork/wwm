@@ -4,10 +4,11 @@ import (
 	"fmt"
 
 	bolt "github.com/coreos/bbolt"
-	"github.com/iryonetwork/wwm/gen/models"
-	"github.com/iryonetwork/wwm/utils"
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/iryonetwork/wwm/gen/models"
+	"github.com/iryonetwork/wwm/utils"
 )
 
 // GetUsers returns all users
@@ -122,7 +123,7 @@ func (s *Storage) UpdateUser(user *models.User) (*models.User, error) {
 			if err != nil {
 				return err
 			}
-			err = bUsernames.Put([]byte(*user.Username), []byte(user.ID))
+			err = bUsernames.Put([]byte(*user.Username), userUUID.Bytes())
 			if err != nil {
 				return err
 			}
@@ -145,7 +146,7 @@ func (s *Storage) UpdateUser(user *models.User) (*models.User, error) {
 		}
 
 		// update user
-		return bUsers.Put([]byte(user.ID), data)
+		return bUsers.Put(userUUID.Bytes(), data)
 	})
 
 	return user, err
@@ -158,8 +159,10 @@ func (s *Storage) RemoveUser(id string) error {
 		return err
 	}
 
+	userUUID, _ := uuid.FromString(id)
+
 	return s.db.Update(func(tx *bolt.Tx) error {
-		err := tx.Bucket(bucketUsers).Delete([]byte(id))
+		err := tx.Bucket(bucketUsers).Delete(userUUID.Bytes())
 		if err != nil {
 			return err
 		}

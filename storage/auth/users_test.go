@@ -195,9 +195,17 @@ func TestUpdateUser(t *testing.T) {
 	if userByUsername.ID != user.ID {
 		t.Fatalf("Expected to get user with id '%s'; got '%s'", user.ID, userByUsername.ID)
 	}
+
+	users, err := storage.GetUsers()
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	if len(users) != 1 {
+		t.Fatalf("Expected length of user to be 1; got %d", len(users))
+	}
 }
 
-func RemoveUser(t *testing.T) {
+func TestRemoveUser(t *testing.T) {
 	storage := newTestStorage()
 	defer storage.Close()
 

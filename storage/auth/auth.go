@@ -13,6 +13,7 @@ type Storage struct {
 var bucketUsers = []byte("users")
 var bucketUsernames = []byte("usernames")
 var bucketACLRules = []byte("rules")
+var bucketGroups = []byte("groups")
 
 // New returns a new instance of storage
 func New(path string) (*Storage, error) {
@@ -28,6 +29,14 @@ func New(path string) (*Storage, error) {
 			return err
 		}
 		_, err = tx.CreateBucketIfNotExists(bucketUsernames)
+		if err != nil {
+			return err
+		}
+		_, err = tx.CreateBucketIfNotExists(bucketGroups)
+		if err != nil {
+			return err
+		}
+		_, err = tx.CreateBucketIfNotExists(bucketACLRules)
 		if err != nil {
 			return err
 		}
