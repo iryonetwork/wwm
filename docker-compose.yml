@@ -1,12 +1,31 @@
 version: "3"
 services:
+  traefik:
+    image: traefik:1.4
+    command:
+    - --docker
+    - --docker.exposedbydefault=false
+    - --docker.debugloggeneratedtemplate=true
+    - --web.address=:8080
+    - --configfile=/etc/traefik.toml
+    - --debug=true
+    volumes:
+    - ./traefik.toml:/etc/traefik.toml
+    - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+    - 80:80
+    - 8080:8080
+
   localAuth:
     image: alpine:latest
     command:
-      - /wwm/localAuth
-    ports:
-      - 8511:80
+    - /wwm/localAuth
     volumes:
-      - ./.bin/:/wwm
+    - ./.bin/:/wwm
     environment:
-      - DEBUG=1
+    - DEBUG=1
+    labels:
+    - "traefik.backend=localAuth"
+    - "traefik.frontend.rule=Host:iryo.local;PathPrefixStrip:/auth"
+    - "traefik.enable=true"
+    - "traefik.port=80"
