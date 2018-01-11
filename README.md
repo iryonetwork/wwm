@@ -11,6 +11,7 @@ Me foundation.
 * go (1.9+) (`brew install golang`)
 * govendor (`go get -u github.com/kardianos/govendor`)
 * gomock (`go get -u github.com/golang/mock/gomock`, `github.com/golang/mock/mockgen`)
+* updated `/etc/hosts` (`127.0.0.1 iryo.local minio.iryo.local iryo.cloud minio.iryo.cloud`)
 
 ## How to set up and work with the repository
 
