@@ -28,6 +28,12 @@ type Storage interface {
 	AddRole(*models.Role) (*models.Role, error)
 	UpdateRole(*models.Role) (*models.Role, error)
 	RemoveRole(string) error
+
+	GetRules() ([]*models.Rule, error)
+	GetRule(string) (*models.Rule, error)
+	AddRule(*models.Rule) (*models.Rule, error)
+	UpdateRule(*models.Rule) (*models.Rule, error)
+	RemoveRule(string) error
 }
 
 type accountManager struct {
