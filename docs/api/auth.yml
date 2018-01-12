@@ -227,11 +227,11 @@ paths:
         500:
           $ref: '#/responses/500'
 
-  /groups:
+  /roles:
     get:
-      summary: Gets a list of groups
+      summary: Gets a list of roles
       tags:
-        - groups
+        - roles
 
       parameters:
         - in: query
@@ -240,41 +240,41 @@ paths:
 
       responses:
         200:
-          description: List of groups
+          description: List of roles
           schema:
             type: array
             items:
-              $ref: '#/definitions/Group'
+              $ref: '#/definitions/Role'
 
         500:
           $ref: '#/responses/500'
 
     post:
-      summary: Creates a new group
+      summary: Creates a new role
       tags:
-        - groups
+        - roles
 
       parameters:
         - in: body
-          name: group
+          name: role
           required: true
           schema:
-            $ref: '#/definitions/Group'
+            $ref: '#/definitions/Role'
 
       responses:
         201:
           description: Created
           schema:
-            $ref: '#/definitions/Group'
+            $ref: '#/definitions/Role'
 
         500:
           $ref: '#/responses/500'
 
-  /groups/{id}:
+  /roles/{id}:
     get:
-      summary: Gets group by id
+      summary: Gets role by id
       tags:
-        - groups
+        - roles
 
       parameters:
         - in: path
@@ -286,7 +286,7 @@ paths:
         200:
           description: User
           schema:
-            $ref: '#/definitions/Group'
+            $ref: '#/definitions/Role'
 
         404:
           $ref: '#/responses/404'
@@ -295,9 +295,9 @@ paths:
           $ref: '#/responses/500'
 
     put:
-      summary: Updates group
+      summary: Updates role
       tags:
-        - groups
+        - roles
 
       parameters:
         - in: path
@@ -308,11 +308,11 @@ paths:
           name: user
           required: true
           schema:
-            $ref: '#/definitions/Group'
+            $ref: '#/definitions/Role'
 
       responses:
         204:
-          description: Group was updated
+          description: Role was updated
 
         404:
           $ref: '#/responses/404'
@@ -321,9 +321,9 @@ paths:
           $ref: '#/responses/500'
 
     delete:
-      summary: Deletes group by id
+      summary: Deletes role by id
       tags:
-        - groups
+        - roles
 
       parameters:
         - in: path
@@ -333,7 +333,7 @@ paths:
 
       responses:
         204:
-          description: Group was deleted
+          description: Role was deleted
 
         404:
           $ref: '#/responses/404'
@@ -358,7 +358,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Group'
+              $ref: '#/definitions/Role'
 
         500:
           $ref: '#/responses/500'
@@ -492,7 +492,7 @@ definitions:
       password:
         type: string
 
-  Group:
+  Role:
     type: object
     required:
       - name

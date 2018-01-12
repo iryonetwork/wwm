@@ -23,11 +23,11 @@ type Storage interface {
 	UpdateUser(*models.User) (*models.User, error)
 	RemoveUser(string) error
 
-	GetGroups() ([]*models.Group, error)
-	GetGroup(string) (*models.Group, error)
-	AddGroup(*models.Group) (*models.Group, error)
-	UpdateGroup(*models.Group) (*models.Group, error)
-	RemoveGroup(string) error
+	GetRoles() ([]*models.Role, error)
+	GetRole(string) (*models.Role, error)
+	AddRole(*models.Role) (*models.Role, error)
+	UpdateRole(*models.Role) (*models.Role, error)
+	RemoveRole(string) error
 }
 
 type accountManager struct {
