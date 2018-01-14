@@ -1,0 +1,20 @@
+{
+    "CN": "cloudMinio",
+    "hosts": [
+        "127.0.0.1",
+        "cloudMinio",
+        "minio.iryo.cloud"
+    ],
+    "key": {
+        "algo": "ecdsa",
+        "size": 256
+    },
+    "names": [
+        {
+            "C": "SI",
+            "ST": "Kranj",
+            "L": "Kranj"
+        }
+    ]
+}
+

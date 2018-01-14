@@ -23,6 +23,16 @@ address = ":8080"
     url = "https://localAuth"
     weight = 10
 
+  [backends.localMinio]
+    [backends.localMinio.servers.server1]
+    url = "https://localMinio:9000"
+    weight = 10
+
+  [backends.cloudMinio]
+    [backends.cloudMinio.servers.server1]
+    url = "https://cloudMinio:9000"
+    weight = 10
+
   [backends.vaultui]
     [backends.vaultui.servers.server1]
     url = "http://vaultui:8000"
@@ -33,6 +43,16 @@ address = ":8080"
   backend = "localauth"
     [frontends.localauth.routes.route1]
     rule = "Host:iryo.local;PathPrefix:/auth"
+
+  [frontends.localMinio]
+  backend = "localMinio"
+    [frontends.localMinio.routes.route1]
+    rule = "Host:minio.iryo.local"
+
+  [frontends.cloudMinio]
+  backend = "cloudMinio"
+    [frontends.cloudMinio.routes.route1]
+    rule = "Host:minio.iryo.cloud"
 
   [frontends.vaultui]
   backend = "vaultui"

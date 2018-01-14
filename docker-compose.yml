@@ -43,9 +43,35 @@ services:
   localAuth:
     image: alpine:latest
     command:
-      - /wwm/localAuth
+    - /wwm/localAuth
     volumes:
-      - ./.bin/:/wwm
+    - ./.bin/:/wwm
     - ./bin/tls:/certs
     environment:
-      - DEBUG=1
+    - DEBUG=1
+
+  localMinio:
+    image: minio/minio
+    command:
+    - server
+    - /data
+    environment:
+    - MINIO_ACCESS_KEY=local
+    - MINIO_SECRET_KEY=localminio
+    volumes:
+    - ./bin/tls/localMinio-key.pem:/root/.minio/certs/private.key
+    - ./bin/tls/localMinio.pem:/root/.minio/certs/public.crt
+    - ./.data/localMinio:/data
+
+  cloudMinio:
+    image: minio/minio
+    command:
+    - server
+    - /data
+    environment:
+    - MINIO_ACCESS_KEY=cloud
+    - MINIO_SECRET_KEY=cloudminio
+    volumes:
+    - ./bin/tls/cloudMinio-key.pem:/root/.minio/certs/private.key
+    - ./bin/tls/cloudMinio.pem:/root/.minio/certs/public.crt
+    - ./.data/cloudMinio:/data

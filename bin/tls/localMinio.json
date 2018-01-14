@@ -1,0 +1,20 @@
+{
+    "CN": "localMinio",
+    "hosts": [
+        "127.0.0.1",
+        "localMinio",
+        "minio.iryo.local"
+    ],
+    "key": {
+        "algo": "ecdsa",
+        "size": 256
+    },
+    "names": [
+        {
+            "C": "SI",
+            "ST": "Kranj",
+            "L": "Kranj"
+        }
+    ]
+}
+
