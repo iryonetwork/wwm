@@ -1,6 +1,10 @@
 .PHONY: up run stop build specs
 
+ifeq ($(CI),)
 ALL: vendorSync generate specs certs rebuildTraefik
+else
+ALL: vendorSync generate specs
+endif
 
 clear: clearGenerate clearSpecs ## clears artifacts
 	docker-compose down
