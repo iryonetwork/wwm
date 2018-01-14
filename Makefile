@@ -1,16 +1,17 @@
 .PHONY: up run stop build specs
 
-ALL: vendorSync generate specs
+ALL: vendorSync generate specs certs rebuildTraefik
 
 clear: clearGenerate clearSpecs ## clears artifacts
 	docker-compose down
 	rm -fr .bin
 	rm -fr vendor/*/
+	$(MAKE) -C bin/tls clear
 
-up: up/localAuth ## start all basic services
+up: up/traefik up/localAuth ## start all basic services
 
-up/%: build/% ## start a service in background
-	docker-compose restart $*
+up/%: build/% stop/% ## start a service in background
+	docker-compose up -d $*
 
 run/%: build/% stop/% ## run a service in foreground
 	docker-compose up $*
@@ -23,9 +24,10 @@ stop/%: ## stop a service in docker-compose
 
 build/%: ## builds a specific project
 	@mkdir -p .bin
-	GOOS=linux GOARCH=amd64 go build -o ./.bin/$* ./cmd/$*
+	if [ -a cmd/$*/main.go ]; then \
+		GOOS=linux GOARCH=amd64 go build -o ./.bin/$* ./cmd/$* ; \
+	fi
 
-## show logs
 logs: ## shows docker compose logs
 	docker-compose logs -f --tail=0 $*
 
@@ -38,10 +40,12 @@ generate/%: ## runs generate for a specific project
 clearGenerate: ## clears artifacts created by generate
 	rm -f */mock/gen_*.go */*/mock/gen_*.go */*/*/mock/gen_*.go
 
-test: ## run all tests
+test: test/unit ## run all tests
+
+test/unit: ## run all unit tests
 	go test ./...
 
-test/%: ## run unit tests for a specific project
+test/unit/%: ## run unit tests for a specific project
 	go test ./$*
 
 specs: ## rebuild specs
@@ -59,3 +63,9 @@ vendorUpdate: ## updates the vendor folder
 
 help: ## displays this message
 	@grep -E '^[a-zA-Z_/%\-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+certs: ## build missing certificates
+	$(MAKE) -C bin/tls
+
+rebuildTraefik: ## rebuilds traefik to include all certificates
+	docker-compose build traefik

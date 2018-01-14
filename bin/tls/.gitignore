@@ -1,0 +1,7 @@
+/*.pem
+/*.csr
+/certs
+
+!/ca.pem
+!/ca-key.pem
+!/ca.csr

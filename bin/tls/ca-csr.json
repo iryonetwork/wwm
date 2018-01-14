@@ -1,0 +1,16 @@
+{
+    "CN": "Iryo CA",
+    "key": {
+        "algo": "rsa",
+        "size": 4096
+    },
+    "names": [
+        {
+            "C": "SI",
+            "L": "Kranj",
+            "O": "Iryo",
+            "ST": "Kranj",
+            "OU": "IryoDevelopment"
+        }
+    ]
+}

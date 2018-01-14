@@ -39,7 +39,7 @@ func main() {
 		decodeLoginRequest,
 		encodeResponse,
 		httptransport.ServerErrorEncoder(errorEncoder))
-	mux.Handle(pat.Post("/login"), loginHandler)
+	mux.Handle(pat.Post("/auth/login"), loginHandler)
 
 	// setup validate handler
 	validateEndpoint := makeValidateEndpoint(authSvc)
@@ -48,7 +48,7 @@ func main() {
 		decodeValidateRequest,
 		encodeResponse,
 		httptransport.ServerErrorEncoder(errorEncoder))
-	mux.Handle(pat.Post("/validate"), validateHandler)
+	mux.Handle(pat.Post("/auth/validate"), validateHandler)
 
 	// setup keys handler
 	keysEndpoint := makeKeysEndpoint(authSvc)
@@ -57,11 +57,11 @@ func main() {
 		decodeKeysRequest,
 		encodeResponse,
 		httptransport.ServerErrorEncoder(errorEncoder))
-	mux.Handle(pat.Get("/keys/:keyID"), keysHandler)
+	mux.Handle(pat.Get("/auth/keys/:keyID"), keysHandler)
 
 	// start the server
-	logger.Log("msg", "HTTP start", "addr", ":80")
-	logger.Log("err", http.ListenAndServe(":80", mux))
+	logger.Log("msg", "HTTP start", "addr", ":443")
+	logger.Log("err", http.ListenAndServeTLS(":443", "/certs/localAuth.pem", "/certs/localAuth-key.pem", mux))
 }
 
 func decodeLoginRequest(_ context.Context, r *http.Request) (interface{}, error) {

@@ -1,6 +1,6 @@
 package authenticator
 
-//go:generate sh ../../mockgen.sh $GOFILE
+//go:generate sh ../../bin/mockgen.sh $GOFILE
 
 import (
 	"context"

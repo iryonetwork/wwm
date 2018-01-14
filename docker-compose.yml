@@ -1,12 +1,51 @@
 version: "3"
 services:
+  traefik:
+    build:
+      context: .
+      dockerfile: Dockerfile.traefik
+    image: traefik:1.4-alpine
+    command:
+    - --configfile=/etc/traefik.toml
+    # - --debug
+    volumes:
+    - ./traefik.toml:/etc/traefik.toml
+    - ./bin/tls:/certs
+    - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+    - 80:80
+    - 443:443
+    - 8080:8080
+
+  vault:
+    image: vault
+    environment:
+    - VAULT_DEV_ROOT_TOKEN_ID=root
+    - VAULT_DEV_LISTEN_ADDRESS=127.0.0.1:8800
+    cap_add:
+    - IPC_LOCK
+    ports:
+    - 8200:8200
+    volumes:
+    - ./.data/vault:/data
+    - ./bin/tls:/certs
+    - ./vault.hcl:/vault/config/local.hcl
+
+  vaultui:
+    image: djenriquez/vault-ui
+    environment:
+    - VAULT_URL_DEFAULT=https://vault:8200
+    - VAULT_AUTH_DEFAULT=TOKEN
+    - NODE_TLS_REJECT_UNAUTHORIZED=0
+    depends_on:
+    - vault
+
   localAuth:
     image: alpine:latest
     command:
       - /wwm/localAuth
-    ports:
-      - 8511:80
     volumes:
       - ./.bin/:/wwm
+    - ./bin/tls:/certs
     environment:
       - DEBUG=1

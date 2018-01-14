@@ -1,0 +1,40 @@
+defaultEntryPoints = ["http","https"]
+
+[entryPoints]
+  [entryPoints.http]
+  address = ":80"
+    [entryPoints.http.redirect]
+      entryPoint = "https"
+  [entryPoints.https]
+  address = ":443"
+  [entryPoints.https.tls]
+    [[entryPoints.https.tls.certificates]]
+    CertFile = "/certs/traefik.pem"
+    KeyFile = "/certs/traefik-key.pem"
+
+[web]
+address = ":8080"
+
+[file]
+
+[backends]
+  [backends.localauth]
+    [backends.localauth.servers.server1]
+    url = "https://localAuth"
+    weight = 10
+
+  [backends.vaultui]
+    [backends.vaultui.servers.server1]
+    url = "http://vaultui:8000"
+    weight = 10
+
+[frontends]
+  [frontends.localauth]
+  backend = "localauth"
+    [frontends.localauth.routes.route1]
+    rule = "Host:iryo.local;PathPrefix:/auth"
+
+  [frontends.vaultui]
+  backend = "vaultui"
+    [frontends.vaultui.routes.route1]
+    rule = "Host:vault.iryo.local"

@@ -1,0 +1,4 @@
+FROM traefik:1.4-alpine
+
+ADD ./bin/tls/certs ./bin/tls/localAuth.pem /usr/local/share/ca-certificates/
+RUN update-ca-certificates
