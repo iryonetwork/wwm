@@ -11,6 +11,7 @@ const (
 	ErrNotFound    = "not_found"
 	ErrServerError = "server_error"
 	ErrBadRequest  = "bad_request"
+	ErrForbidden   = "forbidden"
 )
 
 // Error wraps models.Error so it will implement error interface

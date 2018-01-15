@@ -2,10 +2,10 @@ package authenticator
 
 import (
 	"crypto/rsa"
+	"fmt"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/iryonetwork/wwm/gen/models"
 )
 
 type Claims struct {
@@ -85,8 +85,8 @@ m8ahzF+tNNo5j1NPdshjFuMCAwEAAQ==
 var keyID = "1"
 var tokenExpiersIn = time.Duration(15) * time.Minute
 
-// createTokenForUser creates a new token from user's data
-func createTokenForUser(u *models.User) (string, error) {
+// createTokenForUserID creates a new token from user ID
+func createTokenForUserID(id *string) (string, error) {
 	// get the private key
 	key, err := getPrivateKey()
 	if err != nil {
@@ -97,7 +97,7 @@ func createTokenForUser(u *models.User) (string, error) {
 	claims := &Claims{
 		KeyID: keyID,
 		StandardClaims: jwt.StandardClaims{
-			Subject:   u.ID,
+			Subject:   *id,
 			IssuedAt:  time.Now().Unix(),
 			ExpiresAt: time.Now().Add(tokenExpiersIn).Unix(),
 		},
@@ -122,9 +122,13 @@ func validateToken(tokenString string) (string, error) {
 		return private.Public(), nil
 	})
 
+	if err != nil {
+		return "", err
+	}
+
 	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
 		return claims.StandardClaims.Subject, nil
 	}
 
-	return "", err
+	return "", fmt.Errorf("Invalid token claims")
 }

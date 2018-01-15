@@ -26,7 +26,7 @@ func TestLogin(t *testing.T) {
 		storage.EXPECT().GetUserByUsername("missing").Times(1).Return(nil, fmt.Errorf("Not found")))
 
 	// initialize service
-	svc := &auth{storage: storage}
+	svc := &service{storage: storage}
 
 	// #1 call with a valid username and password
 	out, err := svc.Login(context.Background(), "username", "password")

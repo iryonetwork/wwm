@@ -129,6 +129,19 @@ func TestRules(t *testing.T) {
 				false,
 			},
 		},
+		{
+			rules:  []*models.Rule{},
+			userID: u3.ID,
+			validations: []*models.ValidationPair{
+				{
+					Actions:  swag.Int64(Read),
+					Resource: swag.String("/storage"),
+				},
+			},
+			results: []bool{
+				false,
+			},
+		},
 	}
 
 	for testIndex, test := range tests {
