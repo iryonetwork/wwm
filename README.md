@@ -1,5 +1,4 @@
-Iryo for Walk With Me
-=====================
+# Iryo for Walk With Me
 
 This project holds Iryo's first pilot project developed together with Walk With
 Me foundation.
@@ -35,9 +34,9 @@ make up
 
 ## Additional documentation
 
- * [WOW](docs/wow.md)
- * [Secure communication (TLS)](docs/tls.md)
- * [Development environment setup](docs/dev.md)
+* [WOW](docs/wow.md)
+* [Secure communication (TLS)](docs/tls.md)
+* [Development environment setup](docs/dev.md)
 
 ## Trubleshooting
 
