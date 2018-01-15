@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/iryonetwork/wwm/gen/models"
-	"github.com/iryonetwork/wwm/specs"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -23,7 +22,7 @@ type Service interface {
 // Storage describes the functionality required for the service to function
 type Storage interface {
 	GetUserByUsername(string) (*models.User, error)
-	FindACL(string, string, []specs.ACLRuleAction) ([]*specs.ACLRule, error)
+	FindACL(subject string, actions []models.ValidationPair) []*models.ValidationResult
 	GetUser(id string) (*models.User, error)
 }
 

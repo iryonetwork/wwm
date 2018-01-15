@@ -97,6 +97,10 @@ func (s *Storage) AddRule(rule *models.Rule) (*models.Rule, error) {
 		return tx.Bucket(bucketACLRules).Put(id.Bytes(), data)
 	})
 
+	if err != nil {
+		go s.enforcer.LoadPolicy()
+	}
+
 	return rule, err
 }
 
@@ -130,6 +134,10 @@ func (s *Storage) UpdateRule(rule *models.Rule) (*models.Rule, error) {
 		return bRules.Put(ruleUUID.Bytes(), data)
 	})
 
+	if err != nil {
+		go s.enforcer.LoadPolicy()
+	}
+
 	return rule, err
 }
 
@@ -142,7 +150,13 @@ func (s *Storage) RemoveRule(id string) error {
 
 	ruleUUID, _ := uuid.FromString(id)
 
-	return s.db.Update(func(tx *bolt.Tx) error {
+	err = s.db.Update(func(tx *bolt.Tx) error {
 		return tx.Bucket(bucketACLRules).Delete(ruleUUID.Bytes())
 	})
+
+	if err != nil {
+		go s.enforcer.LoadPolicy()
+	}
+
+	return err
 }

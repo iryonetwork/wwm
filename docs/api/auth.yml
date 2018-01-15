@@ -524,6 +524,8 @@ definitions:
         type: string
       action:
         type: integer
+      deny:
+        type: boolean
 
   Error:
     type: object

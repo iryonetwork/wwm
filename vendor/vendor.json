@@ -3,6 +3,12 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "oyXJxS8qqy5TCkqvndCD1c7Lkg4=",
+			"path": "github.com/Knetic/govaluate",
+			"revision": "9aa49832a739dcd78a5542ff189fb82c3e423116",
+			"revisionTime": "2017-10-22T00:36:10Z"
+		},
+		{
 			"checksumSHA1": "nJrp/CKnvpO+vzTfOeR8qmzRZ4c=",
 			"path": "github.com/PuerkitoBio/purell",
 			"revision": "1c4bec281e4bbc75b4f4a1bd923bdf1bd989a969",
@@ -25,6 +31,48 @@
 			"path": "github.com/asaskevich/govalidator",
 			"revision": "4b3d68f87f176641ffc147420296013aff66ea32",
 			"revisionTime": "2018-01-15T10:24:50Z"
+		},
+		{
+			"checksumSHA1": "o1rvfuwfE/d1fblrZa5i/j5Nys8=",
+			"path": "github.com/casbin/casbin",
+			"revision": "1b8f581b3213fee8295c7dc7018fb16566eb2cb9",
+			"revisionTime": "2018-01-06T05:10:40Z"
+		},
+		{
+			"checksumSHA1": "BXKY680lIrk01sP/PMxnr9s2meA=",
+			"path": "github.com/casbin/casbin/config",
+			"revision": "1b8f581b3213fee8295c7dc7018fb16566eb2cb9",
+			"revisionTime": "2018-01-06T05:10:40Z"
+		},
+		{
+			"checksumSHA1": "VXqtVquCWuL2JXWbFYaAjtSTcA4=",
+			"path": "github.com/casbin/casbin/file-adapter",
+			"revision": "1b8f581b3213fee8295c7dc7018fb16566eb2cb9",
+			"revisionTime": "2018-01-06T05:10:40Z"
+		},
+		{
+			"checksumSHA1": "j9WlBuM/wPHdidaAKyTLK1hxjBI=",
+			"path": "github.com/casbin/casbin/model",
+			"revision": "1b8f581b3213fee8295c7dc7018fb16566eb2cb9",
+			"revisionTime": "2018-01-06T05:10:40Z"
+		},
+		{
+			"checksumSHA1": "teIOlw9Sg1JXFz4YM5YVxZVpbjQ=",
+			"path": "github.com/casbin/casbin/persist",
+			"revision": "1b8f581b3213fee8295c7dc7018fb16566eb2cb9",
+			"revisionTime": "2018-01-06T05:10:40Z"
+		},
+		{
+			"checksumSHA1": "JBDZ1xxGWRJ+b8fRvKWv+bO5vWI=",
+			"path": "github.com/casbin/casbin/rbac",
+			"revision": "1b8f581b3213fee8295c7dc7018fb16566eb2cb9",
+			"revisionTime": "2018-01-06T05:10:40Z"
+		},
+		{
+			"checksumSHA1": "ZHfEHGfRFe4QPqmx5cukK8UMB1g=",
+			"path": "github.com/casbin/casbin/util",
+			"revision": "1b8f581b3213fee8295c7dc7018fb16566eb2cb9",
+			"revisionTime": "2018-01-06T05:10:40Z"
 		},
 		{
 			"checksumSHA1": "15ji1OWdG/OwU8mv+h/+gux6VuU=",

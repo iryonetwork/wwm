@@ -1,13 +1,14 @@
 package auth
 
 import (
-	"github.com/iryonetwork/wwm/specs"
+	"github.com/casbin/casbin"
 
 	bolt "github.com/coreos/bbolt"
 )
 
 type Storage struct {
-	db *bolt.DB
+	db       *bolt.DB
+	enforcer *casbin.Enforcer
 }
 
 var bucketUsers = []byte("users")
@@ -43,15 +44,21 @@ func New(path string) (*Storage, error) {
 		return nil, err
 	}
 
-	return &Storage{db}, nil
+	storage := &Storage{
+		db: db,
+	}
+
+	e, err := NewEnforcer(storage)
+	if err != nil {
+		return nil, err
+	}
+
+	storage.enforcer = e
+
+	return storage, nil
 }
 
 // Close closes the database
 func (s *Storage) Close() error {
 	return s.db.Close()
-}
-
-// FindACL loads all the matching rules
-func (s *Storage) FindACL(userID, resource string, actions []specs.ACLRuleAction) ([]*specs.ACLRule, error) {
-	return nil, nil
 }
