@@ -11,7 +11,7 @@ There four types of certificates:
 * peer certificates (for identification of peer nodes)
 * client certificates (for identification of clients)
 
-All are created using a `Makefile` to ease generation in your development environment. Initially they will be created when you run `make` in your development environment. 
+All are created using a `Makefile` to ease generation in your development environment. Initially they will be created when you run `make` in your development environment.
 
 ## Root certificate
 
