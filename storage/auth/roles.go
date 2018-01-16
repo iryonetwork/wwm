@@ -87,6 +87,17 @@ func (s *Storage) AddRole(role *models.Role) (*models.Role, error) {
 	return role, err
 }
 
+// AddUserToRole adds user to role.
+func (s *Storage) AddUserToRole(userID, roleID string) (*models.Role, error) {
+	role, err := s.GetRole(roleID)
+	if err != nil {
+		return nil, err
+	}
+	role.Users = append(role.Users, userID)
+
+	return s.UpdateRole(role)
+}
+
 // UpdateRole updates the role
 func (s *Storage) UpdateRole(role *models.Role) (*models.Role, error) {
 	err := s.db.Update(func(tx *bolt.Tx) error {

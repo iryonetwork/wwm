@@ -98,8 +98,8 @@ func TestGetRoles(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
-	if len(roles) != 2 {
-		t.Fatalf("Expected 2 roless; got %d", len(roles))
+	if len(roles) != 4 {
+		t.Fatalf("Expected 4 roless; got %d", len(roles))
 	}
 
 	rolesMap := map[string]*models.Role{}

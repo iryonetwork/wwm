@@ -91,6 +91,12 @@ func (s *Storage) AddUser(user *models.User) (*models.User, error) {
 		// insert username
 		return tx.Bucket(bucketUsernames).Put([]byte(*user.Username), id.Bytes())
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// add every user to everyone role
+	_, err = s.AddUserToRole(user.ID, everyoneRole.ID)
 
 	return user, err
 }

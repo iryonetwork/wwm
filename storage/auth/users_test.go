@@ -72,6 +72,14 @@ func TestAddUser(t *testing.T) {
 		t.Fatalf("Expected correct password hash; got error '%v'", err)
 	}
 
+	role, err := storage.GetRole(everyoneRole.ID)
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	if role.Users[0] != user.ID {
+		t.Fatalf("Expected the user to be added to 'everyone' role.")
+	}
+
 	// add same user again
 	_, err = storage.AddUser(testUser)
 	if err == nil {

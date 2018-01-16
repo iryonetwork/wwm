@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"strconv"
+
 	bolt "github.com/coreos/bbolt"
 	uuid "github.com/satori/go.uuid"
 
@@ -78,6 +80,14 @@ func (s *Storage) AddRule(rule *models.Rule) (*models.Rule, error) {
 	err := s.checkSubject(*rule.Subject)
 	if err != nil {
 		return nil, err
+	}
+
+	eft := "allow"
+	if rule.Deny {
+		eft = "deny"
+	}
+	if s.enforcer.HasPolicy(*rule.Subject, *rule.Resource, strconv.FormatInt(*rule.Action, 10), eft) {
+		return nil, utils.NewError(utils.ErrBadRequest, "Rule with that parameters already exist")
 	}
 
 	err = s.db.Update(func(tx *bolt.Tx) error {

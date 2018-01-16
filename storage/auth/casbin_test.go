@@ -130,16 +130,38 @@ func TestRules(t *testing.T) {
 			},
 		},
 		{
-			rules:  []*models.Rule{},
+			rules: []*models.Rule{
+				{
+					Action:   swag.Int64(Write),
+					Resource: swag.String("/auth/login"),
+					Subject:  &u3.ID,
+					Deny:     true,
+				},
+			},
 			userID: u3.ID,
 			validations: []*models.ValidationPair{
 				{
 					Actions:  swag.Int64(Read),
 					Resource: swag.String("/storage"),
 				},
+				{
+					Actions:  swag.Int64(Write),
+					Resource: swag.String("/auth/login"),
+				},
+				{
+					Actions:  swag.Int64(Read),
+					Resource: swag.String("/auth/renew"),
+				},
+				{
+					Actions:  swag.Int64(Write),
+					Resource: swag.String("/auth/validate"),
+				},
 			},
 			results: []bool{
 				false,
+				false,
+				true,
+				true,
 			},
 		},
 	}
