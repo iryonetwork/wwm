@@ -6,7 +6,7 @@ import (
 	bolt "github.com/coreos/bbolt"
 	uuid "github.com/satori/go.uuid"
 
-	"github.com/iryonetwork/wwm/gen/models"
+	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/iryonetwork/wwm/utils"
 )
 

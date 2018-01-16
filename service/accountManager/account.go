@@ -3,7 +3,7 @@ package accountManager
 import (
 	"context"
 
-	"github.com/iryonetwork/wwm/gen/models"
+	"github.com/iryonetwork/wwm/gen/auth/models"
 )
 
 // Service describes actions supported by the accountManager service

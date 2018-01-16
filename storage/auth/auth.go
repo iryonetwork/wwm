@@ -9,7 +9,7 @@ import (
 
 	"github.com/casbin/casbin"
 	"github.com/go-openapi/swag"
-	"github.com/iryonetwork/wwm/gen/models"
+	"github.com/iryonetwork/wwm/gen/auth/models"
 	uuid "github.com/satori/go.uuid"
 
 	bolt "github.com/coreos/bbolt"

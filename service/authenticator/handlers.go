@@ -2,8 +2,8 @@ package authenticator
 
 import (
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/iryonetwork/wwm/gen/models"
-	"github.com/iryonetwork/wwm/gen/restapi/operations/auth"
+	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/iryonetwork/wwm/gen/auth/restapi/operations/auth"
 )
 
 // Handlers describes the actions supported by the authenticator handlers

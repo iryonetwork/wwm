@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
-	"github.com/iryonetwork/wwm/gen/models"
+	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/iryonetwork/wwm/storage/auth"
 	"github.com/iryonetwork/wwm/utils"
 	"golang.org/x/crypto/bcrypt"

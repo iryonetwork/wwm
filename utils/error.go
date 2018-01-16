@@ -3,7 +3,7 @@ package utils
 import (
 	"fmt"
 
-	"github.com/iryonetwork/wwm/gen/models"
+	"github.com/iryonetwork/wwm/gen/auth/models"
 )
 
 // error codes

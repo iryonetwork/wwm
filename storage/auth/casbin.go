@@ -8,7 +8,7 @@ import (
 	"github.com/casbin/casbin"
 	casbinmodel "github.com/casbin/casbin/model"
 	"github.com/casbin/casbin/persist"
-	"github.com/iryonetwork/wwm/gen/models"
+	"github.com/iryonetwork/wwm/gen/auth/models"
 )
 
 // Persmissions

@@ -1,14 +1,14 @@
 package main
 
-//go:generate sh -c "mkdir -p ../../gen && swagger generate server -A cloudAuth -t ../../gen -f ../../docs/api/auth.yml --exclude-main --principal string"
+//go:generate sh -c "mkdir -p ../../gen/auth/ && swagger generate server -A cloudAuth -t ../../gen/auth/ -f ../../docs/api/auth.yml --exclude-main --principal string"
 
 import (
 	"log"
 
 	loads "github.com/go-openapi/loads"
 
-	"github.com/iryonetwork/wwm/gen/restapi"
-	"github.com/iryonetwork/wwm/gen/restapi/operations"
+	"github.com/iryonetwork/wwm/gen/auth/restapi"
+	"github.com/iryonetwork/wwm/gen/auth/restapi/operations"
 	"github.com/iryonetwork/wwm/service/authenticator"
 	"github.com/iryonetwork/wwm/storage/auth"
 )

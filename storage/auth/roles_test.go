@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-openapi/swag"
 
-	"github.com/iryonetwork/wwm/gen/models"
+	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/iryonetwork/wwm/utils"
 )
 
