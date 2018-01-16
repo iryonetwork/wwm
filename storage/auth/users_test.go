@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"crypto/rand"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -40,8 +41,14 @@ func newTestStorage() *testStorage {
 	file.Close()
 	os.Remove(path)
 
+	key := make([]byte, 32)
+	_, err = rand.Read(key)
+	if err != nil {
+		panic(err)
+	}
+
 	// open the database
-	db, err := New(path)
+	db, err := New(path, key)
 	if err != nil {
 		panic(err)
 	}
@@ -116,6 +123,33 @@ func TestGetUser(t *testing.T) {
 	// get non existing user
 	_, err = storage.GetUser("E4363A8D-4041-4B17-A43E-17705C96C1CD")
 	uErr, ok = err.(utils.Error)
+	if !ok {
+		t.Fatalf("Expected error to be of type 'utils.Error'; got '%T'", err)
+	}
+	if uErr.Code() != utils.ErrNotFound {
+		t.Fatalf("Expected error code to be '%s'; got '%s'", utils.ErrNotFound, uErr.Code())
+	}
+}
+
+func TestGetUserByUsername(t *testing.T) {
+	storage := newTestStorage()
+	defer storage.Close()
+
+	// add user
+	storage.AddUser(testUser)
+
+	// get user
+	user, err := storage.GetUserByUsername(*testUser.Username)
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	if !reflect.DeepEqual(*testUser, *user) {
+		t.Fatalf("Expected returned user to be '%v', got '%v'", *testUser, *user)
+	}
+
+	// get non existing username
+	_, err = storage.GetUserByUsername("no")
+	uErr, ok := err.(utils.Error)
 	if !ok {
 		t.Fatalf("Expected error to be of type 'utils.Error'; got '%T'", err)
 	}

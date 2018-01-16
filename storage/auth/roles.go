@@ -15,9 +15,14 @@ func (s *Storage) GetRoles() ([]*models.Role, error) {
 	err := s.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(bucketRoles)
 
-		return b.ForEach(func(k, v []byte) error {
+		return b.ForEach(func(_, data []byte) error {
+			data, err := s.decrypt(data)
+			if err != nil {
+				return err
+			}
+
 			role := &models.Role{}
-			err := role.UnmarshalBinary(v)
+			err = role.UnmarshalBinary(data)
 			if err != nil {
 				return err
 			}
@@ -44,6 +49,11 @@ func (s *Storage) GetRole(id string) (*models.Role, error) {
 		data := tx.Bucket(bucketRoles).Get(roleUUID.Bytes())
 		if data == nil {
 			return utils.NewError(utils.ErrNotFound, "Failed to find role by id = '%s'", id)
+		}
+
+		data, err := s.decrypt(data)
+		if err != nil {
+			return err
 		}
 
 		// decode the role
@@ -76,6 +86,11 @@ func (s *Storage) AddRole(role *models.Role) (*models.Role, error) {
 			return err
 		}
 
+		data, err = s.encrypt(data)
+		if err != nil {
+			return err
+		}
+
 		// insert role
 		return tx.Bucket(bucketRoles).Put(id.Bytes(), data)
 	})
@@ -87,7 +102,7 @@ func (s *Storage) AddRole(role *models.Role) (*models.Role, error) {
 	return role, err
 }
 
-// AddUserToRole adds user to role.
+// AddUserToRole adds user to role
 func (s *Storage) AddUserToRole(userID, roleID string) (*models.Role, error) {
 	role, err := s.GetRole(roleID)
 	if err != nil {
@@ -123,6 +138,11 @@ func (s *Storage) UpdateRole(role *models.Role) (*models.Role, error) {
 		}
 
 		data, err := role.MarshalBinary()
+		if err != nil {
+			return err
+		}
+
+		data, err = s.encrypt(data)
 		if err != nil {
 			return err
 		}
