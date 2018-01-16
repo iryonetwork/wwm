@@ -7,10 +7,10 @@ defaultEntryPoints = ["http","https"]
       entryPoint = "https"
   [entryPoints.https]
   address = ":443"
-  [entryPoints.https.tls]
-    [[entryPoints.https.tls.certificates]]
-    CertFile = "/certs/traefik.pem"
-    KeyFile = "/certs/traefik-key.pem"
+    [entryPoints.https.tls]
+      [[entryPoints.https.tls.certificates]]
+      CertFile = "/certs/traefik.pem"
+      KeyFile = "/certs/traefik-key.pem"
 
 [web]
 address = ":8080"
@@ -25,6 +25,11 @@ address = ":8080"
   [backends.localstorage]
     [backends.localstorage.servers.server1]
     url = "https://localStorage"
+
+  [backends.cloudauth]
+    [backends.cloudauth.servers.server1]
+    url = "https://cloudAuth"
+    weight = 10
 
   [backends.localMinio]
     [backends.localMinio.servers.server1]
@@ -52,6 +57,11 @@ address = ":8080"
   backend = "localstorage"
     [frontends.localstorage.routes.route1]
     rule = "Host:iryo.local;PathPrefix:/storage"
+
+  [frontends.cloudauth]
+  backend = "cloudauth"
+    [frontends.cloudauth.routes.route1]
+    rule = "Host:iryo.cloud;PathPrefix:/auth"
 
   [frontends.localMinio]
   backend = "localMinio"

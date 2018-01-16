@@ -40,6 +40,7 @@ services:
     depends_on:
     - vault
 
+<<<<<<< HEAD
   localAuth:
     image: golang:1.9-alpine
     command:
@@ -49,6 +50,17 @@ services:
     - ./bin/tls:/certs
     environment:
     - DEBUG=1
+=======
+  #localAuth:
+  #  image: alpine:latest
+  #  command:
+  #  - /wwm/localAuth
+  #  volumes:
+  #  - ./.bin/:/wwm
+  #  - ./bin/tls:/certs
+  #  environment:
+  #  - DEBUG=1
+>>>>>>> Move cloud auth to tls serving
 
   localStorage:
     image: golang:1.9-alpine
@@ -99,3 +111,13 @@ services:
     - ./bin/tls/cloudMinio-key.pem:/root/.minio/certs/private.key
     - ./bin/tls/cloudMinio.pem:/root/.minio/certs/public.crt
     - ./.data/cloudMinio:/data
+
+  cloudAuth:
+    image: alpine:latest
+    command:
+    - /wwm/cloudAuth
+    volumes:
+    - ./.bin/:/wwm
+    - ./bin/tls:/certs
+    environment:
+    - DEBUG=1
