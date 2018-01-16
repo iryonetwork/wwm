@@ -9,16 +9,17 @@ import (
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/iryonetwork/wwm/storage/auth"
 	"github.com/iryonetwork/wwm/utils"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // Service describes the actions supported by the authenticator service
 type Service interface {
 	Login(ctx context.Context, username, password string) (string, error)
-	Validate(ctx context.Context, queries []*models.ValidationPair) ([]*models.ValidationResult, error)
+	Validate(ctx context.Context, userID *string, queries []*models.ValidationPair) ([]*models.ValidationResult, error)
 	GetPublicKey(ctx context.Context, pubID string) (string, error)
 	CreateTokenForUserID(ctx context.Context, userID *string) (string, error)
 	GetUserIDFromToken(token string) (*string, error)
@@ -28,7 +29,7 @@ type Service interface {
 // Storage describes the functionality required for the service to function
 type Storage interface {
 	GetUserByUsername(string) (*models.User, error)
-	FindACL(subject string, actions []models.ValidationPair) []*models.ValidationResult
+	FindACL(subject string, actions []*models.ValidationPair) []*models.ValidationResult
 	GetUser(id string) (*models.User, error)
 }
 
@@ -43,6 +44,15 @@ func (a *service) Login(_ context.Context, username, password string) (string, e
 		return "", err
 	}
 
+	permissions := a.storage.FindACL(user.ID, []*models.ValidationPair{{
+		Actions:  swag.Int64(auth.Write),
+		Resource: swag.String("/auth/login"),
+	}})
+
+	if !permissions[0].Result {
+		return "", utils.NewError(utils.ErrForbidden, "You do not have permission to log in")
+	}
+
 	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) == nil {
 		return createTokenForUserID(&user.ID)
 	}
@@ -52,9 +62,8 @@ func (a *service) Login(_ context.Context, username, password string) (string, e
 
 // Validate checks if the user has the capability to execute the specific
 // actions on a resource
-func (a *service) Validate(_ context.Context, queries []*models.ValidationPair) ([]*models.ValidationResult, error) {
-	//return nil, a.storage.FindACL
-	return nil, nil
+func (a *service) Validate(_ context.Context, userID *string, queries []*models.ValidationPair) ([]*models.ValidationResult, error) {
+	return a.storage.FindACL(*userID, queries), nil
 }
 
 // CreateTokenForUser creates a new token for user
@@ -86,7 +95,7 @@ func (a *service) Authorizer() runtime.Authorizer {
 			action = auth.Delete
 		}
 
-		result := a.storage.FindACL(*userID, []models.ValidationPair{{
+		result := a.storage.FindACL(*userID, []*models.ValidationPair{{
 			Actions:  &action,
 			Resource: swag.String(request.URL.EscapedPath()),
 		}})

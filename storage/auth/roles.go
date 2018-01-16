@@ -77,6 +77,9 @@ func (s *Storage) AddRole(role *models.Role) (*models.Role, error) {
 		for _, userID := range role.Users {
 			_, err := s.GetUser(userID)
 			if err != nil {
+				if e, ok := err.(utils.Error); ok {
+					return utils.NewError(utils.ErrBadRequest, e.Error())
+				}
 				return err
 			}
 		}

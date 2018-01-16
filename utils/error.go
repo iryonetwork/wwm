@@ -28,6 +28,11 @@ func (err Error) Code() string {
 	return err.e.Code
 }
 
+// Payload returns inner error
+func (err Error) Payload() *models.Error {
+	return &err.e
+}
+
 // NewError returns new Error object
 func NewError(code, message string, a ...interface{}) Error {
 	return Error{

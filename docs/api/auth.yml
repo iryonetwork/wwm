@@ -152,6 +152,9 @@ paths:
           schema:
             $ref: '#/definitions/User'
 
+        400:
+          $ref: '#/responses/400'
+
         500:
           $ref: '#/responses/500'
 
@@ -173,6 +176,9 @@ paths:
           description: User
           schema:
             $ref: '#/definitions/User'
+
+        400:
+          $ref: '#/responses/400'
 
         404:
           $ref: '#/responses/404'
@@ -200,6 +206,9 @@ paths:
         204:
           description: User was updated
 
+        400:
+          $ref: '#/responses/400'
+
         404:
           $ref: '#/responses/404'
 
@@ -220,6 +229,9 @@ paths:
       responses:
         204:
           description: User was deleted
+
+        400:
+          $ref: '#/responses/400'
 
         404:
           $ref: '#/responses/404'
@@ -267,6 +279,9 @@ paths:
           schema:
             $ref: '#/definitions/Role'
 
+        400:
+          $ref: '#/responses/400'
+
         500:
           $ref: '#/responses/500'
 
@@ -288,6 +303,9 @@ paths:
           schema:
             $ref: '#/definitions/Role'
 
+        400:
+          $ref: '#/responses/400'
+
         404:
           $ref: '#/responses/404'
 
@@ -305,7 +323,7 @@ paths:
           required: true
           type: string
         - in: body
-          name: user
+          name: role
           required: true
           schema:
             $ref: '#/definitions/Role'
@@ -313,6 +331,9 @@ paths:
       responses:
         204:
           description: Role was updated
+
+        400:
+          $ref: '#/responses/400'
 
         404:
           $ref: '#/responses/404'
@@ -334,6 +355,9 @@ paths:
       responses:
         204:
           description: Role was deleted
+
+        400:
+          $ref: '#/responses/400'
 
         404:
           $ref: '#/responses/404'
@@ -358,7 +382,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Role'
+              $ref: '#/definitions/Rule'
 
         500:
           $ref: '#/responses/500'
@@ -381,6 +405,9 @@ paths:
           schema:
             $ref: '#/definitions/Rule'
 
+        400:
+          $ref: '#/responses/400'
+
         500:
           $ref: '#/responses/500'
 
@@ -401,6 +428,9 @@ paths:
           description: Rule
           schema:
             $ref: '#/definitions/Rule'
+
+        400:
+          $ref: '#/responses/400'
 
         404:
           $ref: '#/responses/404'
@@ -428,6 +458,9 @@ paths:
         204:
           description: Rule was updated
 
+        400:
+          $ref: '#/responses/400'
+
         404:
           $ref: '#/responses/404'
 
@@ -448,6 +481,9 @@ paths:
       responses:
         204:
           description: Rule was deleted
+
+        400:
+          $ref: '#/responses/400'
 
         404:
           $ref: '#/responses/404'

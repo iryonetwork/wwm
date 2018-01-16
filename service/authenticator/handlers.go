@@ -47,7 +47,7 @@ func (h *handlers) PostLogin() auth.PostLoginHandler {
 
 func (h *handlers) PostValidate() auth.PostValidateHandler {
 	return auth.PostValidateHandlerFunc(func(params auth.PostValidateParams, principal *string) middleware.Responder {
-		result, err := h.service.Validate(params.HTTPRequest.Context(), params.Validate)
+		result, err := h.service.Validate(params.HTTPRequest.Context(), principal, params.Validate)
 
 		if err != nil {
 			return auth.NewPostValidateInternalServerError().WithPayload(&models.Error{

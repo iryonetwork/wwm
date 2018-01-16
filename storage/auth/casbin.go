@@ -124,12 +124,12 @@ m = g(r.sub, p.sub) && keyMatch(r.obj, p.obj) && binaryMatch(r.act, p.act)`)
 }
 
 // FindACL loads all the matching rules
-func (s *Storage) FindACL(subject string, actions []models.ValidationPair) []*models.ValidationResult {
+func (s *Storage) FindACL(subject string, actions []*models.ValidationPair) []*models.ValidationResult {
 	results := make([]*models.ValidationResult, len(actions), len(actions))
 
 	for i, validation := range actions {
 		results[i] = &models.ValidationResult{
-			Query:  &validation,
+			Query:  validation,
 			Result: s.enforcer.Enforce(subject, *validation.Resource, strconv.FormatInt(*validation.Actions, 10)),
 		}
 	}

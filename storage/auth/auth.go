@@ -39,12 +39,12 @@ var adminRole = &models.Role{
 }
 
 // New returns a new instance of storage
-func New(path string, key []byte) (*Storage, error) {
+func New(path string, key []byte, readOnly bool) (*Storage, error) {
 	if len(key) != 32 {
 		return nil, fmt.Errorf("Encryption key must be 32 bytes long")
 	}
 
-	db, err := bolt.Open(path, 0x600, nil)
+	db, err := bolt.Open(path, 0x600, &bolt.Options{ReadOnly: readOnly})
 	if err != nil {
 		return nil, err
 	}
