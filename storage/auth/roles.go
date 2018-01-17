@@ -116,6 +116,11 @@ func (s *Storage) AddUserToRole(userID, roleID string) (*models.Role, error) {
 	return s.UpdateRole(role)
 }
 
+// AddUserToAdminRole adds user to admin role
+func (s *Storage) AddUserToAdminRole(userID string) (*models.Role, error) {
+	return s.AddUserToRole(userID, adminRole.ID)
+}
+
 // UpdateRole updates the role
 func (s *Storage) UpdateRole(role *models.Role) (*models.Role, error) {
 	err := s.db.Update(func(tx *bolt.Tx) error {
@@ -163,6 +168,10 @@ func (s *Storage) UpdateRole(role *models.Role) (*models.Role, error) {
 
 // RemoveRole removes role by id
 func (s *Storage) RemoveRole(id string) error {
+	if id == everyoneRole.ID || id == adminRole.ID {
+		return utils.NewError(utils.ErrBadRequest, "You can't remove this protected role")
+	}
+
 	_, err := s.GetRole(id)
 	if err != nil {
 		return err

@@ -42,10 +42,16 @@ func main() {
 			Email:    createEmail,
 		}
 
-		_, err := storage.AddUser(user)
+		user, err := storage.AddUser(user)
 		if err != nil {
 			log.Fatalln(err)
 		}
+
+		_, err = storage.AddUserToAdminRole(user.ID)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
 		log.Fatalln("Created new user %s", *createUsername)
 	}
 
