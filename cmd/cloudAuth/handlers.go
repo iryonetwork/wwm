@@ -1,19 +1,25 @@
 package main
 
 import (
+	"encoding/base64"
+	"io"
+	"strings"
+
 	"github.com/go-openapi/runtime/middleware"
+
 	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/iryonetwork/wwm/gen/auth/restapi/operations/database"
 	"github.com/iryonetwork/wwm/gen/auth/restapi/operations/roles"
 	"github.com/iryonetwork/wwm/gen/auth/restapi/operations/rules"
 	"github.com/iryonetwork/wwm/gen/auth/restapi/operations/users"
-	"github.com/iryonetwork/wwm/utils"
-
 	"github.com/iryonetwork/wwm/service/accountManager"
+	"github.com/iryonetwork/wwm/storage/auth"
+	"github.com/iryonetwork/wwm/utils"
 )
 
 func getUsers(service accountManager.Service) users.GetUsersHandler {
 	return users.GetUsersHandlerFunc(func(params users.GetUsersParams, principal *string) middleware.Responder {
-		u, err := service.Users(params.HTTPRequest.Context(), *params.Search)
+		u, err := service.Users(params.HTTPRequest.Context(), "")
 
 		if err != nil {
 			return users.NewGetUsersInternalServerError().WithPayload(&models.Error{
@@ -116,7 +122,7 @@ func deleteUsersID(service accountManager.Service) users.DeleteUsersIDHandler {
 
 func getRoles(service accountManager.Service) roles.GetRolesHandler {
 	return roles.GetRolesHandlerFunc(func(params roles.GetRolesParams, principal *string) middleware.Responder {
-		r, err := service.Roles(params.HTTPRequest.Context(), *params.Search)
+		r, err := service.Roles(params.HTTPRequest.Context(), "")
 
 		if err != nil {
 			return roles.NewGetRolesInternalServerError().WithPayload(&models.Error{
@@ -219,7 +225,7 @@ func deleteRolesID(service accountManager.Service) roles.DeleteRolesIDHandler {
 
 func getRules(service accountManager.Service) rules.GetRulesHandler {
 	return rules.GetRulesHandlerFunc(func(params rules.GetRulesParams, principal *string) middleware.Responder {
-		r, err := service.Rules(params.HTTPRequest.Context(), *params.Subject)
+		r, err := service.Rules(params.HTTPRequest.Context(), "")
 
 		if err != nil {
 			return rules.NewGetRulesInternalServerError().WithPayload(&models.Error{
@@ -310,12 +316,37 @@ func deleteRulesID(service accountManager.Service) rules.DeleteRulesIDHandler {
 				}
 			}
 
-			return rules.NewDeleteRulesIDInternalServerError().WithPayload(&models.Error{
-				Code:    utils.ErrServerError,
-				Message: err.Error(),
-			})
+			return rules.NewDeleteRulesIDInternalServerError().WithPayload(utils.ServerError(err))
 		}
 
 		return rules.NewDeleteRulesIDNoContent()
+	})
+}
+
+func getDatabase(storage *auth.Storage) database.GetDatabaseHandler {
+	return database.GetDatabaseHandlerFunc(func(params database.GetDatabaseParams, principal *string) middleware.Responder {
+		etag := strings.Trim(params.HTTPRequest.Header.Get("Etag"), `"`)
+
+		checksum, err := storage.GetChecksum()
+		if err != nil {
+			return database.NewGetDatabaseInternalServerError().WithPayload(utils.ServerError(err))
+		}
+
+		currentEtag := base64.RawURLEncoding.EncodeToString(checksum)
+
+		if etag == currentEtag {
+			return database.NewGetDatabaseNotModified()
+		}
+
+		reader, writer := io.Pipe()
+
+		go func() {
+			_, err := storage.WriteTo(writer)
+			writer.CloseWithError(err)
+		}()
+
+		return database.NewGetDatabaseOK().
+			WithPayload(reader).
+			WithEtag(`"` + currentEtag + `"`)
 	})
 }

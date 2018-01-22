@@ -10,7 +10,7 @@ import (
 )
 
 func TestRules(t *testing.T) {
-	storage := newTestStorage()
+	storage := newTestStorage(nil)
 	defer storage.Close()
 
 	// add user

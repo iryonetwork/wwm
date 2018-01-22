@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
+	"sync"
 
 	"github.com/casbin/casbin"
 	"github.com/go-openapi/swag"
@@ -19,6 +20,7 @@ type Storage struct {
 	db            *bolt.DB
 	enforcer      *casbin.Enforcer
 	encryptionKey []byte
+	dbSync        *sync.RWMutex
 }
 
 var bucketUsers = []byte("users")
@@ -73,6 +75,7 @@ func New(path string, key []byte, readOnly bool) (*Storage, error) {
 	storage := &Storage{
 		db:            db,
 		encryptionKey: key,
+		dbSync:        &sync.RWMutex{},
 	}
 
 	e, err := NewEnforcer(storage)

@@ -4,11 +4,17 @@ package authenticator
 
 import (
 	"context"
+	"crypto"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
+	"golang.org/x/crypto/acme"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/iryonetwork/wwm/gen/auth/models"
@@ -22,7 +28,7 @@ type Service interface {
 	Validate(ctx context.Context, userID *string, queries []*models.ValidationPair) ([]*models.ValidationResult, error)
 	GetPublicKey(ctx context.Context, pubID string) (string, error)
 	CreateTokenForUserID(ctx context.Context, userID *string) (string, error)
-	GetUserIDFromToken(token string) (*string, error)
+	GetPrincipalFromToken(token string) (*string, error)
 	Authorizer() runtime.Authorizer
 }
 
@@ -34,7 +40,8 @@ type Storage interface {
 }
 
 type service struct {
-	storage Storage
+	storage          Storage
+	allowedSyncCerts map[string]crypto.PublicKey
 }
 
 // Login authenticates the user
@@ -71,14 +78,43 @@ func (a *service) CreateTokenForUserID(_ context.Context, userID *string) (strin
 	return createTokenForUserID(userID)
 }
 
-// GetUserIDFromToken validates a token and returns the userID if token is valid
-func (a *service) GetUserIDFromToken(token string) (*string, error) {
-	userID, err := validateToken(token)
+const syncPrincipal = "sync"
+
+// GetPrincipalFromToken validates a token and returns the userID for user tokens
+// or returns "sync" for tokens used in cloud sync
+func (a *service) GetPrincipalFromToken(tokenString string) (*string, error) {
+	principal := ""
+
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		claims := token.Claims.(*Claims)
+
+		if key, ok := a.allowedSyncCerts[claims.KeyID]; ok {
+			principal = syncPrincipal
+			return key, nil
+		}
+
+		if claims.KeyID == keyID {
+			private, err := getPrivateKey()
+			if err != nil {
+				return nil, err
+			}
+			principal = claims.Subject
+			return private.Public(), nil
+		}
+
+		return nil, fmt.Errorf("Singning key not found")
+	})
+
 	if err != nil {
-		return nil, err
+		return swag.String(""), err
 	}
 
-	return &userID, nil
+	_, ok := token.Claims.(*Claims)
+	if !token.Valid || !ok {
+		return swag.String(""), fmt.Errorf("Token is invalid")
+	}
+
+	return &principal, nil
 }
 
 func (a *service) Authorizer() runtime.Authorizer {
@@ -86,6 +122,14 @@ func (a *service) Authorizer() runtime.Authorizer {
 		userID, ok := principal.(*string)
 		if !ok {
 			return fmt.Errorf("Principal type was '%T', expected '*string'", principal)
+		}
+
+		// allow access for sync operations without checking ACL
+		if request.URL.EscapedPath() == "/auth/database" {
+			if *userID != syncPrincipal {
+				return utils.NewError(utils.ErrForbidden, "You do not have permissions for this resource")
+			}
+			return nil
 		}
 
 		var action int64 = auth.Read
@@ -118,6 +162,34 @@ func (a *service) GetPublicKey(_ context.Context, pubID string) (string, error) 
 }
 
 // New returns a new instance of authenticator service
-func New(storage Storage) Service {
-	return &service{storage: storage}
+func New(storage Storage, allowedSyncCerts []string) (Service, error) {
+	syncCerts := map[string]crypto.PublicKey{}
+
+	for _, cert := range allowedSyncCerts {
+		content, err := ioutil.ReadFile(cert)
+		if err != nil {
+			return nil, err
+		}
+
+		block, _ := pem.Decode(content)
+		if block == nil {
+			return nil, fmt.Errorf("Invalid PEM file")
+		}
+
+		c, err := x509.ParseCertificate(block.Bytes)
+		if err != nil {
+			return nil, err
+		}
+
+		thumb, err := acme.JWKThumbprint(c.PublicKey)
+		if err != nil {
+			return nil, err
+		}
+		syncCerts[thumb] = c.PublicKey
+	}
+
+	return &service{
+		storage:          storage,
+		allowedSyncCerts: syncCerts,
+	}, nil
 }

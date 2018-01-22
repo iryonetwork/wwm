@@ -11,6 +11,9 @@ import (
 
 // GetUsers returns all users
 func (s *Storage) GetUsers() ([]*models.User, error) {
+	s.dbSync.RLock()
+	defer s.dbSync.RUnlock()
+
 	users := []*models.User{}
 
 	err := s.db.View(func(tx *bolt.Tx) error {
@@ -38,6 +41,9 @@ func (s *Storage) GetUsers() ([]*models.User, error) {
 
 // GetUser returns user by the id
 func (s *Storage) GetUser(id string) (*models.User, error) {
+	s.dbSync.RLock()
+	defer s.dbSync.RUnlock()
+
 	userUUID, err := uuid.FromString(id)
 	if err != nil {
 		return nil, utils.NewError(utils.ErrBadRequest, err.Error())
@@ -66,6 +72,9 @@ func (s *Storage) GetUser(id string) (*models.User, error) {
 
 // AddUser adds user to the database
 func (s *Storage) AddUser(user *models.User) (*models.User, error) {
+	s.dbSync.RLock()
+	defer s.dbSync.RUnlock()
+
 	err := s.db.Update(func(tx *bolt.Tx) error {
 		// check for existing user
 		if tx.Bucket(bucketUsernames).Get([]byte(*user.Username)) != nil {
@@ -121,6 +130,9 @@ func (s *Storage) AddUser(user *models.User) (*models.User, error) {
 
 // UpdateUser updates the user
 func (s *Storage) UpdateUser(user *models.User) (*models.User, error) {
+	s.dbSync.RLock()
+	defer s.dbSync.RUnlock()
+
 	err := s.db.Update(func(tx *bolt.Tx) error {
 		// get buckets
 		bUsers := tx.Bucket(bucketUsers)
@@ -194,6 +206,9 @@ func (s *Storage) UpdateUser(user *models.User) (*models.User, error) {
 
 // RemoveUser removes user by id
 func (s *Storage) RemoveUser(id string) error {
+	s.dbSync.RLock()
+	defer s.dbSync.RUnlock()
+
 	user, err := s.GetUser(id)
 	if err != nil {
 		return err
@@ -212,6 +227,9 @@ func (s *Storage) RemoveUser(id string) error {
 
 // GetUserByUsername returns user by the username
 func (s *Storage) GetUserByUsername(username string) (*models.User, error) {
+	s.dbSync.RLock()
+	defer s.dbSync.RUnlock()
+
 	user := &models.User{}
 
 	// look up the user

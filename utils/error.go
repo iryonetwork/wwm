@@ -42,3 +42,11 @@ func NewError(code, message string, a ...interface{}) Error {
 		},
 	}
 }
+
+// ServerError converts error to models.Error
+func ServerError(err error) *models.Error {
+	return &models.Error{
+		Code:    ErrServerError,
+		Message: err.Error(),
+	}
+}

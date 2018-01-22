@@ -20,7 +20,7 @@ var (
 )
 
 func TestAddRole(t *testing.T) {
-	storage := newTestStorage()
+	storage := newTestStorage(nil)
 	defer storage.Close()
 
 	// add user
@@ -45,7 +45,7 @@ func TestAddRole(t *testing.T) {
 }
 
 func TestGetRole(t *testing.T) {
-	storage := newTestStorage()
+	storage := newTestStorage(nil)
 	defer storage.Close()
 
 	// add user and role
@@ -84,7 +84,7 @@ func TestGetRole(t *testing.T) {
 }
 
 func TestGetRoles(t *testing.T) {
-	storage := newTestStorage()
+	storage := newTestStorage(nil)
 	defer storage.Close()
 
 	// add user and role
@@ -117,7 +117,7 @@ func TestGetRoles(t *testing.T) {
 }
 
 func TestUpdateRole(t *testing.T) {
-	storage := newTestStorage()
+	storage := newTestStorage(nil)
 	defer storage.Close()
 
 	// add user and role
@@ -149,7 +149,7 @@ func TestUpdateRole(t *testing.T) {
 }
 
 func TestRemoveRole(t *testing.T) {
-	storage := newTestStorage()
+	storage := newTestStorage(nil)
 	defer storage.Close()
 
 	// add user and role

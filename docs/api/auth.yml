@@ -491,6 +491,34 @@ paths:
         500:
           $ref: '#/responses/500'
 
+  /database:
+    get:
+      summary: Get the whole database from cloud
+      tags:
+        - database
+      produces:
+        - application/octet-stream
+        -  application/json; charset=utf-8
+      responses:
+        200:
+          description: Database dump
+          headers:
+            Etag:
+              type: string
+          schema:
+            type: string
+            format: binary
+
+        304:
+          description: Not Modified
+
+        401:
+          $ref: '#/responses/401'
+
+        500:
+          $ref: '#/responses/500'
+
+
 
 definitions:
   ValidationPair:

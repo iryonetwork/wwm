@@ -23,7 +23,7 @@ var (
 )
 
 func TestAddRule(t *testing.T) {
-	storage := newTestStorage()
+	storage := newTestStorage(nil)
 	defer storage.Close()
 
 	// add user
@@ -66,7 +66,7 @@ func TestAddRule(t *testing.T) {
 }
 
 func TestGetRule(t *testing.T) {
-	storage := newTestStorage()
+	storage := newTestStorage(nil)
 	defer storage.Close()
 
 	// add user and rule
@@ -105,7 +105,7 @@ func TestGetRule(t *testing.T) {
 }
 
 func TestGetRules(t *testing.T) {
-	storage := newTestStorage()
+	storage := newTestStorage(nil)
 	defer storage.Close()
 
 	// add user, role and rules
@@ -141,7 +141,7 @@ func TestGetRules(t *testing.T) {
 }
 
 func TestUpdateRule(t *testing.T) {
-	storage := newTestStorage()
+	storage := newTestStorage(nil)
 	defer storage.Close()
 
 	// add user, role and rule
@@ -174,7 +174,7 @@ func TestUpdateRule(t *testing.T) {
 }
 
 func TestRemoveRule(t *testing.T) {
-	storage := newTestStorage()
+	storage := newTestStorage(nil)
 	defer storage.Close()
 
 	// add user and rule

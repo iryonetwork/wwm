@@ -31,7 +31,7 @@ type testStorage struct {
 	*Storage
 }
 
-func newTestStorage() *testStorage {
+func newTestStorage(key []byte) *testStorage {
 	// retrieve a temporary path
 	file, err := ioutil.TempFile("", "")
 	if err != nil {
@@ -39,16 +39,17 @@ func newTestStorage() *testStorage {
 	}
 	path := file.Name()
 	file.Close()
-	os.Remove(path)
 
-	key := make([]byte, 32)
-	_, err = rand.Read(key)
-	if err != nil {
-		panic(err)
+	if key == nil {
+		key = make([]byte, 32)
+		_, err = rand.Read(key)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	// open the database
-	db, err := New(path, key)
+	db, err := New(path, key, false)
 	if err != nil {
 		panic(err)
 	}
@@ -63,7 +64,7 @@ func (storage *testStorage) Close() {
 }
 
 func TestAddUser(t *testing.T) {
-	storage := newTestStorage()
+	storage := newTestStorage(nil)
 	defer storage.Close()
 
 	// add user
@@ -95,7 +96,7 @@ func TestAddUser(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
-	storage := newTestStorage()
+	storage := newTestStorage(nil)
 	defer storage.Close()
 
 	// add user
@@ -132,7 +133,7 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestGetUserByUsername(t *testing.T) {
-	storage := newTestStorage()
+	storage := newTestStorage(nil)
 	defer storage.Close()
 
 	// add user
@@ -159,7 +160,7 @@ func TestGetUserByUsername(t *testing.T) {
 }
 
 func TestGetUsers(t *testing.T) {
-	storage := newTestStorage()
+	storage := newTestStorage(nil)
 	defer storage.Close()
 
 	// add users
@@ -190,7 +191,7 @@ func TestGetUsers(t *testing.T) {
 }
 
 func TestUpdateUser(t *testing.T) {
-	storage := newTestStorage()
+	storage := newTestStorage(nil)
 	defer storage.Close()
 
 	// add user
@@ -248,7 +249,7 @@ func TestUpdateUser(t *testing.T) {
 }
 
 func TestRemoveUser(t *testing.T) {
-	storage := newTestStorage()
+	storage := newTestStorage(nil)
 	defer storage.Close()
 
 	// add user

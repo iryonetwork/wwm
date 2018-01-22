@@ -2,10 +2,10 @@ package authenticator
 
 import (
 	"crypto/rsa"
-	"fmt"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/acme"
 )
 
 type Claims struct {
@@ -85,6 +85,19 @@ m8ahzF+tNNo5j1NPdshjFuMCAwEAAQ==
 var keyID = "1"
 var tokenExpiersIn = time.Duration(15) * time.Minute
 
+func init() {
+	private, err := getPrivateKey()
+	if err != nil {
+		panic(err)
+	}
+
+	thumb, err := acme.JWKThumbprint(private.Public())
+	if err != nil {
+		panic(err)
+	}
+	keyID = thumb
+}
+
 // createTokenForUserID creates a new token from user ID
 func createTokenForUserID(id *string) (string, error) {
 	// get the private key
@@ -109,26 +122,4 @@ func createTokenForUserID(id *string) (string, error) {
 
 func getPrivateKey() (*rsa.PrivateKey, error) {
 	return jwt.ParseRSAPrivateKeyFromPEM([]byte(privateKey))
-}
-
-// validateToken validates a token and returns user id
-func validateToken(tokenString string) (string, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		private, err := getPrivateKey()
-		if err != nil {
-			return nil, err
-		}
-
-		return private.Public(), nil
-	})
-
-	if err != nil {
-		return "", err
-	}
-
-	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
-		return claims.StandardClaims.Subject, nil
-	}
-
-	return "", fmt.Errorf("Invalid token claims")
 }

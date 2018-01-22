@@ -5,3 +5,4 @@
 /specs/*.pb.go
 **/mock/gen_*.go
 /gen
+.DS_Store

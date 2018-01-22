@@ -12,6 +12,9 @@ import (
 
 // GetRules returns all rules
 func (s *Storage) GetRules() ([]*models.Rule, error) {
+	s.dbSync.RLock()
+	defer s.dbSync.RUnlock()
+
 	rules := []*models.Rule{}
 
 	err := s.db.View(func(tx *bolt.Tx) error {
@@ -39,6 +42,9 @@ func (s *Storage) GetRules() ([]*models.Rule, error) {
 
 // GetRule returns rule by the id
 func (s *Storage) GetRule(id string) (*models.Rule, error) {
+	s.dbSync.RLock()
+	defer s.dbSync.RUnlock()
+
 	ruleUUID, err := uuid.FromString(id)
 	if err != nil {
 		return nil, utils.NewError(utils.ErrBadRequest, err.Error())
@@ -87,6 +93,9 @@ func (s *Storage) checkSubject(subject string) error {
 
 // AddRule adds rule to the database
 func (s *Storage) AddRule(rule *models.Rule) (*models.Rule, error) {
+	s.dbSync.RLock()
+	defer s.dbSync.RUnlock()
+
 	err := s.checkSubject(*rule.Subject)
 	if err != nil {
 		return nil, err
@@ -131,6 +140,9 @@ func (s *Storage) AddRule(rule *models.Rule) (*models.Rule, error) {
 
 // UpdateRule updates the rule
 func (s *Storage) UpdateRule(rule *models.Rule) (*models.Rule, error) {
+	s.dbSync.RLock()
+	defer s.dbSync.RUnlock()
+
 	err := s.db.Update(func(tx *bolt.Tx) error {
 		// get buckets
 		bRules := tx.Bucket(bucketACLRules)
@@ -173,6 +185,9 @@ func (s *Storage) UpdateRule(rule *models.Rule) (*models.Rule, error) {
 
 // RemoveRule removes rule by id
 func (s *Storage) RemoveRule(id string) error {
+	s.dbSync.RLock()
+	defer s.dbSync.RUnlock()
+
 	_, err := s.GetRule(id)
 	if err != nil {
 		return err

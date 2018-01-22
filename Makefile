@@ -3,7 +3,7 @@ BASIC_SERVICES = traefik vault localMinio cloudMinio localAuth localStorage clou
 .PHONY: up run stop build specs
 
 ifeq ($(CI),)
-ALL: vendorSync specs generate certs rebuildTraefik
+ALL: vendorSync generate specs certs rebuildDocker
 else
 ALL: vendorSync specs generate
 endif
@@ -74,8 +74,8 @@ help: ## displays this message
 certs: ## build missing certificates
 	$(MAKE) -C bin/tls
 
-rebuildTraefik: ## rebuilds traefik to include all certificates
-	docker-compose build traefik
-
 watch/%:
 	watchmedo shell-command -i "./.git/*;./.data/*;./.bin/*;./gen/*;gen_*.go" --recursive --ignore-directories --wait --command "$(MAKE) $*"
+
+rebuildDocker: ## rebuilds docker container to include all certificates
+	docker-compose build traefik localAuth cloudAuth

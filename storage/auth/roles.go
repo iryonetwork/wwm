@@ -10,6 +10,9 @@ import (
 
 // GetRoles returns all roles
 func (s *Storage) GetRoles() ([]*models.Role, error) {
+	s.dbSync.RLock()
+	defer s.dbSync.RUnlock()
+
 	roles := []*models.Role{}
 
 	err := s.db.View(func(tx *bolt.Tx) error {
@@ -37,6 +40,9 @@ func (s *Storage) GetRoles() ([]*models.Role, error) {
 
 // GetRole returns role by the id
 func (s *Storage) GetRole(id string) (*models.Role, error) {
+	s.dbSync.RLock()
+	defer s.dbSync.RUnlock()
+
 	roleUUID, err := uuid.FromString(id)
 	if err != nil {
 		return nil, utils.NewError(utils.ErrBadRequest, err.Error())
@@ -65,6 +71,9 @@ func (s *Storage) GetRole(id string) (*models.Role, error) {
 
 // AddRole adds role to the database
 func (s *Storage) AddRole(role *models.Role) (*models.Role, error) {
+	s.dbSync.RLock()
+	defer s.dbSync.RUnlock()
+
 	err := s.db.Update(func(tx *bolt.Tx) error {
 		// generatu uuid
 		id, err := uuid.NewV4()
@@ -123,6 +132,9 @@ func (s *Storage) AddUserToAdminRole(userID string) (*models.Role, error) {
 
 // UpdateRole updates the role
 func (s *Storage) UpdateRole(role *models.Role) (*models.Role, error) {
+	s.dbSync.RLock()
+	defer s.dbSync.RUnlock()
+
 	err := s.db.Update(func(tx *bolt.Tx) error {
 		// get buckets
 		bRoles := tx.Bucket(bucketRoles)
@@ -168,6 +180,9 @@ func (s *Storage) UpdateRole(role *models.Role) (*models.Role, error) {
 
 // RemoveRole removes role by id
 func (s *Storage) RemoveRole(id string) error {
+	s.dbSync.RLock()
+	defer s.dbSync.RUnlock()
+
 	if id == everyoneRole.ID || id == adminRole.ID {
 		return utils.NewError(utils.ErrBadRequest, "You can't remove this protected role")
 	}
