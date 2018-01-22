@@ -329,7 +329,7 @@ func getDatabase(storage *auth.Storage) database.GetDatabaseHandler {
 
 		checksum, err := storage.GetChecksum()
 		if err != nil {
-			return database.NewGetDatabaseInternalServerError().WithPayload(utils.ServerError(err))
+			return utils.UseProducer(database.NewGetDatabaseInternalServerError().WithPayload(utils.ServerError(err)), utils.JSONProducer)
 		}
 
 		currentEtag := base64.RawURLEncoding.EncodeToString(checksum)
@@ -345,8 +345,10 @@ func getDatabase(storage *auth.Storage) database.GetDatabaseHandler {
 			writer.CloseWithError(err)
 		}()
 
-		return database.NewGetDatabaseOK().
-			WithPayload(reader).
-			WithEtag(`"` + currentEtag + `"`)
+		return utils.UseProducer(
+			database.NewGetDatabaseOK().
+				WithPayload(reader).
+				WithEtag(`"`+currentEtag+`"`),
+			utils.BinProducer)
 	})
 }

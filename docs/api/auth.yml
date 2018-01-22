@@ -498,7 +498,7 @@ paths:
         - database
       produces:
         - application/octet-stream
-        -  application/json; charset=utf-8
+        - application/json; charset=utf-8
       responses:
         200:
           description: Database dump
