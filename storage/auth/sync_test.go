@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"fmt"
 	"os"
 	"reflect"
 	"sync"
@@ -40,16 +39,16 @@ func TestReplaceDB(t *testing.T) {
 	wg.Add(1000)
 
 	for j := 0; j < 10; j++ {
-		go func(j int) {
+		go func() {
 			for i := 0; i < 100; i++ {
 				_, err := storage.GetRoles()
 				wg.Done()
-				fmt.Println(j, i)
+
 				if err != nil {
 					t.Fatalf("Error reading from database: %s", err)
 				}
 			}
-		}(j)
+		}()
 	}
 
 	// replace db with test.db

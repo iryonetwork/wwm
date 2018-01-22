@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"io"
+	"os"
 	"sync"
 
 	"github.com/casbin/casbin"
@@ -40,36 +41,40 @@ var adminRole = &models.Role{
 	Users: []string{},
 }
 
+var dbPermissions os.FileMode = 0666
+
 // New returns a new instance of storage
 func New(path string, key []byte, readOnly bool) (*Storage, error) {
 	if len(key) != 32 {
 		return nil, fmt.Errorf("Encryption key must be 32 bytes long")
 	}
 
-	db, err := bolt.Open(path, 0x600, &bolt.Options{ReadOnly: readOnly})
+	db, err := bolt.Open(path, dbPermissions, &bolt.Options{ReadOnly: readOnly})
 	if err != nil {
 		return nil, err
 	}
 
 	// initialize database
-	err = db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists(bucketUsers)
-		if err != nil {
+	if !readOnly {
+		err = db.Update(func(tx *bolt.Tx) error {
+			_, err := tx.CreateBucketIfNotExists(bucketUsers)
+			if err != nil {
+				return err
+			}
+			_, err = tx.CreateBucketIfNotExists(bucketUsernames)
+			if err != nil {
+				return err
+			}
+			_, err = tx.CreateBucketIfNotExists(bucketRoles)
+			if err != nil {
+				return err
+			}
+			_, err = tx.CreateBucketIfNotExists(bucketACLRules)
 			return err
-		}
-		_, err = tx.CreateBucketIfNotExists(bucketUsernames)
+		})
 		if err != nil {
-			return err
+			return nil, err
 		}
-		_, err = tx.CreateBucketIfNotExists(bucketRoles)
-		if err != nil {
-			return err
-		}
-		_, err = tx.CreateBucketIfNotExists(bucketACLRules)
-		return err
-	})
-	if err != nil {
-		return nil, err
 	}
 
 	storage := &Storage{
@@ -84,7 +89,11 @@ func New(path string, key []byte, readOnly bool) (*Storage, error) {
 	}
 
 	storage.enforcer = e
-	storage.initializeRolesAndRules()
+	if readOnly {
+		e.LoadPolicy()
+	} else {
+		storage.initializeRolesAndRules()
+	}
 
 	return storage, nil
 }

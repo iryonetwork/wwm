@@ -60,7 +60,7 @@ func (s *Storage) ReplaceDB(src io.ReadCloser, checksum []byte) error {
 	src.Close()
 
 	// create new instance from received db and check checksum
-	testStorage, err := New(tmpFileName, s.encryptionKey, false)
+	testStorage, err := New(tmpFileName, s.encryptionKey, true)
 	if err != nil {
 		os.Remove(tmpFileName)
 		return err
@@ -95,7 +95,7 @@ func (s *Storage) ReplaceDB(src io.ReadCloser, checksum []byte) error {
 		return err
 	}
 
-	d, err := bolt.Open(path, 0x600, &bolt.Options{ReadOnly: readOnly})
+	d, err := bolt.Open(path, dbPermissions, &bolt.Options{ReadOnly: readOnly})
 	if err != nil {
 		return err
 	}
