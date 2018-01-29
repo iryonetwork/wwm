@@ -36,7 +36,6 @@ package s3
 import (
 	"fmt"
 	"io"
-	"log"
 	"regexp"
 	"sort"
 
@@ -293,7 +292,6 @@ func objectInfoToFileDescriptor(info minio.ObjectInfo, bucketID string) (*models
 func getCBCKey(bucketID string, keys KeyProvider) (encrypt.Materials, error) {
 	// read the key
 	secret, err := keys.Get(bucketID)
-	log.Println("Get CBC key", bucketID, secret, err)
 	if err != nil {
 		return nil, err
 	}
