@@ -381,6 +381,12 @@
 			"revisionTime": "2018-01-04T19:28:02Z"
 		},
 		{
+			"checksumSHA1": "U8v4SPQEKgQf0STg/o5DkKqAkMw=",
+			"path": "github.com/rs/cors",
+			"revision": "feef513b9575b32f84bafa580aad89b011259019",
+			"revisionTime": "2018-01-23T07:30:48Z"
+		},
+		{
 			"checksumSHA1": "eDQ6f1EsNf+frcRO/9XukSEchm8=",
 			"path": "github.com/satori/go.uuid",
 			"revision": "36e9d2ebbde5e3f13ab2e25625fd453271d6522e",

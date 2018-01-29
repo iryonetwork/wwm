@@ -8,6 +8,7 @@ import (
 
 	loads "github.com/go-openapi/loads"
 	"github.com/jasonlvhit/gocron"
+	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/iryonetwork/wwm/gen/auth/restapi"
@@ -84,7 +85,12 @@ func main() {
 	api.AuthPostLoginHandler = authHandlers.PostLogin()
 	api.AuthPostValidateHandler = authHandlers.PostValidate()
 
-	server.SetHandler(api.Serve(nil))
+	handler := cors.New(cors.Options{
+		AllowedMethods: []string{"GET", "POST"},
+		AllowedHeaders: []string{"Authorization", "Content-Type"},
+	}).Handler(api.Serve(nil))
+
+	server.SetHandler(handler)
 
 	gocron.Every(5).Minutes().Do(authSync.Sync)
 	go gocron.Start()

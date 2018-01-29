@@ -6,6 +6,7 @@ import (
 	"flag"
 
 	loads "github.com/go-openapi/loads"
+	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/iryonetwork/wwm/gen/auth/models"
@@ -99,7 +100,13 @@ func main() {
 
 	api.DatabaseGetDatabaseHandler = getDatabase(storage)
 
-	server.SetHandler(api.Serve(nil))
+	handler := cors.New(cors.Options{
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders: []string{"Authorization", "Content-Type"},
+		Debug:          true,
+	}).Handler(api.Serve(nil))
+
+	server.SetHandler(handler)
 
 	if err := server.Serve(); err != nil {
 		log.Fatalln(err)
