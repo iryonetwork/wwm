@@ -66,7 +66,7 @@ func (h *handlers) FileGet() operations.FileGetHandler {
 
 func (h *handlers) FileGetVersion() operations.FileGetVersionHandler {
 	return operations.FileGetVersionHandlerFunc(func(params operations.FileGetVersionParams, principal *string) middleware.Responder {
-		r, fd, err := h.service.FileGet(params.Bucket, params.FileID)
+		r, fd, err := h.service.FileGetVersion(params.Bucket, params.FileID, params.Version)
 		if err != nil {
 			return operations.NewFileGetVersionInternalServerError().WithPayload(&models.Error{
 				Code:    "server_error",
