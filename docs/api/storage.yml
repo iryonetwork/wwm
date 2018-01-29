@@ -16,7 +16,7 @@ produces:
 securityDefinitions:
   token:
     type: apiKey
-    name: token
+    name: Authorization
     in: header
 
 security:
