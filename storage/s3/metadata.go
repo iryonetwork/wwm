@@ -41,15 +41,12 @@ func metadataFromKey(key string) (*metadata, error) {
 	if len(items[3]) < 13 {
 		return nil, fmt.Errorf("Invalid timestamp length (%s, %d)", items[3], len(items[3]))
 	}
-	s, err := strconv.Atoi(items[3][0:10])
+	s, err := strconv.ParseInt(items[3], 10, 64)
 	if err != nil {
-		return nil, fmt.Errorf("Invalid timestamp format (%s)", items[3][0:10])
+		return nil, fmt.Errorf("Failed to parse timestamp (%s)", items[3])
 	}
-	ms, err := strconv.Atoi(items[3][10:13])
-	if err != nil {
-		return nil, fmt.Errorf("Invalid timestamp format (%s)", items[3][10:13])
-	}
-	md.created = time.Unix(int64(s), int64(ms)*1000000).In(utc)
+
+	md.created = time.Unix(s/1000, s%1000*1000000).In(utc)
 
 	return md, nil
 }
