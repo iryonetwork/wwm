@@ -1,4 +1,5 @@
 #!/bin/bash
+platform=$(uname)
 
 function howto {
     echo "./mockgen.sh $$PACKAGE $$INTERAFACES $$GOFILE"
@@ -21,4 +22,9 @@ mkdir -p mock
 mockgen -destination=mock/gen_$3 -package mock  github.com/iryonetwork/wwm/$1 $2
 
 # replace possible imports from the vendor folder
-sed -e 's/github.com\/iryonetwork\/wwm\/vendor\///' -i '' mock/gen_$3
+
+if [[ "$platform" == 'Linux' ]]; then
+    sed -i'' -e 's/github.com\/iryonetwork\/wwm\/vendor\///' mock/gen_$3
+else
+    sed -i '' -e 's/github.com\/iryonetwork\/wwm\/vendor\///' mock/gen_$3
+fi
