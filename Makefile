@@ -36,7 +36,7 @@ logs: ## shows docker compose logs
 	docker-compose logs -f --tail=0 $*
 
 generate: clearGenerate ## run generate on all projects
-	go generate ./...
+	go generate -v ./...
 
 generate/%: ## runs generate for a specific project
 	go generate ./$*
