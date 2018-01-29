@@ -1,9 +1,9 @@
 .PHONY: up run stop build specs
 
 ifeq ($(CI),)
-ALL: vendorSync generate specs certs rebuildTraefik
+ALL: vendorSync specs generate certs rebuildTraefik
 else
-ALL: vendorSync generate specs
+ALL: vendorSync specs generate
 endif
 
 clear: clearGenerate clearSpecs ## clears artifacts
