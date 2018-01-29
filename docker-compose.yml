@@ -7,7 +7,7 @@ services:
     image: traefik:1.4-alpine
     command:
     - --configfile=/etc/traefik.toml
-    # - --debug
+    - --debug
     volumes:
     - ./traefik.toml:/etc/traefik.toml
     - ./bin/tls:/certs
@@ -41,7 +41,7 @@ services:
     - vault
 
   localAuth:
-    image: alpine:latest
+    image: golang:1.9-alpine
     command:
     - /wwm/localAuth
     volumes:
@@ -49,6 +49,17 @@ services:
     - ./bin/tls:/certs
     environment:
     - DEBUG=1
+
+  localStorage:
+    image: golang:1.9-alpine
+    command:
+    - /wwm/localStorage
+    volumes:
+    - ./.bin/:/wwm
+    - ./bin/tls:/certs:ro
+    - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    # environment:
+    # - DEBUG=1
 
   localMinio:
     image: minio/minio
@@ -58,10 +69,23 @@ services:
     environment:
     - MINIO_ACCESS_KEY=local
     - MINIO_SECRET_KEY=localminio
+    ports:
+    - 9000:9000
     volumes:
     - ./bin/tls/localMinio-key.pem:/root/.minio/certs/private.key
     - ./bin/tls/localMinio.pem:/root/.minio/certs/public.crt
     - ./.data/localMinio:/data
+
+  cloudStorage:
+    image: golang:1.9-alpine
+    command:
+    - /wwm/cloudStorage
+    volumes:
+    - ./.bin/:/wwm
+    - ./bin/tls:/certs:ro
+    - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    # environment:
+    # - DEBUG=1
 
   cloudMinio:
     image: minio/minio

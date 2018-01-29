@@ -1,0 +1,461 @@
+swagger: '2.0'
+
+info:
+  title: IRYO cloud storage API
+  version: '1.0'
+
+host: iryo.local
+schemes:
+  - https
+basePath: /storage
+consumes:
+  - application/json
+produces:
+  - application/json; charset=utf-8
+
+securityDefinitions:
+  token:
+    type: apiKey
+    name: token
+    in: header
+
+security:
+  - token: []
+
+paths:
+  /{bucket}:
+    get:
+      tags:
+        - storage
+      summary: Lists files present in the bucket
+      description: Lists all files present in the bucket. Only latest versions of the file are listed.
+      operationId: fileList
+
+      parameters:
+        - in: path
+          name: bucket
+          type: string
+          required: true
+
+      responses:
+        200:
+          description: List of files
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/FileDescriptor'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    post:
+      tags:
+        - storage
+      summary: Uploads a new file to a bucket
+      description: Uploads a new file to a bucket and return's its new ID
+      operationId: fileNew
+      consumes:
+        - multipart/form-data
+
+      parameters:
+        - in: path
+          name: bucket
+          type: string
+          required: true
+
+        - in: formData
+          name: file
+          description: Contents of the new file
+          required: true
+          type: file
+
+        - in: formData
+          name: contentType
+          description: File's content type
+          required: true
+          type: string
+
+        - in: formData
+          name: archetype
+          description: Optional archetype ID
+          required: false
+          type: string
+
+      responses:
+        201:
+          description: File created
+          schema:
+            $ref: '#/definitions/FileDescriptor'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /{bucket}/{fileID}:
+    get:
+      tags:
+        - storage
+      summary: Fetch a file
+      description: Fetches the latest revision of a file
+      operationId: fileGet
+      produces:
+        - application/octet-stream
+        - application/json; charset=utf-8
+
+      parameters:
+        - in: path
+          name: bucket
+          description: Name of the bucket
+          type: string
+          required: true
+
+        - in: path
+          name: fileID
+          description: File name
+          type: string
+          required: true
+
+      responses:
+        200:
+          description: File found
+          schema:
+            type: file
+          headers:
+            Content-Type:
+              type: string
+              description: Content type of the file
+            X-Created:
+              type: string
+              format: datetime
+              description: Date and time of file creation
+            X-Archetype:
+              type: string
+              description: Archetype ID
+            X-Checksum:
+              type: string
+              description: File's SHA256 checksum
+            X-Version:
+              type: string
+              description: File's version
+            X-Name:
+              type: string
+              description: File's name
+            X-Path:
+              type: string
+              description: File's full path
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    put:
+      tags:
+        - storage
+      summary: Updates a file
+      description: Creates a new version of a file
+      operationId: fileUpdate
+      consumes:
+        - multipart/form-data
+
+      parameters:
+        - in: path
+          name: bucket
+          type: string
+          required: true
+
+        - in: path
+          name: fileID
+          type: string
+          required: true
+
+        - in: formData
+          name: file
+          description: Contents of the new file
+          required: true
+          type: file
+
+        - in: formData
+          name: contentType
+          description: File's content type
+          required: true
+          type: string
+
+        - in: formData
+          name: archetype
+          description: Optional archetype ID
+          required: false
+          type: string
+
+      responses:
+        201:
+          description: File created
+          schema:
+            $ref: '#/definitions/FileDescriptor'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    delete:
+      tags:
+        - storage
+      summary: Marks file as deleted
+      description: Deletes the file
+      operationId: fileDelete
+
+      parameters:
+        - in: path
+          name: bucket
+          description: Name of the bucket
+          type: string
+          required: true
+
+        - in: path
+          name: fileID
+          description: File name
+          type: string
+          required: true
+
+      responses:
+        204:
+          description: File deleted
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /{bucket}/{fileID}/versions:
+    get:
+      tags:
+        - storage
+      summary: List of versions of a file
+      description: Returns a list of available file versions
+      operationId: fileListVersions
+
+      parameters:
+        - in: path
+          name: bucket
+          description: Name of the bucket
+          type: string
+          required: true
+
+        - in: path
+          name: fileID
+          description: File name
+          type: string
+          required: true
+
+      responses:
+        200:
+          description: List of versions
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/FileDescriptor'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /{bucket}/{fileID}/{version}:
+    get:
+      tags:
+        - storage
+      summary: Get a specific version of file
+      description: Returns a specific version of a file
+      operationId: fileGetVersion
+
+      parameters:
+        - in: path
+          name: bucket
+          description: Name of the bucket
+          type: string
+          required: true
+
+        - in: path
+          name: fileID
+          description: File name
+          type: string
+          required: true
+
+        - in: path
+          name: version
+          description: Version of a file
+          type: string
+          required: true
+
+      responses:
+        200:
+          description: File found
+          schema:
+            type: file
+          headers:
+            Content-Type:
+              type: string
+              description: Content type of the file
+            X-Created:
+              type: string
+              format: datetime
+              description: Date and time of file creation
+            X-Archetype:
+              type: string
+              description: Archetype ID
+            X-Checksum:
+              type: string
+              description: File's SHA256 checksum
+            X-Version:
+              type: string
+              description: File's version
+            X-Name:
+              type: string
+              description: File's name
+            X-Path:
+              type: string
+              description: File's full path
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+
+definitions:
+  FileDescriptor:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Name of the file
+        example: 6a0b7d41-b2d9-4fee-9296-7d678186396d
+      version:
+        type: string
+        description: Version of the file
+        example: 5925047a-7ec6-4e94-9639-00fd3d1c4b38
+      created:
+        type: string
+        description: Date and time when document was created
+        format: datetime
+        example: '2018-01-09T13:10:07Z'
+      checksum:
+        type: string
+        description: SHA256 checksum of the file
+        example: ebbdb16fccec8eec261e64e12546701dee1fc2a6
+      path:
+        type: string
+        description: Pull path of the file
+      contentType:
+        type: string
+        description: Content type of the file. Custom text/openEhrXml and text/openEhrJson describe structured XML and JSON data
+        example: text/openEhrXml
+      archetype:
+        type: string
+        description: ID of the archetype when dealing with structured openEHR data
+        example: openEHR-EHR-OBSERVATION.blood_pressure.v1
+      size:
+        type: integer
+        description: Size of file in bytes
+        example: 1025
+      operation:
+        type: string
+        enum: [w, d]
+
+  File:
+    type: string
+    format: binary
+
+  NewFileRequest:
+    type: object
+    properties:
+      file:
+        type: string
+        description: base64 encoded file contents
+
+  Error:
+    type: object
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+
+
+responses:
+  400:
+    description: Request is badly formatted
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: bad_request
+        message: Request is badly formatted
+
+  401:
+    description: Unauthorized Access
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: unauthorized
+        message: Unauthorized Access
+
+  403:
+    description: Forbiden
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: forbiden
+        message: You do not have permissions to do this
+
+  404:
+    description: Required entity cannot be found
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: not_found
+        message: Required entity cannot be found
+
+  500:
+    description: Internal server error
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: internal_error
+        message: Internal server error

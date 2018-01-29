@@ -1,13 +1,13 @@
 #!/bin/bash
 
 function howto {
-    echo "./mockgen.sh $GOFILE"
-    echo "Generates mocks for all public interfaces located in a go source file."
+    echo "./mockgen.sh $$PACKAGE $$INTERAFACES $$GOFILE"
+    echo "Generates mocks for comma separated list of interfaces located in a go package."
     echo ""
 }
 
 # Check number of variables
-if [ "$#" != "1" ]; then
+if [ "$#" != "3" ]; then
     echo "Invalid number of arguments"
     echo ""
     howto
@@ -18,4 +18,7 @@ fi
 mkdir -p mock
 
 # call the mockgen function
-mockgen -source=$1 -destination=mock/gen_$1 -package mock
+mockgen -destination=mock/gen_$3 -package mock  github.com/iryonetwork/wwm/$1 $2
+
+# replace possible imports from the vendor folder
+sed -e 's/github.com\/iryonetwork\/wwm\/vendor\///' -i '' mock/gen_$3

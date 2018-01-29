@@ -21,22 +21,26 @@ address = ":8080"
   [backends.localauth]
     [backends.localauth.servers.server1]
     url = "https://localAuth"
-    weight = 10
+
+  [backends.localstorage]
+    [backends.localstorage.servers.server1]
+    url = "https://localStorage"
 
   [backends.localMinio]
     [backends.localMinio.servers.server1]
     url = "https://localMinio:9000"
-    weight = 10
+
+  [backends.cloudstorage]
+    [backends.cloudstorage.servers.server1]
+    url = "https://localStorage"
 
   [backends.cloudMinio]
     [backends.cloudMinio.servers.server1]
     url = "https://cloudMinio:9000"
-    weight = 10
 
   [backends.vaultui]
     [backends.vaultui.servers.server1]
     url = "http://vaultui:8000"
-    weight = 10
 
 [frontends]
   [frontends.localauth]
@@ -44,10 +48,20 @@ address = ":8080"
     [frontends.localauth.routes.route1]
     rule = "Host:iryo.local;PathPrefix:/auth"
 
+  [frontends.localstorage]
+  backend = "localstorage"
+    [frontends.localstorage.routes.route1]
+    rule = "Host:iryo.local;PathPrefix:/storage"
+
   [frontends.localMinio]
   backend = "localMinio"
     [frontends.localMinio.routes.route1]
     rule = "Host:minio.iryo.local"
+
+  [frontends.cloudstorage]
+  backend = "cloudstorage"
+    [frontends.cloudstorage.routes.route1]
+    rule = "Host:iryo.cloud;PathPrefix:/storage"
 
   [frontends.cloudMinio]
   backend = "cloudMinio"

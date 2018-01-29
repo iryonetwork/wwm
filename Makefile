@@ -43,6 +43,7 @@ generate/%: ## runs generate for a specific project
 
 clearGenerate: ## clears artifacts created by generate
 	rm -f */mock/gen_*.go */*/mock/gen_*.go */*/*/mock/gen_*.go
+	rm -rf gen
 
 test: test/unit ## run all tests
 
@@ -73,3 +74,6 @@ certs: ## build missing certificates
 
 rebuildTraefik: ## rebuilds traefik to include all certificates
 	docker-compose build traefik
+
+watch/%:
+	watchmedo shell-command -i "./.git/*;./.data/*;./.bin/*;./gen/*;gen_*.go" --recursive --ignore-directories --wait --command "$(MAKE) $*"
