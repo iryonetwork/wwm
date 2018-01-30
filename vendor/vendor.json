@@ -303,7 +303,13 @@
 			"revisionTime": "2017-11-20T08:03:33Z"
 		},
 		{
-			"checksumSHA1": "B0jv3Wmurf7JvZPD/Tp6m2pRQTw=",
+			"checksumSHA1": "mJQtsTCZGhCmjdFtXBWryZSri/o=",
+			"path": "github.com/minio/blake2b-simd",
+			"revision": "3f5f724cb5b182a5c278d6d3d55b40e7f8c2efb4",
+			"revisionTime": "2016-07-23T06:10:19Z"
+		},
+		{
+			"checksumSHA1": "JrFdmAFh7XYlVR/ONVkycAztGcc=",
 			"path": "github.com/minio/minio-go",
 			"revision": "d218e4cb1bfc13dcef0eb5c3e74507a35be0dd3a",
 			"revisionTime": "2018-01-13T00:13:38Z"
@@ -351,12 +357,6 @@
 			"revisionTime": "2016-12-03T19:45:07Z"
 		},
 		{
-			"checksumSHA1": "1JtAhgmRN0x794LRNhs0DJ5t8io=",
-			"path": "github.com/minio/blake2b-simd",
-			"revision": "3f5f724cb5b182a5c278d6d3d55b40e7f8c2efb4",
-			"revisionTime": "2016-07-23T06:10:19Z"
-		},
-		{
 			"checksumSHA1": "gILp4IL+xwXLH6tJtRLrnZ56F24=",
 			"path": "github.com/mitchellh/mapstructure",
 			"revision": "b4575eea38cca1123ec2dc90c26529b5c5acfcff",
@@ -369,6 +369,12 @@
 			"revisionTime": "2017-12-16T07:03:16Z"
 		},
 		{
+			"checksumSHA1": "U8v4SPQEKgQf0STg/o5DkKqAkMw=",
+			"path": "github.com/rs/cors",
+			"revision": "feef513b9575b32f84bafa580aad89b011259019",
+			"revisionTime": "2018-01-23T07:30:48Z"
+		},
+		{
 			"checksumSHA1": "e9osJJ+pNjLk0+merJP4IMUw86U=",
 			"path": "github.com/rs/zerolog",
 			"revision": "b53826c57a6a1d8833443ebeacf1cfb62b229c64",
@@ -379,12 +385,6 @@
 			"path": "github.com/rs/zerolog/internal/json",
 			"revision": "b53826c57a6a1d8833443ebeacf1cfb62b229c64",
 			"revisionTime": "2018-01-04T19:28:02Z"
-		},
-		{
-			"checksumSHA1": "U8v4SPQEKgQf0STg/o5DkKqAkMw=",
-			"path": "github.com/rs/cors",
-			"revision": "feef513b9575b32f84bafa580aad89b011259019",
-			"revisionTime": "2018-01-23T07:30:48Z"
 		},
 		{
 			"checksumSHA1": "eDQ6f1EsNf+frcRO/9XukSEchm8=",
@@ -471,7 +471,7 @@
 			"revisionTime": "2018-01-24T06:08:02Z"
 		},
 		{
-			"checksumSHA1": "G99Z/xW4ukmt8SHnsO9SIX71hFE=",
+			"checksumSHA1": "p5aJ1Wc4KA738r7q77NR/0qLKsA=",
 			"path": "golang.org/x/sys/unix",
 			"revision": "dd9ec17814d5b1de388ebe438ec013d57d8b3779",
 			"revisionTime": "2018-01-06T05:11:39Z"
@@ -543,7 +543,7 @@
 			"revisionTime": "2017-12-24T20:31:28Z"
 		},
 		{
-			"checksumSHA1": "w8kDfZ1Ug+qAcVU0v8obbu3aDOY=",
+			"checksumSHA1": "1oQpUH9BjCWlqFPDahRH+UMlYy4=",
 			"path": "golang.org/x/text/unicode/bidi",
 			"revision": "e19ae1496984b1c655b8044a65c0300a3c878dd3",
 			"revisionTime": "2017-12-24T20:31:28Z"
