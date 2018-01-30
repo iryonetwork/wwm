@@ -2,6 +2,8 @@ import produce from "immer"
 import { push } from "react-router-redux"
 import jwtDecode from "jwt-decode"
 
+import { open, COLOR_DANGER } from "./alert"
+
 export const LOGIN = "authentication/LOGIN"
 export const ERROR = "authentication/ERROR"
 export const LOGGEDIN = "authentication/LOGGEDIN"
@@ -22,8 +24,6 @@ export default (state = initialState, action) => {
                 draft.pending = true
                 break
             case ERROR:
-                draft.error = action.message
-                draft.code = action.code
                 draft.pending = false
                 break
             case LOGGEDIN:
@@ -138,22 +138,26 @@ export const login = () => {
                     response
                         .json()
                         .then(data => {
-                            dispatch({ ...data, type: ERROR })
+                            dispatch({ type: ERROR })
+                            dispatch(
+                                open(data.message, data.code, COLOR_DANGER)
+                            )
                         })
                         .catch(ex => {
-                            dispatch({
-                                type: ERROR,
-                                message: response.statusText,
-                                code: response.status
-                            })
+                            dispatch({ type: ERROR })
+                            dispatch(
+                                open(
+                                    response.statusText,
+                                    response.status,
+                                    COLOR_DANGER
+                                )
+                            )
                         })
                 }
             })
             .catch(ex => {
-                dispatch({
-                    type: ERROR,
-                    message: ex.message
-                })
+                dispatch({ type: ERROR })
+                dispatch(open(ex.message, null, COLOR_DANGER))
             })
     }
 }
