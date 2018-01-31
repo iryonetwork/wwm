@@ -2,6 +2,9 @@ import React from "react"
 import { Route, Link, NavLink } from "react-router-dom"
 import Home from "../home"
 import About from "../about"
+import Alert from "../alert"
+import Users from "../users"
+import UserDetail from "../users/detail"
 
 const App = () => (
     <div>
@@ -26,17 +29,18 @@ const App = () => (
                     <div className="collapse navbar-collapse">
                         <ul className="navbar-nav mr-auto">
                             <li className="nav-item">
-                                <NavLink exact className="nav-link" to="/">
-                                    Home
+                                <NavLink className="nav-link" to="/users">
+                                    Users
                                 </NavLink>
                             </li>
                             <li className="nav-item">
-                                <NavLink
-                                    exact
-                                    className="nav-link"
-                                    to="/about-us"
-                                >
-                                    About Us
+                                <NavLink className="nav-link" to="/roles">
+                                    Roles
+                                </NavLink>
+                            </li>
+                            <li className="nav-item">
+                                <NavLink className="nav-link" to="/rules">
+                                    ACL
                                 </NavLink>
                             </li>
                         </ul>
@@ -46,8 +50,12 @@ const App = () => (
         </header>
 
         <main className="container">
+            <Alert />
             <Route exact path="/" component={Home} />
-            <Route exact path="/about-us" component={About} />
+            <Route exact path="/users" component={Users} />
+            <Route path="/users/:id" component={UserDetail} />
+            <Route exact path="/roles" component={About} />
+            <Route exact path="/rules" component={About} />
         </main>
     </div>
 )

@@ -1,17 +1,11 @@
 import React from "react"
-import { push } from "react-router-redux"
 import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
-import {
-    increment,
-    incrementAsync,
-    decrement,
-    decrementAsync
-} from "../../modules/counter"
+import { withRouter } from "react-router-dom"
 
 import { loadUser } from "../../modules/users"
 
-class Home extends React.Component {
+class UserDetail extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
@@ -54,7 +48,9 @@ class Home extends React.Component {
         }
         return (
             <div>
-                <h1>Hi, {props.user.username}</h1>
+                <h1>Users</h1>
+
+                <h2>{props.user.username}</h2>
 
                 <form>
                     <div className="form-group">
@@ -95,23 +91,22 @@ class Home extends React.Component {
     }
 }
 
-const mapStateToProps = state => ({
-    user: state.users.user,
-    loading: state.users.loading,
-    userID: state.authentication.token.sub
-})
+const mapStateToProps = (state, ownProps) => {
+    return {
+        user: state.users.user,
+        loading: state.users.loading,
+        userID: ownProps.match.params.id
+    }
+}
 
 const mapDispatchToProps = dispatch =>
     bindActionCreators(
         {
-            loadUser,
-            increment,
-            incrementAsync,
-            decrement,
-            decrementAsync,
-            changePage: () => push("/about-us")
+            loadUser
         },
         dispatch
     )
 
-export default connect(mapStateToProps, mapDispatchToProps)(Home)
+export default withRouter(
+    connect(mapStateToProps, mapDispatchToProps)(UserDetail)
+)
