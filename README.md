@@ -11,14 +11,15 @@ Me foundation.
 * go (1.9+) (`brew install golang`)
 * govendor (`go get -u github.com/kardianos/govendor`)
 * gomock (`go get -u github.com/golang/mock/gomock`, `github.com/golang/mock/mockgen`)
+* go-swagger (`go get -u github.com/go-swagger/go-swagger/cmd/swagger`)
 * updated `/etc/hosts` (`127.0.0.1 iryo.local minio.iryo.local vault.iryo.local iryo.cloud minio.iryo.cloud`)
 
 ## How to set up and work with the repository
 
 ```bash
 # clone the repository
-mkdir -p $GOPATH/src/github.com/iryo
-cd $GOPATH/src/github.com/iryo
+mkdir -p $GOPATH/src/github.com/iryonetwork
+cd $GOPATH/src/github.com/iryonetwork
 git clone git@gitlab.3fs.si:iryo/wwm.git
 cd wwm
 
