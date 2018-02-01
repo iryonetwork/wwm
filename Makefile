@@ -1,3 +1,5 @@
+BASIC_SERVICES = traefik vault localMinio cloudMinio localAuth localStorage cloudStorage
+
 .PHONY: up run stop build specs
 
 ifeq ($(CI),)
@@ -9,10 +11,10 @@ endif
 clear: clearGenerate clearSpecs ## clears artifacts
 	docker-compose down
 	rm -fr .bin
+	rm -fr .data
 	rm -fr vendor/*/
-	$(MAKE) -C bin/tls clear
 
-up: up/traefik up/localAuth ## start all basic services
+up: $(addprefix up/,$(BASIC_SERVICES)) ## start all basic services
 
 up/%: build/% stop/% ## start a service in background
 	docker-compose up -d $*
