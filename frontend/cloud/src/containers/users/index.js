@@ -2,6 +2,7 @@ import React from "react"
 import { Link } from "react-router-dom"
 import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
+import map from "lodash/map"
 
 import { loadUsers } from "../../modules/users"
 
@@ -15,6 +16,7 @@ class Users extends React.Component {
         if (props.loading) {
             return <div>Loading...</div>
         }
+        let i = 0
         return (
             <div>
                 <h1>Users</h1>
@@ -28,9 +30,9 @@ class Users extends React.Component {
                         </tr>
                     </thead>
                     <tbody>
-                        {props.users.map((user, i) => (
+                        {map(props.users, user => (
                             <tr key={user.id}>
-                                <th scope="row">{i + 1}</th>
+                                <th scope="row">{++i}</th>
                                 <td>
                                     <Link to={`/users/${user.id}`}>
                                         {user.username}

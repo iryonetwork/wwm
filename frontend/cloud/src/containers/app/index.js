@@ -1,10 +1,11 @@
 import React from "react"
 import { Route, Link, NavLink } from "react-router-dom"
 import Home from "../home"
-import About from "../about"
+import Rules from "../rules"
 import Alert from "../alert"
 import Users from "../users"
 import UserDetail from "../users/detail"
+import Roles from "../roles"
 
 const App = () => (
     <div>
@@ -54,8 +55,8 @@ const App = () => (
             <Route exact path="/" component={Home} />
             <Route exact path="/users" component={Users} />
             <Route path="/users/:id" component={UserDetail} />
-            <Route exact path="/roles" component={About} />
-            <Route exact path="/rules" component={About} />
+            <Route path="/roles" component={Roles} />
+            <Route exact path="/rules" component={Rules} />
         </main>
     </div>
 )

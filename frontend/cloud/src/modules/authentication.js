@@ -128,7 +128,6 @@ export const login = () => {
                             type: LOGGEDIN,
                             token
                         })
-                        dispatch(push("/"))
 
                         return setTimeout(() => {
                             dispatch(renewToken())

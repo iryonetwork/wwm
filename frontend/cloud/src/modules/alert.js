@@ -4,6 +4,7 @@ export const SHOW_ALERT = "alert/SHOW_ALERT"
 export const HIDE_ALERT = "alert/HIDE_ALERT"
 export const COLOR_DANGER = "danger"
 export const COLOR_PRIMARY = "primary"
+export const COLOR_SUCCESS = "success"
 
 const initialState = {
     open: false

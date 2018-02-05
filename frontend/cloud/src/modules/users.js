@@ -1,4 +1,5 @@
 import produce from "immer"
+import keyBy from "lodash/keyBy"
 
 import api from "./api"
 import { open, COLOR_DANGER } from "./alert"
@@ -34,7 +35,7 @@ export default (state = initialState, action) => {
                 break
             case LOAD_USERS_SUCCESS:
                 draft.loading = false
-                draft.users = action.users
+                draft.users = keyBy(action.users, "id")
                 break
             case LOAD_USERS_FAIL:
                 draft.loading = false

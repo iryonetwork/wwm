@@ -1,0 +1,17 @@
+#roles {
+    header {
+        height: 50px;
+        margin-bottom: 10px;
+        display: table;
+
+        h1,
+        h3 {
+            display: table-cell;
+            vertical-align: bottom;
+        }
+    }
+
+    h3 {
+        margin: 2rem 0 1rem;
+    }
+}

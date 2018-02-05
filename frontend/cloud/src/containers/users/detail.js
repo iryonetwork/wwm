@@ -2,8 +2,10 @@ import React from "react"
 import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
 import { withRouter } from "react-router-dom"
+import _ from "lodash"
 
 import { loadUser } from "../../modules/users"
+import { loadRoles } from "../../modules/roles"
 
 class UserDetail extends React.Component {
     constructor(props) {
@@ -13,37 +15,57 @@ class UserDetail extends React.Component {
             password: "",
             password2: ""
         }
-
-        this.updateEmail = this.updateEmail.bind(this)
-        this.updatePassword = this.updatePassword.bind(this)
-        this.updatePassword2 = this.updatePassword2.bind(this)
     }
 
     componentDidMount() {
         this.props.loadUser(this.props.userID)
+        this.props.loadRoles()
     }
 
     componentWillReceiveProps(props) {
         if (props.user) {
             this.setState({ email: props.user.email })
         }
+        if (props.allRoles) {
+            let selected = _.reduce(
+                props.roles,
+                (obj, role) => {
+                    obj[role] = true
+                    return obj
+                },
+                {}
+            )
+            let all = _.mapValues(props.allRoles, () => false)
+
+            this.setState({
+                roles: _.defaults(selected, all)
+            })
+        }
     }
 
-    updateEmail(e) {
+    updateEmail = e => {
         this.setState({ email: e.target.value })
     }
 
-    updatePassword(e) {
+    updatePassword = e => {
         this.setState({ password: e.target.value })
     }
 
-    updatePassword2(e) {
+    updatePassword2 = e => {
         this.setState({ password2: e.target.value })
+    }
+
+    updateRole = roleID => e => {
+        let roles = { ...this.state.roles }
+        roles[roleID] = !roles[roleID]
+        this.setState({
+            roles: roles
+        })
     }
 
     render() {
         let props = this.props
-        if (props.loading) {
+        if (!props.user) {
             return <div>Loading...</div>
         }
         return (
@@ -86,6 +108,29 @@ class UserDetail extends React.Component {
                         />
                     </div>
                 </form>
+
+                <h2>Roles</h2>
+                {this.state.roles
+                    ? _.map(this.state.roles, (selected, roleID) => {
+                          return (
+                              <div className="form-check" key={roleID}>
+                                  <input
+                                      className="form-check-input"
+                                      type="checkbox"
+                                      checked={selected}
+                                      id={`role-checkbox-${roleID}`}
+                                      onChange={this.updateRole(roleID)}
+                                  />
+                                  <label
+                                      className="form-check-label"
+                                      htmlFor={`role-checkbox-${roleID}`}
+                                  >
+                                      {props.allRoles[roleID].name}
+                                  </label>
+                              </div>
+                          )
+                      })
+                    : null}
             </div>
         )
     }
@@ -95,14 +140,17 @@ const mapStateToProps = (state, ownProps) => {
     return {
         user: state.users.user,
         loading: state.users.loading,
-        userID: ownProps.match.params.id
+        userID: ownProps.match.params.id,
+        roles: _.get(state, `roles.users['${ownProps.match.params.id}']`, []),
+        allRoles: state.roles.roles
     }
 }
 
 const mapDispatchToProps = dispatch =>
     bindActionCreators(
         {
-            loadUser
+            loadUser,
+            loadRoles
         },
         dispatch
     )

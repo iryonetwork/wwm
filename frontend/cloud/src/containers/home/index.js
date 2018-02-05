@@ -49,7 +49,7 @@ class Home extends React.Component {
 
     render() {
         let props = this.props
-        if (props.loading) {
+        if (!props.user) {
             return <div>Loading...</div>
         }
         return (

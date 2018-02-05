@@ -1,5 +1,7 @@
 @import "bootstrap/scss/bootstrap";
 
-h1 {
-    margin: 2rem 0;
+@import "icons/style";
+
+main.container {
+    margin-top: 2rem;
 }
