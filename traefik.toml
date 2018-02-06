@@ -47,6 +47,14 @@ address = ":8080"
     [backends.vaultui.servers.server1]
     url = "http://vaultui:8000"
 
+  [backends.localNats]
+    [backends.localNats.servers.server1]
+    url = "http://localNats:4222"
+
+  [backends.localNatsMonitor]
+    [backends.localNatsMonitor.servers.server1]
+    url = "http://localNats:8222"
+
 [frontends]
   [frontends.localauth]
   backend = "localauth"
@@ -82,3 +90,13 @@ address = ":8080"
   backend = "vaultui"
     [frontends.vaultui.routes.route1]
     rule = "Host:vault.iryo.local"
+
+  [frontends.localNats]
+  backend = "localNats"
+    [frontends.localNats.routes.route1]
+    rule = "Host:nats.iryo.local"
+
+  [frontends.localNatsMonitor]
+  backend = "localNatsMonitor"
+    [frontends.localNatsMonitor.routes.route1]
+    rule = "Host:nats-monitor.iryo.local"

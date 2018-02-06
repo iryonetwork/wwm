@@ -1,4 +1,4 @@
-BASIC_SERVICES = traefik vault localMinio cloudMinio cloudAuth localAuth localStorage cloudStorage
+BASIC_SERVICES = traefik vault localMinio cloudMinio cloudAuth localAuth localStorage cloudStorage localNats
 
 .PHONY: up run stop build specs
 

@@ -116,3 +116,19 @@ services:
     - ./.bin/:/wwm
     - ./.data/cloudAuth:/data
     - ./bin/tls:/certs
+
+  localNats:
+    image: nats-streaming
+    ports:
+    - 4322:4322
+    - 8322:8322
+    command:
+    - --stan_config=/etc/nats/config.conf
+    volumes:
+    - ./bin/tls/localNats-key.pem:/etc/nats/certs/private.key:ro
+    - ./bin/tls/localNats.pem:/etc/nats/certs/public.crt:ro
+    - ./bin/tls/ca.pem:/etc/nats/certs/ca-iryo.pem:ro
+    - ./bin/tls/localNatsStreaming-key.pem:/etc/nats/certs/streaming_client_private.key:ro
+    - ./bin/tls/localNatsStreaming.pem:/etc/nats/certs/streaming_client_public.crt:ro
+    - ./localNats.conf:/etc/nats/config.conf:ro
+    - ./.data/localNats:/data

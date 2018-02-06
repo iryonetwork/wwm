@@ -159,6 +159,12 @@
 			"revisionTime": "2017-12-19T22:33:54Z"
 		},
 		{
+			"checksumSHA1": "lKvyl2Ksi5ynh12rfSNJxLPLEOE=",
+			"path": "github.com/go-openapi/runtime/client",
+			"revision": "09fac855d8504674b22594470227bd94e5005025",
+			"revisionTime": "2018-01-31T17:49:16Z"
+		},
+		{
 			"checksumSHA1": "brH2it7dhYuNiLlgI1m+Qfc9Rxg=",
 			"path": "github.com/go-openapi/runtime/flagext",
 			"revision": "a76104f379d3c5041f2a56e69db3ad8404ce4826",
@@ -231,6 +237,12 @@
 			"revisionTime": "2017-11-12T03:14:02Z"
 		},
 		{
+			"checksumSHA1": "FhLvgtYfuKY0ow9wtLJRoeg7d6w=",
+			"path": "github.com/gogo/protobuf/gogoproto",
+			"revision": "26de2f9a7d3b1826f275e7a97c8cad5080589426",
+			"revisionTime": "2018-01-21T16:00:31Z"
+		},
+		{
 			"checksumSHA1": "8UEp6v0Dczw/SlasE0DivB0mAHA=",
 			"path": "github.com/gogo/protobuf/jsonpb",
 			"revision": "160de10b2537169b5ae3e7e221d28269ef40d311",
@@ -241,6 +253,12 @@
 			"path": "github.com/gogo/protobuf/proto",
 			"revision": "160de10b2537169b5ae3e7e221d28269ef40d311",
 			"revisionTime": "2018-01-04T10:21:28Z"
+		},
+		{
+			"checksumSHA1": "F+PKpdY6PyIrxQ8b20TzsM+1JuI=",
+			"path": "github.com/gogo/protobuf/protoc-gen-gogo/descriptor",
+			"revision": "26de2f9a7d3b1826f275e7a97c8cad5080589426",
+			"revisionTime": "2018-01-21T16:00:31Z"
 		},
 		{
 			"checksumSHA1": "HPVQZu059/Rfw2bAWM538bVTcUc=",
@@ -363,6 +381,42 @@
 			"revisionTime": "2018-01-11T00:07:20Z"
 		},
 		{
+			"checksumSHA1": "Q/4K/c04/FNEhNYI4BxFr92AEQw=",
+			"path": "github.com/nats-io/go-nats",
+			"revision": "c7e16c2459ca762da74ede0ed1513ba6caa8922c",
+			"revisionTime": "2018-01-25T20:23:15Z"
+		},
+		{
+			"checksumSHA1": "qVeHhLjKPqYC3aq38TdVrf092oE=",
+			"path": "github.com/nats-io/go-nats-streaming",
+			"revision": "ad2984cc18491c7674c7f69196b854fb71337738",
+			"revisionTime": "2018-01-15T18:49:37Z"
+		},
+		{
+			"checksumSHA1": "16sV1MZ45lYmv2tXfKHCz+ZLvyY=",
+			"path": "github.com/nats-io/go-nats-streaming/pb",
+			"revision": "ad2984cc18491c7674c7f69196b854fb71337738",
+			"revisionTime": "2018-01-15T18:49:37Z"
+		},
+		{
+			"checksumSHA1": "Q2c9uTEIGhSIddv5pntYdFNtUdk=",
+			"path": "github.com/nats-io/go-nats/encoders/builtin",
+			"revision": "c7e16c2459ca762da74ede0ed1513ba6caa8922c",
+			"revisionTime": "2018-01-25T20:23:15Z"
+		},
+		{
+			"checksumSHA1": "K3GMvVTn1nlWpwLV+NCfDdfIt3I=",
+			"path": "github.com/nats-io/go-nats/util",
+			"revision": "c7e16c2459ca762da74ede0ed1513ba6caa8922c",
+			"revisionTime": "2018-01-25T20:23:15Z"
+		},
+		{
+			"checksumSHA1": "wcu8OXDGeGvmK9JY73+aoOQf1Ho=",
+			"path": "github.com/nats-io/nuid",
+			"revision": "33c603157d6fd1b0ac2599bcc4a286b36479a06d",
+			"revisionTime": "2017-10-25T20:31:29Z"
+		},
+		{
 			"checksumSHA1": "xCv4GBFyw07vZkVtKF/XrUnkHRk=",
 			"path": "github.com/pkg/errors",
 			"revision": "e881fd58d78e04cf6d0de1217f8707c8cc2249bc",
@@ -457,6 +511,12 @@
 			"path": "golang.org/x/net/context",
 			"revision": "42fe2e1c20de1054d3d30f82cc9fb5b41e2e3767",
 			"revisionTime": "2018-01-04T22:23:21Z"
+		},
+		{
+			"checksumSHA1": "WHc3uByvGaMcnSoI21fhzYgbOgg=",
+			"path": "golang.org/x/net/context/ctxhttp",
+			"revision": "2fb46b16b8dda405028c50f7c7f0f9dd1fa6bfb1",
+			"revisionTime": "2018-02-02T11:17:09Z"
 		},
 		{
 			"checksumSHA1": "RcrB7tgYS/GMW4QrwVdMOTNqIU8=",
