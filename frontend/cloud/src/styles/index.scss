@@ -4,4 +4,12 @@
 
 main.container {
     margin-top: 2rem;
+    position: relative;
+}
+
+.alert {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 1;
 }

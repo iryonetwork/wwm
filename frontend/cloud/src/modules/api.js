@@ -20,7 +20,12 @@ export default (url, method, body) => {
         .catch(error => {
             throw error
         })
-        .then(response => Promise.all([response.ok, response.json()]))
+        .then(response => {
+            if (response.status === 204) {
+                return Promise.all([response.ok, {}])
+            }
+            return Promise.all([response.ok, response.json()])
+        })
         .then(([responseOk, body]) => {
             if (responseOk) {
                 return body

@@ -5,19 +5,12 @@ import { connect } from "react-redux"
 import _ from "lodash"
 
 import { loadUsers } from "../../modules/users"
-import { loadRules, saveRule } from "../../modules/rules"
+import { loadRules, saveRule, deleteRule } from "../../modules/rules"
 import { loadRoles } from "../../modules/roles"
 
 const Read = 1
 const Write = 2
 const Delete = 4
-
-const convertRules = (rules, allRules) => {
-    if (_.isArray(rules)) {
-        return _.map(rules, ruleID => _.clone(allRules[ruleID]))
-    }
-    return _.map(rules, rule => _.clone(rule))
-}
 
 class Rules extends React.Component {
     constructor(props) {
@@ -50,9 +43,28 @@ class Rules extends React.Component {
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.rules) {
-            let rules = convertRules(nextProps.rules, nextProps.allRules)
+            let rules = nextProps.rules
+            if (_.isArray(rules)) {
+                rules = _.fromPairs(_.map(rules, ruleID => [ruleID, nextProps.allRules[ruleID]]))
+            }
 
-            this.setState({ rules })
+            let newRules = []
+
+            if (this.state.rules) {
+                let editing = _.fromPairs(_.map(_.filter(this.state.rules, rule => rule.edit && !rule.saving), rule => [rule.id, rule]))
+                newRules = _.filter(this.state.rules, rule => !rule.saving && !rule.id)
+
+                rules = _.mapValues(rules, rule => {
+                    if (editing[rule.id]) {
+                        return editing[rule.id]
+                    }
+                    return rule
+                })
+            }
+
+            rules = _.map(rules, rule => rule)
+
+            this.setState({ rules: rules.concat(newRules) })
         }
     }
 
@@ -62,8 +74,7 @@ class Rules extends React.Component {
 
         if (!rules[index].edit) {
             if (rules[index].id) {
-                let oldRules = convertRules(this.props.rules, this.props.allRules)
-                rules[index] = oldRules[index]
+                rules[index] = this.props.allRules[rules[index].id]
             } else {
                 rules.splice(index, 1)
             }
@@ -107,20 +118,22 @@ class Rules extends React.Component {
 
     saveRule = index => e => {
         let rules = [...this.state.rules]
-        //rules[index].edit = !rules[index].edit
         rules[index].index = index
         rules[index].saving = true
 
-        console.log("Do the save!", this.state.rules[index])
         this.props.saveRule(this.state.rules[index])
 
         this.setState({ rules })
     }
 
     newRule = () => e => {
-        let rules = [...this.state.rules, { edit: true, resource: "" }]
+        let rules = [...this.state.rules, { edit: true, resource: "", subject: this.props.subjectID }]
 
         this.setState({ rules })
+    }
+
+    deleteRule = ruleID => e => {
+        this.props.deleteRule(ruleID)
     }
 
     render() {
@@ -244,7 +257,7 @@ class Rules extends React.Component {
                                                   <button className="btn btn-sm btn-light" type="button" onClick={this.editRule(i)}>
                                                       <span className="icon_pencil-edit" />
                                                   </button>
-                                                  <button className="btn btn-sm btn-light" type="button">
+                                                  <button className="btn btn-sm btn-light" type="button" onClick={this.deleteRule(rule.id)}>
                                                       <span className="icon_trash" />
                                                   </button>
                                               </div>
@@ -255,8 +268,8 @@ class Rules extends React.Component {
                             : null}
                     </tbody>
                 </table>
-                <button type="button" className="btn btn-sm btn-light" onClick={this.newRule()}>
-                    <span className="icon_plus" />
+                <button type="button" className="btn btn-sm btn-outline-secondary float-right" onClick={this.newRule()}>
+                    Add new ACL rule
                 </button>
             </div>
         )
@@ -269,7 +282,8 @@ const mapStateToProps = (state, ownProps) => {
         roles: state.roles.roles,
         rules: ownProps.rules ? ownProps.rules : state.rules.rules,
         embedded: ownProps.rules ? true : false,
-        allRules: state.rules.rules
+        allRules: state.rules.rules,
+        subjectID: ownProps.subject
     }
 }
 
@@ -279,7 +293,8 @@ const mapDispatchToProps = dispatch =>
             loadUsers,
             loadRoles,
             loadRules,
-            saveRule
+            saveRule,
+            deleteRule
         },
         dispatch
     )

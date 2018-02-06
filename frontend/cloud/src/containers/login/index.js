@@ -16,34 +16,20 @@ const Login = props => {
     return (
         <form className="login" onSubmit={props.handleSubmit}>
             <h2>Please sign in</h2>
-            <Alert />
             <label htmlFor="inputEmail" className="sr-only">
                 Email address
             </label>
-            <input
-                type="text"
-                className="form-control"
-                placeholder="Username"
-                onChange={props.setUsername}
-                value={props.username}
-                required
-                autoFocus
-            />
+            <input type="text" className="form-control" placeholder="Username" onChange={props.setUsername} value={props.username} required autoFocus />
             <label htmlFor="inputPassword" className="sr-only">
                 Password
             </label>
-            <input
-                type="password"
-                className="form-control"
-                placeholder="Password"
-                onChange={props.setPassword}
-                value={props.password}
-                required
-            />
+            <input type="password" className="form-control" placeholder="Password" onChange={props.setPassword} value={props.password} required />
 
             <button className="btn btn-lg btn-primary btn-block" type="submit">
                 Sign in
             </button>
+
+            <Alert />
         </form>
     )
 }

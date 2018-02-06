@@ -1,17 +1,21 @@
 import produce from "immer"
 import keyBy from "lodash/keyBy"
-import forEach from "lodash/forEach"
+import _ from "lodash"
 
 import api from "./api"
 import { open, close, COLOR_DANGER, COLOR_SUCCESS } from "./alert"
 
-const LOAD_RULES = "roles/LOAD_RULES"
-const LOAD_RULES_SUCCESS = "roles/LOAD_RULES_SUCCESS"
-const LOAD_RULES_FAIL = "roles/LOAD_RULES_FAIL"
+const LOAD_RULES = "rules/LOAD_RULES"
+const LOAD_RULES_SUCCESS = "rules/LOAD_RULES_SUCCESS"
+const LOAD_RULES_FAIL = "rules/LOAD_RULES_FAIL"
 
-const SAVE_RULE = "roles/SAVE_RULE"
-const SAVE_RULE_SUCCESS = "roles/SAVE_RULE_SUCCESS"
-const SAVE_RULE_FAIL = "roles/SAVE_RULE_FAIL"
+const SAVE_RULE = "rules/SAVE_RULE"
+const SAVE_RULE_SUCCESS = "rules/SAVE_RULE_SUCCESS"
+const SAVE_RULE_FAIL = "rules/SAVE_RULE_FAIL"
+
+const DELETE_RULE = "rules/DELETE_RULE"
+const DELETE_RULE_SUCCESS = "rules/DELETE_RULE_SUCCESS"
+const DELETE_RULE_FAIL = "rules/DELETE_RULE_FAIL"
 
 const initialState = {
     loading: true
@@ -27,7 +31,7 @@ export default (state = initialState, action) => {
                 draft.loading = false
                 draft.rules = keyBy(action.rules, "id")
                 draft.subjects = {}
-                forEach(action.rules, rule => {
+                _.forEach(action.rules, rule => {
                     if (!draft.subjects[rule.subject]) {
                         draft.subjects[rule.subject] = []
                     }
@@ -47,10 +51,26 @@ export default (state = initialState, action) => {
             case SAVE_RULE_SUCCESS:
                 draft.loading = false
                 draft.rules[action.rule.id] = action.rule
-                if (!draft.subjects[action.rule.subject]) {
-                    draft.subjects[action.rule.subject] = []
+                draft.rules[action.rule.id].edit = false
+                draft.rules[action.rule.id].saving = false
+                draft.rules[action.rule.id].index = action.index
+                if (!_.get(state, `subjects['${action.rule.subject}'][${action.index}]`)) {
+                    draft.subjects[action.rule.subject] = state.subjects[action.rule.subject] || []
+                    draft.subjects[action.rule.subject].push(action.rule.id)
                 }
-                draft.subjects[action.rule.subject].push(action.rule.id)
+                break
+
+            case DELETE_RULE:
+                draft.loading = true
+                break
+            case DELETE_RULE_SUCCESS:
+                draft.loading = false
+                draft.subjects[state.rules[action.id].subject] = _.without(state.subjects[state.rules[action.id].subject], action.id)
+                draft.rules = state.rules
+                delete draft.rules[action.id]
+                break
+            case DELETE_RULE_FAIL:
+                draft.loading = false
                 break
             default:
         }
@@ -104,6 +124,7 @@ export const saveRule = rule => {
                 }
                 dispatch({
                     type: SAVE_RULE_SUCCESS,
+                    index: rule.index,
                     rule: response
                 })
                 dispatch(open("Saved!", "", COLOR_SUCCESS, 5))
@@ -112,7 +133,30 @@ export const saveRule = rule => {
                 dispatch({
                     type: SAVE_RULE_FAIL
                 })
-                console.log(error)
+                dispatch(open(error.message, error.code, COLOR_DANGER))
+            })
+    }
+}
+
+export const deleteRule = ruleID => {
+    return dispatch => {
+        dispatch({
+            type: DELETE_RULE
+        })
+        dispatch(close())
+
+        return api(`/auth/rules/${ruleID}`, "DELETE")
+            .then(response => {
+                dispatch({
+                    type: DELETE_RULE_SUCCESS,
+                    id: ruleID
+                })
+                dispatch(open("Deleted!", "", COLOR_SUCCESS, 5))
+            })
+            .catch(error => {
+                dispatch({
+                    type: DELETE_RULE_FAIL
+                })
                 dispatch(open(error.message, error.code, COLOR_DANGER))
             })
     }
