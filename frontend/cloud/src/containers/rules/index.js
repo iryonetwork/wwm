@@ -62,7 +62,7 @@ class Rules extends React.Component {
                 })
             }
 
-            rules = _.map(rules, rule => rule)
+            rules = _.map(rules, rule => _.clone(rule))
 
             this.setState({ rules: rules.concat(newRules) })
         }
@@ -74,7 +74,7 @@ class Rules extends React.Component {
 
         if (!rules[index].edit) {
             if (rules[index].id) {
-                rules[index] = this.props.allRules[rules[index].id]
+                rules[index] = _.clone(this.props.allRules[rules[index].id])
             } else {
                 rules.splice(index, 1)
             }
@@ -170,6 +170,7 @@ class Rules extends React.Component {
                                           <td>
                                               {rule.edit ? (
                                                   <select className="form-control form-control-sm" value={rule.subject} onChange={this.editSubject(i)}>
+                                                      <option>Select subject</option>
                                                       <optgroup label="Roles">
                                                           {_.map(props.roles, role => (
                                                               <option key={role.id} value={role.id}>

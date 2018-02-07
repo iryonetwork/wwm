@@ -1,5 +1,3 @@
-import produce from "immer"
-import keyBy from "lodash/keyBy"
 import _ from "lodash"
 
 import api from "./api"
@@ -9,72 +7,92 @@ const LOAD_RULES = "rules/LOAD_RULES"
 const LOAD_RULES_SUCCESS = "rules/LOAD_RULES_SUCCESS"
 const LOAD_RULES_FAIL = "rules/LOAD_RULES_FAIL"
 
-const SAVE_RULE = "rules/SAVE_RULE"
 const SAVE_RULE_SUCCESS = "rules/SAVE_RULE_SUCCESS"
 const SAVE_RULE_FAIL = "rules/SAVE_RULE_FAIL"
 
-const DELETE_RULE = "rules/DELETE_RULE"
 const DELETE_RULE_SUCCESS = "rules/DELETE_RULE_SUCCESS"
-const DELETE_RULE_FAIL = "rules/DELETE_RULE_FAIL"
 
 const initialState = {
     loading: true
 }
 
 export default (state = initialState, action) => {
-    return produce(state, draft => {
-        switch (action.type) {
-            case LOAD_RULES:
-                draft.loading = true
-                break
-            case LOAD_RULES_SUCCESS:
-                draft.loading = false
-                draft.rules = keyBy(action.rules, "id")
-                draft.subjects = {}
-                _.forEach(action.rules, rule => {
-                    if (!draft.subjects[rule.subject]) {
-                        draft.subjects[rule.subject] = []
-                    }
-                    draft.subjects[rule.subject].push(rule.id)
-                })
-                break
-            case LOAD_RULES_FAIL:
-                draft.loading = false
-                break
+    switch (action.type) {
+        case LOAD_RULES:
+            return {
+                ...state,
+                loading: true
+            }
 
-            case SAVE_RULE:
-                draft.loading = true
-                break
-            case SAVE_RULE_FAIL:
-                draft.loading = false
-                break
-            case SAVE_RULE_SUCCESS:
-                draft.loading = false
-                draft.rules[action.rule.id] = action.rule
-                draft.rules[action.rule.id].edit = false
-                draft.rules[action.rule.id].saving = false
-                draft.rules[action.rule.id].index = action.index
-                if (!_.get(state, `subjects['${action.rule.subject}'][${action.index}]`)) {
-                    draft.subjects[action.rule.subject] = state.subjects[action.rule.subject] || []
-                    draft.subjects[action.rule.subject].push(action.rule.id)
+        case LOAD_RULES_SUCCESS:
+            let subjects = {}
+            _.forEach(action.rules, rule => {
+                if (!subjects[rule.subject]) {
+                    subjects[rule.subject] = []
                 }
-                break
+                subjects[rule.subject].push(rule.id)
+            })
 
-            case DELETE_RULE:
-                draft.loading = true
-                break
-            case DELETE_RULE_SUCCESS:
-                draft.loading = false
-                draft.subjects[state.rules[action.id].subject] = _.without(state.subjects[state.rules[action.id].subject], action.id)
-                draft.rules = state.rules
-                delete draft.rules[action.id]
-                break
-            case DELETE_RULE_FAIL:
-                draft.loading = false
-                break
-            default:
-        }
-    })
+            return {
+                loading: false,
+                rules: _.keyBy(action.rules, "id"),
+                subjects
+            }
+
+        case LOAD_RULES_FAIL:
+            return {
+                ...state,
+                loading: false
+            }
+
+        case SAVE_RULE_SUCCESS:
+            subjects = { ...state.subjects }
+            let rules = { ...state.rules }
+            rules[action.rule.id] = action.rule
+            rules[action.rule.id].edit = false
+            rules[action.rule.id].saving = false
+            rules[action.rule.id].index = action.index
+            if (subjects[action.rule.subject]) {
+                if (_.indexOf(subjects[action.rule.subject], action.rule.id) === -1) {
+                    subjects[action.rule.subject].push(action.rule.id)
+                }
+            } else {
+                subjects[action.rule.subject] = [action.rule.id]
+            }
+            return {
+                loading: false,
+                rules,
+                subjects
+            }
+
+        case SAVE_RULE_FAIL:
+            rules = { ...state.rules }
+            if (action.rule.id) {
+                rules[action.rule.id] = action.rule
+                rules[action.rule.id].saving = false
+            } else {
+                action.rule.saving = false
+            }
+
+            return {
+                ...state,
+                rules
+            }
+
+        case DELETE_RULE_SUCCESS:
+            subjects = { ...state.subjects }
+            rules = { ...state.rules }
+            subjects[rules[action.id].subject] = _.without(subjects[rules[action.id].subject], action.id)
+            delete rules[action.id]
+            return {
+                loading: false,
+                rules,
+                subjects
+            }
+
+        default:
+            return state
+    }
 }
 
 export const loadRules = () => {
@@ -105,9 +123,6 @@ export const saveRule = rule => {
     rule.action |= 0
 
     return dispatch => {
-        dispatch({
-            type: SAVE_RULE
-        })
         dispatch(close())
 
         let url = "/auth/rules"
@@ -127,11 +142,12 @@ export const saveRule = rule => {
                     index: rule.index,
                     rule: response
                 })
-                dispatch(open("Saved!", "", COLOR_SUCCESS, 5))
+                dispatch(open("Saved ACL rule", "", COLOR_SUCCESS, 5))
             })
             .catch(error => {
                 dispatch({
-                    type: SAVE_RULE_FAIL
+                    type: SAVE_RULE_FAIL,
+                    rule: rule
                 })
                 dispatch(open(error.message, error.code, COLOR_DANGER))
             })
@@ -140,9 +156,6 @@ export const saveRule = rule => {
 
 export const deleteRule = ruleID => {
     return dispatch => {
-        dispatch({
-            type: DELETE_RULE
-        })
         dispatch(close())
 
         return api(`/auth/rules/${ruleID}`, "DELETE")
@@ -151,12 +164,9 @@ export const deleteRule = ruleID => {
                     type: DELETE_RULE_SUCCESS,
                     id: ruleID
                 })
-                dispatch(open("Deleted!", "", COLOR_SUCCESS, 5))
+                dispatch(open("Deleted ACL rule", "", COLOR_SUCCESS, 5))
             })
             .catch(error => {
-                dispatch({
-                    type: DELETE_RULE_FAIL
-                })
                 dispatch(open(error.message, error.code, COLOR_DANGER))
             })
     }
