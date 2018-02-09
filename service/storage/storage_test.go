@@ -11,6 +11,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/golang/mock/gomock"
 	"github.com/iryonetwork/wwm/gen/storage/models"
+	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/mock"
 	"github.com/iryonetwork/wwm/storage/s3/object"
 
@@ -63,6 +64,28 @@ var (
 		Version:     "V2",
 		Size:        0,
 		Operation:   "d",
+	}
+	file3V1 = &models.FileDescriptor{
+		Archetype:   "ARCH",
+		Checksum:    "0bKln76n4gB3r5-Rsn6V6GUGGycL4D_1Oas7c1h4gug=",
+		ContentType: "text/openEhrXml",
+		Created:     time2,
+		Name:        "FILE3",
+		Path:        "BUCKET/FILE3/V1",
+		Version:     "V1",
+		Size:        8,
+		Operation:   "w",
+	}
+	file3V1ALT = &models.FileDescriptor{
+		Archetype:   "ARCH",
+		Checksum:    "CHS",
+		ContentType: "text/openEhrXml",
+		Created:     time2,
+		Name:        "FILE3",
+		Path:        "BUCKET/FILE3/V1",
+		Version:     "V1",
+		Size:        8,
+		Operation:   "w",
 	}
 	noErrors   = false
 	withErrors = true
@@ -426,6 +449,127 @@ func TestFileDelete(t *testing.T) {
 
 			// call the MakeBucket
 			err := svc.FileDelete("BUCKET", "FILE")
+
+			// assert error
+			if test.errorExpected && err == nil {
+				t.Error("Expected error, got nil")
+			} else if !test.errorExpected && err != nil {
+				t.Errorf("Expected error to be nil, got %v", err)
+			}
+
+			// assert actual error
+			if test.exactError != nil && test.exactError != err {
+				t.Errorf("Expected error to equal '%v'; got %v", test.exactError, err)
+			}
+		})
+	}
+}
+
+func TestFileSync(t *testing.T) {
+	testCases := []struct {
+		description   string
+		calls         func(*mock.MockStorage) []*gomock.Call
+		expected      *models.FileDescriptor
+		errorExpected bool
+		exactError    error
+	}{
+		{
+			"Read fails",
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().Read("BUCKET", "FILE3", "V1").Return(nil, nil, fmt.Errorf("Error")),
+				}
+			},
+			nil,
+			withErrors,
+			nil,
+		},
+		{
+			"Already exists - matching checksum",
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().Read("BUCKET", "FILE3", "V1").Return(nil, file3V1, nil),
+				}
+			},
+			file3V1,
+			withErrors,
+			ErrAlreadyExists,
+		},
+		{
+			"Already exists - conflict",
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().Read("BUCKET", "FILE3", "V1").Return(nil, file3V1ALT, nil),
+				}
+			},
+			nil,
+			withErrors,
+			ErrAlreadyExistsConflict,
+		},
+		{
+			"Write fails",
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().Read("BUCKET", "FILE3", "V1").Return(nil, nil, s3.ErrNotFound),
+					s.EXPECT().Write("BUCKET", gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("Error")),
+				}
+			},
+			nil,
+			withErrors,
+			nil,
+		},
+		{
+			"Write successfull",
+			func(s *mock.MockStorage) []*gomock.Call {
+				no := &object.NewObjectInfo{
+					Archetype:   "ARCH",
+					Size:        int64(8),
+					Checksum:    "0bKln76n4gB3r5-Rsn6V6GUGGycL4D_1Oas7c1h4gug=",
+					Created:     strfmt.DateTime(time2),
+					ContentType: "text/openEhrXml",
+					Version:     "V1",
+					Name:        "FILE3",
+					Operation:   "w",
+				}
+
+				return []*gomock.Call{
+					s.EXPECT().Read("BUCKET", "FILE3", "V1").Return(nil, nil, s3.ErrNotFound),
+					s.EXPECT().Write("BUCKET", no, gomock.Any()).Return(file3V1, nil),
+				}
+			},
+			file3V1,
+			noErrors,
+			nil,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.description, func(t *testing.T) {
+			// init service
+			svc, s, _, c := getTestService(t)
+			defer c()
+
+			// mock getUUID and getTime
+			getUUID = func() string { return "UUID" }
+			getTime = func() strfmt.DateTime { return strfmt.DateTime(time2) }
+
+			// setup calls
+			test.calls(s)
+
+			// prepare the reader
+			r := bytes.NewReader([]byte("contents"))
+
+			// call the FileSync
+			out, err := svc.FileSync("BUCKET", "FILE3", "V1", r, "text/openEhrXml", time2, "ARCH")
+
+			// check expected results
+			if !reflect.DeepEqual(out, test.expected) {
+				fmt.Println("Expected")
+				printJson(test.expected)
+				fmt.Println("Got")
+				printJson(out)
+				t.Errorf("Expected file descriptor to equal\n%+v\ngot\n%+v", test.expected, out)
+			}
 
 			// assert error
 			if test.errorExpected && err == nil {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"io"
 	"time"
 
@@ -42,7 +43,13 @@ type Service interface {
 
 	// FileDelete marks file as deleted.
 	FileDelete(bucketID, fileID string) error
+
+	// FileSync syncs file with provided FileID and Version.
+	FileSync(bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string) (*models.FileDescriptor, error)
 }
+
+var ErrAlreadyExists = errors.New("Item already exists")
+var ErrAlreadyExistsConflict = errors.New("Item already exists and has differing checksum")
 
 type service struct {
 	s3          s3.Storage
@@ -184,6 +191,45 @@ func (s *service) FileDelete(bucketID, fileID string) error {
 
 	_, err = s.s3.Write(bucketID, no, &bytes.Buffer{})
 	return err
+}
+
+func (s *service) FileSync(bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string) (*models.FileDescriptor, error) {
+	// calculate the checksum
+	var buf bytes.Buffer
+	tee := io.TeeReader(r, &buf)
+	checksum, err := s.Checksum(tee)
+	if err != nil {
+		s.logger.Info().Err(err).Msg("Failed to calculate checksum")
+		return nil, err
+	}
+
+	// try to fetch
+	_, fd, err := s.s3.Read(bucketID, fileID, version)
+
+	switch {
+	// Already exists and does not conflict
+	case err == nil && checksum == fd.Checksum:
+		return fd, ErrAlreadyExists
+	// Already exists and conflicts
+	case err == nil && checksum != fd.Checksum:
+		return nil, ErrAlreadyExistsConflict
+	// Storage returned error and it is not "not found"
+	case err != nil && err != s3.ErrNotFound:
+		return nil, err
+	}
+
+	no := &object.NewObjectInfo{
+		Archetype:   archetype,
+		Checksum:    checksum,
+		Size:        int64(buf.Len()),
+		Created:     created,
+		ContentType: contentType,
+		Version:     version,
+		Name:        fileID,
+		Operation:   string(s3.Write),
+	}
+
+	return s.s3.Write(bucketID, no, &buf)
 }
 
 // New returns a new instance of storage service

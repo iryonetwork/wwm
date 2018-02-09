@@ -19,6 +19,7 @@ type Handlers interface {
 	FileNew() operations.FileNewHandler
 	FileUpdate() operations.FileUpdateHandler
 	FileDelete() operations.FileDeleteHandler
+	FileSync() operations.FileSyncHandler
 	Authorizer() runtime.Authorizer
 	GetUserIDFromToken(token string) (*string, error)
 }
@@ -153,6 +154,34 @@ func (h *handlers) FileDelete() operations.FileDeleteHandler {
 		}
 
 		return operations.NewFileDeleteNoContent()
+	})
+}
+
+func (h *handlers) FileSync() operations.FileSyncHandler {
+	return operations.FileSyncHandlerFunc(func(params operations.FileSyncParams, principal *string) middleware.Responder {
+		var archetype string
+		if params.Archetype != nil {
+			archetype = *params.Archetype
+		}
+		defer params.File.Close()
+
+		// call service
+		fd, err := h.service.FileSync(params.Bucket, params.FileID, params.Version, params.File, params.ContentType, params.Created, archetype)
+		if err != nil {
+			switch err {
+			case ErrAlreadyExists:
+				return operations.NewFileSyncOK().WithPayload(fd)
+			case ErrAlreadyExistsConflict:
+				return operations.NewFileSyncConflict()
+			default:
+				return operations.NewFileSyncInternalServerError().WithPayload(&models.Error{
+					Code:    "server_error",
+					Message: err.Error(),
+				})
+			}
+		}
+
+		return operations.NewFileNewCreated().WithPayload(fd)
 	})
 }
 

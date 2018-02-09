@@ -353,6 +353,81 @@ paths:
         500:
           $ref: '#/responses/500'
 
+  /sync/{bucket}/{fileID}/{version}:
+    post:
+      tags:
+        - storage
+      summary: Syncs new file creation and file update
+      description: Uploads a new file to a bucket with provided ID and version
+      operationId: fileSync
+      consumes:
+        - multipart/form-data
+
+      parameters:
+        - in: path
+          name: bucket
+          type: string
+          required: true
+
+        - in: path
+          name: fileID
+          description: File name
+          type: string
+          required: true
+
+        - in: path
+          name: version
+          description: File's version
+          type: string
+          required: true
+
+        - in: formData
+          name: file
+          description: Contents of the new file
+          required: true
+          type: file
+
+        - in: formData
+          name: contentType
+          description: File's content type
+          required: true
+          type: string
+
+        - in: formData
+          name: created
+          description: Date and time of file creation
+          required: true
+          type: string
+          format: datetime
+
+        - in: formData
+          name: archetype
+          description: Optional archetype ID
+          required: false
+          type: string
+
+      responses:
+        200:
+          description: File already exists
+          schema:
+            $ref: '#/definitions/FileDescriptor'
+
+        201:
+          description: File created
+          schema:
+            $ref: '#/definitions/FileDescriptor'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        409:
+          $ref: '#/responses/409'
+
+        500:
+          $ref: '#/responses/500'
 
 definitions:
   FileDescriptor:
@@ -450,6 +525,15 @@ responses:
       application/json:
         code: not_found
         message: Required entity cannot be found
+
+  409:
+    description: Conflict with current state of the entity
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: conflict
+        message: Conflict with current state of the entity
 
   500:
     description: Internal server error
