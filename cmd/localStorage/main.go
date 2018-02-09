@@ -10,9 +10,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	loads "github.com/go-openapi/loads"
 	"github.com/golang/mock/gomock"
+	"github.com/nats-io/go-nats"
+	"github.com/nats-io/go-nats-streaming"
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/restapi"
@@ -20,6 +23,7 @@ import (
 	storage "github.com/iryonetwork/wwm/service/storage"
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/mock"
+	"github.com/iryonetwork/wwm/storageSync/publisher"
 	"github.com/iryonetwork/wwm/utils"
 )
 
@@ -54,8 +58,25 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	// initialize storageSync publisher
+	// create nats/nats-streaming connection
+	URLs := "tls://nats:secret@nats.iryo.local:4322"
+	ClusterID := "localnats"
+	ClientID := "storageSyncPublisher"
+	ClientCert := "/Users/mateuszkrasucki/go/src/github.com/iryonetwork/wwm/bin/tls/storageSyncPublisher.pem"
+	ClientKey := "/Users/mateuszkrasucki/go/src/github.com/iryonetwork/wwm/bin/tls/storageSyncPublisher-key.pem"
+	nc, err := nats.Connect(URLs, nats.ClientCert(ClientCert, ClientKey))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	sc, err := stan.Connect(ClusterID, ClientID, stan.NatsConn(nc))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	p := publisher.New(sc, 5, time.Duration(10*time.Second), 2.0, logger.With().Str("component", "storageSync/publisher").Logger())
+
 	// initialize the service
-	service := storage.New(s3, keys, logger.With().Str("component", "service/storage").Logger())
+	service := storage.New(s3, keys, p, logger.With().Str("component", "service/storage").Logger())
 
 	api := operations.NewStorageAPI(swaggerSpec)
 	api.ServeError = utils.ServeError

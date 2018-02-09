@@ -19,6 +19,7 @@ import (
 	storage "github.com/iryonetwork/wwm/service/storage"
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/mock"
+	"github.com/iryonetwork/wwm/storageSync/publisher"
 	"github.com/iryonetwork/wwm/utils"
 )
 
@@ -54,7 +55,7 @@ func main() {
 	}
 
 	// initialize the service
-	service := storage.New(s3, keys, logger.With().Str("component", "service/storage").Logger())
+	service := storage.New(s3, keys, publisher.NewNullPublisher(), logger.With().Str("component", "service/storage").Logger())
 
 	api := operations.NewStorageAPI(swaggerSpec)
 	api.ServeError = utils.ServeError

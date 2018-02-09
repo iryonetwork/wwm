@@ -10,12 +10,14 @@ import (
 
 	"github.com/go-openapi/strfmt"
 	"github.com/golang/mock/gomock"
+	"github.com/rs/zerolog"
+
 	"github.com/iryonetwork/wwm/gen/storage/models"
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/mock"
 	"github.com/iryonetwork/wwm/storage/s3/object"
-
-	"github.com/rs/zerolog"
+	"github.com/iryonetwork/wwm/storageSync"
+	mockStorageSync "github.com/iryonetwork/wwm/storageSync/mock"
 )
 
 var (
@@ -151,7 +153,7 @@ func TestFileList(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.description, func(t *testing.T) {
 			// init service
-			svc, s, _, c := getTestService(t)
+			svc, s, _, _, c := getTestService(t)
 			defer c()
 
 			// setup calls
@@ -187,14 +189,14 @@ func TestFileList(t *testing.T) {
 func TestFileNew(t *testing.T) {
 	testCases := []struct {
 		description   string
-		calls         func(*mock.MockStorage) []*gomock.Call
+		calls         func(*mock.MockStorage, *mockStorageSync.MockPublisher) []*gomock.Call
 		expected      *models.FileDescriptor
 		errorExpected bool
 		exactError    error
 	}{
 		{
 			"MakeBucket fails",
-			func(s *mock.MockStorage) []*gomock.Call {
+			func(s *mock.MockStorage, p *mockStorageSync.MockPublisher) []*gomock.Call {
 				return []*gomock.Call{
 					s.EXPECT().MakeBucket("BUCKET").Return(fmt.Errorf("Error")),
 				}
@@ -205,7 +207,7 @@ func TestFileNew(t *testing.T) {
 		},
 		{
 			"Write fails",
-			func(s *mock.MockStorage) []*gomock.Call {
+			func(s *mock.MockStorage, p *mockStorageSync.MockPublisher) []*gomock.Call {
 				return []*gomock.Call{
 					s.EXPECT().MakeBucket("BUCKET").Return(nil),
 					s.EXPECT().Write("BUCKET", gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("Error")),
@@ -217,7 +219,7 @@ func TestFileNew(t *testing.T) {
 		},
 		{
 			"Write successfull",
-			func(s *mock.MockStorage) []*gomock.Call {
+			func(s *mock.MockStorage, p *mockStorageSync.MockPublisher) []*gomock.Call {
 				no := &object.NewObjectInfo{
 					Archetype:   "ARCH",
 					Size:        int64(8),
@@ -232,6 +234,7 @@ func TestFileNew(t *testing.T) {
 				return []*gomock.Call{
 					s.EXPECT().MakeBucket("BUCKET").Return(nil),
 					s.EXPECT().Write("BUCKET", no, gomock.Any()).Return(file1V2, nil),
+					p.EXPECT().PublishAsyncWithRetries(storageSync.FileNew, gomock.Eq(&storageSync.FileInfo{"BUCKET", "UUID", "UUID"})),
 				}
 			},
 			file1V2,
@@ -243,7 +246,7 @@ func TestFileNew(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.description, func(t *testing.T) {
 			// init service
-			svc, s, _, c := getTestService(t)
+			svc, s, _, p, c := getTestService(t)
 			defer c()
 
 			// mock getUUID and getTime
@@ -251,7 +254,7 @@ func TestFileNew(t *testing.T) {
 			getTime = func() strfmt.DateTime { return strfmt.DateTime(time2) }
 
 			// setup calls
-			test.calls(s)
+			test.calls(s, p)
 
 			// prepare the reader
 			r := bytes.NewReader([]byte("contents"))
@@ -286,14 +289,14 @@ func TestFileNew(t *testing.T) {
 func TestFileUpdate(t *testing.T) {
 	testCases := []struct {
 		description   string
-		calls         func(*mock.MockStorage) []*gomock.Call
+		calls         func(*mock.MockStorage, *mockStorageSync.MockPublisher) []*gomock.Call
 		expected      *models.FileDescriptor
 		errorExpected bool
 		exactError    error
 	}{
 		{
 			"Read fails",
-			func(s *mock.MockStorage) []*gomock.Call {
+			func(s *mock.MockStorage, p *mockStorageSync.MockPublisher) []*gomock.Call {
 				return []*gomock.Call{
 					s.EXPECT().Read("BUCKET", "FILE", "").Return(nil, nil, fmt.Errorf("Error")),
 				}
@@ -304,7 +307,7 @@ func TestFileUpdate(t *testing.T) {
 		},
 		{
 			"Write fails",
-			func(s *mock.MockStorage) []*gomock.Call {
+			func(s *mock.MockStorage, p *mockStorageSync.MockPublisher) []*gomock.Call {
 				return []*gomock.Call{
 					s.EXPECT().Read("BUCKET", "FILE", "").Return(nil, file1V1, nil),
 					s.EXPECT().Write("BUCKET", gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("Error")),
@@ -316,7 +319,7 @@ func TestFileUpdate(t *testing.T) {
 		},
 		{
 			"Write successfull",
-			func(s *mock.MockStorage) []*gomock.Call {
+			func(s *mock.MockStorage, p *mockStorageSync.MockPublisher) []*gomock.Call {
 				no := &object.NewObjectInfo{
 					Archetype:   "ARCH",
 					Size:        int64(8),
@@ -331,6 +334,7 @@ func TestFileUpdate(t *testing.T) {
 				return []*gomock.Call{
 					s.EXPECT().Read("BUCKET", "FILE", "").Return(nil, file1V1, nil),
 					s.EXPECT().Write("BUCKET", no, gomock.Any()).Return(file1V2, nil),
+					p.EXPECT().PublishAsyncWithRetries(storageSync.FileUpdate, gomock.Eq(&storageSync.FileInfo{"BUCKET", "FILE", "UUID"})),
 				}
 			},
 			file1V2,
@@ -342,7 +346,7 @@ func TestFileUpdate(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.description, func(t *testing.T) {
 			// init service
-			svc, s, _, c := getTestService(t)
+			svc, s, _, p, c := getTestService(t)
 			defer c()
 
 			// mock getUUID and getTime
@@ -350,7 +354,7 @@ func TestFileUpdate(t *testing.T) {
 			getTime = func() strfmt.DateTime { return strfmt.DateTime(time2) }
 
 			// setup calls
-			test.calls(s)
+			test.calls(s, p)
 
 			// prepare the reader
 			r := bytes.NewReader([]byte("contents"))
@@ -385,13 +389,13 @@ func TestFileUpdate(t *testing.T) {
 func TestFileDelete(t *testing.T) {
 	testCases := []struct {
 		description   string
-		calls         func(*mock.MockStorage) []*gomock.Call
+		calls         func(*mock.MockStorage, *mockStorageSync.MockPublisher) []*gomock.Call
 		errorExpected bool
 		exactError    error
 	}{
 		{
 			"Read fails",
-			func(s *mock.MockStorage) []*gomock.Call {
+			func(s *mock.MockStorage, p *mockStorageSync.MockPublisher) []*gomock.Call {
 				return []*gomock.Call{
 					s.EXPECT().Read("BUCKET", "FILE", "").Return(nil, nil, fmt.Errorf("Error")),
 				}
@@ -401,7 +405,7 @@ func TestFileDelete(t *testing.T) {
 		},
 		{
 			"Write fails",
-			func(s *mock.MockStorage) []*gomock.Call {
+			func(s *mock.MockStorage, p *mockStorageSync.MockPublisher) []*gomock.Call {
 				return []*gomock.Call{
 					s.EXPECT().Read("BUCKET", "FILE", "").Return(nil, file1V1, nil),
 					s.EXPECT().Write("BUCKET", gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("Error")),
@@ -412,7 +416,7 @@ func TestFileDelete(t *testing.T) {
 		},
 		{
 			"Write successfull",
-			func(s *mock.MockStorage) []*gomock.Call {
+			func(s *mock.MockStorage, p *mockStorageSync.MockPublisher) []*gomock.Call {
 				no := &object.NewObjectInfo{
 					Archetype:   "openEHR-EHR-OBSERVATION.blood_pressure.v1",
 					Size:        int64(0),
@@ -427,6 +431,7 @@ func TestFileDelete(t *testing.T) {
 				return []*gomock.Call{
 					s.EXPECT().Read("BUCKET", "FILE", "").Return(nil, file1V1, nil),
 					s.EXPECT().Write("BUCKET", no, gomock.Any()).Return(file1V2, nil),
+					p.EXPECT().PublishAsyncWithRetries(storageSync.FileDelete, gomock.Eq(&storageSync.FileInfo{"BUCKET", "FILE", ""})),
 				}
 			},
 			noErrors,
@@ -437,7 +442,7 @@ func TestFileDelete(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.description, func(t *testing.T) {
 			// init service
-			svc, s, _, c := getTestService(t)
+			svc, s, _, p, c := getTestService(t)
 			defer c()
 
 			// mock getUUID and getTime
@@ -445,7 +450,7 @@ func TestFileDelete(t *testing.T) {
 			getTime = func() strfmt.DateTime { return strfmt.DateTime(time2) }
 
 			// setup calls
-			test.calls(s)
+			test.calls(s, p)
 
 			// call the MakeBucket
 			err := svc.FileDelete("BUCKET", "FILE")
@@ -546,7 +551,7 @@ func TestFileSync(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.description, func(t *testing.T) {
 			// init service
-			svc, s, _, c := getTestService(t)
+			svc, s, _, _, c := getTestService(t)
 			defer c()
 
 			// mock getUUID and getTime
@@ -586,7 +591,7 @@ func TestFileSync(t *testing.T) {
 	}
 }
 
-func getTestService(t *testing.T) (*service, *mock.MockStorage, *mock.MockKeyProvider, func()) {
+func getTestService(t *testing.T) (*service, *mock.MockStorage, *mock.MockKeyProvider, *mockStorageSync.MockPublisher, func()) {
 	// setup s3 mock
 	storageCtrl := gomock.NewController(t)
 	s3storage := mock.NewMockStorage(storageCtrl)
@@ -595,18 +600,24 @@ func getTestService(t *testing.T) (*service, *mock.MockStorage, *mock.MockKeyPro
 	keyProviderCtrl := gomock.NewController(t)
 	keyProvider := mock.NewMockKeyProvider(keyProviderCtrl)
 
+	// setup publisher mock
+	publisherCtrl := gomock.NewController(t)
+	publisher := mockStorageSync.NewMockPublisher(publisherCtrl)
+
 	svc := &service{
 		s3:          s3storage,
 		keyProvider: keyProvider,
+		publisher:   publisher,
 		logger:      zerolog.New(os.Stdout),
 	}
 
 	cleanup := func() {
 		storageCtrl.Finish()
 		keyProviderCtrl.Finish()
+		publisherCtrl.Finish()
 	}
 
-	return svc, s3storage, keyProvider, cleanup
+	return svc, s3storage, keyProvider, publisher, cleanup
 }
 
 func printJson(item interface{}) {

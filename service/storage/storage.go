@@ -13,6 +13,7 @@ import (
 	"github.com/iryonetwork/wwm/gen/storage/models"
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/object"
+	"github.com/iryonetwork/wwm/storageSync"
 	"github.com/rs/zerolog"
 )
 
@@ -54,6 +55,7 @@ var ErrAlreadyExistsConflict = errors.New("Item already exists and has differing
 type service struct {
 	s3          s3.Storage
 	keyProvider s3.KeyProvider
+	publisher   storageSync.Publisher
 	logger      zerolog.Logger
 }
 
@@ -127,18 +129,24 @@ func (s *service) FileNew(bucketID string, r io.Reader, contentType string, arch
 		return nil, err
 	}
 
+	fileID := getUUID()
+	version := getUUID()
 	no := &object.NewObjectInfo{
 		Archetype:   archetype,
 		Size:        int64(buf.Len()),
 		Checksum:    checksum,
 		Created:     getTime(),
 		ContentType: contentType,
-		Version:     getUUID(),
-		Name:        getUUID(),
+		Version:     version,
+		Name:        fileID,
 		Operation:   string(s3.Write),
 	}
 
-	return s.s3.Write(bucketID, no, &buf)
+	fd, err := s.s3.Write(bucketID, no, &buf)
+	if err == nil {
+		s.publisher.PublishAsyncWithRetries(storageSync.FileNew, &storageSync.FileInfo{bucketID, fileID, version})
+	}
+	return fd, err
 }
 
 func (s *service) FileUpdate(bucketID, fileID string, r io.Reader, contentType string, archetype string) (*models.FileDescriptor, error) {
@@ -157,18 +165,23 @@ func (s *service) FileUpdate(bucketID, fileID string, r io.Reader, contentType s
 		return nil, err
 	}
 
+	version := getUUID()
 	no := &object.NewObjectInfo{
 		Archetype:   archetype,
 		Checksum:    checksum,
 		Size:        int64(buf.Len()),
 		Created:     getTime(),
 		ContentType: contentType,
-		Version:     getUUID(),
+		Version:     version,
 		Name:        fileID,
 		Operation:   string(s3.Write),
 	}
 
-	return s.s3.Write(bucketID, no, &buf)
+	fd, err := s.s3.Write(bucketID, no, &buf)
+	if err == nil {
+		s.publisher.PublishAsyncWithRetries(storageSync.FileUpdate, &storageSync.FileInfo{bucketID, fileID, version})
+	}
+	return fd, err
 }
 
 func (s *service) FileDelete(bucketID, fileID string) error {
@@ -190,6 +203,9 @@ func (s *service) FileDelete(bucketID, fileID string) error {
 	}
 
 	_, err = s.s3.Write(bucketID, no, &bytes.Buffer{})
+	if err == nil {
+		s.publisher.PublishAsyncWithRetries(storageSync.FileDelete, &storageSync.FileInfo{bucketID, fileID, ""})
+	}
 	return err
 }
 
@@ -233,8 +249,8 @@ func (s *service) FileSync(bucketID, fileID, version string, r io.Reader, conten
 }
 
 // New returns a new instance of storage service
-func New(s3 s3.Storage, keyProvider s3.KeyProvider, log zerolog.Logger) Service {
-	return &service{s3: s3, keyProvider: keyProvider, logger: log}
+func New(s3 s3.Storage, keyProvider s3.KeyProvider, publisher storageSync.Publisher, log zerolog.Logger) Service {
+	return &service{s3: s3, keyProvider: keyProvider, publisher: publisher, logger: log}
 }
 
 var getUUID = func() string {
