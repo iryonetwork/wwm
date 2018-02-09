@@ -388,7 +388,7 @@ func getTestPublisher(t *testing.T) (storageSync.Publisher, func()) {
 		t.Fatal("Connection to test stan-straming server failed")
 	}
 
-	p, _ := publisher.New(conn, 5, time.Duration(time.Millisecond), 1.0, zerolog.New(os.Stdout))
+	p := publisher.New(conn, 5, time.Duration(time.Millisecond), 1.0, zerolog.New(os.Stdout))
 
 	cleanup := func() {
 		p.Close()

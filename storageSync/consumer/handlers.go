@@ -38,7 +38,11 @@ func (h *handlers) FileUpdate(f *storageSync.FileInfo) error {
 
 // FileDelete deletes file to cloud storage.
 func (h *handlers) FileDelete(f *storageSync.FileInfo) error {
-	return nil
+	params := storage.NewFileDeleteParams().WithBucket(f.BucketID).WithFileID(f.FileID)
+
+	_, err := h.remoteStorageClient.FileDelete(params, h.auth)
+
+	return err
 }
 
 // NewApiHandlers returns Handlers with cloudStorage and localStorage API used.
@@ -52,5 +56,27 @@ func NewHandlers(localStorage s3.Storage, remoteStorageClient *storage.Client, a
 }
 
 func (h *handlers) fileSync(f *storageSync.FileInfo) error {
-	return nil
+	params := storage.NewFileSyncParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
+
+	r, fd, err := h.localStorage.Read(f.BucketID, f.FileID, f.Version)
+	if err != nil {
+		if err == s3.ErrNotFound {
+			h.logger.Info().Str("bucket", f.BucketID).Str("fileID", f.FileID).Str("version", f.Version).Msg("File does not exist in local storage.")
+
+			// File might have been already deleted
+			return nil
+		}
+		return err
+	}
+
+	if fd.Archetype != "" {
+		params.SetArchetype(&fd.Archetype)
+	}
+	params.SetContentType(fd.ContentType)
+	params.SetCreated(fd.Created)
+	params.SetFile(runtime.NamedReader("FileReader", r))
+
+	_, _, err = h.remoteStorageClient.FileSync(params, h.auth)
+
+	return err
 }

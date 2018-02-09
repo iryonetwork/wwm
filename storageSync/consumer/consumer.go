@@ -106,11 +106,11 @@ func (c *stanConsumer) getMsgHandler(ID int, typ storageSync.EventType, h Handle
 }
 
 // New returns new consumer service with provided nats-streaming connection as underlying backend.
-func New(sc stan.Conn, handlers Handlers, ackWait time.Duration, logger zerolog.Logger) (storageSync.Consumer, error) {
+func New(sc stan.Conn, handlers Handlers, ackWait time.Duration, logger zerolog.Logger) storageSync.Consumer {
 	return &stanConsumer{
 		conn:     sc,
 		handlers: handlers,
 		ackWait:  ackWait,
 		logger:   logger,
-	}, nil
+	}
 }
