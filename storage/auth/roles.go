@@ -107,7 +107,7 @@ func (s *Storage) AddRole(role *models.Role) (*models.Role, error) {
 		return tx.Bucket(bucketRoles).Put(id.Bytes(), data)
 	})
 
-	if err != nil {
+	if err == nil {
 		go s.enforcer.LoadPolicy()
 	}
 
@@ -149,13 +149,17 @@ func (s *Storage) UpdateRole(role *models.Role) (*models.Role, error) {
 			return utils.NewError(utils.ErrNotFound, "Failed to find role by id = '%s'", role.ID)
 		}
 
-		// check if users for role exist
+		users := make([]string, len(role.Users))
+		length := 0
+		// check if users for role exist and remove non existing users form role
 		for _, userID := range role.Users {
 			_, err := s.GetUser(userID)
-			if err != nil {
-				return err
+			if err == nil {
+				users[length] = userID
+				length++
 			}
 		}
+		role.Users = users[:length]
 
 		data, err := role.MarshalBinary()
 		if err != nil {
@@ -171,7 +175,7 @@ func (s *Storage) UpdateRole(role *models.Role) (*models.Role, error) {
 		return bRoles.Put(roleUUID.Bytes(), data)
 	})
 
-	if err != nil {
+	if err == nil {
 		go s.enforcer.LoadPolicy()
 	}
 
@@ -198,7 +202,7 @@ func (s *Storage) RemoveRole(id string) error {
 		return tx.Bucket(bucketRoles).Delete(roleUUID.Bytes())
 	})
 
-	if err != nil {
+	if err == nil {
 		go s.enforcer.LoadPolicy()
 	}
 

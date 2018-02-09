@@ -2,7 +2,7 @@ import produce from "immer"
 import { push } from "react-router-redux"
 import jwtDecode from "jwt-decode"
 
-import { open, COLOR_DANGER } from "./alert"
+import { open, close, COLOR_DANGER } from "./alert"
 
 export const LOGIN = "authentication/LOGIN"
 export const ERROR = "authentication/ERROR"
@@ -46,8 +46,7 @@ export default (state = initialState, action) => {
                 draft.token = null
                 draft.redirectToReferrer = false
                 draft.retries = 0
-                draft.error =
-                    "Failed to renew authentication token. Please sign in again"
+                draft.error = "Failed to renew authentication token. Please sign in again"
                 draft.form = {}
                 break
             default:
@@ -83,9 +82,7 @@ let renewToken = () => {
                         }, renewInterval)
                     })
                 } else {
-                    return dispatch(
-                        renewRetry(getState().authentication.retries)
-                    )
+                    return dispatch(renewRetry(getState().authentication.retries))
                 }
             })
             .catch(ex => {
@@ -110,6 +107,7 @@ let renewRetry = tries => {
 
 export const login = () => {
     return (dispatch, getState) => {
+        dispatch(close())
         dispatch({
             type: LOGIN
         })
@@ -138,19 +136,11 @@ export const login = () => {
                         .json()
                         .then(data => {
                             dispatch({ type: ERROR })
-                            dispatch(
-                                open(data.message, data.code, COLOR_DANGER)
-                            )
+                            dispatch(open(data.message, data.code, COLOR_DANGER))
                         })
                         .catch(ex => {
                             dispatch({ type: ERROR })
-                            dispatch(
-                                open(
-                                    response.statusText,
-                                    response.status,
-                                    COLOR_DANGER
-                                )
-                            )
+                            dispatch(open(response.statusText, response.status, COLOR_DANGER))
                         })
                 }
             })

@@ -4,7 +4,7 @@ import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
 import _ from "lodash"
 
-import { loadUsers } from "../../modules/users"
+import { loadUsers, deleteUser } from "../../modules/users"
 import { removeUserFromRole } from "../../modules/roles"
 
 class Users extends React.Component {
@@ -16,7 +16,7 @@ class Users extends React.Component {
         if (this.props.roleID) {
             this.props.removeUserFromRole(this.props.roleID, userID)
         } else {
-            console.log("DELETE USER")
+            this.props.deleteUser(userID)
         }
     }
 
@@ -37,7 +37,7 @@ class Users extends React.Component {
                     </tr>
                 </thead>
                 <tbody>
-                    {_.map(props.users, user => (
+                    {_.map(_.filter(props.users, user => user), user => (
                         <tr key={user.id}>
                             <th scope="row">{++i}</th>
                             <td>
@@ -69,7 +69,8 @@ const mapDispatchToProps = dispatch =>
     bindActionCreators(
         {
             loadUsers,
-            removeUserFromRole
+            removeUserFromRole,
+            deleteUser
         },
         dispatch
     )

@@ -81,12 +81,11 @@ export default (state = initialState, action) => {
 
         case DELETE_RULE_SUCCESS:
             subjects = { ...state.subjects }
-            rules = { ...state.rules }
-            subjects[rules[action.id].subject] = _.without(subjects[rules[action.id].subject], action.id)
-            delete rules[action.id]
+            subjects[state.rules[action.id].subject] = _.without(subjects[state.rules[action.id].subject], action.id)
+
             return {
                 loading: false,
-                rules,
+                rules: _.pickBy(state.rules, rule => rule.id !== action.id),
                 subjects
             }
 
