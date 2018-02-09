@@ -13,7 +13,6 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/iryonetwork/wwm/gen/storage/models"
 	"github.com/iryonetwork/wwm/storageSync"
 	"github.com/iryonetwork/wwm/storageSync/consumer/mock"
 	"github.com/iryonetwork/wwm/storageSync/publisher"
@@ -23,28 +22,8 @@ var (
 	// clusterID for test server.
 	clusterID = "TestCluster"
 	time1, _  = strfmt.ParseDateTime("2018-02-05T15:16:15.123Z")
-	file1     = &models.FileDescriptor{
-		Archetype:   "openEHR-EHR-OBSERVATION.blood_pressure.v1",
-		Checksum:    "CHS",
-		ContentType: "text/openEhrXml",
-		Created:     time1,
-		Name:        "file11",
-		Path:        "BUCKET/file11/V1",
-		Version:     "V1",
-		Size:        8,
-		Operation:   "w",
-	}
-	file2 = &models.FileDescriptor{
-		Archetype:   "",
-		Checksum:    "CHS",
-		ContentType: "image/jpeg",
-		Created:     time1,
-		Name:        "Image",
-		Path:        "BUCKET/Image/V1",
-		Version:     "V1",
-		Size:        15698,
-		Operation:   "w",
-	}
+	file1     = &storageSync.FileInfo{"bucket", "file1", "version"}
+	file2     = &storageSync.FileInfo{"bucket", "file2", "version"}
 )
 
 func TestMain(m *testing.M) {
@@ -137,7 +116,7 @@ func TestMessageHandling(t *testing.T) {
 	h.EXPECT().
 		FileNew(gomock.Eq(file1)).
 		Return(nil).
-		Do(func(fd *models.FileDescriptor) {
+		Do(func(f *storageSync.FileInfo) {
 			called <- true
 		}).
 		Times(1)
@@ -174,7 +153,7 @@ func TestMessageHandlingOnlyOnce(t *testing.T) {
 	h.EXPECT().
 		FileUpdate(gomock.Eq(file1)).
 		Return(nil).
-		Do(func(fd *models.FileDescriptor) {
+		Do(func(f *storageSync.FileInfo) {
 			called <- true
 		}).
 		Times(1)
@@ -219,7 +198,7 @@ func TestMessageHandlingOnlyOnceSeparateConnections(t *testing.T) {
 	h.EXPECT().
 		FileDelete(gomock.Eq(file1)).
 		Return(nil).
-		Do(func(fd *models.FileDescriptor) {
+		Do(func(f *storageSync.FileInfo) {
 			called <- true
 		}).
 		Times(1)
@@ -264,14 +243,14 @@ func TestMessageHandlingNack(t *testing.T) {
 	nackCall := h.EXPECT().
 		FileNew(gomock.Eq(file1)).
 		Return(fmt.Errorf("error")).
-		Do(func(fd *models.FileDescriptor) {
+		Do(func(f *storageSync.FileInfo) {
 			nack <- true
 		}).
 		Times(1)
 	h.EXPECT().
 		FileNew(gomock.Eq(file1)).
 		Return(nil).
-		Do(func(fd *models.FileDescriptor) {
+		Do(func(f *storageSync.FileInfo) {
 			ok <- true
 		}).
 		Times(1).
@@ -314,14 +293,14 @@ func TestDurability(t *testing.T) {
 	firstHandlerCall := h.EXPECT().
 		FileNew(gomock.Eq(file1)).
 		Return(nil).
-		Do(func(fd *models.FileDescriptor) {
+		Do(func(f *storageSync.FileInfo) {
 			ok <- true
 		}).
 		Times(1)
 	h.EXPECT().
 		FileNew(gomock.Eq(file2)).
 		Return(nil).
-		Do(func(fd *models.FileDescriptor) {
+		Do(func(f *storageSync.FileInfo) {
 			ok <- true
 		}).
 		Times(1).

@@ -10,7 +10,6 @@ import (
 	"github.com/nats-io/go-nats-streaming"
 	"github.com/rs/zerolog"
 
-	"github.com/iryonetwork/wwm/gen/storage/models"
 	"github.com/iryonetwork/wwm/storageSync"
 )
 
@@ -84,14 +83,14 @@ func (c *stanConsumer) getMsgHandler(ID int, typ storageSync.EventType, h Handle
 			Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).
 			Msgf("Received message: %s", msg)
 
-		fd := &models.FileDescriptor{}
-		err := fd.UnmarshalBinary(msg.Data)
+		f := storageSync.NewFileInfo()
+		err := f.Unmarshal(msg.Data)
 		if err != nil {
-			c.logger.Error().Err(err).Str("cmd", "getMsgHandler").Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).Msg("Failed to unmarshal FileDescriptor")
+			c.logger.Error().Err(err).Str("cmd", "getMsgHandler").Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).Msg("Failed to unmarshal message")
 			return
 		}
 
-		err = h(fd)
+		err = h(f)
 		if err != nil {
 			c.logger.Error().Err(err).Str("cmd", "getMsgHandler").Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).Msg("Failed handler invocation")
 			return

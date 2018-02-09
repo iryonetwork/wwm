@@ -1,67 +1,56 @@
 package consumer
 
 import (
-	"fmt"
-	"math/rand"
-
 	"github.com/go-openapi/runtime"
 	"github.com/rs/zerolog"
 
-	"github.com/iryonetwork/wwm/gen/storage/client"
-	"github.com/iryonetwork/wwm/gen/storage/models"
+	"github.com/iryonetwork/wwm/gen/storage/client/storage"
 	"github.com/iryonetwork/wwm/storage/s3"
+	"github.com/iryonetwork/wwm/storageSync"
 )
 
 // Handlers describes public API for storageSync event handlers
 type Handlers interface {
-	FileNew(fd *models.FileDescriptor) error
-	FileUpdate(fd *models.FileDescriptor) error
-	FileDelete(fd *models.FileDescriptor) error
+	FileNew(f *storageSync.FileInfo) error
+	FileUpdate(f *storageSync.FileInfo) error
+	FileDelete(f *storageSync.FileInfo) error
 }
 
 // Handler describes handler functions
-type Handler func(fd *models.FileDescriptor) error
+type Handler func(f *storageSync.FileInfo) error
 
 type handlers struct {
-	storage          s3.Storage
-	storageAPIClient *client.Storage
-	auth             runtime.ClientAuthInfoWriter
-	logger           zerolog.Logger
+	localStorage        s3.Storage
+	remoteStorageClient *storage.Client
+	auth                runtime.ClientAuthInfoWriter
+	logger              zerolog.Logger
 }
 
 // FileNew uploads new file to cloud storage.
-func (h *handlers) FileNew(fd *models.FileDescriptor) error {
-	h.logger.Info().Msg("FileNew API handler is not yet implemented! random success")
-	if rand.Float32() > 0.5 {
-		return nil
-	}
-	return fmt.Errorf("error")
+func (h *handlers) FileNew(f *storageSync.FileInfo) error {
+	return h.fileSync(f)
 }
 
 // FileUpdate uploads updated file to cloud storage.
-func (h *handlers) FileUpdate(fd *models.FileDescriptor) error {
-	h.logger.Info().Msg("FileUpdate API handler is not yet implemented! random success")
-	if rand.Float32() > 0.5 {
-		return nil
-	}
-	return fmt.Errorf("error")
+func (h *handlers) FileUpdate(f *storageSync.FileInfo) error {
+	return h.fileSync(f)
 }
 
 // FileDelete deletes file to cloud storage.
-func (h *handlers) FileDelete(fd *models.FileDescriptor) error {
-	h.logger.Info().Msg("FileDelete API handler is not yet implemented! random success")
-	if rand.Float32() > 0.5 {
-		return nil
-	}
-	return fmt.Errorf("error")
+func (h *handlers) FileDelete(f *storageSync.FileInfo) error {
+	return nil
 }
 
 // NewApiHandlers returns Handlers with cloudStorage and localStorage API used.
-func NewHandlers(storage s3.Storage, storageAPIClient *client.Storage, auth runtime.ClientAuthInfoWriter, logger zerolog.Logger) Handlers {
+func NewHandlers(localStorage s3.Storage, remoteStorageClient *storage.Client, auth runtime.ClientAuthInfoWriter, logger zerolog.Logger) Handlers {
 	return &handlers{
-		storage:          storage,
-		storageAPIClient: storageAPIClient,
-		auth:             auth,
-		logger:           logger,
+		localStorage:        localStorage,
+		remoteStorageClient: remoteStorageClient,
+		auth:                auth,
+		logger:              logger,
 	}
+}
+
+func (h *handlers) fileSync(f *storageSync.FileInfo) error {
+	return nil
 }

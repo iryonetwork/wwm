@@ -10,24 +10,13 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/rs/zerolog"
 
-	"github.com/iryonetwork/wwm/gen/storage/models"
 	"github.com/iryonetwork/wwm/storageSync"
 	"github.com/iryonetwork/wwm/storageSync/publisher/mock"
 )
 
 var (
-	time1, _ = strfmt.ParseDateTime("2018-02-05T15:16:15.123Z")
-	file     = &models.FileDescriptor{
-		Archetype:   "openEHR-EHR-OBSERVATION.blood_pressure.v1",
-		Checksum:    "CHS",
-		ContentType: "text/openEhrXml",
-		Created:     time1,
-		Name:        "File1",
-		Path:        "BUCKET/File1/V1",
-		Version:     "V1",
-		Size:        8,
-		Operation:   "w",
-	}
+	time1, _   = strfmt.ParseDateTime("2018-02-05T15:16:15.123Z")
+	file       = &storageSync.FileInfo{"bucket", "file", "version"}
 	noErrors   = false
 	withErrors = true
 )
@@ -44,9 +33,9 @@ func TestPublish(t *testing.T) {
 		{
 			"Publish succeeds",
 			func(c *mock.MockStanConnection) []*gomock.Call {
-				msg, _ := file.MarshalBinary()
+				msg, _ := file.Marshal()
 				return []*gomock.Call{
-					c.EXPECT().Publish(storageSync.FileNew, msg).Return(nil).Times(1),
+					c.EXPECT().Publish(string(storageSync.FileNew), msg).Return(nil).Times(1),
 				}
 			},
 			noErrors,
@@ -55,9 +44,9 @@ func TestPublish(t *testing.T) {
 		{
 			"Publish fails",
 			func(c *mock.MockStanConnection) []*gomock.Call {
-				msg, _ := file.MarshalBinary()
+				msg, _ := file.Marshal()
 				return []*gomock.Call{
-					c.EXPECT().Publish(storageSync.FileNew, msg).Return(expectedError).Times(1),
+					c.EXPECT().Publish(string(storageSync.FileNew), msg).Return(expectedError).Times(1),
 				}
 			},
 			withErrors,
@@ -99,9 +88,9 @@ func TestPublishAsyncWithRetries(t *testing.T) {
 		{
 			"Publish succeeds without retries",
 			func(c *mock.MockStanConnection) []*gomock.Call {
-				msg, _ := file.MarshalBinary()
+				msg, _ := file.Marshal()
 				return []*gomock.Call{
-					c.EXPECT().Publish(storageSync.FileNew, msg).Return(nil).Times(1),
+					c.EXPECT().Publish(string(storageSync.FileNew), msg).Return(nil).Times(1),
 				}
 			},
 			noErrors,
@@ -109,10 +98,10 @@ func TestPublishAsyncWithRetries(t *testing.T) {
 		{
 			"Publish succeeds on second retry",
 			func(c *mock.MockStanConnection) []*gomock.Call {
-				msg, _ := file.MarshalBinary()
+				msg, _ := file.Marshal()
 				return []*gomock.Call{
-					c.EXPECT().Publish(storageSync.FileNew, msg).Return(fmt.Errorf("error")).Times(2),
-					c.EXPECT().Publish(storageSync.FileNew, msg).Return(nil).Times(1),
+					c.EXPECT().Publish(string(storageSync.FileNew), msg).Return(fmt.Errorf("error")).Times(2),
+					c.EXPECT().Publish(string(storageSync.FileNew), msg).Return(nil).Times(1),
 				}
 			},
 			noErrors,
@@ -120,9 +109,9 @@ func TestPublishAsyncWithRetries(t *testing.T) {
 		{
 			"Publish fails after retry limit",
 			func(c *mock.MockStanConnection) []*gomock.Call {
-				msg, _ := file.MarshalBinary()
+				msg, _ := file.Marshal()
 				return []*gomock.Call{
-					c.EXPECT().Publish(storageSync.FileNew, msg).Return(fmt.Errorf("error")).Times(5),
+					c.EXPECT().Publish(string(storageSync.FileNew), msg).Return(fmt.Errorf("error")).Times(5),
 				}
 			},
 			noErrors,
@@ -139,7 +128,6 @@ func TestPublishAsyncWithRetries(t *testing.T) {
 			// call publish async with retries and wait
 			err := s.PublishAsyncWithRetries(storageSync.FileNew, file)
 			s.wg.Wait()
-			fmt.Println("test")
 
 			// assert error
 			if test.errorExpected && err == nil {
@@ -156,8 +144,8 @@ func TestClose(t *testing.T) {
 	defer cleanup()
 
 	// First complete 5 retries, then close connection
-	msg, _ := file.MarshalBinary()
-	pubCall := conn.EXPECT().Publish(storageSync.FileNew, msg).Return(fmt.Errorf("error")).Times(5)
+	msg, _ := file.Marshal()
+	pubCall := conn.EXPECT().Publish(string(storageSync.FileNew), msg).Return(fmt.Errorf("error")).Times(5)
 	conn.EXPECT().Close().After(pubCall).Return(nil)
 
 	s.PublishAsyncWithRetries(storageSync.FileNew, file)
@@ -177,6 +165,8 @@ func getTestPublisher(t *testing.T) (*stanPublisher, *mock.MockStanConnection, f
 	}
 
 	cleanup := func() {
+		mockConn.EXPECT().Close().Times(1)
+		publisher.Close()
 		mockCtrl.Finish()
 	}
 

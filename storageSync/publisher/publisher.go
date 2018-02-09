@@ -8,7 +8,6 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/iryonetwork/wwm/gen/storage/models"
 	"github.com/iryonetwork/wwm/storageSync"
 )
 
@@ -27,11 +26,29 @@ type stanPublisher struct {
 	logger          zerolog.Logger
 }
 
+type nullPublisher struct {
+}
+
+// Publish of nullPublisher does nothing.
+func (p *nullPublisher) Publish(typ storageSync.EventType, f *storageSync.FileInfo) error {
+	return nil
+}
+
+// PublishAsyncWithRetries of nullPublisher does nothing.
+func (p *nullPublisher) PublishAsyncWithRetries(typ storageSync.EventType, f *storageSync.FileInfo) error {
+	return nil
+}
+
+// Close of nullPublisher does nothing.
+func (p *nullPublisher) Close() {
+	return
+}
+
 // Publish pushes storageSync event and returns synchronous response.
-func (p *stanPublisher) Publish(typ storageSync.EventType, fd *models.FileDescriptor) error {
-	msg, err := fd.MarshalBinary()
+func (p *stanPublisher) Publish(typ storageSync.EventType, f *storageSync.FileInfo) error {
+	msg, err := f.Marshal()
 	if err != nil {
-		p.logger.Error().Err(err).Str("cmd", "Publish").Msg("Failed to marshal file descriptor")
+		p.logger.Error().Err(err).Str("cmd", "Publish").Msg("Failed to marshal file info")
 		return err
 	}
 
@@ -44,8 +61,8 @@ func (p *stanPublisher) Publish(typ storageSync.EventType, fd *models.FileDescri
 }
 
 // Publish starts goroutine that pushes storage sync events and retries if publishing failed.
-func (p *stanPublisher) PublishAsyncWithRetries(typ storageSync.EventType, fd *models.FileDescriptor) error {
-	msg, err := fd.MarshalBinary()
+func (p *stanPublisher) PublishAsyncWithRetries(typ storageSync.EventType, f *storageSync.FileInfo) error {
+	msg, err := f.Marshal()
 	if err != nil {
 		p.logger.Error().Err(err).Msg("Failed to marshal file descriptor")
 		return err
@@ -83,12 +100,17 @@ func (p *stanPublisher) Close() {
 }
 
 // New returns new stanPublisher with provided nats-streaming connectiom as underlying backend.
-func New(sc StanConnection, retries int, startRetryWait time.Duration, retryWaitFactor float32, logger zerolog.Logger) (storageSync.Publisher, error) {
+func New(sc StanConnection, retries int, startRetryWait time.Duration, retryWaitFactor float32, logger zerolog.Logger) storageSync.Publisher {
 	return &stanPublisher{
 		conn:            sc,
 		logger:          logger,
 		retries:         retries,
 		startRetryWait:  startRetryWait,
 		retryWaitFactor: retryWaitFactor,
-	}, nil
+	}
+}
+
+// NewNullPublisher returns new nullPublisher for skipping publishing.
+func NewNullPublisher() storageSync.Publisher {
+	return &nullPublisher{}
 }
