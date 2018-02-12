@@ -240,8 +240,8 @@ func (s *service) SyncFile(bucketID, fileID, version string, r io.Reader, conten
 		return nil, ErrAlreadyExistsConflict
 	// Storage returned error and it is not "not found"
 	case err != nil && err != s3.ErrNotFound:
-		s.logger.Error().
-			Msg("File already exists and has conflicting checksum")
+		s.logger.Error().Err().
+			Msg("Error while trying to read file")
 		return nil, err
 	}
 
