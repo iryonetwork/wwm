@@ -38,9 +38,9 @@ func (h *handlers) FileUpdate(f *storageSync.FileInfo) error {
 
 // FileDelete deletes file to cloud storage.
 func (h *handlers) FileDelete(f *storageSync.FileInfo) error {
-	params := storage.NewFileDeleteParams().WithBucket(f.BucketID).WithFileID(f.FileID)
+	params := storage.NewSyncFileDeleteParams().WithBucket(f.BucketID).WithFileID(f.FileID)
 
-	_, err := h.remoteStorageClient.FileDelete(params, h.auth)
+	_, err := h.remoteStorageClient.SyncFileDelete(params, h.auth)
 
 	return err
 }
@@ -56,7 +56,7 @@ func NewHandlers(localStorage s3.Storage, remoteStorageClient *storage.Client, a
 }
 
 func (h *handlers) fileSync(f *storageSync.FileInfo) error {
-	params := storage.NewFileSyncParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
+	params := storage.NewSyncFileParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
 
 	r, fd, err := h.localStorage.Read(f.BucketID, f.FileID, f.Version)
 	if err != nil {
@@ -80,7 +80,7 @@ func (h *handlers) fileSync(f *storageSync.FileInfo) error {
 	params.SetCreated(fd.Created)
 	params.SetFile(runtime.NamedReader("FileReader", r))
 
-	ok, created, err := h.remoteStorageClient.FileSync(params, h.auth)
+	ok, created, err := h.remoteStorageClient.SyncFile(params, h.auth)
 
 	switch {
 	case ok != nil:

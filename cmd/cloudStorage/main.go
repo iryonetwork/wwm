@@ -79,7 +79,9 @@ func main() {
 	api.StorageFileNewHandler = storageHandlers.FileNew()
 	api.StorageFileUpdateHandler = storageHandlers.FileUpdate()
 	api.StorageFileDeleteHandler = storageHandlers.FileDelete()
-	api.StorageFileSyncHandler = storageHandlers.FileSync()
+	api.StorageSyncFileMetadataHandler = storageHandlers.SyncFileMetadata()
+	api.StorageSyncFileHandler = storageHandlers.SyncFile()
+	api.StorageSyncFileDeleteHandler = storageHandlers.SyncFileDelete()
 
 	api.RegisterConsumer("*/*", &WildcardConsumer{})
 

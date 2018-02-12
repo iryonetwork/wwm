@@ -46,8 +46,11 @@ type Service interface {
 	// FileDelete marks file as deleted.
 	FileDelete(bucketID, fileID string) error
 
-	// FileSync syncs file with provided FileID and Version.
-	FileSync(bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string) (*models.FileDescriptor, error)
+	// SyncFile syncs file with provided fileID and version.
+	SyncFile(bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string) (*models.FileDescriptor, error)
+
+	// SyncFileDelete sync file deletion.
+	SyncFileDelete(bucketID, fileID, version string, created strfmt.DateTime) error
 }
 
 var ErrAlreadyExists = errors.New("Item already exists")
@@ -192,25 +195,26 @@ func (s *service) FileDelete(bucketID, fileID string) error {
 		return err
 	}
 
+	version := getUUID()
 	no := &object.NewObjectInfo{
 		Archetype:   fd.Archetype,
 		Checksum:    "",
 		Size:        0,
 		Created:     getTime(),
 		ContentType: fd.ContentType,
-		Version:     getUUID(),
+		Version:     version,
 		Name:        fileID,
 		Operation:   string(s3.Delete),
 	}
 
 	_, err = s.s3.Write(bucketID, no, &bytes.Buffer{})
 	if err == nil {
-		s.publisher.PublishAsyncWithRetries(storageSync.FileDelete, &storageSync.FileInfo{bucketID, fileID, ""})
+		s.publisher.PublishAsyncWithRetries(storageSync.FileDelete, &storageSync.FileInfo{bucketID, fileID, version})
 	}
 	return err
 }
 
-func (s *service) FileSync(bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string) (*models.FileDescriptor, error) {
+func (s *service) SyncFile(bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string) (*models.FileDescriptor, error) {
 	// calculate the checksum
 	var buf bytes.Buffer
 	tee := io.TeeReader(r, &buf)
@@ -253,6 +257,28 @@ func (s *service) FileSync(bucketID, fileID, version string, r io.Reader, conten
 	}
 
 	return s.s3.Write(bucketID, no, &buf)
+}
+
+func (s *service) SyncFileDelete(bucketID, fileID, version string, created strfmt.DateTime) error {
+	// get the previous file
+	_, fd, err := s.s3.Read(bucketID, fileID, "")
+	if err != nil {
+		return err
+	}
+
+	no := &object.NewObjectInfo{
+		Archetype:   fd.Archetype,
+		Checksum:    "",
+		Size:        0,
+		Created:     created,
+		ContentType: fd.ContentType,
+		Version:     version,
+		Name:        fileID,
+		Operation:   string(s3.Delete),
+	}
+
+	_, err = s.s3.Write(bucketID, no, &bytes.Buffer{})
+	return err
 }
 
 // New returns a new instance of storage service

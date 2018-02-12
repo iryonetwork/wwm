@@ -354,12 +354,74 @@ paths:
           $ref: '#/responses/500'
 
   /sync/{bucket}/{fileID}/{version}:
+    head:
+      tags:
+        - storage
+      summary: Gets metadata of specific version of a file
+      description: Verifies that files exists and returns metadata of specific version of a file without returning file itself
+      operationId: syncFileMetadata
+
+      parameters:
+        - in: path
+          name: bucket
+          description: Name of the bucket
+          type: string
+          required: true
+
+        - in: path
+          name: fileID
+          description: File name
+          type: string
+          required: true
+
+        - in: path
+          name: version
+          description: Version of a file
+          type: string
+          required: true
+
+      responses:
+        200:
+          description: File found
+          headers:
+            Content-Type:
+              type: string
+              description: Content type of the file
+            X-Created:
+              type: string
+              format: datetime
+              description: Date and time of file creation
+            X-Archetype:
+              type: string
+              description: Archetype ID
+            X-Checksum:
+              type: string
+              description: File's SHA256 checksum
+            X-Version:
+              type: string
+              description: File's version
+            X-Name:
+              type: string
+              description: File's name
+            X-Path:
+              type: string
+              description: File's full path
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
     post:
       tags:
         - storage
       summary: Syncs new file creation and file update
       description: Uploads a new file to a bucket with provided ID and version
-      operationId: fileSync
+      operationId: syncFile
       consumes:
         - multipart/form-data
 
@@ -425,6 +487,52 @@ paths:
 
         409:
           $ref: '#/responses/409'
+
+        500:
+          $ref: '#/responses/500'
+
+    delete:
+      tags:
+        - storage
+      summary: Marks file as deleted
+      description: Syncs file deletion
+      operationId: syncFileDelete
+
+      parameters:
+        - in: path
+          name: bucket
+          description: Name of the bucket
+          type: string
+          required: true
+
+        - in: path
+          name: fileID
+          description: File name
+          type: string
+          required: true
+
+        - in: path
+          name: version
+          description: Version of a file
+          type: string
+          required: true
+
+        - in: formData
+          name: created
+          description: Date and time of file deletion
+          required: true
+          type: string
+          format: datetime
+
+      responses:
+        204:
+          description: File deleted
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
 
         500:
           $ref: '#/responses/500'

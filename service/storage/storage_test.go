@@ -431,7 +431,7 @@ func TestFileDelete(t *testing.T) {
 				return []*gomock.Call{
 					s.EXPECT().Read("BUCKET", "FILE", "").Return(nil, file1V1, nil),
 					s.EXPECT().Write("BUCKET", no, gomock.Any()).Return(file1V2, nil),
-					p.EXPECT().PublishAsyncWithRetries(storageSync.FileDelete, gomock.Eq(&storageSync.FileInfo{"BUCKET", "FILE", ""})),
+					p.EXPECT().PublishAsyncWithRetries(storageSync.FileDelete, gomock.Eq(&storageSync.FileInfo{"BUCKET", "FILE", "UUID"})),
 				}
 			},
 			noErrors,
@@ -470,7 +470,7 @@ func TestFileDelete(t *testing.T) {
 	}
 }
 
-func TestFileSync(t *testing.T) {
+func TestSyncFile(t *testing.T) {
 	testCases := []struct {
 		description   string
 		calls         func(*mock.MockStorage) []*gomock.Call
@@ -564,8 +564,8 @@ func TestFileSync(t *testing.T) {
 			// prepare the reader
 			r := bytes.NewReader([]byte("contents"))
 
-			// call the FileSync
-			out, err := svc.FileSync("BUCKET", "FILE3", "V1", r, "text/openEhrXml", time2, "ARCH")
+			// call the SyncFile
+			out, err := svc.SyncFile("BUCKET", "FILE3", "V1", r, "text/openEhrXml", time2, "ARCH")
 
 			// check expected results
 			if !reflect.DeepEqual(out, test.expected) {
@@ -575,6 +575,88 @@ func TestFileSync(t *testing.T) {
 				printJson(out)
 				t.Errorf("Expected file descriptor to equal\n%+v\ngot\n%+v", test.expected, out)
 			}
+
+			// assert error
+			if test.errorExpected && err == nil {
+				t.Error("Expected error, got nil")
+			} else if !test.errorExpected && err != nil {
+				t.Errorf("Expected error to be nil, got %v", err)
+			}
+
+			// assert actual error
+			if test.exactError != nil && test.exactError != err {
+				t.Errorf("Expected error to equal '%v'; got %v", test.exactError, err)
+			}
+		})
+	}
+}
+
+func TestSyncFileDelete(t *testing.T) {
+	testCases := []struct {
+		description   string
+		calls         func(*mock.MockStorage) []*gomock.Call
+		errorExpected bool
+		exactError    error
+	}{
+		{
+			"Read fails",
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().Read("BUCKET", "FILE", "").Return(nil, nil, fmt.Errorf("Error")),
+				}
+			},
+			withErrors,
+			nil,
+		},
+		{
+			"Write fails",
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().Read("BUCKET", "FILE", "").Return(nil, file1V1, nil),
+					s.EXPECT().Write("BUCKET", gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("Error")),
+				}
+			},
+			withErrors,
+			nil,
+		},
+		{
+			"Write successfull",
+			func(s *mock.MockStorage) []*gomock.Call {
+				no := &object.NewObjectInfo{
+					Archetype:   "openEHR-EHR-OBSERVATION.blood_pressure.v1",
+					Size:        int64(0),
+					Checksum:    "",
+					Created:     strfmt.DateTime(time2),
+					ContentType: "text/openEhrXml",
+					Version:     "DEL_VERSION",
+					Name:        "FILE",
+					Operation:   "d",
+				}
+
+				return []*gomock.Call{
+					s.EXPECT().Read("BUCKET", "FILE", "").Return(nil, file1V1, nil),
+					s.EXPECT().Write("BUCKET", no, gomock.Any()).Return(file1V2, nil),
+				}
+			},
+			noErrors,
+			nil,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.description, func(t *testing.T) {
+			// init service
+			svc, s, _, _, c := getTestService(t)
+			defer c()
+
+			// mock getUUID and getTime
+			getUUID = func() string { return "UUID" }
+
+			// setup calls
+			test.calls(s)
+
+			// call the MakeBucket
+			err := svc.SyncFileDelete("BUCKET", "FILE", "DEL_VERSION", strfmt.DateTime(time2))
 
 			// assert error
 			if test.errorExpected && err == nil {

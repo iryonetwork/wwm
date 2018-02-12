@@ -20,7 +20,9 @@ type Handlers interface {
 	FileNew() operations.FileNewHandler
 	FileUpdate() operations.FileUpdateHandler
 	FileDelete() operations.FileDeleteHandler
-	FileSync() operations.FileSyncHandler
+	SyncFileMetadata() operations.SyncFileMetadataHandler
+	SyncFile() operations.SyncFileHandler
+	SyncFileDelete() operations.SyncFileDeleteHandler
 	Authorizer() runtime.Authorizer
 	GetUserIDFromToken(token string) (*string, error)
 }
@@ -158,8 +160,29 @@ func (h *handlers) FileDelete() operations.FileDeleteHandler {
 	})
 }
 
-func (h *handlers) FileSync() operations.FileSyncHandler {
-	return operations.FileSyncHandlerFunc(func(params operations.FileSyncParams, principal *string) middleware.Responder {
+func (h *handlers) SyncFileMetadata() operations.SyncFileMetadataHandler {
+	return operations.SyncFileMetadataHandlerFunc(func(params operations.SyncFileMetadataParams, principal *string) middleware.Responder {
+		_, fd, err := h.service.FileGetVersion(params.Bucket, params.FileID, params.Version)
+		if err != nil {
+			return operations.NewSyncFileMetadataInternalServerError().WithPayload(&models.Error{
+				Code:    "server_error",
+				Message: err.Error(),
+			})
+		}
+
+		return operations.NewSyncFileMetadataOK().
+			WithContentType(fd.ContentType).
+			WithXCreated(fd.Created).
+			WithXVersion(fd.Version).
+			WithXArchetype(fd.Archetype).
+			WithXChecksum(fd.Checksum).
+			WithXName(fd.Name).
+			WithXPath(fd.Path)
+	})
+}
+
+func (h *handlers) SyncFile() operations.SyncFileHandler {
+	return operations.SyncFileHandlerFunc(func(params operations.SyncFileParams, principal *string) middleware.Responder {
 		var archetype string
 		if params.Archetype != nil {
 			archetype = *params.Archetype
@@ -167,22 +190,36 @@ func (h *handlers) FileSync() operations.FileSyncHandler {
 		defer params.File.Close()
 
 		// call service
-		fd, err := h.service.FileSync(params.Bucket, params.FileID, params.Version, params.File, params.ContentType, params.Created, archetype)
+		fd, err := h.service.SyncFile(params.Bucket, params.FileID, params.Version, params.File, params.ContentType, params.Created, archetype)
 		if err != nil {
 			switch err {
 			case ErrAlreadyExists:
-				return operations.NewFileSyncOK().WithPayload(fd)
+				return operations.NewSyncFileOK().WithPayload(fd)
 			case ErrAlreadyExistsConflict:
-				return operations.NewFileSyncConflict()
+				return operations.NewSyncFileConflict()
 			default:
-				return operations.NewFileSyncInternalServerError().WithPayload(&models.Error{
+				return operations.NewSyncFileInternalServerError().WithPayload(&models.Error{
 					Code:    "server_error",
 					Message: err.Error(),
 				})
 			}
 		}
 
-		return operations.NewFileNewCreated().WithPayload(fd)
+		return operations.NewSyncFileCreated().WithPayload(fd)
+	})
+}
+
+func (h *handlers) SyncFileDelete() operations.SyncFileDeleteHandler {
+	return operations.SyncFileDeleteHandlerFunc(func(params operations.SyncFileDeleteParams, principal *string) middleware.Responder {
+		err := h.service.SyncFileDelete(params.Bucket, params.FileID, params.Version, params.Created)
+		if err != nil {
+			return operations.NewSyncFileDeleteInternalServerError().WithPayload(&models.Error{
+				Code:    "server_error",
+				Message: err.Error(),
+			})
+		}
+
+		return operations.NewSyncFileDeleteNoContent()
 	})
 }
 
