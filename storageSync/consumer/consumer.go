@@ -86,13 +86,21 @@ func (c *stanConsumer) getMsgHandler(ID int, typ storageSync.EventType, h Handle
 		f := storageSync.NewFileInfo()
 		err := f.Unmarshal(msg.Data)
 		if err != nil {
-			c.logger.Error().Err(err).Str("cmd", "getMsgHandler").Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).Msg("Failed to unmarshal message")
+			c.logger.Error().Err(err).
+				Str("cmd", "getMsgHandler").
+				Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).
+				Msg("Failed to unmarshal message")
+
 			return
 		}
 
 		err = h(f)
 		if err != nil {
-			c.logger.Error().Err(err).Str("cmd", "getMsgHandler").Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).Msg("Failed handler invocation")
+			c.logger.Error().Err(err).
+				Str("cmd", "getMsgHandler").
+				Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).
+				Msg("Failed handler invocation")
+
 			return
 		}
 

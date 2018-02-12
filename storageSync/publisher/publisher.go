@@ -48,13 +48,18 @@ func (p *nullPublisher) Close() {
 func (p *stanPublisher) Publish(typ storageSync.EventType, f *storageSync.FileInfo) error {
 	msg, err := f.Marshal()
 	if err != nil {
-		p.logger.Error().Err(err).Str("cmd", "Publish").Msg("Failed to marshal file info")
+		p.logger.Error().Err(err).
+			Str("cmd", "Publish").
+			Msg("Failed to marshal file info")
+
 		return err
 	}
 
 	err = p.conn.Publish(string(typ), msg)
 	if err != nil {
-		p.logger.Error().Err(err).Str("cmd", "Publish").Msg("Failed to publish storage sync event")
+		p.logger.Error().Err(err).
+			Str("cmd", "Publish").
+			Msg("Failed to publish storage sync event")
 		return err
 	}
 	return nil
@@ -64,7 +69,8 @@ func (p *stanPublisher) Publish(typ storageSync.EventType, f *storageSync.FileIn
 func (p *stanPublisher) PublishAsyncWithRetries(typ storageSync.EventType, f *storageSync.FileInfo) error {
 	msg, err := f.Marshal()
 	if err != nil {
-		p.logger.Error().Err(err).Msg("Failed to marshal file descriptor")
+		p.logger.Error().Err(err).
+			Msg("Failed to marshal file descriptor")
 		return err
 	}
 
@@ -75,17 +81,27 @@ func (p *stanPublisher) PublishAsyncWithRetries(typ storageSync.EventType, f *st
 		for i := 0; i < p.retries; i++ {
 			err = p.conn.Publish(string(typ), msg)
 			if err == nil {
-				p.logger.Debug().Str("cmd", "PublishAsyncWithRetries").Str("type", string(typ)).Msgf("%s", msg)
+				p.logger.Debug().
+					Str("cmd", "PublishAsyncWithRetries").
+					Str("type", string(typ)).
+					Msgf("%s", msg)
+
 				p.wg.Done()
 				return
 			}
-			p.logger.Error().Err(err).Str("cmd", "PublishAsyncWithRetries").Msgf("Failed to publish storage sync event, retry in %s", retryWait)
+
+			p.logger.Error().Err(err).
+				Str("cmd", "PublishAsyncWithRetries").
+				Msgf("Failed to publish storage sync event, retry in %s", retryWait)
+
 			time.Sleep(retryWait)
 			retryWait = time.Duration(float32(retryWait) * p.retryWaitFactor)
 		}
 		if err != nil {
 			// TODO: handle failure to publish, e.g. write messages to file that can be read later
-			p.logger.Error().Err(err).Str("cmd", "PublishAsyncWithRetries").Msg("Failed to publish storage sync event, maximum number of retries reached")
+			p.logger.Error().Err(err).
+				Str("cmd", "PublishAsyncWithRetries").
+				Msg("Failed to publish storage sync event, maximum number of retries reached")
 		}
 		p.wg.Done()
 	}()

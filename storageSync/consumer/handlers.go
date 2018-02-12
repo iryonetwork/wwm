@@ -61,7 +61,11 @@ func (h *handlers) fileSync(f *storageSync.FileInfo) error {
 	r, fd, err := h.localStorage.Read(f.BucketID, f.FileID, f.Version)
 	if err != nil {
 		if err == s3.ErrNotFound {
-			h.logger.Info().Str("bucket", f.BucketID).Str("fileID", f.FileID).Str("version", f.Version).Msg("File does not exist in local storage.")
+			h.logger.Info().
+				Str("bucket", f.BucketID).
+				Str("fileID", f.FileID).
+				Str("version", f.Version).
+				Msg("File does not exist in local storage.")
 
 			// File might have been already deleted
 			return nil
