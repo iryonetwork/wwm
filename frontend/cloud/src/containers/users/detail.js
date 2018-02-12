@@ -2,13 +2,11 @@ import React from "react"
 import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
 import { withRouter } from "react-router-dom"
-import _ from "lodash"
 
 import { loadUsers, saveUser } from "../../modules/users"
 import { loadRoles } from "../../modules/roles"
 import { loadRules } from "../../modules/rules"
 import { open, close, COLOR_DANGER } from "../../modules/alert"
-//import Rules from "../rules"
 
 class UserDetail extends React.Component {
     constructor(props) {
@@ -22,12 +20,8 @@ class UserDetail extends React.Component {
     }
 
     componentDidMount() {
-        if (!this.props.user) {
+        if (!this.props.user && this.props.userID !== "new") {
             this.props.loadUsers()
-        }
-        //this.props.loadRoles()
-        if (!this.props.allRules) {
-            this.props.loadRules()
         }
     }
 
@@ -35,23 +29,6 @@ class UserDetail extends React.Component {
         if (props.user) {
             this.setState({ email: props.user.email })
         }
-        /*
-        if (props.allRoles) {
-            let selected = _.reduce(
-                props.roles,
-                (obj, role) => {
-                    obj[role] = true
-                    return obj
-                },
-                {}
-            )
-            let all = _.mapValues(props.allRoles, () => false)
-
-            this.setState({
-                roles: _.defaults(selected, all)
-            })
-        }
-        */
     }
 
     updateEmail = e => {
@@ -125,9 +102,15 @@ class UserDetail extends React.Component {
         }
         return (
             <div>
-                <h1>Users</h1>
+                {props.home ? (
+                    <h1>Hi, {props.user.username}</h1>
+                ) : (
+                    <div>
+                        <h1>Users</h1>
 
-                <h2>{props.user ? props.user.username : "Add new user"}</h2>
+                        <h2>{props.user ? props.user.username : "Add new user"}</h2>
+                    </div>
+                )}
 
                 <form onSubmit={this.submit}>
                     {props.user ? null : (
@@ -155,43 +138,22 @@ class UserDetail extends React.Component {
                         Save
                     </button>
                 </form>
-                {/*
-                <h2>Roles</h2>
-                {this.state.roles
-                    ? _.map(this.state.roles, (selected, roleID) => {
-                          return (
-                              <div className="form-check form-check-inline" key={roleID}>
-                                  <input
-                                      className="form-check-input"
-                                      type="checkbox"
-                                      checked={selected}
-                                      id={`role-checkbox-${roleID}`}
-                                      onChange={this.updateRole(roleID)}
-                                  />
-                                  <label className="form-check-label" htmlFor={`role-checkbox-${roleID}`}>
-                                      {props.allRoles[roleID].name}
-                                  </label>
-                              </div>
-                          )
-                      })
-                    : null}
-
-                <Rules rules={props.rules} subject={props.userID} />
-                    */}
             </div>
         )
     }
 }
 
 const mapStateToProps = (state, ownProps) => {
+    let id = ownProps.userID
+    if (!id) {
+        id = ownProps.match.params.id
+    }
+
     return {
-        user: state.users.users ? state.users.users[ownProps.match.params.id] : undefined,
+        user: state.users.users ? state.users.users[id] : undefined,
         loading: state.users.loading,
-        userID: ownProps.match.params.id,
-        roles: _.get(state, `roles.users['${ownProps.match.params.id}']`, []),
-        allRoles: state.roles.roles,
-        allRules: state.rules.rules,
-        rules: _.get(state, `rules.subjects['${ownProps.match.params.id}']`, [])
+        userID: id,
+        isHome: ownProps.home
     }
 }
 

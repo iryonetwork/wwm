@@ -127,9 +127,11 @@ class Rules extends React.Component {
     }
 
     newRule = () => e => {
-        let rules = [...this.state.rules, { edit: true, resource: "", subject: this.props.subjectID }]
+        if (this.state.rules) {
+            let rules = [...this.state.rules, { edit: true, resource: "", subject: this.props.subjectID }]
 
-        this.setState({ rules })
+            this.setState({ rules })
+        }
     }
 
     deleteRule = ruleID => e => {

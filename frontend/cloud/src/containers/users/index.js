@@ -8,7 +8,7 @@ export default props => (
         <h1>Users</h1>
         <Users />
         <Link to="/users/new" className="btn btn-sm btn-outline-secondary">
-            Add new users
+            Add new user
         </Link>
     </div>
 )
