@@ -72,15 +72,17 @@ func main() {
 	handlers := consumer.NewHandlers(s3, client.Storage, auth, logger.With().Str("component", "sync/storage/consumer/handlers").Logger())
 
 	// create nats/nats-streaming connection
-	URLs := "tls://nats:secret@nats.iryo.local:4322"
-	ClusterID := "localnats"
-	ClientID := "storageSyncConsumer"
-	ClientCert := "/Users/mateuszkrasucki/go/src/github.com/iryonetwork/wwm/bin/tls/storageSyncConsumer.pem"
-	ClientKey := "/Users/mateuszkrasucki/go/src/github.com/iryonetwork/wwm/bin/tls/storageSyncConsumer-key.pem"
+	URLs := "tls://nats:secret@localNats:4242"
+	ClusterID := "localNats"
+	ClientID := "storageSync"
+	ClientCert := "/certs/public.crt"
+	ClientKey := "/certs/private.key"
+
 	nc, err := nats.Connect(URLs, nats.ClientCert(ClientCert, ClientKey))
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 	sc, err := stan.Connect(ClusterID, ClientID, stan.NatsConn(nc))
 	if err != nil {
 		log.Fatalln(err)

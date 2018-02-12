@@ -1,5 +1,5 @@
 {
-    "CN": "storageSyncPublisher",
+    "CN": "localStoragePublisher",
     "hosts": [],
     "key": {
         "algo": "ecdsa",

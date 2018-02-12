@@ -49,11 +49,11 @@ address = ":8080"
 
   [backends.localNats]
     [backends.localNats.servers.server1]
-    url = "http://localNats:4222"
+    url = "http://localNats:4242"
 
   [backends.localNatsMonitor]
     [backends.localNatsMonitor.servers.server1]
-    url = "http://localNats:8222"
+    url = "http://localNats:8282"
 
 [frontends]
   [frontends.localauth]

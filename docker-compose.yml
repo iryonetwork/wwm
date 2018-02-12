@@ -120,8 +120,8 @@ services:
   localNats:
     image: nats-streaming
     ports:
-    - 4322:4322
-    - 8322:8322
+    - 4242:4242
+    - 8282:8282
     command:
     - --stan_config=/etc/nats/config.conf
     volumes:
@@ -132,3 +132,13 @@ services:
     - ./bin/tls/localNatsStreaming.pem:/etc/nats/certs/streaming_client_public.crt:ro
     - ./localNats.conf:/etc/nats/config.conf:ro
     - ./.data/localNats:/data
+
+  storageSync:
+    image: golang:1.9-alpine
+    command:
+    - /wwm/storageSync
+    volumes:
+    - ./.bin/:/wwm
+    - ./bin/tls/storageSyncConsumer-key.pem:/certs/private.key:ro
+    - ./bin/tls/storageSyncConsumer.pem:/certs/public.crt:ro
+    - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro

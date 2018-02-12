@@ -60,11 +60,12 @@ func main() {
 
 	// initialize storageSync publisher
 	// create nats/nats-streaming connection
-	URLs := "tls://nats:secret@nats.iryo.local:4322"
-	ClusterID := "localnats"
-	ClientID := "storageSyncPublisher"
-	ClientCert := "/Users/mateuszkrasucki/go/src/github.com/iryonetwork/wwm/bin/tls/storageSyncPublisher.pem"
-	ClientKey := "/Users/mateuszkrasucki/go/src/github.com/iryonetwork/wwm/bin/tls/storageSyncPublisher-key.pem"
+	URLs := "tls://nats:secret@localNats:4242"
+	ClusterID := "localNats"
+	ClientID := "localStorage"
+	ClientCert := "/certs/localStoragePublisher.pem"
+	ClientKey := "/certs/localStoragePublisher-key.pem"
+
 	nc, err := nats.Connect(URLs, nats.ClientCert(ClientCert, ClientKey))
 	if err != nil {
 		log.Fatalln(err)
