@@ -23,7 +23,7 @@ import (
 	storage "github.com/iryonetwork/wwm/service/storage"
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/mock"
-	"github.com/iryonetwork/wwm/storageSync/publisher"
+	"github.com/iryonetwork/wwm/sync/storage/publisher"
 	"github.com/iryonetwork/wwm/utils"
 )
 
@@ -73,7 +73,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	p := publisher.New(sc, 5, time.Duration(10*time.Second), 2.0, logger.With().Str("component", "storageSync/publisher").Logger())
+	p := publisher.New(sc, 5, time.Duration(10*time.Second), 2.0, logger.With().Str("component", "sync/storage/publisher").Logger())
 
 	// initialize the service
 	service := storage.New(s3, keys, p, logger.With().Str("component", "service/storage").Logger())

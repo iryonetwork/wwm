@@ -13,9 +13,9 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/iryonetwork/wwm/storageSync"
-	"github.com/iryonetwork/wwm/storageSync/consumer/mock"
-	"github.com/iryonetwork/wwm/storageSync/publisher"
+	storageSync "github.com/iryonetwork/wwm/sync/storage"
+	"github.com/iryonetwork/wwm/sync/storage/consumer/mock"
+	"github.com/iryonetwork/wwm/sync/storage/publisher"
 )
 
 var (

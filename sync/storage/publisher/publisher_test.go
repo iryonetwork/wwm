@@ -10,8 +10,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/rs/zerolog"
 
-	"github.com/iryonetwork/wwm/storageSync"
-	"github.com/iryonetwork/wwm/storageSync/publisher/mock"
+	storageSync "github.com/iryonetwork/wwm/sync/storage"
+	"github.com/iryonetwork/wwm/sync/storage/publisher/mock"
 )
 
 var (

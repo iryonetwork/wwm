@@ -5,9 +5,10 @@ import (
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/rs/zerolog"
+
 	"github.com/iryonetwork/wwm/gen/storage/models"
 	operations "github.com/iryonetwork/wwm/gen/storage/restapi/operations/storage"
-	"github.com/rs/zerolog"
 )
 
 // Handlers describes the actions supported by the storage handlers

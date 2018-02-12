@@ -1,6 +1,6 @@
 package consumer
 
-//go:generate sh ../../bin/mockgen.sh storageSync/consumer Handlers $GOFILE
+//go:generate sh ../../../bin/mockgen.sh sync/storage/consumer Handlers $GOFILE
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"github.com/nats-io/go-nats-streaming"
 	"github.com/rs/zerolog"
 
-	"github.com/iryonetwork/wwm/storageSync"
+	storageSync "github.com/iryonetwork/wwm/sync/storage"
 )
 
 type stanConsumer struct {
@@ -41,7 +41,7 @@ func (c *stanConsumer) StartSubscription(typ storageSync.EventType) error {
 		return fmt.Errorf("Invalid event type")
 	}
 
-	// Subscribe to subject EventType, queue groupe EventType, DurableName EventType
+	// Subscribe to subject:EventType, queueGroup:EventType, durableName:EventType
 	sub, err := c.conn.QueueSubscribe(
 		string(typ),
 		string(typ),

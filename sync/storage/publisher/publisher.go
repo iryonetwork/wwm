@@ -1,6 +1,6 @@
 package publisher
 
-//go:generate sh ../../bin/mockgen.sh storageSync/publisher StanConnection $GOFILE
+//go:generate sh ../../../bin/mockgen.sh sync/storage/publisher StanConnection $GOFILE
 
 import (
 	"sync"
@@ -8,7 +8,7 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/iryonetwork/wwm/storageSync"
+	storageSync "github.com/iryonetwork/wwm/sync/storage"
 )
 
 // Connection interface describes actions that have to be supported by underlying connection with nats-streaming. For testing purposes.
@@ -44,7 +44,7 @@ func (p *nullPublisher) Close() {
 	return
 }
 
-// Publish pushes storageSync event and returns synchronous response.
+// Publish pushes sync/storage event and returns synchronous response.
 func (p *stanPublisher) Publish(typ storageSync.EventType, f *storageSync.FileInfo) error {
 	msg, err := f.Marshal()
 	if err != nil {
@@ -65,7 +65,7 @@ func (p *stanPublisher) Publish(typ storageSync.EventType, f *storageSync.FileIn
 	return nil
 }
 
-// Publish starts goroutine that pushes storage sync events and retries if publishing failed.
+// Publish starts goroutine that pushes sync/storage events and retries if publishing failed.
 func (p *stanPublisher) PublishAsyncWithRetries(typ storageSync.EventType, f *storageSync.FileInfo) error {
 	msg, err := f.Marshal()
 	if err != nil {

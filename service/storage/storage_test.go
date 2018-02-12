@@ -16,8 +16,8 @@ import (
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/mock"
 	"github.com/iryonetwork/wwm/storage/s3/object"
-	"github.com/iryonetwork/wwm/storageSync"
-	mockStorageSync "github.com/iryonetwork/wwm/storageSync/mock"
+	storageSync "github.com/iryonetwork/wwm/sync/storage"
+	mockStorageSync "github.com/iryonetwork/wwm/sync/storage/mock"
 )
 
 var (

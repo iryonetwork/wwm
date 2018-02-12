@@ -6,10 +6,10 @@ import (
 
 	"github.com/iryonetwork/wwm/gen/storage/client/storage"
 	"github.com/iryonetwork/wwm/storage/s3"
-	"github.com/iryonetwork/wwm/storageSync"
+	storageSync "github.com/iryonetwork/wwm/sync/storage"
 )
 
-// Handlers describes public API for storageSync event handlers
+// Handlers describes public API for sync/storage event handlers
 type Handlers interface {
 	FileNew(f *storageSync.FileInfo) error
 	FileUpdate(f *storageSync.FileInfo) error

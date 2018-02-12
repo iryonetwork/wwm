@@ -19,7 +19,7 @@ import (
 	storage "github.com/iryonetwork/wwm/service/storage"
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/mock"
-	"github.com/iryonetwork/wwm/storageSync/publisher"
+	"github.com/iryonetwork/wwm/sync/storage/publisher"
 	"github.com/iryonetwork/wwm/utils"
 )
 

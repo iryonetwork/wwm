@@ -1,6 +1,6 @@
-package storageSync
+package storage
 
-//go:generate sh ../bin/mockgen.sh storageSync Publisher,Consumer $GOFILE
+//go:generate sh ../../bin/mockgen.sh sync/storage Publisher,Consumer $GOFILE
 
 import (
 	"encoding/json"
@@ -16,9 +16,9 @@ const (
 	FileDelete EventType = "file.delete"
 )
 
-// Publisher describes storageSync publisher public API
+// Publisher describes sync/storage publisher public methods.
 type Publisher interface {
-	// Publish pushes storageSync event and returns synchronous response.
+	// Publish pushes sync/storage event and returns synchronous response.
 	Publish(typ EventType, f *FileInfo) error
 	// Publish starts goroutine that pushes storageSync event and retries if publishing failed.
 	PublishAsyncWithRetries(typ EventType, f *FileInfo) error
@@ -26,7 +26,7 @@ type Publisher interface {
 	Close()
 }
 
-// Consumer describes methods used by storageSync/consumer service.
+// Consumer describes public methods of consumer used by storageSync service.
 type Consumer interface {
 	// StartConsumer starts consumer following service configration.
 	StartSubscription(typ EventType) error

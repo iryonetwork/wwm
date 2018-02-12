@@ -19,8 +19,8 @@ import (
 	"github.com/iryonetwork/wwm/gen/storage/client"
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/mock"
-	"github.com/iryonetwork/wwm/storageSync"
-	"github.com/iryonetwork/wwm/storageSync/consumer"
+	storageSync "github.com/iryonetwork/wwm/sync/storage"
+	"github.com/iryonetwork/wwm/sync/storage/consumer"
 )
 
 type clientAuthInfoWriter struct {
@@ -69,7 +69,7 @@ func main() {
 	auth := &clientAuthInfoWriter{"SECRETSECRETSECRETSECRETSECRETSE"}
 
 	// initialize handlers
-	handlers := consumer.NewHandlers(s3, client.Storage, auth, logger.With().Str("component", "storageSync/consumer/handlers").Logger())
+	handlers := consumer.NewHandlers(s3, client.Storage, auth, logger.With().Str("component", "sync/storage/consumer/handlers").Logger())
 
 	// create nats/nats-streaming connection
 	URLs := "tls://nats:secret@nats.iryo.local:4322"
@@ -87,7 +87,7 @@ func main() {
 	}
 
 	// initalize consumer
-	c := consumer.New(sc, handlers, time.Duration(time.Second), logger.With().Str("component", "storageSync/consumer").Logger())
+	c := consumer.New(sc, handlers, time.Duration(time.Second), logger.With().Str("component", "sync/storage/consumer").Logger())
 	c.StartSubscription(storageSync.FileNew)
 	c.StartSubscription(storageSync.FileUpdate)
 	c.StartSubscription(storageSync.FileDelete)

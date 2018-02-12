@@ -10,11 +10,12 @@ import (
 
 	"github.com/agext/uuid"
 	"github.com/go-openapi/strfmt"
+	"github.com/rs/zerolog"
+
 	"github.com/iryonetwork/wwm/gen/storage/models"
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/object"
-	"github.com/iryonetwork/wwm/storageSync"
-	"github.com/rs/zerolog"
+	storageSync "github.com/iryonetwork/wwm/sync/storage"
 )
 
 // Service describes storage service's public API.
