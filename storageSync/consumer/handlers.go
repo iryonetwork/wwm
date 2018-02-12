@@ -80,7 +80,28 @@ func (h *handlers) fileSync(f *storageSync.FileInfo) error {
 	params.SetCreated(fd.Created)
 	params.SetFile(runtime.NamedReader("FileReader", r))
 
-	_, _, err = h.remoteStorageClient.FileSync(params, h.auth)
+	ok, created, err := h.remoteStorageClient.FileSync(params, h.auth)
+
+	switch {
+	case ok != nil:
+		h.logger.Info().
+			Str("bucket", f.BucketID).
+			Str("fileID", f.FileID).
+			Str("version", f.Version).
+			Msg("File already exists in remote storage.")
+	case created != nil:
+		h.logger.Debug().
+			Str("bucket", f.BucketID).
+			Str("fileID", f.FileID).
+			Str("version", f.Version).
+			Msg("Succesfully synchronized file to remote storage")
+	case err != nil:
+		h.logger.Error().Err(err).
+			Str("bucket", f.BucketID).
+			Str("fileID", f.FileID).
+			Str("version", f.Version).
+			Msg("Failed to synchornize file to remote storage")
+	}
 
 	return err
 }

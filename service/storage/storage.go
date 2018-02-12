@@ -225,12 +225,18 @@ func (s *service) FileSync(bucketID, fileID, version string, r io.Reader, conten
 	switch {
 	// Already exists and does not conflict
 	case err == nil && checksum == fd.Checksum:
+		s.logger.Info().
+			Msg("File already exists")
 		return fd, ErrAlreadyExists
 	// Already exists and conflicts
 	case err == nil && checksum != fd.Checksum:
+		s.logger.Error().
+			Msg("File already exists and has conflicting checksum")
 		return nil, ErrAlreadyExistsConflict
 	// Storage returned error and it is not "not found"
 	case err != nil && err != s3.ErrNotFound:
+		s.logger.Error().
+			Msg("File already exists and has conflicting checksum")
 		return nil, err
 	}
 
