@@ -11,14 +11,11 @@ import (
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
-	"github.com/golang/mock/gomock"
 	"github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats-streaming"
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/client"
-	"github.com/iryonetwork/wwm/storage/s3"
-	"github.com/iryonetwork/wwm/storage/s3/mock"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 	"github.com/iryonetwork/wwm/sync/storage/consumer"
 )
@@ -39,37 +36,27 @@ func main() {
 		Str("service", "storageSync").
 		Logger()
 
-	// initialize keyProvider
-	ctrl := gomock.NewController(nil)
-	keys := mock.NewMockKeyProvider(ctrl)
-	keys.EXPECT().Get(gomock.Any()).AnyTimes().Return("SECRETSECRETSECRETSECRETSECRETSE", nil)
-
-	// initialize storage
-	s3Cfg := &s3.Config{
-		Endpoint:     "localMinio:9000",
-		AccessKey:    "local",
-		AccessSecret: "localminio",
-		Secure:       true,
-		Region:       "us-east-1",
-	}
-	s3, err := s3.New(s3Cfg, keys, logger.With().Str("component", "storage/s3").Logger())
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	// initialize remote storage client
-	transportCfg := &client.TransportConfig{
+	// initialize local storage API client
+	localTransportCfg := &client.TransportConfig{
 		Host:     "iryo.local",
 		BasePath: "storage",
 		Schemes:  []string{"https"},
 	}
-	client := client.NewHTTPClientWithConfig(strfmt.NewFormats(), transportCfg)
+	localClient := client.NewHTTPClientWithConfig(strfmt.NewFormats(), localTransportCfg)
+
+	// initialize cloud storage API client
+	cloudTransportCfg := &client.TransportConfig{
+		Host:     "iryo.cloud",
+		BasePath: "storage",
+		Schemes:  []string{"https"},
+	}
+	cloudClient := client.NewHTTPClientWithConfig(strfmt.NewFormats(), cloudTransportCfg)
 
 	// initizalize mock request authenticator
 	auth := &clientAuthInfoWriter{"SECRETSECRETSECRETSECRETSECRETSE"}
 
 	// initialize handlers
-	handlers := consumer.NewHandlers(s3, client.Storage, auth, logger.With().Str("component", "sync/storage/consumer/handlers").Logger())
+	handlers := consumer.NewHandlers(localClient.Storage, auth, cloudClient.Storage, auth, logger.With().Str("component", "sync/storage/consumer/handlers").Logger())
 
 	// create nats/nats-streaming connection
 	URLs := "tls://nats:secret@localNats:4242"

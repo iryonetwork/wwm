@@ -11,6 +11,7 @@ import (
 	"github.com/nats-io/go-nats-streaming"
 	"github.com/rs/zerolog"
 
+	"github.com/iryonetwork/wwm/gen/storage/client/storage"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 	"github.com/iryonetwork/wwm/sync/storage/publisher"
 )
@@ -21,6 +22,17 @@ var (
 )
 
 func main() {
+	var err error
+	err = storage.NewFileDeleteForbidden()
+	switch err.(type) {
+	// case error:
+	// 	fmt.Println("error")
+	case *storage.FileDeleteForbidden:
+		fmt.Println("*FileDeleteForbidden")
+	default:
+		fmt.Println("unknown")
+	}
+
 	URLs := "tls://nats:secret@nats.iryo.local:4322"
 	ClusterID := "nats_streaming_cluster"
 	ClientID := "tmp_publisher"

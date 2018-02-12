@@ -531,6 +531,9 @@ paths:
         404:
           $ref: '#/responses/404'
 
+        409:
+          $ref: '#/responses/409'
+
         500:
           $ref: '#/responses/500'
 

@@ -104,6 +104,7 @@ func (c *stanConsumer) getMsgHandler(ID int, typ storageSync.EventType, h Handle
 			return
 		}
 
+		// Acknowledge the message
 		msg.Ack()
 
 		c.logger.Info().

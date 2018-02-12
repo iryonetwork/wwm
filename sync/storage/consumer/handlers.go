@@ -1,11 +1,12 @@
 package consumer
 
 import (
+	"bytes"
+
 	"github.com/go-openapi/runtime"
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/client/storage"
-	"github.com/iryonetwork/wwm/storage/s3"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 )
 
@@ -20,10 +21,11 @@ type Handlers interface {
 type Handler func(f *storageSync.FileInfo) error
 
 type handlers struct {
-	localStorage        s3.Storage
-	remoteStorageClient *storage.Client
-	auth                runtime.ClientAuthInfoWriter
-	logger              zerolog.Logger
+	source          *storage.Client
+	sourceAuth      runtime.ClientAuthInfoWriter
+	destination     *storage.Client
+	destinationAuth runtime.ClientAuthInfoWriter
+	logger          zerolog.Logger
 }
 
 // FileNew uploads new file to cloud storage.
@@ -38,49 +40,64 @@ func (h *handlers) FileUpdate(f *storageSync.FileInfo) error {
 
 // FileDelete deletes file to cloud storage.
 func (h *handlers) FileDelete(f *storageSync.FileInfo) error {
-	params := storage.NewSyncFileDeleteParams().WithBucket(f.BucketID).WithFileID(f.FileID)
+	params := storage.NewSyncFileDeleteParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
 
-	_, err := h.remoteStorageClient.SyncFileDelete(params, h.auth)
+	_, err := h.destination.SyncFileDelete(params, h.destinationAuth)
 
 	return err
 }
 
 // NewApiHandlers returns Handlers with cloudStorage and localStorage API used.
-func NewHandlers(localStorage s3.Storage, remoteStorageClient *storage.Client, auth runtime.ClientAuthInfoWriter, logger zerolog.Logger) Handlers {
+func NewHandlers(source *storage.Client, sourceAuth runtime.ClientAuthInfoWriter, destination *storage.Client, destinationAuth runtime.ClientAuthInfoWriter, logger zerolog.Logger) Handlers {
 	return &handlers{
-		localStorage:        localStorage,
-		remoteStorageClient: remoteStorageClient,
-		auth:                auth,
-		logger:              logger,
+		source:          source,
+		sourceAuth:      sourceAuth,
+		destination:     destination,
+		destinationAuth: destinationAuth,
+		logger:          logger,
 	}
 }
 
 func (h *handlers) fileSync(f *storageSync.FileInfo) error {
-	params := storage.NewSyncFileParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
+	var buf bytes.Buffer
 
-	r, fd, err := h.localStorage.Read(f.BucketID, f.FileID, f.Version)
+	getParams := storage.NewFileGetVersionParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
+	resp, err := h.source.FileGetVersion(getParams, h.sourceAuth, &buf)
+
 	if err != nil {
-		if err == s3.ErrNotFound {
+		if _, ok := err.(*storage.FileGetVersionNotFound); ok {
 			h.logger.Info().
 				Str("bucket", f.BucketID).
 				Str("fileID", f.FileID).
 				Str("version", f.Version).
-				Msg("File does not exist in local storage.")
+				Msg("File does not exist in source storage.")
 
-			// File might have been already deleted
+			// File might have been already deleted; mark as succesful
 			return nil
 		}
+	}
+
+	// Check if sync is needed
+	needsSync, err := h.needsSync(f, resp.XChecksum)
+	if err != nil {
 		return err
 	}
-
-	if fd.Archetype != "" {
-		params.SetArchetype(&fd.Archetype)
+	// Nothing to do
+	if !needsSync {
+		return nil
 	}
-	params.SetContentType(fd.ContentType)
-	params.SetCreated(fd.Created)
-	params.SetFile(runtime.NamedReader("FileReader", r))
 
-	ok, created, err := h.remoteStorageClient.SyncFile(params, h.auth)
+	// Sync file
+	syncParams := storage.NewSyncFileParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
+
+	if resp.XArchetype != "" {
+		syncParams.SetArchetype(&resp.XArchetype)
+	}
+	syncParams.SetContentType(resp.ContentType)
+	syncParams.SetCreated(resp.XCreated)
+	syncParams.SetFile(runtime.NamedReader("FileReader", &buf))
+
+	ok, created, err := h.destination.SyncFile(syncParams, h.destinationAuth)
 
 	switch {
 	case ok != nil:
@@ -104,4 +121,29 @@ func (h *handlers) fileSync(f *storageSync.FileInfo) error {
 	}
 
 	return err
+}
+
+func (h *handlers) needsSync(f *storageSync.FileInfo, sourceChecksum string) (bool, error) {
+	// Verify in case file already exists in destination storage
+	params := storage.NewSyncFileMetadataParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
+	resp, err := h.destination.SyncFileMetadata(params, h.destinationAuth)
+	// File already exists
+	if resp != nil {
+		if resp.XChecksum != sourceChecksum {
+			// There is conflict, log error
+			h.logger.Error().
+				Str("bucket", f.BucketID).
+				Str("fileID", f.FileID).
+				Str("version", f.Version).
+				Msg("File does exist in destination storage and has different checksum.")
+		}
+		// Nothing to do
+		return false, nil
+	}
+	// If file not found it needs sync, otheriwse return error
+	if _, ok := err.(*storage.SyncFileMetadataNotFound); !ok {
+		return false, err
+	}
+
+	return true, nil
 }

@@ -53,8 +53,17 @@ type Service interface {
 	SyncFileDelete(bucketID, fileID, version string, created strfmt.DateTime) error
 }
 
-var ErrAlreadyExists = errors.New("Item already exists")
-var ErrAlreadyExistsConflict = errors.New("Item already exists and has differing checksum")
+// Bucket or item was already deleted
+var ErrDeleted = s3.ErrDeleted
+
+// Item does not exists
+var ErrNotFound = s3.ErrNotFound
+
+// Item already exists
+var ErrAlreadyExists = s3.ErrAlreadyExists
+
+// Item already exists and conflicts
+var ErrAlreadyExistsConflict = errors.New("Item already exists and its checksum is different")
 
 type service struct {
 	s3          s3.Storage
@@ -240,7 +249,7 @@ func (s *service) SyncFile(bucketID, fileID, version string, r io.Reader, conten
 		return nil, ErrAlreadyExistsConflict
 	// Storage returned error and it is not "not found"
 	case err != nil && err != s3.ErrNotFound:
-		s.logger.Error().Err().
+		s.logger.Error().Err(err).
 			Msg("Error while trying to read file")
 		return nil, err
 	}
@@ -266,6 +275,19 @@ func (s *service) SyncFileDelete(bucketID, fileID, version string, created strfm
 		return err
 	}
 
+	// File was already deleted
+	if fd.Operation == string(s3.Delete) {
+		if fd.Version == version {
+			s.logger.Debug().
+				Msg("File delete already synced")
+			return nil
+		}
+		s.logger.Error().
+			Msg("File delete already synced and has conflicting version")
+		return ErrDeleted
+	}
+
+	// Write delete object
 	no := &object.NewObjectInfo{
 		Archetype:   fd.Archetype,
 		Checksum:    "",

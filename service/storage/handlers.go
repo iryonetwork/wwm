@@ -213,10 +213,15 @@ func (h *handlers) SyncFileDelete() operations.SyncFileDeleteHandler {
 	return operations.SyncFileDeleteHandlerFunc(func(params operations.SyncFileDeleteParams, principal *string) middleware.Responder {
 		err := h.service.SyncFileDelete(params.Bucket, params.FileID, params.Version, params.Created)
 		if err != nil {
-			return operations.NewSyncFileDeleteInternalServerError().WithPayload(&models.Error{
-				Code:    "server_error",
-				Message: err.Error(),
-			})
+			switch err {
+			case ErrDeleted:
+				return operations.NewSyncFileDeleteConflict()
+			default:
+				return operations.NewSyncFileDeleteInternalServerError().WithPayload(&models.Error{
+					Code:    "server_error",
+					Message: err.Error(),
+				})
+			}
 		}
 
 		return operations.NewSyncFileDeleteNoContent()
