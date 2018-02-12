@@ -53,6 +53,7 @@ func newTestStorage(key []byte) *testStorage {
 	if err != nil {
 		panic(err)
 	}
+	db.refreshRules = false
 
 	// return wrapped type
 	return &testStorage{db}

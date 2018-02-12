@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -44,7 +43,6 @@ func TestAddRule(t *testing.T) {
 
 	// can't add rule that already exist
 	_, err = storage.AddRule(testRule)
-	fmt.Println(err)
 	if err == nil {
 		t.Fatalf("Expected error; got nil")
 	}
@@ -60,8 +58,8 @@ func TestAddRule(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
-	if len(rules) != 5 {
-		t.Fatalf("Expected 5 rule; got %d", len(rules))
+	if len(rules) != 6 {
+		t.Fatalf("Expected 6 rule; got %d", len(rules))
 	}
 }
 
@@ -122,8 +120,8 @@ func TestGetRules(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
-	if len(rules) != 6 {
-		t.Fatalf("Expected 6 ruless; got %d", len(rules))
+	if len(rules) != 7 {
+		t.Fatalf("Expected 7 ruless; got %d", len(rules))
 	}
 
 	rulesMap := map[string]*models.Rule{}

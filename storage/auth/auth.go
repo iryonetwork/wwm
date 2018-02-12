@@ -22,6 +22,7 @@ type Storage struct {
 	enforcer      *casbin.Enforcer
 	encryptionKey []byte
 	dbSync        *sync.RWMutex
+	refreshRules  bool
 }
 
 var bucketUsers = []byte("users")
@@ -81,6 +82,7 @@ func New(path string, key []byte, readOnly bool) (*Storage, error) {
 		db:            db,
 		encryptionKey: key,
 		dbSync:        &sync.RWMutex{},
+		refreshRules:  true,
 	}
 
 	e, err := NewEnforcer(storage)
@@ -151,6 +153,12 @@ func (s *Storage) initializeRolesAndRules() error {
 		Subject:  &everyoneRole.ID,
 		Action:   swag.Int64(Read),
 		Resource: swag.String("/auth/renew"),
+	})
+
+	s.AddRule(&models.Rule{
+		Subject:  &everyoneRole.ID,
+		Action:   swag.Int64(Write),
+		Resource: swag.String("/auth/users/{self}"),
 	})
 
 	s.AddRule(&models.Rule{

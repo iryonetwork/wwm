@@ -139,13 +139,6 @@ func TestUpdateRole(t *testing.T) {
 	if !reflect.DeepEqual(*role, *updateRole) {
 		t.Fatalf("Expected role one to be '%v', got '%v'", *role, *updateRole)
 	}
-
-	// update role with invalid users
-	updateRole.Users = []string{"wrong"}
-	_, err = storage.UpdateRole(updateRole)
-	if err == nil {
-		t.Fatalf("Expected error; got nil")
-	}
 }
 
 func TestRemoveRole(t *testing.T) {

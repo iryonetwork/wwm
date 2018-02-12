@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"strconv"
 	"testing"
 
@@ -162,6 +163,30 @@ func TestRules(t *testing.T) {
 				false,
 				true,
 				true,
+			},
+		},
+		{
+			rules: []*models.Rule{
+				{
+					Action:   swag.Int64(Write),
+					Resource: swag.String("/auth/user/{self}"),
+					Subject:  &g1.ID,
+				},
+			},
+			userID: u1.ID,
+			validations: []*models.ValidationPair{
+				{
+					Actions:  swag.Int64(Write),
+					Resource: swag.String(fmt.Sprintf("/auth/user/%s", u1.ID)),
+				},
+				{
+					Actions:  swag.Int64(Write),
+					Resource: swag.String(fmt.Sprintf("/auth/user/%s", u2.ID)),
+				},
+			},
+			results: []bool{
+				true,
+				false,
 			},
 		},
 	}

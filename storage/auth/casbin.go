@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/casbin/casbin"
 	casbinmodel "github.com/casbin/casbin/model"
@@ -94,6 +95,23 @@ func BinaryMatchFunc(args ...interface{}) (interface{}, error) {
 	return (bool)(binaryMatch(val1, val2)), nil
 }
 
+// SelfMatch replaces {self} in key2 with subject and then compares it with key1
+// this is useful when you want to apply policy for current subject
+// e.g. allow user to edit its profile, but not profiles of other users
+func SelfMatch(key1, key2, subject string) bool {
+	key2 = strings.Replace(key2, "{self}", subject, -1)
+	return key1 == key2
+}
+
+// SelfMatchFunc is the wrapper for SelfMatch.
+func SelfMatchFunc(args ...interface{}) (interface{}, error) {
+	key1 := args[0].(string)
+	key2 := args[1].(string)
+	subject := args[2].(string)
+
+	return (bool)(SelfMatch(key1, key2, subject)), nil
+}
+
 // NewEnforcer returns new casbin enforcer
 func NewEnforcer(storage *Storage) (*casbin.Enforcer, error) {
 	m := casbin.NewModel(`[request_definition]
@@ -109,11 +127,12 @@ g = _, _
 e = some(where (p.eft == allow)) && !some(where (p.eft == deny))
 
 [matchers]
-m = g(r.sub, p.sub) && keyMatch(r.obj, p.obj) && binaryMatch(r.act, p.act)`)
+m = g(r.sub, p.sub) && (keyMatch(r.obj, p.obj) || selfMatch(r.obj, p.obj, r.sub)) && binaryMatch(r.act, p.act)`)
 
 	a := NewAdapter(storage)
-	e := casbin.NewEnforcer(m, a)
+	e := casbin.NewEnforcer(m, a, false)
 	e.AddFunction("binaryMatch", BinaryMatchFunc)
+	e.AddFunction("selfMatch", SelfMatchFunc)
 
 	err := e.LoadPolicy()
 	if err != nil {

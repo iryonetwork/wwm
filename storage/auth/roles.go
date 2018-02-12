@@ -107,7 +107,7 @@ func (s *Storage) AddRole(role *models.Role) (*models.Role, error) {
 		return tx.Bucket(bucketRoles).Put(id.Bytes(), data)
 	})
 
-	if err == nil {
+	if err == nil && s.refreshRules {
 		go s.enforcer.LoadPolicy()
 	}
 
@@ -175,7 +175,7 @@ func (s *Storage) UpdateRole(role *models.Role) (*models.Role, error) {
 		return bRoles.Put(roleUUID.Bytes(), data)
 	})
 
-	if err == nil {
+	if err == nil && s.refreshRules {
 		go s.enforcer.LoadPolicy()
 	}
 
@@ -202,7 +202,7 @@ func (s *Storage) RemoveRole(id string) error {
 		return tx.Bucket(bucketRoles).Delete(roleUUID.Bytes())
 	})
 
-	if err == nil {
+	if err == nil && s.refreshRules {
 		go s.enforcer.LoadPolicy()
 	}
 
