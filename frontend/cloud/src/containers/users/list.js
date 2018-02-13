@@ -22,6 +22,9 @@ class Users extends React.Component {
 
     render() {
         let props = this.props
+        if (props.forbidden) {
+            return null
+        }
         if (props.loading) {
             return <div>Loading...</div>
         }
@@ -62,7 +65,8 @@ const mapStateToProps = (state, ownProps) => ({
         (ownProps.users ? (state.users.users ? _.fromPairs(_.map(ownProps.users, userID => [userID, state.users.users[userID]])) : {}) : state.users.users) ||
         {},
     roleID: ownProps.role,
-    loading: state.users.loading
+    loading: state.users.loading,
+    forbidden: state.users.forbidden
 })
 
 const mapDispatchToProps = dispatch =>

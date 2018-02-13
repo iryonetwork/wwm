@@ -3,9 +3,7 @@ import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
 import { withRouter } from "react-router-dom"
 
-import { loadUsers, saveUser } from "../../modules/users"
-import { loadRoles } from "../../modules/roles"
-import { loadRules } from "../../modules/rules"
+import { loadUser, saveUser } from "../../modules/users"
 import { open, close, COLOR_DANGER } from "../../modules/alert"
 
 class UserDetail extends React.Component {
@@ -21,7 +19,7 @@ class UserDetail extends React.Component {
 
     componentDidMount() {
         if (!this.props.user && this.props.userID !== "new") {
-            this.props.loadUsers()
+            this.props.loadUser(this.props.userID)
         }
     }
 
@@ -160,9 +158,7 @@ const mapStateToProps = (state, ownProps) => {
 const mapDispatchToProps = dispatch =>
     bindActionCreators(
         {
-            loadUsers,
-            loadRoles,
-            loadRules,
+            loadUser,
             saveUser,
             open,
             close

@@ -140,6 +140,9 @@ class Rules extends React.Component {
 
     render() {
         let props = this.props
+        if (props.forbidden) {
+            return null
+        }
         return (
             <div>
                 {props.embedded ? <h3>ACL</h3> : <h1>ACL</h1>}
@@ -286,7 +289,8 @@ const mapStateToProps = (state, ownProps) => {
         rules: ownProps.rules ? ownProps.rules : state.rules.rules,
         embedded: ownProps.rules ? true : false,
         allRules: state.rules.rules,
-        subjectID: ownProps.subject
+        subjectID: ownProps.subject,
+        forbidden: state.rules.forbidden
     }
 }
 

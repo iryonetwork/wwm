@@ -42,8 +42,13 @@ export default (state = initialState, action) => {
             }
 
         case LOAD_ROLES_FAIL:
+            let forbidden = false
+            if (action.code === 403) {
+                forbidden = true
+            }
             return {
                 ...state,
+                forbidden,
                 loading: false
             }
 
@@ -105,7 +110,8 @@ export const loadRoles = () => {
             })
             .catch(error => {
                 dispatch({
-                    type: LOAD_ROLES_FAIL
+                    type: LOAD_ROLES_FAIL,
+                    code: error.code
                 })
                 dispatch(open(error.message, error.code, COLOR_DANGER))
             })

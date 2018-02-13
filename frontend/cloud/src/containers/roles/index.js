@@ -39,6 +39,9 @@ class Roles extends React.Component {
 
     render() {
         let props = this.props
+        if (props.forbidden) {
+            return null
+        }
         if (props.loading) {
             return <div>Loading...</div>
         }
@@ -105,7 +108,8 @@ const mapStateToProps = (state, ownProps) => {
         roles: state.roles.roles || {},
         loading: state.roles.loading,
         withDetail: !ownProps.match.isExact,
-        path: ownProps.location.pathname
+        path: ownProps.location.pathname,
+        forbidden: state.roles.forbidden
     }
 }
 

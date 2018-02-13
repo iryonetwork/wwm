@@ -157,7 +157,7 @@ func (s *Storage) initializeRolesAndRules() error {
 
 	s.AddRule(&models.Rule{
 		Subject:  &everyoneRole.ID,
-		Action:   swag.Int64(Write),
+		Action:   swag.Int64(Read | Write),
 		Resource: swag.String("/auth/users/{self}"),
 	})
 

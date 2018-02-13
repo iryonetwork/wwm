@@ -1,5 +1,4 @@
 import _ from "lodash"
-import { push } from "react-router-redux"
 
 import api from "./api"
 import { open, close, COLOR_DANGER, COLOR_SUCCESS } from "./alert"
@@ -32,7 +31,7 @@ export default (state = initialState, action) => {
         case LOAD_USER_SUCCESS:
             return {
                 ...state,
-                user: action.user,
+                users: _.assign({}, state.users || {}, _.fromPairs([[action.user.id, action.user]])),
                 loading: false
             }
         case LOAD_USER_FAIL:
@@ -53,8 +52,13 @@ export default (state = initialState, action) => {
                 loading: false
             }
         case LOAD_USERS_FAIL:
+            let forbidden = false
+            if (action.code === 403) {
+                forbidden = true
+            }
             return {
                 ...state,
+                forbidden,
                 loading: false
             }
 
@@ -111,7 +115,8 @@ export const loadUsers = () => {
             })
             .catch(error => {
                 dispatch({
-                    type: LOAD_USERS_FAIL
+                    type: LOAD_USERS_FAIL,
+                    code: error.code
                 })
                 dispatch(open(error.message, error.code, COLOR_DANGER))
             })
@@ -159,7 +164,6 @@ export const saveUser = user => {
                     type: SAVE_USER_SUCCESS,
                     user: response
                 })
-                dispatch(push("/users"))
                 dispatch(open("Saved user", "", COLOR_SUCCESS, 5))
             })
             .catch(error => {
