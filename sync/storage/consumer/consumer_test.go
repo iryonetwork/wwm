@@ -1,6 +1,7 @@
 package consumer
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -46,7 +47,7 @@ func TestStartSuccess(t *testing.T) {
 	defer cleanService()
 
 	// start first consumer
-	err := c.StartSubscription(storageSync.FileNew)
+	err := c.StartSubscription(context.Background(), storageSync.FileNew)
 	if err != nil {
 		t.Errorf("Expected error to be nil, got %v", err)
 	}
@@ -57,7 +58,7 @@ func TestStartSuccess(t *testing.T) {
 	}
 
 	// start second consumer
-	err = c.StartSubscription(storageSync.FileNew)
+	err = c.StartSubscription(context.Background(), storageSync.FileNew)
 	if err != nil {
 		t.Errorf("Expected error to be nil, got %v", err)
 	}
@@ -74,7 +75,7 @@ func TestStartFailureInavlidType(t *testing.T) {
 	defer cleanService()
 
 	// start first consumer
-	err := c.StartSubscription("invalid_type")
+	err := c.StartSubscription(context.Background(), "invalid_type")
 	if err == nil {
 		t.Error("Expected error, got nil")
 	}
@@ -93,7 +94,7 @@ func TestStartFailureConnectionClosed(t *testing.T) {
 	cleanService()
 
 	// Start first consumer
-	err := c.StartSubscription(storageSync.FileNew)
+	err := c.StartSubscription(context.Background(), storageSync.FileNew)
 	if err == nil {
 		t.Error("Expected error, got nil")
 	}
@@ -122,12 +123,12 @@ func TestMessageHandling(t *testing.T) {
 		Times(1)
 
 	// start consumer
-	err := c.StartSubscription(storageSync.FileNew)
+	err := c.StartSubscription(context.Background(), storageSync.FileNew)
 	if err != nil {
 		t.Fatal("Failed to start subscription")
 	}
 
-	err = p.Publish(storageSync.FileNew, file1)
+	err = p.Publish(context.Background(), storageSync.FileNew, file1)
 	if err != nil {
 		t.Fatal("Failed to publish to test nats-streaming server")
 	}
@@ -159,16 +160,16 @@ func TestMessageHandlingOnlyOnce(t *testing.T) {
 		Times(1)
 
 	// start consumer 1
-	err := c.StartSubscription(storageSync.FileUpdate)
+	err := c.StartSubscription(context.Background(), storageSync.FileUpdate)
 	if err != nil {
 		t.Fatal("Failed to start subscription 1")
 	}
-	err = c.StartSubscription(storageSync.FileUpdate)
+	err = c.StartSubscription(context.Background(), storageSync.FileUpdate)
 	if err != nil {
 		t.Fatal("Failed to start subscription 2")
 	}
 
-	err = p.Publish(storageSync.FileUpdate, file1)
+	err = p.Publish(context.Background(), storageSync.FileUpdate, file1)
 	if err != nil {
 		t.Fatal("Failed to publish to test nats-streaming server")
 	}
@@ -204,17 +205,17 @@ func TestMessageHandlingOnlyOnceSeparateConnections(t *testing.T) {
 		Times(1)
 
 	// start consumer 1
-	err := c1.StartSubscription(storageSync.FileDelete)
+	err := c1.StartSubscription(context.Background(), storageSync.FileDelete)
 	if err != nil {
 		t.Fatal("Failed to start subscription 1")
 	}
 
-	err = c2.StartSubscription(storageSync.FileDelete)
+	err = c2.StartSubscription(context.Background(), storageSync.FileDelete)
 	if err != nil {
 		t.Fatal("Failed to start subscription 2")
 	}
 
-	err = p.Publish(storageSync.FileDelete, file1)
+	err = p.Publish(context.Background(), storageSync.FileDelete, file1)
 	if err != nil {
 		t.Fatal("Failed to publish to test nats-streaming server")
 	}
@@ -257,12 +258,12 @@ func TestMessageHandlingNack(t *testing.T) {
 		After(nackCall)
 
 	// start consumer
-	err := c.StartSubscription(storageSync.FileNew)
+	err := c.StartSubscription(context.Background(), storageSync.FileNew)
 	if err != nil {
 		t.Fatal("Failed to start subscription")
 	}
 
-	err = p.Publish(storageSync.FileNew, file1)
+	err = p.Publish(context.Background(), storageSync.FileNew, file1)
 	if err != nil {
 		t.Fatal("Failed to publish to test nats-streaming server")
 	}
@@ -307,12 +308,12 @@ func TestDurability(t *testing.T) {
 		After(firstHandlerCall)
 
 	// start consumer
-	err := c.StartSubscription(storageSync.FileNew)
+	err := c.StartSubscription(context.Background(), storageSync.FileNew)
 	if err != nil {
 		t.Fatal("Failed to start subscription")
 	}
 
-	err = p.Publish(storageSync.FileNew, file1)
+	err = p.Publish(context.Background(), storageSync.FileNew, file1)
 	if err != nil {
 		t.Fatal("Failed to publish to test nats-streaming server")
 	}
@@ -328,7 +329,7 @@ func TestDurability(t *testing.T) {
 	cleanService()
 
 	// Publish another one
-	err = p.Publish(storageSync.FileNew, file2)
+	err = p.Publish(context.Background(), storageSync.FileNew, file2)
 	if err != nil {
 		t.Fatal("Failed to publish to test nats-streaming server")
 	}
@@ -338,7 +339,7 @@ func TestDurability(t *testing.T) {
 	defer cleanService()
 
 	// start consumer
-	err = c.StartSubscription(storageSync.FileNew)
+	err = c.StartSubscription(context.Background(), storageSync.FileNew)
 	if err != nil {
 		t.Fatal("Failed to start subscription")
 	}

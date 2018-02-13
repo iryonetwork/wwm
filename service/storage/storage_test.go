@@ -234,7 +234,7 @@ func TestFileNew(t *testing.T) {
 				return []*gomock.Call{
 					s.EXPECT().MakeBucket("BUCKET").Return(nil),
 					s.EXPECT().Write("BUCKET", no, gomock.Any()).Return(file1V2, nil),
-					p.EXPECT().PublishAsyncWithRetries(storageSync.FileNew, gomock.Eq(&storageSync.FileInfo{"BUCKET", "UUID", "UUID"})),
+					p.EXPECT().PublishAsyncWithRetries(gomock.Any(), storageSync.FileNew, gomock.Eq(&storageSync.FileInfo{"BUCKET", "UUID", "UUID"})),
 				}
 			},
 			file1V2,
@@ -334,7 +334,7 @@ func TestFileUpdate(t *testing.T) {
 				return []*gomock.Call{
 					s.EXPECT().Read("BUCKET", "FILE", "").Return(nil, file1V1, nil),
 					s.EXPECT().Write("BUCKET", no, gomock.Any()).Return(file1V2, nil),
-					p.EXPECT().PublishAsyncWithRetries(storageSync.FileUpdate, gomock.Eq(&storageSync.FileInfo{"BUCKET", "FILE", "UUID"})),
+					p.EXPECT().PublishAsyncWithRetries(gomock.Any(), storageSync.FileUpdate, gomock.Eq(&storageSync.FileInfo{"BUCKET", "FILE", "UUID"})),
 				}
 			},
 			file1V2,
@@ -431,7 +431,7 @@ func TestFileDelete(t *testing.T) {
 				return []*gomock.Call{
 					s.EXPECT().Read("BUCKET", "FILE", "").Return(nil, file1V1, nil),
 					s.EXPECT().Write("BUCKET", no, gomock.Any()).Return(file1V2, nil),
-					p.EXPECT().PublishAsyncWithRetries(storageSync.FileDelete, gomock.Eq(&storageSync.FileInfo{"BUCKET", "FILE", "UUID"})),
+					p.EXPECT().PublishAsyncWithRetries(gomock.Any(), storageSync.FileDelete, gomock.Eq(&storageSync.FileInfo{"BUCKET", "FILE", "UUID"})),
 				}
 			},
 			noErrors,

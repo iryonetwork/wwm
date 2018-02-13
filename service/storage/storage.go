@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
@@ -157,7 +158,11 @@ func (s *service) FileNew(bucketID string, r io.Reader, contentType string, arch
 
 	fd, err := s.s3.Write(bucketID, no, &buf)
 	if err == nil {
-		s.publisher.PublishAsyncWithRetries(storageSync.FileNew, &storageSync.FileInfo{bucketID, fileID, version})
+		s.publisher.PublishAsyncWithRetries(
+			context.Background(),
+			storageSync.FileNew,
+			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version},
+		)
 	}
 	return fd, err
 }
@@ -192,7 +197,11 @@ func (s *service) FileUpdate(bucketID, fileID string, r io.Reader, contentType s
 
 	fd, err := s.s3.Write(bucketID, no, &buf)
 	if err == nil {
-		s.publisher.PublishAsyncWithRetries(storageSync.FileUpdate, &storageSync.FileInfo{bucketID, fileID, version})
+		s.publisher.PublishAsyncWithRetries(
+			context.Background(),
+			storageSync.FileUpdate,
+			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version},
+		)
 	}
 	return fd, err
 }
@@ -218,7 +227,11 @@ func (s *service) FileDelete(bucketID, fileID string) error {
 
 	_, err = s.s3.Write(bucketID, no, &bytes.Buffer{})
 	if err == nil {
-		s.publisher.PublishAsyncWithRetries(storageSync.FileDelete, &storageSync.FileInfo{bucketID, fileID, version})
+		s.publisher.PublishAsyncWithRetries(
+			context.Background(),
+			storageSync.FileDelete,
+			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version},
+		)
 	}
 	return err
 }

@@ -3,6 +3,7 @@ package consumer
 //go:generate sh ../../../bin/mockgen.sh sync/storage/consumer Handlers $GOFILE
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -12,6 +13,10 @@ import (
 
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 )
+
+type contextKey string
+
+const subID contextKey = "ID"
 
 type stanConsumer struct {
 	conn     stan.Conn
@@ -23,19 +28,20 @@ type stanConsumer struct {
 }
 
 // Start starts new nats-streaming queue subscription.
-func (c *stanConsumer) StartSubscription(typ storageSync.EventType) error {
+func (c *stanConsumer) StartSubscription(ctx context.Context, typ storageSync.EventType) error {
 	c.subsLock.Lock()
 
 	// ID is a sequential number of subscription within consumer.
 	ID := len(c.subs) + 1
+	ctx = context.WithValue(ctx, subID, ID)
 	var mh stan.MsgHandler
 	switch typ {
 	case storageSync.FileNew:
-		mh = c.getMsgHandler(ID, typ, c.handlers.SyncFile)
+		mh = c.getMsgHandler(ctx, typ, c.handlers.SyncFile)
 	case storageSync.FileUpdate:
-		mh = c.getMsgHandler(ID, typ, c.handlers.SyncFile)
+		mh = c.getMsgHandler(ctx, typ, c.handlers.SyncFile)
 	case storageSync.FileDelete:
-		mh = c.getMsgHandler(ID, typ, c.handlers.SyncFileDelete)
+		mh = c.getMsgHandler(ctx, typ, c.handlers.SyncFileDelete)
 	default:
 		c.subsLock.Unlock()
 		return fmt.Errorf("Invalid event type")
@@ -77,8 +83,9 @@ func (c *stanConsumer) Close() {
 	c.conn.Close()
 }
 
-func (c *stanConsumer) getMsgHandler(ID int, typ storageSync.EventType, h Handler) stan.MsgHandler {
+func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventType, h Handler) stan.MsgHandler {
 	return func(msg *stan.Msg) {
+		ID := ctx.Value(subID).(int)
 		c.logger.Debug().
 			Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).
 			Msgf("Received message: %s", msg)

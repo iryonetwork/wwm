@@ -4,6 +4,7 @@ package main
 //go:generate sh -c "mkdir -p ../../gen/storage/ && swagger generate client -A storage -t ../../gen/storage/ -f ../../docs/api/storage.yml --principal string"
 
 import (
+	"context"
 	"log"
 	"os"
 	"os/signal"
@@ -77,9 +78,9 @@ func main() {
 
 	// initalize consumer
 	c := consumer.New(sc, handlers, time.Duration(time.Second), logger.With().Str("component", "sync/storage/consumer").Logger())
-	c.StartSubscription(storageSync.FileNew)
-	c.StartSubscription(storageSync.FileUpdate)
-	c.StartSubscription(storageSync.FileDelete)
+	c.StartSubscription(context.Background(), storageSync.FileNew)
+	c.StartSubscription(context.Background(), storageSync.FileUpdate)
+	c.StartSubscription(context.Background(), storageSync.FileDelete)
 
 	// Run cleanup when SIGINT is received
 	signalChan := make(chan os.Signal, 1)

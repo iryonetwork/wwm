@@ -1,6 +1,7 @@
 package publisher
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -62,7 +63,7 @@ func TestPublish(t *testing.T) {
 			test.mockCalls(conn)
 
 			// call publish
-			err := s.Publish(storageSync.FileNew, file)
+			err := s.Publish(context.Background(), storageSync.FileNew, file)
 
 			// assert error
 			if test.errorExpected && err == nil {
@@ -126,7 +127,7 @@ func TestPublishAsyncWithRetries(t *testing.T) {
 			test.mockCalls(conn)
 
 			// call publish async with retries and wait
-			err := s.PublishAsyncWithRetries(storageSync.FileNew, file)
+			err := s.PublishAsyncWithRetries(context.Background(), storageSync.FileNew, file)
 			s.wg.Wait()
 
 			// assert error
@@ -139,6 +140,28 @@ func TestPublishAsyncWithRetries(t *testing.T) {
 	}
 }
 
+func TestContextCancelled(t *testing.T) {
+	s, conn, cleanup := getTestPublisher(t)
+	defer cleanup()
+
+	// Try to publish once and do not complete retries due to context cancellation
+	ctx, cancel := context.WithCancel(context.Background())
+	msg, _ := file.Marshal()
+	publishCallReceived := make(chan bool)
+
+	conn.EXPECT().
+		Publish(string(storageSync.FileNew), msg).
+		Do(func(subject string, data []byte) error {
+			publishCallReceived <- true
+			return fmt.Errorf("error")
+		}).Times(1)
+
+	s.PublishAsyncWithRetries(ctx, storageSync.FileNew, file)
+
+	<-publishCallReceived
+	cancel()
+}
+
 func TestClose(t *testing.T) {
 	s, conn, cleanup := getTestPublisher(t)
 	defer cleanup()
@@ -148,7 +171,7 @@ func TestClose(t *testing.T) {
 	pubCall := conn.EXPECT().Publish(string(storageSync.FileNew), msg).Return(fmt.Errorf("error")).Times(5)
 	conn.EXPECT().Close().After(pubCall).Return(nil)
 
-	s.PublishAsyncWithRetries(storageSync.FileNew, file)
+	s.PublishAsyncWithRetries(context.Background(), storageSync.FileNew, file)
 	s.Close()
 }
 

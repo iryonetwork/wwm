@@ -3,6 +3,7 @@ package publisher
 //go:generate sh ../../../bin/mockgen.sh sync/storage/publisher StanConnection $GOFILE
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -30,12 +31,12 @@ type nullPublisher struct {
 }
 
 // Publish of nullPublisher does nothing.
-func (p *nullPublisher) Publish(typ storageSync.EventType, f *storageSync.FileInfo) error {
+func (p *nullPublisher) Publish(_ context.Context, _ storageSync.EventType, _ *storageSync.FileInfo) error {
 	return nil
 }
 
 // PublishAsyncWithRetries of nullPublisher does nothing.
-func (p *nullPublisher) PublishAsyncWithRetries(typ storageSync.EventType, f *storageSync.FileInfo) error {
+func (p *nullPublisher) PublishAsyncWithRetries(_ context.Context, _ storageSync.EventType, _ *storageSync.FileInfo) error {
 	return nil
 }
 
@@ -45,7 +46,7 @@ func (p *nullPublisher) Close() {
 }
 
 // Publish pushes sync/storage event and returns synchronous response.
-func (p *stanPublisher) Publish(typ storageSync.EventType, f *storageSync.FileInfo) error {
+func (p *stanPublisher) Publish(_ context.Context, typ storageSync.EventType, f *storageSync.FileInfo) error {
 	msg, err := f.Marshal()
 	if err != nil {
 		p.logger.Error().Err(err).
@@ -66,7 +67,7 @@ func (p *stanPublisher) Publish(typ storageSync.EventType, f *storageSync.FileIn
 }
 
 // Publish starts goroutine that pushes sync/storage events and retries if publishing failed.
-func (p *stanPublisher) PublishAsyncWithRetries(typ storageSync.EventType, f *storageSync.FileInfo) error {
+func (p *stanPublisher) PublishAsyncWithRetries(ctx context.Context, typ storageSync.EventType, f *storageSync.FileInfo) error {
 	msg, err := f.Marshal()
 	if err != nil {
 		p.logger.Error().Err(err).
@@ -78,24 +79,33 @@ func (p *stanPublisher) PublishAsyncWithRetries(typ storageSync.EventType, f *st
 	go func() {
 		var err error
 		retryWait := p.startRetryWait
+	RetryLoop:
 		for i := 0; i < p.retries; i++ {
-			err = p.conn.Publish(string(typ), msg)
-			if err == nil {
-				p.logger.Debug().
+			select {
+			case <-ctx.Done():
+				p.logger.Debug().Err(ctx.Err()).
 					Str("cmd", "PublishAsyncWithRetries").
 					Str("type", string(typ)).
-					Msgf("%s", msg)
+					Msg("Async publishing stopped due to context cancellation")
+				break RetryLoop
+			default:
+				err = p.conn.Publish(string(typ), msg)
+				if err == nil {
+					p.logger.Debug().
+						Str("cmd", "PublishAsyncWithRetries").
+						Str("type", string(typ)).
+						Msgf("%s", msg)
 
-				p.wg.Done()
-				return
+					p.wg.Done()
+					return
+				}
+				p.logger.Error().Err(err).
+					Str("cmd", "PublishAsyncWithRetries").
+					Msgf("Failed to publish storage sync event, retry in %s", retryWait)
+
+				time.Sleep(retryWait)
+				retryWait = time.Duration(float32(retryWait) * p.retryWaitFactor)
 			}
-
-			p.logger.Error().Err(err).
-				Str("cmd", "PublishAsyncWithRetries").
-				Msgf("Failed to publish storage sync event, retry in %s", retryWait)
-
-			time.Sleep(retryWait)
-			retryWait = time.Duration(float32(retryWait) * p.retryWaitFactor)
 		}
 		if err != nil {
 			// TODO: handle failure to publish, e.g. write messages to file that can be read later
