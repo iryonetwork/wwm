@@ -36,7 +36,7 @@ type Service interface {
 	FileGetVersion(bucketID, fileID, version string) (io.ReadCloser, *models.FileDescriptor, error)
 
 	// FileListVersions returns a list of all modifications to a file.
-	FileListVersions(bucker, fileID string) ([]*models.FileDescriptor, error)
+	FileListVersions(bucketID, fileID string) ([]*models.FileDescriptor, error)
 
 	// FileNew creates a new file.
 	FileNew(bucketID string, r io.Reader, contentType string, archetype string) (*models.FileDescriptor, error)
