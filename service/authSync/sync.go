@@ -51,8 +51,8 @@ func (a *authSync) Sync() error {
 	}
 
 	request, err := http.NewRequest(http.MethodGet, a.url, nil)
-	request.Header.Add("etag", `"`+currentEtag+`"`)
-	request.Header.Add("token", token)
+	request.Header.Add("Etag", `"`+currentEtag+`"`)
+	request.Header.Add("Authorization", token)
 
 	netClient := &http.Client{
 		Timeout: time.Second * 10,
