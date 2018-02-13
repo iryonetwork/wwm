@@ -50,10 +50,15 @@ func (h *handlers) FileGet() operations.FileGetHandler {
 	return operations.FileGetHandlerFunc(func(params operations.FileGetParams, principal *string) middleware.Responder {
 		r, fd, err := h.service.FileGet(params.Bucket, params.FileID)
 		if err != nil {
-			return operations.NewFileGetInternalServerError().WithPayload(&models.Error{
-				Code:    "server_error",
-				Message: err.Error(),
-			})
+			switch err {
+			case ErrNotFound:
+				return operations.NewFileGetNotFound()
+			default:
+				return operations.NewFileGetInternalServerError().WithPayload(&models.Error{
+					Code:    "server_error",
+					Message: err.Error(),
+				})
+			}
 		}
 
 		return operations.NewFileGetOK().
@@ -72,10 +77,15 @@ func (h *handlers) FileGetVersion() operations.FileGetVersionHandler {
 	return operations.FileGetVersionHandlerFunc(func(params operations.FileGetVersionParams, principal *string) middleware.Responder {
 		r, fd, err := h.service.FileGetVersion(params.Bucket, params.FileID, params.Version)
 		if err != nil {
-			return operations.NewFileGetVersionInternalServerError().WithPayload(&models.Error{
-				Code:    "server_error",
-				Message: err.Error(),
-			})
+			switch err {
+			case ErrNotFound:
+				return operations.NewFileGetVersionNotFound()
+			default:
+				return operations.NewFileGetVersionInternalServerError().WithPayload(&models.Error{
+					Code:    "server_error",
+					Message: err.Error(),
+				})
+			}
 		}
 
 		return operations.NewFileGetVersionOK().
@@ -136,10 +146,15 @@ func (h *handlers) FileUpdate() operations.FileUpdateHandler {
 		// call service
 		fd, err := h.service.FileUpdate(params.Bucket, params.FileID, params.File, params.ContentType, archetype)
 		if err != nil {
-			return operations.NewFileUpdateInternalServerError().WithPayload(&models.Error{
-				Code:    "server_error",
-				Message: err.Error(),
-			})
+			switch err {
+			case ErrNotFound:
+				return operations.NewFileUpdateNotFound()
+			default:
+				return operations.NewFileUpdateInternalServerError().WithPayload(&models.Error{
+					Code:    "server_error",
+					Message: err.Error(),
+				})
+			}
 		}
 
 		return operations.NewFileUpdateCreated().WithPayload(fd)
@@ -150,10 +165,15 @@ func (h *handlers) FileDelete() operations.FileDeleteHandler {
 	return operations.FileDeleteHandlerFunc(func(params operations.FileDeleteParams, principal *string) middleware.Responder {
 		err := h.service.FileDelete(params.Bucket, params.FileID)
 		if err != nil {
-			return operations.NewFileDeleteInternalServerError().WithPayload(&models.Error{
-				Code:    "server_error",
-				Message: err.Error(),
-			})
+			switch err {
+			case ErrNotFound:
+				return operations.NewFileDeleteNotFound()
+			default:
+				return operations.NewFileDeleteInternalServerError().WithPayload(&models.Error{
+					Code:    "server_error",
+					Message: err.Error(),
+				})
+			}
 		}
 
 		return operations.NewFileDeleteNoContent()
@@ -164,10 +184,12 @@ func (h *handlers) SyncFileMetadata() operations.SyncFileMetadataHandler {
 	return operations.SyncFileMetadataHandlerFunc(func(params operations.SyncFileMetadataParams, principal *string) middleware.Responder {
 		_, fd, err := h.service.FileGetVersion(params.Bucket, params.FileID, params.Version)
 		if err != nil {
-			return operations.NewSyncFileMetadataInternalServerError().WithPayload(&models.Error{
-				Code:    "server_error",
-				Message: err.Error(),
-			})
+			switch err {
+			case ErrNotFound:
+				return operations.NewSyncFileMetadataNotFound()
+			default:
+				return operations.NewSyncFileMetadataInternalServerError()
+			}
 		}
 
 		return operations.NewSyncFileMetadataOK().
@@ -214,6 +236,8 @@ func (h *handlers) SyncFileDelete() operations.SyncFileDeleteHandler {
 		err := h.service.SyncFileDelete(params.Bucket, params.FileID, params.Version, params.Created)
 		if err != nil {
 			switch err {
+			case ErrNotFound:
+				return operations.NewSyncFileDeleteNotFound()
 			case ErrDeleted:
 				return operations.NewSyncFileDeleteConflict()
 			default:
