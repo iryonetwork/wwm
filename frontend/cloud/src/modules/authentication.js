@@ -58,7 +58,7 @@ export default (state = initialState, action) => {
 const renewInterval = 10 * 60 * 1000
 const baseURL = "https://iryo.cloud"
 
-let renewToken = () => {
+export const renewToken = () => {
     return (dispatch, getState) => {
         return fetch(`${baseURL}/auth/renew`, {
             headers: {
@@ -76,6 +76,8 @@ let renewToken = () => {
                             type: LOGGEDIN,
                             token
                         })
+
+                        localStorage.setItem("token", token)
 
                         return setTimeout(() => {
                             dispatch(renewToken())
@@ -126,6 +128,8 @@ export const login = () => {
                             type: LOGGEDIN,
                             token
                         })
+
+                        localStorage.setItem("token", token)
 
                         return setTimeout(() => {
                             dispatch(renewToken())
