@@ -46,7 +46,6 @@ export default (state = initialState, action) => {
                 draft.token = null
                 draft.redirectToReferrer = false
                 draft.retries = 0
-                draft.error = "Failed to renew authentication token. Please sign in again"
                 draft.form = {}
                 break
             default:
@@ -96,7 +95,9 @@ export const renewToken = () => {
 let renewRetry = tries => {
     return dispatch => {
         if (tries === 5) {
+            localStorage.removeItem("token")
             dispatch({ type: RENEW_FAILED })
+            dispatch(open("Failed to renew authentication token. Please sign in again", "", COLOR_DANGER))
             return dispatch(push("/login"))
         } else {
             return setTimeout(() => {

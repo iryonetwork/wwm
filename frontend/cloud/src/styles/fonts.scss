@@ -1,0 +1,54 @@
+/**
+ * @license
+ * MyFonts Webfont Build ID 3481160, 2017-11-10T09:32:50-0500
+ *
+ * The fonts listed in this notice are subject to the End User License
+ * Agreement(s) entered into by the website owner. All other parties are
+ * explicitly restricted from using the Licensed fonts/Iryo_Neue_Haas_Unica(s).
+ *
+ * You may obtain a valid license at the URLs below.
+ *
+ * Webfont: NeueHaasUnicaW1G-Bold by Linotype
+ * URL: https://www.myfonts.com/fonts/linotype/neue-haas-unica/bold-148341/
+ *
+ * Webfont: NeueHaasUnicaW1G-Regular by Linotype
+ * URL: https://www.myfonts.com/fonts/linotype/neue-haas-unica/regular-148341/
+ *
+ *
+ * License: https://www.myfonts.com/viewlicense?type=web&buildid=3481160
+ * Licensed pageviews: 250,000
+ * fonts/Iryo_Neue_Haas_Unica copyright: Copyright &#x00A9; 2015 Monotype Imaging Inc.  All rights reserved.
+ *
+ * © 2017 MyFonts Inc
+*/
+
+/* @import must be at top of file, otherwise CSS will not work */
+// @import url("//hello.myfonts.net/count/351e48");
+@font-face {
+    font-family: "NeueHaasUnicaW1G";
+    src: url("fonts/Iryo_Neue_Haas_Unica/351E48_0_0.eot");
+    src: url("fonts/Iryo_Neue_Haas_Unica/351E48_0_0.eot?#iefix") format("embedded-opentype"), url("fonts/Iryo_Neue_Haas_Unica/351E48_0_0.woff2") format("woff2"),
+        url("fonts/Iryo_Neue_Haas_Unica/351E48_0_0.woff") format("woff"), url("fonts/Iryo_Neue_Haas_Unica/351E48_0_0.ttf") format("truetype");
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "NeueHaasUnicaW1G";
+    src: url("fonts/Iryo_Neue_Haas_Unica/351E48_1_0.eot");
+    src: url("fonts/Iryo_Neue_Haas_Unica/351E48_1_0.eot?#iefix") format("embedded-opentype"), url("fonts/Iryo_Neue_Haas_Unica/351E48_1_0.woff2") format("woff2"),
+        url("fonts/Iryo_Neue_Haas_Unica/351E48_1_0.woff") format("woff"), url("fonts/Iryo_Neue_Haas_Unica/351E48_1_0.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "SharpGroteskSmBold25";
+    src: url("fonts/SharpGroteskSmBold25/SharpGroteskSmBold25.eot"); /* IE9 Compat Modes */
+    src: url("fonts/SharpGroteskSmBold25/SharpGroteskSmBold25.eot?#iefix") format("embedded-opentype"),
+        url("fonts/SharpGroteskSmBold25/SharpGroteskSmBold25.otf") format("opentype"), url("fonts/SharpGroteskSmBold25/SharpGroteskSmBold25.svg") format("svg"),
+        url("fonts/SharpGroteskSmBold25/SharpGroteskSmBold25.ttf") format("truetype"),
+        url("fonts/SharpGroteskSmBold25/SharpGroteskSmBold25.woff") format("woff"), url("fonts/SharpGroteskSmBold25/SharpGroteskSmBold25.woff2") format("woff2"); /* Modern Browsers */
+    font-weight: normal;
+    font-style: normal;
+}
