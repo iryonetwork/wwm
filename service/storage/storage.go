@@ -283,7 +283,7 @@ func (s *service) SyncFileDelete(bucketID, fileID, version string, created strfm
 			return nil
 		}
 		s.logger.Error().
-			Msg("File delete already synced and has conflicting version")
+			Msg("File already deleted and delete has conflicting version")
 		return ErrDeleted
 	}
 
