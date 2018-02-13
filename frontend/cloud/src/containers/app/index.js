@@ -18,6 +18,10 @@ class App extends React.Component {
         }
     }
 
+    logout() {
+        localStorage.removeItem("token")
+    }
+
     render() {
         return (
             <div>
@@ -55,6 +59,14 @@ class App extends React.Component {
                                         <NavLink className="nav-link" to="/rules">
                                             ACL
                                         </NavLink>
+                                    </li>
+                                </ul>
+
+                                <ul className="navbar-nav">
+                                    <li className="nav-item">
+                                        <a href="/" className="nav-link" onClick={this.logout}>
+                                            Logout
+                                        </a>
                                     </li>
                                 </ul>
                             </div>
