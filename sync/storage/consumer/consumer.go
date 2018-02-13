@@ -31,11 +31,11 @@ func (c *stanConsumer) StartSubscription(typ storageSync.EventType) error {
 	var mh stan.MsgHandler
 	switch typ {
 	case storageSync.FileNew:
-		mh = c.getMsgHandler(ID, typ, c.handlers.FileNew)
+		mh = c.getMsgHandler(ID, typ, c.handlers.SyncFile)
 	case storageSync.FileUpdate:
-		mh = c.getMsgHandler(ID, typ, c.handlers.FileUpdate)
+		mh = c.getMsgHandler(ID, typ, c.handlers.SyncFile)
 	case storageSync.FileDelete:
-		mh = c.getMsgHandler(ID, typ, c.handlers.FileDelete)
+		mh = c.getMsgHandler(ID, typ, c.handlers.SyncFileDelete)
 	default:
 		c.subsLock.Unlock()
 		return fmt.Errorf("Invalid event type")
@@ -79,7 +79,7 @@ func (c *stanConsumer) Close() {
 
 func (c *stanConsumer) getMsgHandler(ID int, typ storageSync.EventType, h Handler) stan.MsgHandler {
 	return func(msg *stan.Msg) {
-		c.logger.Info().
+		c.logger.Debug().
 			Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).
 			Msgf("Received message: %s", msg)
 
@@ -87,7 +87,7 @@ func (c *stanConsumer) getMsgHandler(ID int, typ storageSync.EventType, h Handle
 		err := f.Unmarshal(msg.Data)
 		if err != nil {
 			c.logger.Error().Err(err).
-				Str("cmd", "getMsgHandler").
+				Str("cmd", "MsgHandler").
 				Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).
 				Msg("Failed to unmarshal message")
 
@@ -97,7 +97,7 @@ func (c *stanConsumer) getMsgHandler(ID int, typ storageSync.EventType, h Handle
 		err = h(f)
 		if err != nil {
 			c.logger.Error().Err(err).
-				Str("cmd", "getMsgHandler").
+				Str("cmd", "MsgHandler").
 				Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).
 				Msg("Failed handler invocation")
 
@@ -106,10 +106,9 @@ func (c *stanConsumer) getMsgHandler(ID int, typ storageSync.EventType, h Handle
 
 		// Acknowledge the message
 		msg.Ack()
-
-		c.logger.Info().
+		c.logger.Debug().
 			Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).
-			Str("cmd", "getMsgHandler").
+			Str("cmd", "MsgHandler").
 			Msgf("Acknowledged message: %s", msg)
 	}
 }

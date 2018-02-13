@@ -12,9 +12,10 @@ import (
 
 // Handlers describes public API for sync/storage event handlers
 type Handlers interface {
-	FileNew(f *storageSync.FileInfo) error
-	FileUpdate(f *storageSync.FileInfo) error
-	FileDelete(f *storageSync.FileInfo) error
+	// SyncFile synchronizes new files and file updates to destination storage
+	SyncFile(f *storageSync.FileInfo) error
+	// SyncFileDelete synchronizes file deletion to destination storage.
+	SyncFileDelete(f *storageSync.FileInfo) error
 }
 
 // Handler describes handler functions
@@ -28,39 +29,10 @@ type handlers struct {
 	logger          zerolog.Logger
 }
 
-// FileNew uploads new file to cloud storage.
-func (h *handlers) FileNew(f *storageSync.FileInfo) error {
-	return h.fileSync(f)
-}
-
-// FileUpdate uploads updated file to cloud storage.
-func (h *handlers) FileUpdate(f *storageSync.FileInfo) error {
-	return h.fileSync(f)
-}
-
-// FileDelete deletes file to cloud storage.
-func (h *handlers) FileDelete(f *storageSync.FileInfo) error {
-	params := storage.NewSyncFileDeleteParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
-
-	_, err := h.destination.SyncFileDelete(params, h.destinationAuth)
-
-	return err
-}
-
-// NewApiHandlers returns Handlers with cloudStorage and localStorage API used.
-func NewHandlers(source *storage.Client, sourceAuth runtime.ClientAuthInfoWriter, destination *storage.Client, destinationAuth runtime.ClientAuthInfoWriter, logger zerolog.Logger) Handlers {
-	return &handlers{
-		source:          source,
-		sourceAuth:      sourceAuth,
-		destination:     destination,
-		destinationAuth: destinationAuth,
-		logger:          logger,
-	}
-}
-
-func (h *handlers) fileSync(f *storageSync.FileInfo) error {
+// SyncFile synchronizes new files and file updates to destination storage
+func (h *handlers) SyncFile(f *storageSync.FileInfo) error {
+	// Get file from source storage
 	var buf bytes.Buffer
-
 	getParams := storage.NewFileGetVersionParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
 	resp, err := h.source.FileGetVersion(getParams, h.sourceAuth, &buf)
 
@@ -101,26 +73,82 @@ func (h *handlers) fileSync(f *storageSync.FileInfo) error {
 
 	switch {
 	case ok != nil:
-		h.logger.Info().
+		h.logger.Debug().
+			Str("cmd", "SyncFile").
 			Str("bucket", f.BucketID).
 			Str("fileID", f.FileID).
 			Str("version", f.Version).
-			Msg("File already exists in remote storage.")
+			Msg("File already exists in destination storage")
 	case created != nil:
 		h.logger.Debug().
+			Str("cmd", "SyncFile").
 			Str("bucket", f.BucketID).
 			Str("fileID", f.FileID).
 			Str("version", f.Version).
-			Msg("Succesfully synchronized file to remote storage")
+			Msg("Succesfully synced file to destination storage")
 	case err != nil:
 		h.logger.Error().Err(err).
+			Str("cmd", "SyncFile").
 			Str("bucket", f.BucketID).
 			Str("fileID", f.FileID).
 			Str("version", f.Version).
-			Msg("Failed to synchornize file to remote storage")
+			Msg("Failed to sync file to destination storage")
+		switch err.(type) {
+		case *storage.SyncFileConflict:
+			// another attempt at sync should not be performed
+			return nil
+		default:
+			return err
+		}
 	}
 
-	return err
+	return nil
+}
+
+// SyncFileDelete synchronizes file deletion to destination storage.
+func (h *handlers) SyncFileDelete(f *storageSync.FileInfo) error {
+	params := storage.NewSyncFileDeleteParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
+
+	_, err := h.destination.SyncFileDelete(params, h.destinationAuth)
+
+	if err != nil {
+		h.logger.Error().Err(err).
+			Str("cmd", "SyncFileDelete").
+			Str("bucket", f.BucketID).
+			Str("fileID", f.FileID).
+			Str("version", f.Version).
+			Msg("Failed to sync file deletion")
+		switch err.(type) {
+		case *storage.SyncFileDeleteConflict:
+			// another attempt at sync should not be performed
+			return nil
+		case *storage.SyncFileDeleteNotFound:
+			// another attempt at sync should not be performed
+			return nil
+		default:
+			return err
+		}
+	}
+
+	h.logger.Debug().
+		Str("cmd", "SyncFileDelete").
+		Str("bucket", f.BucketID).
+		Str("fileID", f.FileID).
+		Str("version", f.Version).
+		Msg("Succesfully synced file deletion to destination storage")
+
+	return nil
+}
+
+// NewApiHandlers returns Handlers with cloudStorage and localStorage API used.
+func NewHandlers(source *storage.Client, sourceAuth runtime.ClientAuthInfoWriter, destination *storage.Client, destinationAuth runtime.ClientAuthInfoWriter, logger zerolog.Logger) Handlers {
+	return &handlers{
+		source:          source,
+		sourceAuth:      sourceAuth,
+		destination:     destination,
+		destinationAuth: destinationAuth,
+		logger:          logger,
+	}
 }
 
 func (h *handlers) needsSync(f *storageSync.FileInfo, sourceChecksum string) (bool, error) {
@@ -135,12 +163,12 @@ func (h *handlers) needsSync(f *storageSync.FileInfo, sourceChecksum string) (bo
 				Str("bucket", f.BucketID).
 				Str("fileID", f.FileID).
 				Str("version", f.Version).
-				Msg("File does exist in destination storage and has different checksum.")
+				Msg("File already exists in destination storage and has different checksum.")
 		}
 		// Nothing to do
 		return false, nil
 	}
-	// If file not found it needs sync, otheriwse return error
+	// If file not found it needs sync, otherwise return error
 	if _, ok := err.(*storage.SyncFileMetadataNotFound); !ok {
 		return false, err
 	}

@@ -114,7 +114,7 @@ func TestMessageHandling(t *testing.T) {
 	// Expect handler call
 	called := make(chan bool)
 	h.EXPECT().
-		FileNew(gomock.Eq(file1)).
+		SyncFile(gomock.Eq(file1)).
 		Return(nil).
 		Do(func(f *storageSync.FileInfo) {
 			called <- true
@@ -151,7 +151,7 @@ func TestMessageHandlingOnlyOnce(t *testing.T) {
 	// Expect handler call
 	called := make(chan bool)
 	h.EXPECT().
-		FileUpdate(gomock.Eq(file1)).
+		SyncFile(gomock.Eq(file1)).
 		Return(nil).
 		Do(func(f *storageSync.FileInfo) {
 			called <- true
@@ -196,7 +196,7 @@ func TestMessageHandlingOnlyOnceSeparateConnections(t *testing.T) {
 	// Expect handler call
 	called := make(chan bool)
 	h.EXPECT().
-		FileDelete(gomock.Eq(file1)).
+		SyncFileDelete(gomock.Eq(file1)).
 		Return(nil).
 		Do(func(f *storageSync.FileInfo) {
 			called <- true
@@ -241,14 +241,14 @@ func TestMessageHandlingNack(t *testing.T) {
 	nack := make(chan bool)
 	ok := make(chan bool)
 	nackCall := h.EXPECT().
-		FileNew(gomock.Eq(file1)).
+		SyncFile(gomock.Eq(file1)).
 		Return(fmt.Errorf("error")).
 		Do(func(f *storageSync.FileInfo) {
 			nack <- true
 		}).
 		Times(1)
 	h.EXPECT().
-		FileNew(gomock.Eq(file1)).
+		SyncFile(gomock.Eq(file1)).
 		Return(nil).
 		Do(func(f *storageSync.FileInfo) {
 			ok <- true
@@ -291,14 +291,14 @@ func TestDurability(t *testing.T) {
 	// Expect handler call
 	ok := make(chan bool)
 	firstHandlerCall := h.EXPECT().
-		FileNew(gomock.Eq(file1)).
+		SyncFile(gomock.Eq(file1)).
 		Return(nil).
 		Do(func(f *storageSync.FileInfo) {
 			ok <- true
 		}).
 		Times(1)
 	h.EXPECT().
-		FileNew(gomock.Eq(file2)).
+		SyncFile(gomock.Eq(file2)).
 		Return(nil).
 		Do(func(f *storageSync.FileInfo) {
 			ok <- true
