@@ -295,6 +295,8 @@ paths:
       summary: Get a specific version of file
       description: Returns a specific version of a file
       operationId: fileGetVersion
+      produces:
+        - application/octet-stream
 
       parameters:
         - in: path
@@ -408,13 +410,8 @@ paths:
               description: File's full path
 
         403:
-          $ref: '#/responses/403'
-
         404:
-          $ref: '#/responses/404'
-
         500:
-          $ref: '#/responses/500'
 
     post:
       tags:
@@ -424,6 +421,8 @@ paths:
       operationId: syncFile
       consumes:
         - multipart/form-data
+      produces:
+        - application/json; charset=utf-8
 
       parameters:
         - in: path
