@@ -39,7 +39,7 @@ func main() {
 
 	// initialize local storage API client
 	localTransportCfg := &client.TransportConfig{
-		Host:     "iryo.local",
+		Host:     "localStorage",
 		BasePath: "storage",
 		Schemes:  []string{"https"},
 	}
@@ -47,7 +47,7 @@ func main() {
 
 	// initialize cloud storage API client
 	cloudTransportCfg := &client.TransportConfig{
-		Host:     "iryo.cloud",
+		Host:     "cloudStorage",
 		BasePath: "storage",
 		Schemes:  []string{"https"},
 	}
