@@ -38,7 +38,7 @@ func (h *handlers) SyncFile(f *storageSync.FileInfo) error {
 
 	if err != nil {
 		if _, ok := err.(*storage.FileGetVersionNotFound); ok {
-			h.logger.Info().
+			h.logger.Error().Err(err).
 				Str("bucket", f.BucketID).
 				Str("fileID", f.FileID).
 				Str("version", f.Version).
@@ -47,6 +47,13 @@ func (h *handlers) SyncFile(f *storageSync.FileInfo) error {
 			// File might have been already deleted; mark as succesful
 			return nil
 		}
+
+		h.logger.Error().Err(err).
+			Str("bucket", f.BucketID).
+			Str("fileID", f.FileID).
+			Str("version", f.Version).
+			Msg("Error on trying to fetch file from source storage.")
+		return err
 	}
 
 	// Check if sync is needed
