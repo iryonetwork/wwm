@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/go-openapi/runtime"
@@ -85,7 +86,7 @@ func main() {
 	// Run cleanup when SIGINT is received
 	signalChan := make(chan os.Signal, 1)
 	cleanupDone := make(chan bool)
-	signal.Notify(signalChan, os.Interrupt)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		for range signalChan {
 			c.Close()
