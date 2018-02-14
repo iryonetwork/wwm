@@ -248,6 +248,7 @@ func TestS3List(t *testing.T) {
 			[]minio.ObjectInfo{info1V1, info1V2, info2V2, info2V1},
 			func(i chan minio.ObjectInfo, m *mock.MockMinio) []*gomock.Call {
 				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX", false, gomock.Any()).Return(i),
 				}
 			},
@@ -260,6 +261,7 @@ func TestS3List(t *testing.T) {
 			[]minio.ObjectInfo{infoErr},
 			func(i chan minio.ObjectInfo, m *mock.MockMinio) []*gomock.Call {
 				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX", false, gomock.Any()).Return(i),
 				}
 			},
@@ -272,7 +274,32 @@ func TestS3List(t *testing.T) {
 			[]minio.ObjectInfo{infoBrokenFD},
 			func(i chan minio.ObjectInfo, m *mock.MockMinio) []*gomock.Call {
 				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX", false, gomock.Any()).Return(i),
+				}
+			},
+			nil,
+			withErrors,
+			nil,
+		},
+		{
+			"bucket does not exist",
+			[]minio.ObjectInfo{infoBrokenFD},
+			func(i chan minio.ObjectInfo, m *mock.MockMinio) []*gomock.Call {
+				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(false, nil),
+				}
+			},
+			[]*models.FileDescriptor{},
+			noErrors,
+			nil,
+		},
+		{
+			"failed to check if bucket exsits",
+			[]minio.ObjectInfo{infoBrokenFD},
+			func(i chan minio.ObjectInfo, m *mock.MockMinio) []*gomock.Call {
+				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(false, fmt.Errorf("Failed to check if bucket exists")),
 				}
 			},
 			nil,
@@ -344,6 +371,7 @@ func TestS3Read(t *testing.T) {
 			func(i chan minio.ObjectInfo, m *mock.MockMinio, k *mock.MockKeyProvider) []*gomock.Call {
 				rc := noopCloser{bytes.NewBuffer([]byte("contents"))}
 				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX.", false, gomock.Any()).Return(i),
 					k.EXPECT().Get("BUCKET").Return("SECRET-KEY", nil),
 					m.EXPECT().GetEncryptedObject("BUCKET", expectedFileName, gomock.Any()).Return(rc, nil),
@@ -361,6 +389,7 @@ func TestS3Read(t *testing.T) {
 			func(i chan minio.ObjectInfo, m *mock.MockMinio, k *mock.MockKeyProvider) []*gomock.Call {
 				rc := noopCloser{bytes.NewBuffer([]byte("contents"))}
 				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX.VERSION.", false, gomock.Any()).Return(i),
 					k.EXPECT().Get("BUCKET").Return("SECRET-KEY", nil),
 					m.EXPECT().GetEncryptedObject("BUCKET", expectedFileName, gomock.Any()).Return(rc, nil),
@@ -378,6 +407,7 @@ func TestS3Read(t *testing.T) {
 			func(i chan minio.ObjectInfo, m *mock.MockMinio, k *mock.MockKeyProvider) []*gomock.Call {
 				rc := noopCloser{bytes.NewBuffer([]byte("contents"))}
 				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX.VERSION.", false, gomock.Any()).Return(i),
 					k.EXPECT().Get("BUCKET").Return("SECRET-KEY", nil),
 					m.EXPECT().GetEncryptedObject("BUCKET", expectedFileName, gomock.Any()).Return(rc, nil),
@@ -394,6 +424,7 @@ func TestS3Read(t *testing.T) {
 			[]minio.ObjectInfo{infoErr},
 			func(i chan minio.ObjectInfo, m *mock.MockMinio, k *mock.MockKeyProvider) []*gomock.Call {
 				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX.", false, gomock.Any()).Return(i),
 				}
 			},
@@ -408,7 +439,22 @@ func TestS3Read(t *testing.T) {
 			[]minio.ObjectInfo{},
 			func(i chan minio.ObjectInfo, m *mock.MockMinio, k *mock.MockKeyProvider) []*gomock.Call {
 				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX.", false, gomock.Any()).Return(i),
+				}
+			},
+			nil,
+			nil,
+			withErrors,
+			ErrNotFound,
+		},
+		{
+			"list is empty (bucket does not exist)",
+			"",
+			[]minio.ObjectInfo{},
+			func(i chan minio.ObjectInfo, m *mock.MockMinio, k *mock.MockKeyProvider) []*gomock.Call {
+				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(false, nil),
 				}
 			},
 			nil,
@@ -422,6 +468,7 @@ func TestS3Read(t *testing.T) {
 			[]minio.ObjectInfo{info1V2},
 			func(i chan minio.ObjectInfo, m *mock.MockMinio, k *mock.MockKeyProvider) []*gomock.Call {
 				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX.VERSION.", false, gomock.Any()).Return(i),
 					k.EXPECT().Get("BUCKET").Return("", errors.New("Error")),
 				}
@@ -437,6 +484,7 @@ func TestS3Read(t *testing.T) {
 			[]minio.ObjectInfo{info1V2},
 			func(i chan minio.ObjectInfo, m *mock.MockMinio, k *mock.MockKeyProvider) []*gomock.Call {
 				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX.VERSION.", false, gomock.Any()).Return(i),
 					k.EXPECT().Get("BUCKET").Return("SECRET-KEY", nil),
 					m.EXPECT().GetEncryptedObject("BUCKET", expectedFileName, gomock.Any()).Return(nil, errors.New("Error")),

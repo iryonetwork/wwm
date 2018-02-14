@@ -159,6 +159,16 @@ func (s *s3storage) MakeBucket(bucketID string) error {
 func (s *s3storage) List(bucketID, prefix string) ([]*models.FileDescriptor, error) {
 	s.logger.Debug().Str("cmd", "s3::List").Msgf("('%s', '%s')", bucketID, prefix)
 
+	// Check if bucket exists first
+	exists, err := s.client.BucketExists(bucketID)
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to check if bucket exists")
+	}
+	if !exists {
+		// Nothing to list
+		return []*models.FileDescriptor{}, nil
+	}
+
 	ch := make(chan struct{})
 	defer close(ch)
 	infos := s.client.ListObjectsV2(bucketID, prefix, false, ch)
