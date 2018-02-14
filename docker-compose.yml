@@ -142,3 +142,25 @@ services:
     - ./bin/tls/storageSyncConsumer-key.pem:/certs/private.key:ro
     - ./bin/tls/storageSyncConsumer.pem:/certs/public.crt:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+
+  localPrometheus:
+    image: prom/prometheus
+    ports:
+    - 9090:9090
+    command:
+    - --config.file=/etc/prometheus.yml
+    volumes:
+    - ./localPrometheus.yml:/etc/prometheus.yml:ro
+    - ./bin/tls/ca.pem:/certs/ca-iryo.pem:ro
+    - ./bin/tls/localPrometheus-key.pem:/certs/private.key:ro
+    - ./bin/tls/localPrometheus.pem:/certs/public.crt:ro
+
+  cloudPrometheus:
+    image: prom/prometheus
+    command:
+    - --config.file=/etc/prometheus.yml
+    volumes:
+    - ./cloudPrometheus.yml:/etc/prometheus.yml:ro
+    - ./bin/tls/ca.pem:/certs/ca-iryo.pem:ro
+    - ./bin/tls/cloudPrometheus-key.pem:/certs/private.key:ro
+    - ./bin/tls/cloudPrometheus.pem:/certs/public.crt:ro
