@@ -188,6 +188,7 @@ func (h *handlers) SyncFileMetadata() operations.SyncFileMetadataHandler {
 			case ErrNotFound:
 				return operations.NewSyncFileMetadataNotFound()
 			default:
+				h.logger.Error().Err(err).Msg("Failed to fetch the file to return metadata")
 				return operations.NewSyncFileMetadataInternalServerError()
 			}
 		}
