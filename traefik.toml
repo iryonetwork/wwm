@@ -56,6 +56,14 @@ address = ":8080"
     [backends.localNatsMonitor.servers.server1]
     url = "http://localNats:8282"
 
+  [backends.localPrometheus]
+    [backends.localPrometheus.servers.server1]
+    url = "http://localPrometheus:9090"
+
+  [backends.cloudPrometheus]
+    [backends.cloudPrometheus.servers.server1]
+    url = "http://cloudPrometheus:9090"
+
 [frontends]
   [frontends.localauth]
   backend = "localauth"
@@ -101,3 +109,13 @@ address = ":8080"
   backend = "localNatsMonitor"
     [frontends.localNatsMonitor.routes.route1]
     rule = "Host:nats-monitor.iryo.local"
+
+  [frontends.localPrometheus]
+  backend = "localPrometheus"
+    [frontends.localPrometheus.routes.route1]
+    rule = "Host:prometheus.iryo.local"
+
+  [frontends.cloudPrometheus]
+  backend = "cloudPrometheus"
+    [frontends.cloudPrometheus.routes.route1]
+    rule = "Host:prometheus.iryo.cloud"

@@ -11,7 +11,7 @@ Me foundation.
 * govendor (`go get -u github.com/kardianos/govendor`)
 * gomock (`go get -u github.com/golang/mock/gomock`, `github.com/golang/mock/mockgen`)
 * go-swagger (`go get -u github.com/go-swagger/go-swagger/cmd/swagger`)
-* updated `/etc/hosts` (`127.0.0.1 iryo.local minio.iryo.local vault.iryo.local iryo.cloud minio.iryo.cloud`)
+* updated `/etc/hosts` (`127.0.0.1 iryo.local minio.iryo.local vault.iryo.local iryo.cloud minio.iryo.cloud nats.iryo.local nats-monitor.iryo.local prometheus.iryo.local prometheus.iryo.cloud`)
 * nodejs & yarn (`brew install node yarn`)
 
 ## How to set up and work with the repository

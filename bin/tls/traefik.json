@@ -5,7 +5,11 @@
         "minio.iryo.local",
         "iryo.local",
         "iryo.cloud",
-        "minio.iryo.cloud"
+        "minio.iryo.cloud",
+        "nats.iryo.local",
+        "nats-monitor.iryo.local",
+        "prometheus.iryo.local",
+        "prometheus.iryo.cloud"
     ],
     "key": {
         "algo": "ecdsa",
