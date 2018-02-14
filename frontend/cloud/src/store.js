@@ -3,28 +3,20 @@ import { routerMiddleware } from "react-router-redux"
 import thunk from "redux-thunk"
 import createHistory from "history/createBrowserHistory"
 import rootReducer from "./modules"
-import jwtDecode from "jwt-decode"
 
-import { renewToken } from "./modules/authentication"
+import { getInitialState } from "./modules/authentication"
 
 export const history = createHistory()
 
 let store
 
-let initialState = {
-    authentication: {
-        form: {},
-        retries: 0
-    }
+const dispatch = a => {
+    store.dispatch(a)
 }
-try {
-    const token = localStorage.getItem("token")
-    initialState.authentication.tokenString = token
-    initialState.authentication.token = jwtDecode(token)
-    setTimeout(() => {
-        store.dispatch(renewToken())
-    }, 1000)
-} catch (e) {}
+
+const initialState = {
+    authentication: getInitialState(dispatch)
+}
 
 const enhancers = []
 const middleware = [thunk, routerMiddleware(history)]

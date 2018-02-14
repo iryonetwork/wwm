@@ -1,8 +1,15 @@
-@import "iryo-variables";
+@import "iryo-variables.scss";
 @import "fonts.scss";
 @import "bootstrap/scss/bootstrap";
 
 @import "icons/style";
+
+h1,
+h2,
+h3,
+.table th {
+    color: #000;
+}
 
 main.container {
     margin-top: 2rem;

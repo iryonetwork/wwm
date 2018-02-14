@@ -12,7 +12,7 @@ export const SET_PASSWORD = "authentication/SET_PASSWORD"
 export const RENEW_RETRY = "authentication/RENEW_RETRY"
 export const RENEW_FAILED = "authentication/RENEW_FAILED"
 
-let initialState = {
+const initialState = {
     form: {},
     retries: 0
 }
@@ -171,5 +171,26 @@ export const setPassword = password => {
             type: SET_PASSWORD,
             password
         })
+    }
+}
+
+export const getInitialState = dispatch => {
+    try {
+        const tokenString = localStorage.getItem("token")
+        const token = jwtDecode(tokenString)
+        let state = { ...initialState }
+
+        if (token.exp - 30 > Date.now() / 1000) {
+            setTimeout(() => {
+                dispatch(renewToken())
+            }, 1000)
+
+            state.tokenString = tokenString
+            state.token = token
+        }
+
+        return state
+    } catch (e) {
+        return initialState
     }
 }
