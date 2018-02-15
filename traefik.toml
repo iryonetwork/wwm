@@ -1,4 +1,5 @@
 defaultEntryPoints = ["http","https"]
+RootCAs = [ "/certs/ca.pem" ]
 
 [entryPoints]
   [entryPoints.http]
