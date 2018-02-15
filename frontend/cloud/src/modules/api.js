@@ -18,7 +18,7 @@ export default (url, method, body) => {
         body: JSON.stringify(body)
     })
         .catch(error => {
-            throw error
+            throw new Error("Failed to connect to server")
         })
         .then(response => {
             if (response.status === 204) {

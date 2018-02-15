@@ -151,7 +151,7 @@ export const login = () => {
             })
             .catch(ex => {
                 dispatch({ type: ERROR })
-                dispatch(open(ex.message, null, COLOR_DANGER))
+                dispatch(open("Failed to connect to server", null, COLOR_DANGER))
             })
     }
 }
