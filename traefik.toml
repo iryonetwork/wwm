@@ -64,6 +64,10 @@ address = ":8080"
     [backends.cloudPrometheus.servers.server1]
     url = "http://cloudPrometheus:9090"
 
+  [backends.natsStreamingExporter]
+    [backends.natsStreamingExporter.servers.server1]
+    url = "http://natsStreamingExporter:9275"
+
 [frontends]
   [frontends.localauth]
   backend = "localauth"
