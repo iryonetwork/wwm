@@ -164,3 +164,11 @@ services:
     - ./bin/tls/ca.pem:/certs/ca-iryo.pem:ro
     - ./bin/tls/cloudPrometheus-key.pem:/certs/private.key:ro
     - ./bin/tls/cloudPrometheus.pem:/certs/public.crt:ro
+
+  natsStreamingExporter:
+    image: registry.gitlab.com/civist/nats-streaming-exporter
+    command:
+    - /nats-streaming-exporter
+    - -nats-uri=http://localNats:8282/
+    ports:
+    - 9275:9275
