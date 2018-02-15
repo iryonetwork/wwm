@@ -54,6 +54,7 @@ services:
     - /wwm/localAuth
     volumes:
     - ./.bin/:/wwm
+    - ./.data/localAuth:/data
     - ./bin/tls:/certs
 
   localStorage:
@@ -115,4 +116,5 @@ services:
     - /wwm/cloudAuth
     volumes:
     - ./.bin/:/wwm
+    - ./.data/cloudAuth:/data
     - ./bin/tls:/certs

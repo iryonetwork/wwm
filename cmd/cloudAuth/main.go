@@ -4,10 +4,11 @@ package main
 
 import (
 	"flag"
+	"os"
 
 	loads "github.com/go-openapi/loads"
 	"github.com/rs/cors"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/iryonetwork/wwm/gen/auth/restapi"
@@ -18,9 +19,14 @@ import (
 )
 
 func main() {
+	logger := zerolog.New(os.Stdout).With().
+		Timestamp().
+		Str("service", "cloudAuth").
+		Logger()
+
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatal().Err(err).Msg("Failed to load swagger spec")
 	}
 
 	createUsername := flag.String("username", "", "username to create")
@@ -31,9 +37,9 @@ func main() {
 	// initialize storage
 	// TODO: get key from vault
 	key := []byte{0xe9, 0xf8, 0x2d, 0xf9, 0xc4, 0x14, 0xc1, 0x41, 0xdb, 0x87, 0x31, 0x1a, 0x95, 0x79, 0x5, 0xbf, 0x71, 0x12, 0x30, 0xd3, 0x2d, 0x8b, 0x59, 0x9d, 0x27, 0x13, 0xfa, 0x84, 0x55, 0x63, 0x64, 0x64}
-	storage, err := auth.New("/wwm/cloudAuth.db", key, false)
+	storage, err := auth.New("/data/cloudAuth.db", key, false, logger.With().Str("component", "storage/auth").Logger())
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatal().Err(err).Msg("Failed to initialize auth storage")
 	}
 
 	if *createUsername != "" {
@@ -45,23 +51,24 @@ func main() {
 
 		user, err := storage.AddUser(user)
 		if err != nil {
-			log.Fatalln(err)
+			logger.Fatal().Err(err).Msg("Failed to add user")
 		}
 
 		_, err = storage.AddUserToAdminRole(user.ID)
 		if err != nil {
-			log.Fatalln(err)
+			logger.Fatal().Err(err).Msg("Failed to add user to admin role")
 		}
 
-		log.Fatalf("Created new user %s", *createUsername)
+		logger.Printf("Created new user %s", *createUsername)
+		os.Exit(0)
 	}
 
 	// initialize the service
-	auth, err := authenticator.New(storage, []string{"/certs/localAuthSync.pem"})
+	auth, err := authenticator.New(storage, []string{"/certs/localAuthSync.pem"}, logger.With().Str("component", "service/authenticator").Logger())
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatal().Err(err).Msg("Failed to initialize authenticator service")
 	}
-	account := accountManager.New(storage)
+	account := accountManager.New(storage, logger.With().Str("component", "service/accountManager").Logger())
 
 	api := operations.NewCloudAuthAPI(swaggerSpec)
 	server := restapi.NewServer(api)
@@ -73,7 +80,8 @@ func main() {
 
 	authHandlers := authenticator.NewHandlers(auth)
 
-	api.Logger = log.WithField("component", "server").Errorf
+	serverLogger := logger.WithLevel(zerolog.InfoLevel).Str("component", "server")
+	api.Logger = serverLogger.Msgf
 	api.TokenAuth = auth.GetPrincipalFromToken
 	api.APIAuthorizer = auth.Authorizer()
 	api.AuthGetRenewHandler = authHandlers.GetRenew()
@@ -109,7 +117,7 @@ func main() {
 	server.SetHandler(handler)
 
 	if err := server.Serve(); err != nil {
-		log.Fatalln(err)
+		logger.Fatal().Err(err).Msg("Failed to start server")
 	}
 
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/casbin/casbin"
 	"github.com/go-openapi/swag"
 	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/rs/zerolog"
 	uuid "github.com/satori/go.uuid"
 
 	bolt "github.com/coreos/bbolt"
@@ -23,6 +24,7 @@ type Storage struct {
 	encryptionKey []byte
 	dbSync        *sync.RWMutex
 	refreshRules  bool
+	logger        zerolog.Logger
 }
 
 var bucketUsers = []byte("users")
@@ -45,7 +47,8 @@ var adminRole = &models.Role{
 var dbPermissions os.FileMode = 0666
 
 // New returns a new instance of storage
-func New(path string, key []byte, readOnly bool) (*Storage, error) {
+func New(path string, key []byte, readOnly bool, logger zerolog.Logger) (*Storage, error) {
+	logger.Debug().Msg("Initialize auth storage")
 	if len(key) != 32 {
 		return nil, fmt.Errorf("Encryption key must be 32 bytes long")
 	}
@@ -57,6 +60,7 @@ func New(path string, key []byte, readOnly bool) (*Storage, error) {
 
 	// initialize database
 	if !readOnly {
+		logger.Debug().Msg("Create db buckets")
 		err = db.Update(func(tx *bolt.Tx) error {
 			_, err := tx.CreateBucketIfNotExists(bucketUsers)
 			if err != nil {
@@ -83,6 +87,7 @@ func New(path string, key []byte, readOnly bool) (*Storage, error) {
 		encryptionKey: key,
 		dbSync:        &sync.RWMutex{},
 		refreshRules:  true,
+		logger:        logger,
 	}
 
 	e, err := NewEnforcer(storage)
@@ -101,6 +106,7 @@ func New(path string, key []byte, readOnly bool) (*Storage, error) {
 }
 
 func (s *Storage) initializeRolesAndRules() error {
+	s.logger.Debug().Msg("Initialize roles and rules")
 	_, err := s.GetRole(everyoneRole.ID)
 	if err != nil {
 		err := s.db.Update(func(tx *bolt.Tx) error {

@@ -14,6 +14,7 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
+	"github.com/rs/zerolog"
 	"golang.org/x/crypto/acme"
 	"golang.org/x/crypto/bcrypt"
 
@@ -42,6 +43,7 @@ type Storage interface {
 type service struct {
 	storage          Storage
 	allowedSyncCerts map[string]crypto.PublicKey
+	logger           zerolog.Logger
 }
 
 // Login authenticates the user
@@ -162,7 +164,9 @@ func (a *service) GetPublicKey(_ context.Context, pubID string) (string, error) 
 }
 
 // New returns a new instance of authenticator service
-func New(storage Storage, allowedSyncCerts []string) (Service, error) {
+func New(storage Storage, allowedSyncCerts []string, logger zerolog.Logger) (Service, error) {
+	logger.Debug().Msg("Initialize authenticator service")
+
 	syncCerts := map[string]crypto.PublicKey{}
 
 	for _, cert := range allowedSyncCerts {
@@ -191,5 +195,6 @@ func New(storage Storage, allowedSyncCerts []string) (Service, error) {
 	return &service{
 		storage:          storage,
 		allowedSyncCerts: syncCerts,
+		logger:           logger,
 	}, nil
 }

@@ -10,6 +10,7 @@ import (
 
 	bolt "github.com/coreos/bbolt"
 	blake2b "github.com/minio/blake2b-simd"
+	"github.com/rs/zerolog"
 )
 
 // GetChecksum calculates and returns checksum of the whole database
@@ -60,7 +61,7 @@ func (s *Storage) ReplaceDB(src io.ReadCloser, checksum []byte) error {
 	src.Close()
 
 	// create new instance from received db and check checksum
-	testStorage, err := New(tmpFileName, s.encryptionKey, true)
+	testStorage, err := New(tmpFileName, s.encryptionKey, true, zerolog.New(ioutil.Discard))
 	if err != nil {
 		os.Remove(tmpFileName)
 		return err

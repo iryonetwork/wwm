@@ -3,6 +3,8 @@ package accountManager
 import (
 	"context"
 
+	"github.com/rs/zerolog"
+
 	"github.com/iryonetwork/wwm/gen/auth/models"
 )
 
@@ -50,11 +52,17 @@ type Storage interface {
 
 type accountManager struct {
 	storage Storage
+	logger  zerolog.Logger
 }
 
 // New returns a new instance of authenticator service
-func New(storage Storage) Service {
-	return &accountManager{storage: storage}
+func New(storage Storage, logger zerolog.Logger) Service {
+	logger.Debug().Msg("Initialize account manager service")
+
+	return &accountManager{
+		storage: storage,
+		logger:  logger,
+	}
 }
 
 // Users returns all users

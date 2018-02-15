@@ -9,7 +9,7 @@ import (
 	loads "github.com/go-openapi/loads"
 	"github.com/jasonlvhit/gocron"
 	"github.com/rs/cors"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/auth/restapi"
 	"github.com/iryonetwork/wwm/gen/auth/restapi/operations"
@@ -19,26 +19,32 @@ import (
 )
 
 func main() {
+	logger := zerolog.New(os.Stdout).With().
+		Timestamp().
+		Str("service", "localAuth").
+		Logger()
+
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatal().Err(err).Msg("Failed to load swagger spec")
 	}
 
 	// initialize storage
 	// TODO: get key from vault
 	key := []byte{0xe9, 0xf8, 0x2d, 0xf9, 0xc4, 0x14, 0xc1, 0x41, 0xdb, 0x87, 0x31, 0x1a, 0x95, 0x79, 0x5, 0xbf, 0x71, 0x12, 0x30, 0xd3, 0x2d, 0x8b, 0x59, 0x9d, 0x27, 0x13, 0xfa, 0x84, 0x55, 0x63, 0x64, 0x64}
 
-	dbPath := "/wwm/localAuth.db"
+	dbPath := "/data/localAuth.db"
 	// if there is no database file download it from cloud
-	if _, err := os.Stat(dbPath); err == nil {
-		storage, err := auth.New(dbPath, key, false)
+	_, err = os.Stat(dbPath)
+	if _, err := os.Stat(dbPath); err != nil {
+		storage, err := auth.New(dbPath, key, false, logger.With().Str("component", "storage/auth-initialCloudDownload").Logger())
 		if err != nil {
-			log.WithFields(log.Fields{"component": "storage", "err": err}).Fatal("Failed to initialize")
+			logger.Fatal().Err(err).Msg("Failed to initialize auth storage")
 		}
 
-		authSync, err := authSync.New(log.WithField("component", "authSync"), storage, "/certs/localAuthSync.pem", "/certs/localAuthSync-key.pem", "https://cloudAuth/auth/database")
+		authSync, err := authSync.New(storage, "/certs/localAuthSync.pem", "/certs/localAuthSync-key.pem", "https://cloudAuth/auth/database", logger.With().Str("component", "service/authSync-initialCloudDownload").Logger())
 		if err != nil {
-			log.WithFields(log.Fields{"component": "authSync", "err": err}).Fatal("Failed to initialize")
+			logger.Fatal().Err(err).Msg("Failed to initialize authSync service")
 		}
 
 		for try := 1; try <= 5; try++ {
@@ -47,26 +53,26 @@ func main() {
 				break
 			}
 			if try == 5 {
-				log.WithFields(log.Fields{"component": "authSync", "err": err}).Fatal("Failed to sync database from cloud after 5 tries")
+				logger.Fatal().Err(err).Msg("Failed to sync database from cloud after 5 tries")
 			}
 			time.Sleep(time.Duration(try*3) * time.Second)
 		}
 		storage.Close()
 	}
-	storage, err := auth.New(dbPath, key, true)
+	storage, err := auth.New(dbPath, key, true, logger.With().Str("component", "storage/auth").Logger())
 	if err != nil {
-		log.WithFields(log.Fields{"component": "storage", "err": err}).Fatal("Failed to initialize")
+		logger.Fatal().Err(err).Msg("Failed to initialize auth storage")
 	}
 
 	// initialize the service
-	auth, err := authenticator.New(storage, nil)
+	auth, err := authenticator.New(storage, nil, logger.With().Str("component", "service/authenticator").Logger())
 	if err != nil {
-		log.WithFields(log.Fields{"component": "authenticator", "err": err}).Fatal("Failed to initialize")
+		logger.Fatal().Err(err).Msg("Failed to initialize authenticator service")
 	}
 
-	authSync, err := authSync.New(log.WithField("component", "authSync"), storage, "/certs/localAuthSync.pem", "/certs/localAuthSync-key.pem", "https://cloudAuth/auth/database")
+	authSync, err := authSync.New(storage, "/certs/localAuthSync.pem", "/certs/localAuthSync-key.pem", "https://cloudAuth/auth/database", logger.With().Str("component", "service/authSync").Logger())
 	if err != nil {
-		log.WithFields(log.Fields{"component": "authSync", "err": err}).Fatal("Failed to initialize")
+		logger.Fatal().Err(err).Msg("Failed to initialize authSync service")
 	}
 	api := operations.NewCloudAuthAPI(swaggerSpec)
 	server := restapi.NewServer(api)
@@ -78,7 +84,8 @@ func main() {
 
 	authHandlers := authenticator.NewHandlers(auth)
 
-	api.Logger = log.WithField("component", "server").Infof
+	serverLogger := logger.WithLevel(zerolog.InfoLevel).Str("component", "server")
+	api.Logger = serverLogger.Msgf
 	api.TokenAuth = auth.GetPrincipalFromToken
 	api.APIAuthorizer = auth.Authorizer()
 	api.AuthGetRenewHandler = authHandlers.GetRenew()
@@ -96,7 +103,7 @@ func main() {
 	go gocron.Start()
 
 	if err := server.Serve(); err != nil {
-		log.WithFields(log.Fields{"component": "server", "err": err}).Fatal("Failed to start server")
+		logger.Fatal().Err(err).Msg("Failed to start server")
 	}
 
 }

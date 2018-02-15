@@ -13,7 +13,7 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/iryonetwork/wwm/service/authenticator"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog"
 	"golang.org/x/crypto/acme"
 )
 
@@ -21,7 +21,7 @@ type authSync struct {
 	storage Storage
 	pk      *ecdsa.PrivateKey
 	url     string
-	log     *log.Entry
+	logger  zerolog.Logger
 }
 
 // Service describes actions supported by the authSync service
@@ -42,7 +42,7 @@ func (a *authSync) Sync() error {
 		return err
 	}
 	currentEtag := base64.RawURLEncoding.EncodeToString(currentChecksum)
-	a.log.WithField("currentDBEtag", currentEtag).Info("Starting DB sync with cloud")
+	a.logger.Debug().Str("currentDBEtag", currentEtag).Msg("Starting DB sync with cloud")
 
 	token, err := a.createToken()
 	if err != nil {
@@ -64,7 +64,7 @@ func (a *authSync) Sync() error {
 
 	if response.StatusCode == http.StatusOK {
 		cloudEtag := strings.Trim(response.Header.Get("etag"), `"`)
-		a.log.WithField("cloudDBEtag", cloudEtag).Info("Got new BD from cloud")
+		a.logger.Debug().Str("cloudDBEtag", cloudEtag).Msg("Got new BD from cloud")
 		checksum, err := base64.RawURLEncoding.DecodeString(cloudEtag)
 		if err != nil {
 			return err
@@ -81,7 +81,7 @@ func (a *authSync) Sync() error {
 		return fmt.Errorf("Error fetching databse: %s", string(body))
 	}
 
-	a.log.Info("Local BD is in correct state")
+	a.logger.Info().Msg("Local BD is in correct state")
 
 	return nil
 }
@@ -107,7 +107,8 @@ func (a *authSync) createToken() (string, error) {
 }
 
 // New returns new service
-func New(log *log.Entry, storage Storage, certFile, keyFile, url string) (Service, error) {
+func New(storage Storage, certFile, keyFile, url string, logger zerolog.Logger) (Service, error) {
+	logger.Debug().Msg("Initialize auth sync service")
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
 		return nil, err
@@ -122,6 +123,6 @@ func New(log *log.Entry, storage Storage, certFile, keyFile, url string) (Servic
 		storage: storage,
 		pk:      pk,
 		url:     url,
-		log:     log,
+		logger:  logger,
 	}, nil
 }

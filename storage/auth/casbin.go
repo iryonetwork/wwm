@@ -10,6 +10,7 @@ import (
 	casbinmodel "github.com/casbin/casbin/model"
 	"github.com/casbin/casbin/persist"
 	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/rs/zerolog"
 )
 
 // Persmissions
@@ -21,16 +22,24 @@ const (
 
 // NewAdapter returns new Adapter
 func NewAdapter(storage *Storage) *Adapter {
-	return &Adapter{storage}
+	logger := storage.logger.With().Str("component", "storage/auth/casbin").Logger()
+	logger.Debug().Msg("Initialize casbin bolt adapter")
+
+	return &Adapter{
+		s:      storage,
+		logger: logger,
+	}
 }
 
 // Adapter is casbin adapter to bbolt
 type Adapter struct {
-	s *Storage
+	s      *Storage
+	logger zerolog.Logger
 }
 
 // LoadPolicy loads policy from database
 func (a *Adapter) LoadPolicy(model casbinmodel.Model) error {
+	a.logger.Debug().Msg("Load policy from database")
 	rules, err := a.s.GetRules()
 	if err != nil {
 		return err
