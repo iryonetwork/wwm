@@ -410,8 +410,11 @@ paths:
               description: File's full path
 
         403:
+          description: Forbidden
         404:
+          description: Entity not found
         500:
+          description: Internal server error
 
     post:
       tags:
@@ -421,8 +424,6 @@ paths:
       operationId: syncFile
       consumes:
         - multipart/form-data
-      produces:
-        - application/json; charset=utf-8
 
       parameters:
         - in: path
@@ -616,7 +617,7 @@ responses:
         message: Unauthorized Access
 
   403:
-    description: Forbiden
+    description: Forbidden
     schema:
       $ref: '#/definitions/Error'
     examples:
