@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/swag"
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/models"
@@ -206,13 +207,10 @@ func (h *handlers) SyncFileMetadata() operations.SyncFileMetadataHandler {
 
 func (h *handlers) SyncFile() operations.SyncFileHandler {
 	return operations.SyncFileHandlerFunc(func(params operations.SyncFileParams, principal *string) middleware.Responder {
-		var archetype string
-		if params.Archetype != nil {
-			archetype = *params.Archetype
-		}
 		defer params.File.Close()
 
 		// call service
+		archetype := swag.StringValue(params.Archetype)
 		fd, err := h.service.SyncFile(params.Bucket, params.FileID, params.Version, params.File, params.ContentType, params.Created, archetype)
 		if err != nil {
 			switch err {
