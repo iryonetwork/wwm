@@ -5,7 +5,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -33,7 +32,8 @@ func (a *clientAuthInfoWriter) AuthenticateRequest(r runtime.ClientRequest, f st
 
 func main() {
 	// initialize logger
-	logger := zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).With().
+	// initialize logger
+	logger := zerolog.New(os.Stdout).With().
 		Timestamp().
 		Str("service", "storageSync").
 		Logger()
@@ -66,15 +66,24 @@ func main() {
 	ClientID := "storageSync"
 	ClientCert := "/certs/public.crt"
 	ClientKey := "/certs/private.key"
+	var nc *nats.Conn
+	var sc stan.Conn
 
-	nc, err := nats.Connect(URLs, nats.ClientCert(ClientCert, ClientKey))
-	if err != nil {
-		log.Fatalln(err)
+	// retry connection to nats if unsuccesful
+	err := retry(10, time.Duration(500*time.Millisecond), 2.0, logger.With().Str("connection", "nats").Logger(), func() error {
+		var err error
+		nc, err = nats.Connect(URLs, nats.ClientCert(ClientCert, ClientKey))
+		return err
+	})
+	if err == nil {
+		err = retry(10, time.Duration(500*time.Millisecond), 3.0, logger.With().Str("connection", "nats").Logger(), func() error {
+			var err error
+			sc, err = stan.Connect(ClusterID, ClientID, stan.NatsConn(nc))
+			return err
+		})
 	}
-
-	sc, err := stan.Connect(ClusterID, ClientID, stan.NatsConn(nc))
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatal().Msg("failed to connect to nats-streaming")
 	}
 
 	// initalize consumer
@@ -93,4 +102,25 @@ func main() {
 		cleanupDone <- true
 	}()
 	<-cleanupDone
+}
+
+// retry helper method to sanely retry connection
+func retry(attempts int, sleep time.Duration, factor float32, logger zerolog.Logger, toRetry func() error) (err error) {
+	for i := 0; ; i++ {
+		err = toRetry()
+		if err == nil {
+			return nil
+		}
+
+		if i >= (attempts - 1) {
+			break
+		}
+
+		logger.Error().Err(err).Msgf("retry number %d in %s", i+1, sleep)
+		time.Sleep(sleep)
+		sleep = time.Duration(float32(sleep) * factor) // increase time to sleep by factor
+	}
+	logger.Error().Msgf("failed to complete in %d retries", attempts)
+
+	return err
 }
