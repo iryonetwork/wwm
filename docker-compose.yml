@@ -145,12 +145,11 @@ services:
 
   localPrometheus:
     image: prom/prometheus
-    ports:
-    - 9090:9090
     command:
     - --config.file=/etc/prometheus.yml
     volumes:
     - ./localPrometheus.yml:/etc/prometheus.yml:ro
+    - ./localPrometheusRules.yml:/etc/rules.yml:ro
     - ./bin/tls/ca.pem:/certs/ca-iryo.pem:ro
     - ./bin/tls/localPrometheus-key.pem:/certs/private.key:ro
     - ./bin/tls/localPrometheus.pem:/certs/public.crt:ro
