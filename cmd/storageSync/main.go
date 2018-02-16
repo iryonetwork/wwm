@@ -83,15 +83,14 @@ func main() {
 	c.StartSubscription(context.Background(), storageSync.FileUpdate)
 	c.StartSubscription(context.Background(), storageSync.FileDelete)
 
-	// Run cleanup when SIGINT is received
+	// Run cleanup when sigint or sigterm is received
 	signalChan := make(chan os.Signal, 1)
 	cleanupDone := make(chan bool)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		for range signalChan {
-			c.Close()
-			cleanupDone <- true
-		}
+		<-signalChan
+		c.Close()
+		cleanupDone <- true
 	}()
 	<-cleanupDone
 }
