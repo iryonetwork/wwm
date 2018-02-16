@@ -42,6 +42,9 @@ func (h *handlers) FileList() operations.FileListHandler {
 				Message: err.Error(),
 			})
 		}
+		if len(list) == 0 {
+			return operations.NewFileListNotFound()
+		}
 
 		return operations.NewFileListOK().WithPayload(list)
 	})
