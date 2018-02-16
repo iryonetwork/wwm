@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/go-openapi/swag"
+	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/iryonetwork/wwm/gen/auth/models"
@@ -49,7 +50,7 @@ func newTestStorage(key []byte) *testStorage {
 	}
 
 	// open the database
-	db, err := New(path, key, false)
+	db, err := New(path, key, false, zerolog.New(ioutil.Discard))
 	if err != nil {
 		panic(err)
 	}
