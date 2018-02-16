@@ -32,6 +32,10 @@ address = ":8080"
     url = "https://cloudAuth"
     weight = 10
 
+  [backends.localstorageMetrics]
+    [backends.localstorageMetrics.servers.server1]
+    url = "http://localStorage:9090"
+
   [backends.localMinio]
     [backends.localMinio.servers.server1]
     url = "https://localMinio:9000"
@@ -73,6 +77,11 @@ address = ":8080"
   backend = "localauth"
     [frontends.localauth.routes.route1]
     rule = "Host:iryo.local;PathPrefix:/auth"
+
+  [frontends.localstorageMetrics]
+  backend = "localstorageMetrics"
+    [frontends.localstorageMetrics.routes.route1]
+    rule = "Host:iryo.local;PathPrefix:/storage/metrics"
 
   [frontends.localstorage]
   backend = "localstorage"
