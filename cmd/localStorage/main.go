@@ -3,7 +3,6 @@ package main
 //go:generate sh -c "mkdir -p ../../gen/storage && swagger generate server -A storage -t ../../gen/storage -f ../../docs/api/storage.yml --exclude-main --principal string"
 
 import (
-	// "log"
 	"context"
 	"fmt"
 	"io"
@@ -11,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	loads "github.com/go-openapi/loads"
@@ -21,6 +21,8 @@ import (
 
 	"github.com/iryonetwork/wwm/gen/storage/restapi"
 	"github.com/iryonetwork/wwm/gen/storage/restapi/operations"
+	"github.com/iryonetwork/wwm/metrics"
+	APIMetrics "github.com/iryonetwork/wwm/metrics/api"
 	storage "github.com/iryonetwork/wwm/service/storage"
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/mock"
@@ -91,8 +93,9 @@ func main() {
 		p = publisher.NewNullPublisher(context.Background())
 		logger.Error().Msg("storage service will be started with null storage sync publisher due to failed nats-streaming connection attempts")
 	}
+	defer p.Close()
 
-	// initialize the service
+	// initialize the servicex
 	service := storage.New(s3, keys, p, logger.With().Str("component", "service/storage").Logger())
 
 	api := operations.NewStorageAPI(swaggerSpec)
@@ -103,8 +106,6 @@ func main() {
 	server.EnabledListeners = []string{"https"}
 	server.TLSCertificateKey = "/certs/localStorage-key.pem"
 	server.TLSCertificate = "/certs/localStorage.pem"
-
-	defer server.Shutdown()
 
 	storageHandlers := storage.NewHandlers(service, logger.With().Str("component", "service/storage/handlers").Logger())
 
@@ -120,10 +121,42 @@ func main() {
 
 	api.RegisterConsumer("*/*", &WildcardConsumer{})
 
-	server.SetHandler(apiLogMiddleware(api.Serve(nil), logger.With().Str("component", "logMW").Logger()))
+	// initialize metrics middleware
+	m := APIMetrics.NewMetrics("api", "").
+		WithURLSanitize(utils.WhitelistURLSanitize([]string{"storage", "versions", "sync"}))
 
-	if err := server.Serve(); err != nil {
-		logger.Fatal().Err(err).Msg("Failed to start server")
+	// set handler with middlewares
+	apiHandler := apiLogMiddleware(api.Serve(nil), logger.With().Str("component", "logMW").Logger())
+	apiHandler = m.Middleware(apiHandler)
+
+	server.SetHandler(apiHandler)
+
+	// Start servers
+	errCh := make(chan error)
+	var wg sync.WaitGroup
+
+	go func() {
+		wg.Wait()
+		close(errCh)
+	}()
+
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		errCh <- metrics.ServePrometheusMetrics(context.Background(), ":9090", "storage")
+	}()
+
+	go func() {
+		wg.Add(1)
+		defer server.Shutdown()
+		defer wg.Done()
+		errCh <- server.Serve()
+	}()
+
+	for err := range errCh {
+		if err != nil {
+			logger.Fatal().Err(err).Msg("Failed to start server")
+		}
 	}
 }
 
