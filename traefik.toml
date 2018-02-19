@@ -48,7 +48,7 @@ address = ":8080"
     [backends.cloudstorage.servers.server1]
     url = "https://cloudStorage"
 
-  [backends.cloudtorageMetrics]
+  [backends.cloudstorageMetrics]
     [backends.cloudstorageMetrics.servers.server1]
     url = "http://cloudStorage:9090"
 
@@ -76,9 +76,13 @@ address = ":8080"
     [backends.cloudPrometheus.servers.server1]
     url = "http://cloudPrometheus:9090"
 
-  [backends.natsStreamingExporter]
-    [backends.natsStreamingExporter.servers.server1]
+  [backends.natsStreamingMetricsExporter]
+    [backends.natsStreamingMetricsExporter.servers.server1]
     url = "http://natsStreamingExporter:9275"
+
+  [backends.storagesyncMetrics]
+    [backends.storagesyncMetrics.servers.server1]
+    url = "http://storageSync:9090"
 
 [frontends]
   [frontends.localauth]
