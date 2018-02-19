@@ -13,6 +13,7 @@ clear: clearGenerate clearSpecs ## clears artifacts
 	rm -fr .bin
 	rm -fr .data
 	rm -fr vendor/*/
+	$(MAKE) -C bin/tls clean
 
 up: $(addprefix up/,$(BASIC_SERVICES)) ## start all basic services
 
