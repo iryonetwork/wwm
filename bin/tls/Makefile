@@ -10,7 +10,7 @@ TYPE := test
 ALL: ca.pem $(addprefix server/,$(SERVERS)) $(addprefix peer/,$(PEERS)) $(addprefix client/,$(CLIENTS))
 
 clean:
-	find . -type f \( -name "*.pem" -or -name "*.csr" \) -not -name "ca*" -delete
+	@find . -type f \( -name '*.pem' -o -name '*.csr' \) -not -name "ca*" -delete
 
 ca.pem:
 	$(DOCKER) ./createCert.sh
