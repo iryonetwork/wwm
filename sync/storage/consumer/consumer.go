@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/nats-io/go-nats-streaming"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
@@ -18,14 +19,21 @@ type contextKey string
 
 const subID contextKey = "ID"
 
+type Cfg struct {
+	Connection stan.Conn
+	AckWait    time.Duration
+	Handlers   Handlers
+}
+
 type stanConsumer struct {
-	ctx      context.Context
-	conn     stan.Conn
-	ackWait  time.Duration
-	subs     []stan.Subscription
-	subsLock sync.Mutex
-	handlers Handlers
-	logger   zerolog.Logger
+	ctx         context.Context
+	conn        stan.Conn
+	ackWait     time.Duration
+	handlers    Handlers
+	subs        []stan.Subscription
+	subsLock    sync.Mutex
+	logger      zerolog.Logger
+	taskSeconds *prometheus.HistogramVec
 }
 
 // Start starts new nats-streaming queue subscription.
@@ -85,10 +93,21 @@ func (c *stanConsumer) Close() {
 	c.subs = []stan.Subscription{}
 	c.subsLock.Unlock()
 	c.conn.Close()
+	prometheus.Unregister(c.taskSeconds) // unregister metrics
 }
 
 func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventType, h Handler) stan.MsgHandler {
 	return func(msg *stan.Msg) {
+		// Make sure we record duration metrics even if processing fails
+		start := time.Now()
+		ack := false
+		defer func() {
+			duration := time.Since(start)
+			c.taskSeconds.
+				With(prometheus.Labels{"event": string(typ), "ack": fmt.Sprintf("%t", ack)}).
+				Observe(duration.Seconds())
+		}()
+
 		ID := ctx.Value(subID).(int)
 		c.logger.Debug().
 			Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).
@@ -115,6 +134,8 @@ func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventT
 			return
 		}
 
+		// Change ack variable value for metrics
+		ack = true
 		// Acknowledge the message
 		msg.Ack()
 		c.logger.Debug().
@@ -125,13 +146,14 @@ func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventT
 }
 
 // New returns new consumer service with provided nats-streaming connection as underlying backend.
-func New(ctx context.Context, sc stan.Conn, handlers Handlers, ackWait time.Duration, logger zerolog.Logger) storageSync.Consumer {
+func New(ctx context.Context, cfg Cfg, logger zerolog.Logger, durationMetrics *prometheus.HistogramVec) storageSync.Consumer {
 	c := &stanConsumer{
-		ctx:      ctx,
-		conn:     sc,
-		handlers: handlers,
-		ackWait:  ackWait,
-		logger:   logger,
+		ctx:         ctx,
+		conn:        cfg.Connection,
+		handlers:    cfg.Handlers,
+		ackWait:     cfg.AckWait,
+		logger:      logger,
+		taskSeconds: durationMetrics,
 	}
 
 	// Close if context is Done()

@@ -14,9 +14,11 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats-streaming"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/client"
+	"github.com/iryonetwork/wwm/metrics"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 	"github.com/iryonetwork/wwm/sync/storage/consumer"
 )
@@ -86,11 +88,34 @@ func main() {
 		logger.Fatal().Msg("failed to connect to nats-streaming")
 	}
 
+	// Create context with cancel func
+	ctx, shutdown := context.WithCancel(context.Background())
+
+	// Register metrics
+	h := prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Namespace: "consumer",
+		Name:      "task_seconds",
+		Help:      "Time taken to serve tasks",
+	}, []string{"event", "ack"})
+	prometheus.MustRegister(h)
+
 	// initalize consumer
-	c := consumer.New(context.Background(), sc, handlers, time.Duration(time.Second), logger.With().Str("component", "sync/storage/consumer").Logger())
+	cfg := consumer.Cfg{
+		Connection: sc,
+		AckWait:    time.Duration(time.Second),
+		Handlers:   handlers,
+	}
+	c := consumer.New(context.Background(), cfg, logger.With().Str("component", "sync/storage/consumer").Logger(), h)
 	c.StartSubscription(storageSync.FileNew)
 	c.StartSubscription(storageSync.FileUpdate)
 	c.StartSubscription(storageSync.FileDelete)
+
+	go func() {
+		err := metrics.ServePrometheusMetrics(ctx, ":9090", "")
+		if err != nil {
+			logger.Error().Err(err).Msg("prometheus metrics server failure")
+		}
+	}()
 
 	// Run cleanup when sigint or sigterm is received
 	signalChan := make(chan os.Signal, 1)
@@ -99,6 +124,7 @@ func main() {
 	go func() {
 		<-signalChan
 		c.Close()
+		shutdown()
 		cleanupDone <- true
 	}()
 	<-cleanupDone
