@@ -17,6 +17,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats-streaming"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/restapi"
@@ -87,7 +88,29 @@ func main() {
 		})
 	}
 	if err == nil {
-		p = publisher.New(context.Background(), sc, 5, time.Duration(10*time.Second), 2.0, logger.With().Str("component", "sync/storage/publisher").Logger())
+		// Register metrics
+		h := prometheus.NewHistogram(prometheus.HistogramOpts{
+			Namespace: "publisher",
+			Name:      "publish_seconds",
+			Help:      "Time taken to publish task",
+		})
+		prometheus.MustRegister(h)
+
+		c := prometheus.NewCounter(prometheus.CounterOpts{
+			Namespace: "publisher",
+			Name:      "publish_calls",
+			Help:      "Number of publish calls to nats-streaming",
+		})
+		prometheus.MustRegister(c)
+
+		cfg := publisher.Cfg{
+			Connection:      sc,
+			Retries:         5,
+			StartRetryWait:  time.Duration(10 * time.Second),
+			RetryWaitFactor: 2.0,
+		}
+		l := logger.With().Str("component", "sync/storage/publisher").Logger()
+		p = publisher.New(context.Background(), cfg, l, h, c)
 	} else {
 		// start localStorage with null publisher
 		p = publisher.NewNullPublisher(context.Background())

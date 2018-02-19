@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-openapi/strfmt"
 	"github.com/golang/mock/gomock"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
@@ -194,7 +195,17 @@ func getTestPublisher(t *testing.T, ctx context.Context) (*stanPublisher, *mock.
 	mockCtrl := gomock.NewController(t)
 	mockConn := mock.NewMockStanConnection(mockCtrl)
 
-	publisher := New(ctx, mockConn, 5, time.Millisecond, 1.0, zerolog.New(os.Stdout))
+	h := prometheus.NewHistogram(prometheus.HistogramOpts{Name: "publish_seconds"})
+	c := prometheus.NewCounter(prometheus.CounterOpts{Name: "publish_calls"})
+
+	cfg := Cfg{
+		Connection:      mockConn,
+		Retries:         5,
+		StartRetryWait:  time.Millisecond,
+		RetryWaitFactor: 1.0,
+	}
+
+	publisher := New(ctx, cfg, zerolog.New(os.Stdout), h, c)
 
 	cleanup := func() {
 		mockConn.EXPECT().Close().Times(1)
