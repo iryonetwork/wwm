@@ -63,8 +63,12 @@ func main() {
 		os.Exit(0)
 	}
 
+	serviceCertsAndPaths := map[string][]string{
+		"/certs/localAuthSync.pem": []string{"/auth/database"},
+	}
+
 	// initialize the service
-	auth, err := authenticator.New(storage, []string{"/certs/localAuthSync.pem"}, logger.With().Str("component", "service/authenticator").Logger())
+	auth, err := authenticator.New(storage, serviceCertsAndPaths, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to initialize authenticator service")
 	}

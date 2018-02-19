@@ -1,7 +1,7 @@
 CDIR = $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 DOCKER = docker run --rm -it -v $(CDIR):/certs --entrypoint='' -w /certs cfssl/cfssl
 SERVERS = vault localMinio cloudMinio
-PEERS = localAuth traefik localStorage cloudStorage
+PEERS = localAuth cloudAuth traefik localStorage cloudStorage
 CLIENTS = localAuthSync
 TYPE := test
 

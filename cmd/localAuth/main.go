@@ -53,6 +53,7 @@ func main() {
 				break
 			}
 			if try == 5 {
+				os.Remove(dbPath)
 				logger.Fatal().Err(err).Msg("Failed to sync database from cloud after 5 tries")
 			}
 			time.Sleep(time.Duration(try*3) * time.Second)
@@ -65,7 +66,7 @@ func main() {
 	}
 
 	// initialize the service
-	auth, err := authenticator.New(storage, nil, logger.With().Str("component", "service/authenticator").Logger())
+	auth, err := authenticator.New(storage, nil, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to initialize authenticator service")
 	}

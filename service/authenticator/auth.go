@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-openapi/runtime"
@@ -41,9 +42,10 @@ type Storage interface {
 }
 
 type service struct {
-	storage          Storage
-	allowedSyncCerts map[string]crypto.PublicKey
-	logger           zerolog.Logger
+	storage      Storage
+	serviceCerts map[string]crypto.PublicKey
+	servicePaths map[string]map[string]bool
+	logger       zerolog.Logger
 }
 
 // Login authenticates the user
@@ -80,7 +82,7 @@ func (a *service) CreateTokenForUserID(_ context.Context, userID *string) (strin
 	return createTokenForUserID(userID)
 }
 
-const syncPrincipal = "sync"
+const servicePrincipal = "__service__"
 
 // GetPrincipalFromToken validates a token and returns the userID for user tokens
 // or returns "sync" for tokens used in cloud sync
@@ -90,8 +92,8 @@ func (a *service) GetPrincipalFromToken(tokenString string) (*string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		claims := token.Claims.(*Claims)
 
-		if key, ok := a.allowedSyncCerts[claims.KeyID]; ok {
-			principal = syncPrincipal
+		if key, ok := a.serviceCerts[claims.KeyID]; ok {
+			principal = servicePrincipal + claims.KeyID
 			return key, nil
 		}
 
@@ -126,12 +128,17 @@ func (a *service) Authorizer() runtime.Authorizer {
 			return fmt.Errorf("Principal type was '%T', expected '*string'", principal)
 		}
 
-		// allow access for sync operations without checking ACL
-		if request.URL.EscapedPath() == "/auth/database" {
-			if *userID != syncPrincipal {
-				return utils.NewError(utils.ErrForbidden, "You do not have permissions for this resource")
+		// allow access for service operations without checking ACL
+		if strings.HasPrefix(*userID, servicePrincipal) {
+			keyID := (*userID)[len(servicePrincipal):]
+			paths, ok := a.servicePaths[keyID]
+			if ok {
+				_, ok := paths[request.URL.EscapedPath()]
+				if ok {
+					return nil
+				}
 			}
-			return nil
+			return utils.NewError(utils.ErrForbidden, "You do not have permissions for this resource")
 		}
 
 		var action int64 = auth.Read
@@ -164,12 +171,14 @@ func (a *service) GetPublicKey(_ context.Context, pubID string) (string, error) 
 }
 
 // New returns a new instance of authenticator service
-func New(storage Storage, allowedSyncCerts []string, logger zerolog.Logger) (Service, error) {
+func New(storage Storage, allowedServiceCertsAndPaths map[string][]string, logger zerolog.Logger) (Service, error) {
+	logger = logger.With().Str("component", "service/authenticator").Logger()
 	logger.Debug().Msg("Initialize authenticator service")
 
-	syncCerts := map[string]crypto.PublicKey{}
+	serviceCerts := map[string]crypto.PublicKey{}
+	servicePaths := map[string]map[string]bool{}
 
-	for _, cert := range allowedSyncCerts {
+	for cert, paths := range allowedServiceCertsAndPaths {
 		content, err := ioutil.ReadFile(cert)
 		if err != nil {
 			return nil, err
@@ -189,12 +198,22 @@ func New(storage Storage, allowedSyncCerts []string, logger zerolog.Logger) (Ser
 		if err != nil {
 			return nil, err
 		}
-		syncCerts[thumb] = c.PublicKey
+		serviceCerts[thumb] = c.PublicKey
+
+		_, ok := servicePaths[thumb]
+		if !ok {
+			servicePaths[thumb] = map[string]bool{}
+		}
+
+		for _, path := range paths {
+			servicePaths[thumb][path] = true
+		}
 	}
 
 	return &service{
-		storage:          storage,
-		allowedSyncCerts: syncCerts,
-		logger:           logger,
+		storage:      storage,
+		serviceCerts: serviceCerts,
+		servicePaths: servicePaths,
+		logger:       logger,
 	}, nil
 }
