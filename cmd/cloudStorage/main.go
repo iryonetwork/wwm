@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 
 	loads "github.com/go-openapi/loads"
 	"github.com/golang/mock/gomock"
@@ -17,6 +18,8 @@ import (
 
 	"github.com/iryonetwork/wwm/gen/storage/restapi"
 	"github.com/iryonetwork/wwm/gen/storage/restapi/operations"
+	"github.com/iryonetwork/wwm/metrics"
+	APIMetrics "github.com/iryonetwork/wwm/metrics/api"
 	storage "github.com/iryonetwork/wwm/service/storage"
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/mock"
@@ -67,8 +70,6 @@ func main() {
 	server.TLSCertificateKey = "/certs/cloudStorage-key.pem"
 	server.TLSCertificate = "/certs/cloudStorage.pem"
 
-	defer server.Shutdown()
-
 	storageHandlers := storage.NewHandlers(service, logger.With().Str("component", "service/storage/handlers").Logger())
 
 	api.TokenAuth = storageHandlers.GetUserIDFromToken
@@ -86,10 +87,42 @@ func main() {
 
 	api.RegisterConsumer("*/*", &WildcardConsumer{})
 
-	server.SetHandler(apiLogMiddleware(api.Serve(nil), logger.With().Str("component", "logMW").Logger()))
+	// initialize metrics middleware
+	m := APIMetrics.NewMetrics("api", "").
+		WithURLSanitize(utils.WhitelistURLSanitize([]string{"storage", "versions", "sync"}))
 
-	if err := server.Serve(); err != nil {
-		logger.Fatal().Err(err).Msg("Failed to start server")
+	// set handler with middlewares
+	apiHandler := apiLogMiddleware(api.Serve(nil), logger.With().Str("component", "logMW").Logger())
+	apiHandler = m.Middleware(apiHandler)
+
+	server.SetHandler(apiHandler)
+
+	// Start servers
+	errCh := make(chan error)
+	var wg sync.WaitGroup
+
+	go func() {
+		wg.Wait()
+		close(errCh)
+	}()
+
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		errCh <- metrics.ServePrometheusMetrics(context.Background(), ":9090", "storage")
+	}()
+
+	go func() {
+		wg.Add(1)
+		defer server.Shutdown()
+		defer wg.Done()
+		errCh <- server.Serve()
+	}()
+
+	for err := range errCh {
+		if err != nil {
+			logger.Fatal().Err(err).Msg("Failed to start server")
+		}
 	}
 }
 
