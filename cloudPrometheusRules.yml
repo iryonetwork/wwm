@@ -1,0 +1,13 @@
+groups:
+- name: api_request
+  rules:
+  - record: api_request_method_duration_seconds:5min
+    expr: sum(rate(api_request_seconds_sum[5m])) by (job, method) / sum(rate(api_request_seconds_count[5m])) by (job, method)
+  - record: api_request_code_rate:1h
+    expr: sum(rate(api_request_seconds_count[1h])) by (code) / scalar(sum(rate(api_request_seconds_count[1h])) by (le))
+  - record: api_request_error_rate:1h
+    expr: sum(rate(api_request_seconds_count{code!~"^2.+"}[1h])) by (le) / scalar(sum(rate(api_request_seconds_count[1h])) by (le))
+  - record: api_request_duration_9quintile_seconds:30m
+    expr: histogram_quantile(0.9, sum(rate(api_request_seconds_bucket[30m])) by (le))
+  - record: api_request_endpoint_duration_9quintile_secondst:30m
+    expr: histogram_quantile(0.9, sum(label_join(rate(api_request_seconds_bucket[30m]), "endpoint", " ", "method", "path")) by (le, endpoint))
