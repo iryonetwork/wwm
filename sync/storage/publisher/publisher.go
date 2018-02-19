@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
@@ -18,6 +19,13 @@ type StanConnection interface {
 	Close() error
 }
 
+type Cfg struct {
+	Connection      StanConnection
+	Retries         int
+	StartRetryWait  time.Duration
+	RetryWaitFactor float32
+}
+
 type stanPublisher struct {
 	ctx             context.Context
 	conn            StanConnection
@@ -26,6 +34,8 @@ type stanPublisher struct {
 	retryWaitFactor float32
 	wg              sync.WaitGroup
 	logger          zerolog.Logger
+	publishSeconds  prometheus.Histogram
+	publishCalls    prometheus.Counter
 }
 
 type nullPublisher struct {
@@ -69,6 +79,13 @@ func (p *stanPublisher) Publish(_ context.Context, typ storageSync.EventType, f 
 
 // Publish starts goroutine that pushes sync/storage events and retries if publishing failed.
 func (p *stanPublisher) PublishAsyncWithRetries(ctx context.Context, typ storageSync.EventType, f *storageSync.FileInfo) error {
+	// Make sure we record duration metrics even if processing fails
+	start := time.Now()
+	defer func() {
+		duration := time.Since(start)
+		p.publishSeconds.Observe(duration.Seconds())
+	}()
+
 	msg, err := f.Marshal()
 	if err != nil {
 		p.logger.Error().Err(err).
@@ -91,6 +108,8 @@ func (p *stanPublisher) PublishAsyncWithRetries(ctx context.Context, typ storage
 				break RetryLoop
 			default:
 				err = p.conn.Publish(string(typ), msg)
+				p.publishCalls.Inc() // increase publish calls counter metrycs
+
 				if err == nil {
 					p.logger.Debug().
 						Str("cmd", "PublishAsyncWithRetries").
@@ -124,17 +143,23 @@ func (p *stanPublisher) PublishAsyncWithRetries(ctx context.Context, typ storage
 func (p *stanPublisher) Close() {
 	p.wg.Wait()
 	p.conn.Close()
+
+	// unregister metrics
+	prometheus.Unregister(p.publishSeconds)
+	prometheus.Unregister(p.publishCalls)
 }
 
 // New returns new stanPublisher with provided nats-streaming connectiom as underlying backend.
-func New(ctx context.Context, sc StanConnection, retries int, startRetryWait time.Duration, retryWaitFactor float32, logger zerolog.Logger) storageSync.Publisher {
+func New(ctx context.Context, cfg Cfg, logger zerolog.Logger, durationMetrics prometheus.Histogram, countMetrics prometheus.Counter) storageSync.Publisher {
 	p := &stanPublisher{
 		ctx:             ctx,
-		conn:            sc,
+		conn:            cfg.Connection,
+		retries:         cfg.Retries,
+		startRetryWait:  cfg.StartRetryWait,
+		retryWaitFactor: cfg.RetryWaitFactor,
 		logger:          logger,
-		retries:         retries,
-		startRetryWait:  startRetryWait,
-		retryWaitFactor: retryWaitFactor,
+		publishSeconds:  durationMetrics,
+		publishCalls:    countMetrics,
 	}
 	// Close if context is Done()
 	go func() {
