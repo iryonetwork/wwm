@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -28,7 +29,7 @@ type codeRecordingResponseWriter struct {
 func (m *metrics) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		method := r.Method
+		method := strings.ToLower(r.Method)
 		code := 500 // status code to use when completely fails
 
 		path := r.URL.Path
