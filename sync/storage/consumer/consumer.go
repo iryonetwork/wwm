@@ -1,7 +1,5 @@
 package consumer
 
-//go:generate ../../../bin/mockgen.sh sync/storage/consumer Handlers $GOFILE
-
 import (
 	"context"
 	"fmt"
@@ -22,14 +20,14 @@ const subID contextKey = "ID"
 type Cfg struct {
 	Connection stan.Conn
 	AckWait    time.Duration
-	Handlers   Handlers
+	Handlers   storageSync.Handlers
 }
 
 type stanConsumer struct {
 	ctx         context.Context
 	conn        stan.Conn
 	ackWait     time.Duration
-	handlers    Handlers
+	handlers    storageSync.Handlers
 	subs        []stan.Subscription
 	subsLock    sync.Mutex
 	logger      zerolog.Logger
@@ -96,7 +94,7 @@ func (c *stanConsumer) Close() {
 	prometheus.Unregister(c.taskSeconds) // unregister metrics
 }
 
-func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventType, h Handler) stan.MsgHandler {
+func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventType, h storageSync.Handler) stan.MsgHandler {
 	return func(msg *stan.Msg) {
 		// Make sure we record duration metrics even if processing fails
 		start := time.Now()
@@ -124,7 +122,7 @@ func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventT
 			return
 		}
 
-		err = h(f)
+		err = h(f.BucketID, f.FileID, f.Version)
 		if err != nil {
 			c.logger.Error().Err(err).
 				Str("cmd", "MsgHandler").
