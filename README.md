@@ -12,6 +12,7 @@ Me foundation.
 * gomock (`go get -u github.com/golang/mock/gomock`, `github.com/golang/mock/mockgen`)
 * go-swagger (`go get -u github.com/go-swagger/go-swagger/cmd/swagger`)
 * updated `/etc/hosts` (`127.0.0.1 iryo.local minio.iryo.local vault.iryo.local iryo.cloud minio.iryo.cloud`)
+* nodejs & yarn (`brew install node yarn`)
 
 ## How to set up and work with the repository
 
@@ -28,8 +29,11 @@ make
 # run tests
 make test
 
-# start everything up
+# start backend up
 make up
+
+# start cloud frontend
+cd frontend/cloud && yarn start
 ```
 
 ## Additional documentation

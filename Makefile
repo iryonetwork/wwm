@@ -3,7 +3,7 @@ BASIC_SERVICES = traefik vault localMinio cloudMinio localAuth cloudAuth localSt
 .PHONY: up run stop build specs
 
 ifeq ($(CI),)
-ALL: vendorSync generate specs certs rebuildDocker
+ALL: vendorSync generate specs yarnInstall certs rebuildDocker
 else
 ALL: vendorSync specs generate
 endif
@@ -79,3 +79,6 @@ watch/%:
 
 rebuildDocker: ## rebuilds docker container to include all certificates
 	docker-compose build traefik localAuth cloudAuth
+
+yarnInstall: ## installs requrements for frontend
+	cd frontend/cloud && yarn install
