@@ -57,7 +57,7 @@ func TestPublish(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.description, func(t *testing.T) {
-			s, conn, cleanup := getTestPublisher(t)
+			s, conn, cleanup := getTestPublisher(t, context.Background())
 			defer cleanup()
 
 			test.mockCalls(conn)
@@ -121,7 +121,7 @@ func TestPublishAsyncWithRetries(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.description, func(t *testing.T) {
-			s, conn, cleanup := getTestPublisher(t)
+			s, conn, cleanup := getTestPublisher(t, context.Background())
 			defer cleanup()
 
 			test.mockCalls(conn)
@@ -140,12 +140,13 @@ func TestPublishAsyncWithRetries(t *testing.T) {
 	}
 }
 
-func TestContextCancelled(t *testing.T) {
-	s, conn, cleanup := getTestPublisher(t)
+func TestPublishContextCancelled(t *testing.T) {
+	ctx := context.Background()
+	s, conn, cleanup := getTestPublisher(t, ctx)
 	defer cleanup()
 
 	// Try to publish once and do not complete retries due to context cancellation
-	ctx, cancel := context.WithCancel(context.Background())
+	pubCtx, cancel := context.WithCancel(ctx)
 	msg, _ := file.Marshal()
 	publishCallReceived := make(chan bool)
 
@@ -156,14 +157,14 @@ func TestContextCancelled(t *testing.T) {
 			return fmt.Errorf("error")
 		}).Times(1)
 
-	s.PublishAsyncWithRetries(ctx, storageSync.FileNew, file)
+	s.PublishAsyncWithRetries(pubCtx, storageSync.FileNew, file)
 
 	<-publishCallReceived
 	cancel()
 }
 
 func TestClose(t *testing.T) {
-	s, conn, cleanup := getTestPublisher(t)
+	s, conn, cleanup := getTestPublisher(t, context.Background())
 	defer cleanup()
 
 	// First complete 5 retries, then close connection
@@ -175,17 +176,25 @@ func TestClose(t *testing.T) {
 	s.Close()
 }
 
-func getTestPublisher(t *testing.T) (*stanPublisher, *mock.MockStanConnection, func()) {
+func TestGeneralContextCancelled(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	s, conn, cleanup := getTestPublisher(t, ctx)
+	defer cleanup()
+
+	// First complete 5 retries, then close connection
+	msg, _ := file.Marshal()
+	pubCall := conn.EXPECT().Publish(string(storageSync.FileNew), msg).Return(fmt.Errorf("error")).Times(5)
+	conn.EXPECT().Close().After(pubCall).Return(nil)
+
+	s.PublishAsyncWithRetries(context.Background(), storageSync.FileNew, file)
+	cancel()
+}
+
+func getTestPublisher(t *testing.T, ctx context.Context) (*stanPublisher, *mock.MockStanConnection, func()) {
 	mockCtrl := gomock.NewController(t)
 	mockConn := mock.NewMockStanConnection(mockCtrl)
 
-	publisher := &stanPublisher{
-		conn:            mockConn,
-		logger:          zerolog.New(os.Stdout),
-		retries:         5,
-		startRetryWait:  time.Millisecond,
-		retryWaitFactor: 1.0,
-	}
+	publisher := New(ctx, mockConn, 5, time.Millisecond, 1.0, zerolog.New(os.Stdout))
 
 	cleanup := func() {
 		mockConn.EXPECT().Close().Times(1)
@@ -193,5 +202,5 @@ func getTestPublisher(t *testing.T) (*stanPublisher, *mock.MockStanConnection, f
 		mockCtrl.Finish()
 	}
 
-	return publisher, mockConn, cleanup
+	return publisher.(*stanPublisher), mockConn, cleanup
 }

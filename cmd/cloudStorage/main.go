@@ -3,6 +3,7 @@ package main
 //go:generate sh -c "mkdir -p ../../gen/storage && swagger generate server -A storage -t ../../gen/storage -f ../../docs/api/storage.yml --exclude-main --principal string"
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -55,7 +56,7 @@ func main() {
 	}
 
 	// initialize the service
-	service := storage.New(s3, keys, publisher.NewNullPublisher(), logger.With().Str("component", "service/storage").Logger())
+	service := storage.New(s3, keys, publisher.NewNullPublisher(context.Background()), logger.With().Str("component", "service/storage").Logger())
 
 	api := operations.NewStorageAPI(swaggerSpec)
 	api.ServeError = utils.ServeError

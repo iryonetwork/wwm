@@ -30,7 +30,7 @@ type Publisher interface {
 // Consumer describes public methods of consumer used by storageSync service.
 type Consumer interface {
 	// StartConsumer starts consumer following service configration.
-	StartSubscription(ctx context.Context, typ EventType) error
+	StartSubscription(typ EventType) error
 	// Returns number of subscriptions within consumer instance.
 	GetNumberOfSubsriptions() int
 	// Close closes all service consumers.

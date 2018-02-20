@@ -19,6 +19,7 @@ type StanConnection interface {
 }
 
 type stanPublisher struct {
+	ctx             context.Context
 	conn            StanConnection
 	retries         int
 	startRetryWait  time.Duration
@@ -126,17 +127,25 @@ func (p *stanPublisher) Close() {
 }
 
 // New returns new stanPublisher with provided nats-streaming connectiom as underlying backend.
-func New(sc StanConnection, retries int, startRetryWait time.Duration, retryWaitFactor float32, logger zerolog.Logger) storageSync.Publisher {
-	return &stanPublisher{
+func New(ctx context.Context, sc StanConnection, retries int, startRetryWait time.Duration, retryWaitFactor float32, logger zerolog.Logger) storageSync.Publisher {
+	p := &stanPublisher{
+		ctx:             ctx,
 		conn:            sc,
 		logger:          logger,
 		retries:         retries,
 		startRetryWait:  startRetryWait,
 		retryWaitFactor: retryWaitFactor,
 	}
+	// Close if context is Done()
+	go func() {
+		<-ctx.Done()
+		p.Close()
+	}()
+
+	return p
 }
 
 // NewNullPublisher returns new nullPublisher for skipping publishing.
-func NewNullPublisher() storageSync.Publisher {
+func NewNullPublisher(_ context.Context) storageSync.Publisher {
 	return &nullPublisher{}
 }

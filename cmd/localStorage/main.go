@@ -4,6 +4,7 @@ package main
 
 import (
 	// "log"
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -84,10 +85,10 @@ func main() {
 		})
 	}
 	if err == nil {
-		p = publisher.New(sc, 5, time.Duration(10*time.Second), 2.0, logger.With().Str("component", "sync/storage/publisher").Logger())
+		p = publisher.New(context.Background(), sc, 5, time.Duration(10*time.Second), 2.0, logger.With().Str("component", "sync/storage/publisher").Logger())
 	} else {
 		// start localStorage with null publisher
-		p = publisher.NewNullPublisher()
+		p = publisher.NewNullPublisher(context.Background())
 		logger.Error().Msg("storage service will be started with null storage sync publisher due to failed nats-streaming connection attempts")
 	}
 

@@ -87,10 +87,10 @@ func main() {
 	}
 
 	// initalize consumer
-	c := consumer.New(sc, handlers, time.Duration(time.Second), logger.With().Str("component", "sync/storage/consumer").Logger())
-	c.StartSubscription(context.Background(), storageSync.FileNew)
-	c.StartSubscription(context.Background(), storageSync.FileUpdate)
-	c.StartSubscription(context.Background(), storageSync.FileDelete)
+	c := consumer.New(context.Background(), sc, handlers, time.Duration(time.Second), logger.With().Str("component", "sync/storage/consumer").Logger())
+	c.StartSubscription(storageSync.FileNew)
+	c.StartSubscription(storageSync.FileUpdate)
+	c.StartSubscription(storageSync.FileDelete)
 
 	// Run cleanup when sigint or sigterm is received
 	signalChan := make(chan os.Signal, 1)

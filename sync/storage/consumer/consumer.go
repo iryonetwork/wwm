@@ -19,6 +19,7 @@ type contextKey string
 const subID contextKey = "ID"
 
 type stanConsumer struct {
+	ctx      context.Context
 	conn     stan.Conn
 	ackWait  time.Duration
 	subs     []stan.Subscription
@@ -28,12 +29,12 @@ type stanConsumer struct {
 }
 
 // Start starts new nats-streaming queue subscription.
-func (c *stanConsumer) StartSubscription(ctx context.Context, typ storageSync.EventType) error {
+func (c *stanConsumer) StartSubscription(typ storageSync.EventType) error {
 	c.subsLock.Lock()
 
 	// ID is a sequential number of subscription within consumer.
 	ID := len(c.subs) + 1
-	ctx = context.WithValue(ctx, subID, ID)
+	ctx := context.WithValue(c.ctx, subID, ID)
 	var mh stan.MsgHandler
 	switch typ {
 	case storageSync.FileNew:
@@ -77,9 +78,12 @@ func (c *stanConsumer) GetNumberOfSubsriptions() int {
 
 // Close closes nats-streaming connection
 func (c *stanConsumer) Close() {
+	c.subsLock.Lock()
 	for _, sub := range c.subs {
 		sub.Close()
 	}
+	c.subs = []stan.Subscription{}
+	c.subsLock.Unlock()
 	c.conn.Close()
 }
 
@@ -121,11 +125,20 @@ func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventT
 }
 
 // New returns new consumer service with provided nats-streaming connection as underlying backend.
-func New(sc stan.Conn, handlers Handlers, ackWait time.Duration, logger zerolog.Logger) storageSync.Consumer {
-	return &stanConsumer{
+func New(ctx context.Context, sc stan.Conn, handlers Handlers, ackWait time.Duration, logger zerolog.Logger) storageSync.Consumer {
+	c := &stanConsumer{
+		ctx:      ctx,
 		conn:     sc,
 		handlers: handlers,
 		ackWait:  ackWait,
 		logger:   logger,
 	}
+
+	// Close if context is Done()
+	go func() {
+		<-ctx.Done()
+		c.Close()
+	}()
+
+	return c
 }

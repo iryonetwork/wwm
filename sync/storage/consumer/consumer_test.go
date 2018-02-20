@@ -47,11 +47,11 @@ func TestMain(m *testing.M) {
 func TestStartSuccess(t *testing.T) {
 	h, cleanHandlers := getMockHandlers(t)
 	defer cleanHandlers()
-	c, cleanService := getTestService(t, "Consumer", h)
+	c, cleanService := getTestService(t, context.Background(), "Consumer", h)
 	defer cleanService()
 
 	// start first consumer
-	err := c.StartSubscription(context.Background(), storageSync.FileNew)
+	err := c.StartSubscription(storageSync.FileNew)
 	if err != nil {
 		t.Errorf("Expected error to be nil, got %v", err)
 	}
@@ -62,7 +62,7 @@ func TestStartSuccess(t *testing.T) {
 	}
 
 	// start second consumer
-	err = c.StartSubscription(context.Background(), storageSync.FileNew)
+	err = c.StartSubscription(storageSync.FileNew)
 	if err != nil {
 		t.Errorf("Expected error to be nil, got %v", err)
 	}
@@ -75,11 +75,11 @@ func TestStartSuccess(t *testing.T) {
 func TestStartFailureInavlidType(t *testing.T) {
 	h, cleanHandlers := getMockHandlers(t)
 	defer cleanHandlers()
-	c, cleanService := getTestService(t, "Consumer", h)
+	c, cleanService := getTestService(t, context.Background(), "Consumer", h)
 	defer cleanService()
 
 	// start first consumer
-	err := c.StartSubscription(context.Background(), "invalid_type")
+	err := c.StartSubscription("invalid_type")
 	if err == nil {
 		t.Error("Expected error, got nil")
 	}
@@ -92,13 +92,13 @@ func TestStartFailureInavlidType(t *testing.T) {
 func TestStartFailureConnectionClosed(t *testing.T) {
 	h, cleanHandlers := getMockHandlers(t)
 	defer cleanHandlers()
-	c, cleanService := getTestService(t, "Consumer", h)
+	c, cleanService := getTestService(t, context.Background(), "Consumer", h)
 
 	// cleanService closes connection
 	cleanService()
 
 	// Start first consumer
-	err := c.StartSubscription(context.Background(), storageSync.FileNew)
+	err := c.StartSubscription(storageSync.FileNew)
 	if err == nil {
 		t.Error("Expected error, got nil")
 	}
@@ -111,7 +111,7 @@ func TestStartFailureConnectionClosed(t *testing.T) {
 func TestMessageHandling(t *testing.T) {
 	h, cleanHandlers := getMockHandlers(t)
 	defer cleanHandlers()
-	c, cleanService := getTestService(t, "Consumer", h)
+	c, cleanService := getTestService(t, context.Background(), "Consumer", h)
 	defer cleanService()
 	p, cleanPublisher := getTestPublisher(t)
 	defer cleanPublisher()
@@ -127,7 +127,7 @@ func TestMessageHandling(t *testing.T) {
 		Times(1)
 
 	// start consumer
-	err := c.StartSubscription(context.Background(), storageSync.FileNew)
+	err := c.StartSubscription(storageSync.FileNew)
 	if err != nil {
 		t.Fatal("Failed to start subscription")
 	}
@@ -148,7 +148,7 @@ func TestMessageHandling(t *testing.T) {
 func TestMessageHandlingOnlyOnce(t *testing.T) {
 	h, cleanHandlers := getMockHandlers(t)
 	defer cleanHandlers()
-	c, cleanService := getTestService(t, "Consumer", h)
+	c, cleanService := getTestService(t, context.Background(), "Consumer", h)
 	defer cleanService()
 	p, cleanPublisher := getTestPublisher(t)
 	defer cleanPublisher()
@@ -164,11 +164,11 @@ func TestMessageHandlingOnlyOnce(t *testing.T) {
 		Times(1)
 
 	// start consumer 1
-	err := c.StartSubscription(context.Background(), storageSync.FileUpdate)
+	err := c.StartSubscription(storageSync.FileUpdate)
 	if err != nil {
 		t.Fatal("Failed to start subscription 1")
 	}
-	err = c.StartSubscription(context.Background(), storageSync.FileUpdate)
+	err = c.StartSubscription(storageSync.FileUpdate)
 	if err != nil {
 		t.Fatal("Failed to start subscription 2")
 	}
@@ -191,9 +191,9 @@ func TestMessageHandlingOnlyOnce(t *testing.T) {
 func TestMessageHandlingOnlyOnceSeparateConnections(t *testing.T) {
 	h, cleanHandlers := getMockHandlers(t)
 	defer cleanHandlers()
-	c1, cleanService1 := getTestService(t, "clientID1", h)
+	c1, cleanService1 := getTestService(t, context.Background(), "clientID1", h)
 	defer cleanService1()
-	c2, cleanService2 := getTestService(t, "clientID2", h)
+	c2, cleanService2 := getTestService(t, context.Background(), "clientID2", h)
 	defer cleanService2()
 	p, cleanPublisher := getTestPublisher(t)
 	defer cleanPublisher()
@@ -209,12 +209,12 @@ func TestMessageHandlingOnlyOnceSeparateConnections(t *testing.T) {
 		Times(1)
 
 	// start consumer 1
-	err := c1.StartSubscription(context.Background(), storageSync.FileDelete)
+	err := c1.StartSubscription(storageSync.FileDelete)
 	if err != nil {
 		t.Fatal("Failed to start subscription 1")
 	}
 
-	err = c2.StartSubscription(context.Background(), storageSync.FileDelete)
+	err = c2.StartSubscription(storageSync.FileDelete)
 	if err != nil {
 		t.Fatal("Failed to start subscription 2")
 	}
@@ -237,7 +237,7 @@ func TestMessageHandlingOnlyOnceSeparateConnections(t *testing.T) {
 func TestMessageHandlingNack(t *testing.T) {
 	h, cleanHandlers := getMockHandlers(t)
 	defer cleanHandlers()
-	c, cleanService := getTestService(t, "Consumer", h)
+	c, cleanService := getTestService(t, context.Background(), "Consumer", h)
 	defer cleanService()
 	p, cleanPublisher := getTestPublisher(t)
 	defer cleanPublisher()
@@ -262,7 +262,7 @@ func TestMessageHandlingNack(t *testing.T) {
 		After(nackCall)
 
 	// start consumer
-	err := c.StartSubscription(context.Background(), storageSync.FileNew)
+	err := c.StartSubscription(storageSync.FileNew)
 	if err != nil {
 		t.Fatal("Failed to start subscription")
 	}
@@ -289,7 +289,7 @@ func TestMessageHandlingNack(t *testing.T) {
 func TestDurability(t *testing.T) {
 	h, cleanHandlers := getMockHandlers(t)
 	defer cleanHandlers()
-	c, cleanService := getTestService(t, "Consumer_1", h)
+	c, cleanService := getTestService(t, context.Background(), "Consumer_1", h)
 	p, cleanPublisher := getTestPublisher(t)
 	defer cleanPublisher()
 
@@ -312,7 +312,7 @@ func TestDurability(t *testing.T) {
 		After(firstHandlerCall)
 
 	// start consumer
-	err := c.StartSubscription(context.Background(), storageSync.FileNew)
+	err := c.StartSubscription(storageSync.FileNew)
 	if err != nil {
 		t.Fatal("Failed to start subscription")
 	}
@@ -339,11 +339,11 @@ func TestDurability(t *testing.T) {
 	}
 
 	// Start new consumer
-	c, cleanService = getTestService(t, "Consumer_2", h)
+	c, cleanService = getTestService(t, context.Background(), "Consumer_2", h)
 	defer cleanService()
 
 	// start consumer
-	err = c.StartSubscription(context.Background(), storageSync.FileNew)
+	err = c.StartSubscription(storageSync.FileNew)
 	if err != nil {
 		t.Fatal("Failed to start subscription")
 	}
@@ -353,6 +353,33 @@ func TestDurability(t *testing.T) {
 		// all good
 	case <-time.After(time.Duration(50 * time.Millisecond)):
 		t.Fatal("Handler was not called during specified time")
+	}
+}
+
+func TestContextCancelled(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	h, cleanHandlers := getMockHandlers(t)
+	defer cleanHandlers()
+	c, cleanService := getTestService(t, ctx, "Consumer", h)
+	defer cleanService()
+
+	// start consumer
+	err := c.StartSubscription(storageSync.FileNew)
+	if err != nil {
+		t.Fatal("Failed to start subscription")
+	}
+	// start consumer
+	err = c.StartSubscription(storageSync.FileUpdate)
+	if err != nil {
+		t.Fatal("Failed to start subscription")
+	}
+
+	cancel()
+	time.Sleep(time.Duration(50 * time.Millisecond))
+
+	if c.GetNumberOfSubsriptions() != 0 {
+		t.Fatal("Close was not called on cancel context")
 	}
 }
 
@@ -367,24 +394,19 @@ func getMockHandlers(t *testing.T) (*mock.MockHandlers, func()) {
 	return mockHandlers, cleanup
 }
 
-func getTestService(t *testing.T, clientID string, h Handlers) (*stanConsumer, func()) {
+func getTestService(t *testing.T, ctx context.Context, clientID string, h Handlers) (*stanConsumer, func()) {
 	conn, err := stan.Connect(clusterID, clientID)
 	if err != nil {
 		t.Fatal("Connection to test stan-straming server failed")
 	}
 
-	c := &stanConsumer{
-		conn:     conn,
-		handlers: h,
-		ackWait:  time.Duration(time.Second),
-		logger:   zerolog.New(os.Stdout),
-	}
+	c := New(ctx, conn, h, time.Duration(time.Second), zerolog.New(os.Stdout))
 
 	cleanup := func() {
 		c.Close()
 	}
 
-	return c, cleanup
+	return c.(*stanConsumer), cleanup
 }
 
 func getTestPublisher(t *testing.T) (storageSync.Publisher, func()) {
@@ -393,7 +415,7 @@ func getTestPublisher(t *testing.T) (storageSync.Publisher, func()) {
 		t.Fatal("Connection to test stan-straming server failed")
 	}
 
-	p := publisher.New(conn, 5, time.Duration(time.Millisecond), 1.0, zerolog.New(os.Stdout))
+	p := publisher.New(context.Background(), conn, 5, time.Duration(time.Millisecond), 1.0, zerolog.New(os.Stdout))
 
 	cleanup := func() {
 		p.Close()
