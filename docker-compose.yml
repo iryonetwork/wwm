@@ -46,8 +46,7 @@ services:
   localAuth:
     build:
       context: .
-      dockerfile: Dockerfile
-    image: alpine:latest
+    image: auth
     depends_on:
     - cloudAuth
     command:
@@ -110,8 +109,7 @@ services:
   cloudAuth:
     build:
       context: .
-      dockerfile: Dockerfile
-    image: alpine:latest
+    image: auth
     command:
     - /wwm/cloudAuth
     volumes:
