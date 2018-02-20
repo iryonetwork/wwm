@@ -56,6 +56,7 @@ const metaChecksum = "x-checksum"
 // Storage provides an interface for s3 public functions
 type Storage interface {
 	MakeBucket(bucketID string) error
+	ListBuckets() ([]*models.BucketDescriptor, error)
 	List(bucketID, prefix string) ([]*models.FileDescriptor, error)
 	Read(bucketID, fileID, version string) (io.ReadCloser, *models.FileDescriptor, error)
 	Write(bucketID string, newFile *object.NewObjectInfo, r io.Reader) (*models.FileDescriptor, error)
@@ -72,6 +73,7 @@ type KeyProvider interface {
 type Minio interface {
 	MakeBucket(bucketName, location string) error
 	BucketExists(bucketName string) (bool, error)
+	ListBuckets() ([]minio.BucketInfo, error)
 	ListObjectsV2(bucketName, prefix string, recursive bool, doneCh <-chan struct{}) <-chan minio.ObjectInfo
 	GetObject(bucketName, objectName string, opts minio.GetObjectOptions) (object.Object, error)
 	GetEncryptedObject(bucketName, objectName string, encryptMaterials encrypt.Materials) (io.ReadCloser, error)
@@ -153,6 +155,28 @@ func (s *s3storage) MakeBucket(bucketID string) error {
 
 	return nil
 
+}
+
+// ListBuckets returns a list of buckets
+func (s *s3storage) ListBuckets() ([]*models.BucketDescriptor, error) {
+	s.logger.Debug().Str("cmd", "s3::ListBuckets")
+
+	b, err := s.client.ListBuckets()
+
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to list buckets")
+	}
+
+	buckets := []*models.BucketDescriptor{}
+	for _, info := range b {
+		bd, err := bucketInfoToBucketDescriptor(info)
+		if err != nil {
+			return nil, errors.Wrap(err, "Failed to convert bucketInfo to bucketDescriptor")
+		}
+		buckets = append(buckets, bd)
+	}
+
+	return buckets, nil
 }
 
 // List returns a list of files stored inside a bucket
@@ -297,6 +321,16 @@ func objectInfoToFileDescriptor(info minio.ObjectInfo, bucketID string) (*models
 	}
 
 	return fd, nil
+}
+
+func bucketInfoToBucketDescriptor(info minio.BucketInfo) (*models.BucketDescriptor, error) {
+	// copy
+	bd := &models.BucketDescriptor{
+		Name:    info.Name,
+		Created: strfmt.DateTime(info.CreationDate),
+	}
+
+	return bd, nil
 }
 
 func getCBCKey(bucketID string, keys KeyProvider) (encrypt.Materials, error) {

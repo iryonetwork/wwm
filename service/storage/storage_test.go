@@ -89,6 +89,14 @@ var (
 		Size:        8,
 		Operation:   "w",
 	}
+	bucket1 = &models.BucketDescriptor{
+		Name:    "BUCKET1",
+		Created: time1,
+	}
+	bucket2 = &models.BucketDescriptor{
+		Name:    "BUCKET2",
+		Created: time2,
+	}
 	noErrors   = false
 	withErrors = true
 )
@@ -102,6 +110,74 @@ func TestChecksum(t *testing.T) {
 	}
 	if err != nil {
 		t.Errorf("Expected err to be nil; got %v", err)
+	}
+}
+
+func TestBucketList(t *testing.T) {
+	testCases := []struct {
+		description   string
+		calls         func(*mock.MockStorage) []*gomock.Call
+		expected      []*models.BucketDescriptor
+		errorExpected bool
+		exactError    error
+	}{
+		{
+			"List fails",
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().ListBuckets().Return(nil, fmt.Errorf("Error")),
+				}
+			},
+			nil,
+			withErrors,
+			fmt.Errorf("Error"),
+		},
+		{
+			"Successful call",
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().ListBuckets().Return([]*models.BucketDescriptor{bucket1, bucket2}, nil),
+				}
+			},
+			[]*models.BucketDescriptor{bucket1, bucket2},
+			noErrors,
+			nil,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.description, func(t *testing.T) {
+			// init service
+			svc, s, _, _, c := getTestService(t)
+			defer c()
+
+			// setup calls
+			test.calls(s)
+
+			// call BucketList
+			out, err := svc.BucketList()
+
+			// check expected results
+			if !reflect.DeepEqual(out, test.expected) {
+				fmt.Println("Expected")
+				printJson(test.expected)
+				fmt.Println("Got")
+				printJson(out)
+				t.Errorf("Expected list to equal\n%+v\ngot\n%+v", test.expected, out)
+			}
+
+			// assert error
+			if test.errorExpected && err == nil {
+				t.Error("Expected error, got nil")
+			} else if !test.errorExpected && err != nil {
+				t.Errorf("Expected error to be nil, got %v", err)
+			}
+
+			// assert actual error
+			if !reflect.DeepEqual(err, test.exactError) {
+				t.Errorf("Expected error to equal '%v'; got %v", test.exactError, err)
+			}
+		})
 	}
 }
 
@@ -454,6 +530,87 @@ func TestFileDelete(t *testing.T) {
 
 			// call the MakeBucket
 			err := svc.FileDelete("BUCKET", "FILE")
+
+			// assert error
+			if test.errorExpected && err == nil {
+				t.Error("Expected error, got nil")
+			} else if !test.errorExpected && err != nil {
+				t.Errorf("Expected error to be nil, got %v", err)
+			}
+
+			// assert actual error
+			if test.exactError != nil && test.exactError != err {
+				t.Errorf("Expected error to equal '%v'; got %v", test.exactError, err)
+			}
+		})
+	}
+}
+
+func TestSyncFileList(t *testing.T) {
+	testCases := []struct {
+		description   string
+		calls         func(*mock.MockStorage) []*gomock.Call
+		expected      []*models.FileDescriptor
+		errorExpected bool
+		exactError    error
+	}{
+		{
+			"makeBucket fails",
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().MakeBucket("BUCKET").Return(fmt.Errorf("Error")),
+				}
+			},
+			nil,
+			withErrors,
+			nil,
+		},
+		{
+			"List fails",
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().MakeBucket("BUCKET").Return(nil),
+					s.EXPECT().List("BUCKET", "").Return(nil, fmt.Errorf("Error")),
+				}
+			},
+			nil,
+			withErrors,
+			nil,
+		},
+		{
+			"Successful call",
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().MakeBucket("BUCKET").Return(nil),
+					s.EXPECT().List("BUCKET", "").Return([]*models.FileDescriptor{file1V2, file2V2, file1V1, file2V1}, nil),
+				}
+			},
+			[]*models.FileDescriptor{file1V2, file2V2},
+			noErrors,
+			nil,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.description, func(t *testing.T) {
+			// init service
+			svc, s, _, _, c := getTestService(t)
+			defer c()
+
+			// setup calls
+			test.calls(s)
+
+			// call SyncFileList
+			out, err := svc.SyncFileList("BUCKET")
+
+			// check expected results
+			if !reflect.DeepEqual(out, test.expected) {
+				fmt.Println("Expected")
+				printJson(test.expected)
+				fmt.Println("Got")
+				printJson(out)
+				t.Errorf("Expected list to equal\n%+v\ngot\n%+v", test.expected, out)
+			}
 
 			// assert error
 			if test.errorExpected && err == nil {
