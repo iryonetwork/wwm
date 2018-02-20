@@ -6,7 +6,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/rs/zerolog"
 
-	"github.com/iryonetwork/wwm/gen/storage/client/storage"
+	"github.com/iryonetwork/wwm/gen/storage/client/operations"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 )
 
@@ -14,7 +14,7 @@ import (
 type Handlers interface {
 	// SyncFile synchronizes new files and file updates to destination storage
 	SyncFile(f *storageSync.FileInfo) error
-	// SyncFileDelete synchronizes file deletion to destination storage.
+	// SyncFileDelete synchronizes file deletion to destination operations.
 	SyncFileDelete(f *storageSync.FileInfo) error
 }
 
@@ -22,9 +22,9 @@ type Handlers interface {
 type Handler func(f *storageSync.FileInfo) error
 
 type handlers struct {
-	source          *storage.Client
+	source          *operations.Client
 	sourceAuth      runtime.ClientAuthInfoWriter
-	destination     *storage.Client
+	destination     *operations.Client
 	destinationAuth runtime.ClientAuthInfoWriter
 	logger          zerolog.Logger
 }
@@ -33,16 +33,16 @@ type handlers struct {
 func (h *handlers) SyncFile(f *storageSync.FileInfo) error {
 	// Get file from source storage
 	var buf bytes.Buffer
-	getParams := storage.NewFileGetVersionParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
+	getParams := operations.NewFileGetVersionParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
 	resp, err := h.source.FileGetVersion(getParams, h.sourceAuth, &buf)
 
 	if err != nil {
-		if _, ok := err.(*storage.FileGetVersionNotFound); ok {
+		if _, ok := err.(*operations.FileGetVersionNotFound); ok {
 			h.logger.Error().Err(err).
 				Str("bucket", f.BucketID).
 				Str("fileID", f.FileID).
 				Str("version", f.Version).
-				Msg("File does not exist in source storage.")
+				Msg("File does not exist in source operations.")
 
 			// File might have been already deleted; mark as succesful
 			return nil
@@ -52,7 +52,7 @@ func (h *handlers) SyncFile(f *storageSync.FileInfo) error {
 			Str("bucket", f.BucketID).
 			Str("fileID", f.FileID).
 			Str("version", f.Version).
-			Msg("Error on trying to fetch file from source storage.")
+			Msg("Error on trying to fetch file from source operations.")
 		return err
 	}
 
@@ -67,7 +67,7 @@ func (h *handlers) SyncFile(f *storageSync.FileInfo) error {
 	}
 
 	// Sync file
-	syncParams := storage.NewSyncFileParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
+	syncParams := operations.NewSyncFileParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
 
 	if resp.XArchetype != "" {
 		syncParams.SetArchetype(&resp.XArchetype)
@@ -101,7 +101,7 @@ func (h *handlers) SyncFile(f *storageSync.FileInfo) error {
 			Str("version", f.Version).
 			Msg("Failed to sync file to destination storage")
 		switch err.(type) {
-		case *storage.SyncFileConflict:
+		case *operations.SyncFileConflict:
 			// another attempt at sync should not be performed
 			return nil
 		default:
@@ -112,9 +112,9 @@ func (h *handlers) SyncFile(f *storageSync.FileInfo) error {
 	return nil
 }
 
-// SyncFileDelete synchronizes file deletion to destination storage.
+// SyncFileDelete synchronizes file deletion to destination operations.
 func (h *handlers) SyncFileDelete(f *storageSync.FileInfo) error {
-	params := storage.NewSyncFileDeleteParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
+	params := operations.NewSyncFileDeleteParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
 
 	_, err := h.destination.SyncFileDelete(params, h.destinationAuth)
 
@@ -126,10 +126,10 @@ func (h *handlers) SyncFileDelete(f *storageSync.FileInfo) error {
 			Str("version", f.Version).
 			Msg("Failed to sync file deletion")
 		switch err.(type) {
-		case *storage.SyncFileDeleteConflict:
+		case *operations.SyncFileDeleteConflict:
 			// another attempt at sync should not be performed
 			return nil
-		case *storage.SyncFileDeleteNotFound:
+		case *operations.SyncFileDeleteNotFound:
 			// another attempt at sync should not be performed
 			return nil
 		default:
@@ -148,7 +148,7 @@ func (h *handlers) SyncFileDelete(f *storageSync.FileInfo) error {
 }
 
 // NewApiHandlers returns Handlers with cloudStorage and localStorage API used.
-func NewHandlers(source *storage.Client, sourceAuth runtime.ClientAuthInfoWriter, destination *storage.Client, destinationAuth runtime.ClientAuthInfoWriter, logger zerolog.Logger) Handlers {
+func NewHandlers(source *operations.Client, sourceAuth runtime.ClientAuthInfoWriter, destination *operations.Client, destinationAuth runtime.ClientAuthInfoWriter, logger zerolog.Logger) Handlers {
 	return &handlers{
 		source:          source,
 		sourceAuth:      sourceAuth,
@@ -160,7 +160,7 @@ func NewHandlers(source *storage.Client, sourceAuth runtime.ClientAuthInfoWriter
 
 func (h *handlers) needsSync(f *storageSync.FileInfo, sourceChecksum string) (bool, error) {
 	// Verify in case file already exists in destination storage
-	params := storage.NewSyncFileMetadataParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
+	params := operations.NewSyncFileMetadataParams().WithBucket(f.BucketID).WithFileID(f.FileID).WithVersion(f.Version)
 	resp, err := h.destination.SyncFileMetadata(params, h.destinationAuth)
 	// File already exists
 	if resp != nil {
@@ -176,7 +176,7 @@ func (h *handlers) needsSync(f *storageSync.FileInfo, sourceChecksum string) (bo
 		return false, nil
 	}
 	// If file not found it needs sync, otherwise return error
-	if _, ok := err.(*storage.SyncFileMetadataNotFound); !ok {
+	if _, ok := err.(*operations.SyncFileMetadataNotFound); !ok {
 		return false, err
 	}
 

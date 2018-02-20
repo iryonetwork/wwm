@@ -61,7 +61,7 @@ func main() {
 	auth := &clientAuthInfoWriter{"SECRETSECRETSECRETSECRETSECRETSE"}
 
 	// initialize handlers
-	handlers := consumer.NewHandlers(localClient.Storage, auth, cloudClient.Storage, auth, logger.With().Str("component", "sync/storage/consumer/handlers").Logger())
+	handlers := consumer.NewHandlers(localClient.Operations, auth, cloudClient.Operations, auth, logger.With().Str("component", "sync/storage/consumer/handlers").Logger())
 
 	// create nats/nats-streaming connection
 	URLs := "tls://nats:secret@localNats:4242"

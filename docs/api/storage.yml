@@ -27,6 +27,8 @@ paths:
     get:
       tags:
         - storage
+        - local
+        - cloud
       summary: Lists files present in the bucket
       description: Lists all files present in the bucket. Only latest versions of the file are listed.
       operationId: fileList
@@ -57,6 +59,8 @@ paths:
     post:
       tags:
         - storage
+        - local
+        - cloud
       summary: Uploads a new file to a bucket
       description: Uploads a new file to a bucket and return's its new ID
       operationId: fileNew
@@ -106,6 +110,8 @@ paths:
     get:
       tags:
         - storage
+        - local
+        - cloud
       summary: Fetch a file
       description: Fetches the latest revision of a file
       operationId: fileGet
@@ -167,6 +173,8 @@ paths:
     put:
       tags:
         - storage
+        - local
+        - cloud
       summary: Updates a file
       description: Creates a new version of a file
       operationId: fileUpdate
@@ -220,6 +228,8 @@ paths:
     delete:
       tags:
         - storage
+        - local
+        - cloud
       summary: Marks file as deleted
       description: Deletes the file
       operationId: fileDelete
@@ -254,6 +264,8 @@ paths:
     get:
       tags:
         - storage
+        - local
+        - cloud
       summary: List of versions of a file
       description: Returns a list of available file versions
       operationId: fileListVersions
@@ -292,6 +304,8 @@ paths:
     get:
       tags:
         - storage
+        - local
+        - cloud
       summary: Get a specific version of file
       description: Returns a specific version of a file
       operationId: fileGetVersion
@@ -355,10 +369,71 @@ paths:
         500:
           $ref: '#/responses/500'
 
+  /sync/buckets:
+    get:
+      tags:
+        - storage
+        - local
+        - cloud
+      summary: List all buckets.
+      description: List all buckets that are owned by authenticated user.
+      operationId: syncBucketList
+
+      responses:
+        200:
+          description: List of buckets
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/BucketDescriptor"
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /sync/{bucket}:
+    get:
+      tags:
+        - storage
+        - local
+        - cloud
+      summary: Lists all files in the bucket
+      description: Lists all files in the bucket. Only latest versions of the file are listed but files marked as deleted are not omitted.
+      operationId: syncFileList
+
+      parameters:
+        - in: path
+          name: bucket
+          type: string
+          required: true
+
+      responses:
+        200:
+          description: List of files
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/FileDescriptor'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
   /sync/{bucket}/{fileID}/{version}:
     head:
       tags:
         - storage
+        - cloud
       summary: Gets metadata of specific version of a file
       description: Verifies that files exists and returns metadata of specific version of a file without returning file itself
       operationId: syncFileMetadata
@@ -419,6 +494,7 @@ paths:
     post:
       tags:
         - storage
+        - cloud
       summary: Syncs new file creation and file update
       description: Uploads a new file to a bucket with provided ID and version
       operationId: syncFile
@@ -491,9 +567,12 @@ paths:
     delete:
       tags:
         - storage
+        - cloud
       summary: Marks file as deleted
       description: Syncs file deletion
       operationId: syncFileDelete
+      consumes:
+        - multipart/form-data
 
       parameters:
         - in: path
@@ -576,6 +655,19 @@ definitions:
       operation:
         type: string
         enum: [w, d]
+
+  BucketDescriptor:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Name of the bucket
+        example: 6a0b7d41-b2d9-4fee-9296-7d678186396d
+      created:
+        type: string
+        description: Date and time when bucket
+        format: datetime
+        example: '2018-01-09T13:10:07Z'
 
   File:
     type: string

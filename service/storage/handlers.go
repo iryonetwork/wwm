@@ -9,7 +9,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/models"
-	operations "github.com/iryonetwork/wwm/gen/storage/restapi/operations/storage"
+	"github.com/iryonetwork/wwm/gen/storage/restapi/operations"
 )
 
 // Handlers describes the actions supported by the storage handlers
