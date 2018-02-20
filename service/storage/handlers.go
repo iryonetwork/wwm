@@ -21,6 +21,8 @@ type Handlers interface {
 	FileNew() operations.FileNewHandler
 	FileUpdate() operations.FileUpdateHandler
 	FileDelete() operations.FileDeleteHandler
+	SyncBucketList() operations.SyncBucketListHandler
+	SyncFileList() operations.SyncFileListHandler
 	SyncFileMetadata() operations.SyncFileMetadataHandler
 	SyncFile() operations.SyncFileHandler
 	SyncFileDelete() operations.SyncFileDeleteHandler
@@ -181,6 +183,40 @@ func (h *handlers) FileDelete() operations.FileDeleteHandler {
 		}
 
 		return operations.NewFileDeleteNoContent()
+	})
+}
+
+func (h *handlers) SyncBucketList() operations.SyncBucketListHandler {
+	return operations.SyncBucketListHandlerFunc(func(params operations.SyncBucketListParams, principal *string) middleware.Responder {
+		list, err := h.service.BucketList()
+		if err != nil {
+			return operations.NewSyncBucketListInternalServerError().WithPayload(&models.Error{
+				Code:    "server_error",
+				Message: err.Error(),
+			})
+		}
+		if len(list) == 0 {
+			return operations.NewSyncBucketListNotFound()
+		}
+
+		return operations.NewSyncBucketListOK().WithPayload(list)
+	})
+}
+
+func (h *handlers) SyncFileList() operations.SyncFileListHandler {
+	return operations.SyncFileListHandlerFunc(func(params operations.SyncFileListParams, principal *string) middleware.Responder {
+		list, err := h.service.SyncFileList(params.Bucket)
+		if err != nil {
+			return operations.NewSyncFileListInternalServerError().WithPayload(&models.Error{
+				Code:    "server_error",
+				Message: err.Error(),
+			})
+		}
+		if len(list) == 0 {
+			return operations.NewSyncFileListNotFound()
+		}
+
+		return operations.NewSyncFileListOK().WithPayload(list)
 	})
 }
 

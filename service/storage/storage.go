@@ -24,8 +24,11 @@ type Service interface {
 	// Checksum calculates the checksum of a given reader using sha256.Sum.
 	Checksum(r io.Reader) (string, error)
 
+	// BucketList returns list of all the buckets.
+	BucketList() ([]*models.BucketDescriptor, error)
+
 	// FileList returns a list of latest versions of files. Older versions and
-	// files markder as deleted are removed from the list.
+	// files marked as deleted are removed from the list.
 	FileList(bucketID string) ([]*models.FileDescriptor, error)
 
 	// FileGet returns the latest version of the file by returning the reader
@@ -46,6 +49,10 @@ type Service interface {
 
 	// FileDelete marks file as deleted.
 	FileDelete(bucketID, fileID string) error
+
+	// SyncFileList returns a list of latest versions of files. Older versions are removed from the list.
+	// Files marked as deleted are kept in the list.
+	SyncFileList(bucketID string) ([]*models.FileDescriptor, error)
 
 	// SyncFile syncs file with provided fileID and version.
 	SyncFile(bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string) (*models.FileDescriptor, error)
@@ -80,6 +87,11 @@ func (s *service) Checksum(r io.Reader) (string, error) {
 	}
 
 	return base64.URLEncoding.EncodeToString(h.Sum(nil)), nil
+}
+
+func (s *service) BucketList() ([]*models.BucketDescriptor, error) {
+	// get the list and return
+	return s.s3.ListBuckets()
 }
 
 func (s *service) FileList(bucketID string) ([]*models.FileDescriptor, error) {
@@ -234,6 +246,37 @@ func (s *service) FileDelete(bucketID, fileID string) error {
 		)
 	}
 	return err
+}
+
+func (s *service) SyncFileList(bucketID string) ([]*models.FileDescriptor, error) {
+	// make sure bucket exists
+	if err := s.s3.MakeBucket(bucketID); err != nil && err != s3.ErrAlreadyExists {
+		s.logger.Info().Err(err).Str("bucket", bucketID).Msg("Failed to ensure bucket")
+		return nil, err
+	}
+
+	// collect the list
+	list, err := s.s3.List(bucketID, "")
+	if err != nil {
+		return nil, err
+	}
+
+	// extract only latest versions in a map; latest version is already sorted
+	// on top
+	m := map[string]*models.FileDescriptor{}
+	for _, f := range list {
+		if _, ok := m[f.Name]; !ok {
+			m[f.Name] = f
+		}
+	}
+
+	// extract a list out of a map;
+	list = []*models.FileDescriptor{}
+	for _, f := range m {
+		list = append(list, f)
+	}
+
+	return list, nil
 }
 
 func (s *service) SyncFile(bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string) (*models.FileDescriptor, error) {
