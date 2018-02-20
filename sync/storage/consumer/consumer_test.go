@@ -1,5 +1,8 @@
 package consumer
 
+// Tests for consumer of storage sync messages coming from nats-streaming
+// Nats-streaming server for test is started in TestMain that runs all the tests on Run() call and then shutdowns the server.
+
 import (
 	"context"
 	"fmt"
@@ -34,6 +37,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
+	// Run all the tests
 	c := m.Run()
 
 	s.Shutdown()
