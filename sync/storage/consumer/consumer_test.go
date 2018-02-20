@@ -18,7 +18,7 @@ import (
 	"github.com/rs/zerolog"
 
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
-	"github.com/iryonetwork/wwm/sync/storage/consumer/mock"
+	"github.com/iryonetwork/wwm/sync/storage/mock"
 	"github.com/iryonetwork/wwm/sync/storage/publisher"
 )
 
@@ -119,9 +119,9 @@ func TestMessageHandling(t *testing.T) {
 	// Expect handler call
 	called := make(chan bool)
 	h.EXPECT().
-		SyncFile(gomock.Eq(file1)).
+		SyncFile(file1.BucketID, file1.FileID, file1.Version).
 		Return(nil).
-		Do(func(f *storageSync.FileInfo) {
+		Do(func(_, _, _ string) {
 			called <- true
 		}).
 		Times(1)
@@ -156,9 +156,9 @@ func TestMessageHandlingOnlyOnce(t *testing.T) {
 	// Expect handler call
 	called := make(chan bool)
 	h.EXPECT().
-		SyncFile(gomock.Eq(file1)).
+		SyncFile(file1.BucketID, file1.FileID, file1.Version).
 		Return(nil).
-		Do(func(f *storageSync.FileInfo) {
+		Do(func(_, _, _ string) {
 			called <- true
 		}).
 		Times(1)
@@ -201,9 +201,9 @@ func TestMessageHandlingOnlyOnceSeparateConnections(t *testing.T) {
 	// Expect handler call
 	called := make(chan bool)
 	h.EXPECT().
-		SyncFileDelete(gomock.Eq(file1)).
+		SyncFileDelete(file1.BucketID, file1.FileID, file1.Version).
 		Return(nil).
-		Do(func(f *storageSync.FileInfo) {
+		Do(func(_, _, _ string) {
 			called <- true
 		}).
 		Times(1)
@@ -246,16 +246,16 @@ func TestMessageHandlingNack(t *testing.T) {
 	nack := make(chan bool)
 	ok := make(chan bool)
 	nackCall := h.EXPECT().
-		SyncFile(gomock.Eq(file1)).
+		SyncFile(file1.BucketID, file1.FileID, file1.Version).
 		Return(fmt.Errorf("error")).
-		Do(func(f *storageSync.FileInfo) {
+		Do(func(_, _, _ string) {
 			nack <- true
 		}).
 		Times(1)
 	h.EXPECT().
-		SyncFile(gomock.Eq(file1)).
+		SyncFile(file1.BucketID, file1.FileID, file1.Version).
 		Return(nil).
-		Do(func(f *storageSync.FileInfo) {
+		Do(func(_, _, _ string) {
 			ok <- true
 		}).
 		Times(1).
@@ -296,16 +296,16 @@ func TestDurability(t *testing.T) {
 	// Expect handler call
 	ok := make(chan bool)
 	firstHandlerCall := h.EXPECT().
-		SyncFile(gomock.Eq(file1)).
+		SyncFile(file1.BucketID, file1.FileID, file1.Version).
 		Return(nil).
-		Do(func(f *storageSync.FileInfo) {
+		Do(func(_, _, _ string) {
 			ok <- true
 		}).
 		Times(1)
 	h.EXPECT().
-		SyncFile(gomock.Eq(file2)).
+		SyncFile(file2.BucketID, file2.FileID, file2.Version).
 		Return(nil).
-		Do(func(f *storageSync.FileInfo) {
+		Do(func(_, _, _ string) {
 			ok <- true
 		}).
 		Times(1).
@@ -394,7 +394,7 @@ func getMockHandlers(t *testing.T) (*mock.MockHandlers, func()) {
 	return mockHandlers, cleanup
 }
 
-func getTestService(t *testing.T, ctx context.Context, clientID string, h Handlers) (*stanConsumer, func()) {
+func getTestService(t *testing.T, ctx context.Context, clientID string, h storageSync.Handlers) (*stanConsumer, func()) {
 	conn, err := stan.Connect(clusterID, clientID)
 	if err != nil {
 		t.Fatal("Connection to test stan-straming server failed")

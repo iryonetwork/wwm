@@ -270,7 +270,7 @@ func (s *service) SyncFileList(bucketID string) ([]*models.FileDescriptor, error
 		}
 	}
 
-	// extract a list out of a map;
+	// extract a list out of a map
 	list = []*models.FileDescriptor{}
 	for _, f := range m {
 		list = append(list, f)
