@@ -74,16 +74,16 @@ func main() {
 
 	api.TokenAuth = storageHandlers.GetUserIDFromToken
 	api.APIAuthorizer = storageHandlers.Authorizer()
-	api.StorageFileListHandler = storageHandlers.FileList()
-	api.StorageFileGetHandler = storageHandlers.FileGet()
-	api.StorageFileGetVersionHandler = storageHandlers.FileGetVersion()
-	api.StorageFileListVersionsHandler = storageHandlers.FileListVersions()
-	api.StorageFileNewHandler = storageHandlers.FileNew()
-	api.StorageFileUpdateHandler = storageHandlers.FileUpdate()
-	api.StorageFileDeleteHandler = storageHandlers.FileDelete()
-	api.StorageSyncFileMetadataHandler = storageHandlers.SyncFileMetadata()
-	api.StorageSyncFileHandler = storageHandlers.SyncFile()
-	api.StorageSyncFileDeleteHandler = storageHandlers.SyncFileDelete()
+	api.FileListHandler = storageHandlers.FileList()
+	api.FileGetHandler = storageHandlers.FileGet()
+	api.FileGetVersionHandler = storageHandlers.FileGetVersion()
+	api.FileListVersionsHandler = storageHandlers.FileListVersions()
+	api.FileNewHandler = storageHandlers.FileNew()
+	api.FileUpdateHandler = storageHandlers.FileUpdate()
+	api.FileDeleteHandler = storageHandlers.FileDelete()
+	api.SyncFileMetadataHandler = storageHandlers.SyncFileMetadata()
+	api.SyncFileHandler = storageHandlers.SyncFile()
+	api.SyncFileDeleteHandler = storageHandlers.SyncFileDelete()
 
 	api.RegisterConsumer("*/*", &WildcardConsumer{})
 
