@@ -4,6 +4,7 @@ package storage
 
 import (
 	"bytes"
+	"context"
 
 	"github.com/go-openapi/runtime"
 	"github.com/rs/zerolog"
@@ -15,21 +16,21 @@ import (
 // Handlers describes public API for sync/storage event handlers
 type Handlers interface {
 	// SyncFile synchronizes new files and file updates to destination storage
-	SyncFile(bucketID, fileID, version string) error
+	SyncFile(ctx context.Context, bucketID, fileID, version string) error
 	// SyncFileDelete synchronizes file deletion to destination operations.
-	SyncFileDelete(bucketID, fileID, version string) error
+	SyncFileDelete(ctx context.Context, bucketID, fileID, version string) error
 	// ListSourceBuckets lists all the buckets in source storage.
-	ListSourceBuckets() ([]*models.BucketDescriptor, error)
+	ListSourceBuckets(ctx context.Context) ([]*models.BucketDescriptor, error)
 	// ListSourceFiles lists all the files in the bucket of source storage including files marked as delete.
-	ListSourceFiles(bucketID string) ([]*models.FileDescriptor, error)
+	ListSourceFiles(ctx context.Context, bucketID string) ([]*models.FileDescriptor, error)
 	// ListSourceFileVersions lists all the file versions in the source storage.
-	ListSourceFileVersions(bucketID, fileID string) ([]*models.FileDescriptor, error)
+	ListSourceFileVersions(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error)
 	// ListDestinationFileVersions lists all the file versions in the destination storage.
-	ListDestinationFileVersions(bucketID, fileID string) ([]*models.FileDescriptor, error)
+	ListDestinationFileVersions(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error)
 }
 
 // Handler describes sync/storage handler function
-type Handler func(bucketID, fileID, version string) error
+type Handler func(ctx context.Context, bucketID, fileID, version string) error
 
 type handlers struct {
 	source          *operations.Client
@@ -40,10 +41,15 @@ type handlers struct {
 }
 
 // SyncFile synchronizes new files and file updates to destination storage
-func (h *handlers) SyncFile(bucketID, fileID, version string) error {
+func (h *handlers) SyncFile(ctx context.Context, bucketID, fileID, version string) error {
 	// Get file from source storage
 	var buf bytes.Buffer
-	getParams := operations.NewFileGetVersionParams().WithBucket(bucketID).WithFileID(fileID).WithVersion(version)
+
+	getParams := operations.NewFileGetVersionParams().
+		WithBucket(bucketID).
+		WithFileID(fileID).
+		WithVersion(version).
+		WithContext(ctx)
 	resp, err := h.source.FileGetVersion(getParams, h.sourceAuth, &buf)
 
 	if err != nil {
@@ -67,7 +73,7 @@ func (h *handlers) SyncFile(bucketID, fileID, version string) error {
 	}
 
 	// Check if sync is needed
-	needsSync, err := h.needsSync(bucketID, fileID, version, resp.XChecksum)
+	needsSync, err := h.needsSync(ctx, bucketID, fileID, version, resp.XChecksum)
 	if err != nil {
 		return err
 	}
@@ -77,15 +83,17 @@ func (h *handlers) SyncFile(bucketID, fileID, version string) error {
 	}
 
 	// Sync file
-	syncParams := operations.NewSyncFileParams().WithBucket(bucketID).WithFileID(fileID).WithVersion(version)
-
+	syncParams := operations.NewSyncFileParams().
+		WithBucket(bucketID).
+		WithFileID(fileID).
+		WithVersion(version).
+		WithContext(ctx)
 	if resp.XArchetype != "" {
 		syncParams.SetArchetype(&resp.XArchetype)
 	}
 	syncParams.SetContentType(resp.ContentType)
 	syncParams.SetCreated(resp.XCreated)
 	syncParams.SetFile(runtime.NamedReader("FileReader", &buf))
-
 	ok, created, err := h.destination.SyncFile(syncParams, h.destinationAuth)
 
 	switch {
@@ -123,9 +131,12 @@ func (h *handlers) SyncFile(bucketID, fileID, version string) error {
 }
 
 // SyncFileDelete synchronizes file deletion to destination operations.
-func (h *handlers) SyncFileDelete(bucketID, fileID, version string) error {
-	params := operations.NewSyncFileDeleteParams().WithBucket(bucketID).WithFileID(fileID).WithVersion(version)
-
+func (h *handlers) SyncFileDelete(ctx context.Context, bucketID, fileID, version string) error {
+	params := operations.NewSyncFileDeleteParams().
+		WithBucket(bucketID).
+		WithFileID(fileID).
+		WithVersion(version).
+		WithContext(ctx)
 	_, err := h.destination.SyncFileDelete(params, h.destinationAuth)
 
 	if err != nil {
@@ -158,23 +169,23 @@ func (h *handlers) SyncFileDelete(bucketID, fileID, version string) error {
 }
 
 // ListSourceBuckets lists all the buckets in source storage.
-func (h *handlers) ListSourceBuckets() ([]*models.BucketDescriptor, error) {
-	return h.listBuckets(h.source, h.sourceAuth)
+func (h *handlers) ListSourceBuckets(ctx context.Context) ([]*models.BucketDescriptor, error) {
+	return h.listBuckets(ctx, h.source, h.sourceAuth)
 }
 
 // ListSourceFiles lists all the files in the bucket of source storage including files marked as delete.
-func (h *handlers) ListSourceFiles(bucketID string) ([]*models.FileDescriptor, error) {
-	return h.listFiles(h.source, h.sourceAuth, bucketID)
+func (h *handlers) ListSourceFiles(ctx context.Context, bucketID string) ([]*models.FileDescriptor, error) {
+	return h.listFiles(ctx, h.source, h.sourceAuth, bucketID)
 }
 
 // ListSourceFileVersions lists all the file versions in the source storage.
-func (h *handlers) ListSourceFileVersions(bucketID, fileID string) ([]*models.FileDescriptor, error) {
-	return h.listFileVersions(h.source, h.sourceAuth, bucketID, fileID)
+func (h *handlers) ListSourceFileVersions(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error) {
+	return h.listFileVersions(ctx, h.source, h.sourceAuth, bucketID, fileID)
 }
 
 // ListDestinationFileVersions lists all the file versions in the destination storage.
-func (h *handlers) ListDestinationFileVersions(bucketID, fileID string) ([]*models.FileDescriptor, error) {
-	return h.listFileVersions(h.destination, h.destinationAuth, bucketID, fileID)
+func (h *handlers) ListDestinationFileVersions(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error) {
+	return h.listFileVersions(ctx, h.destination, h.destinationAuth, bucketID, fileID)
 }
 
 // NewApiHandlers returns Handlers with cloudStorage and localStorage API used.
@@ -188,10 +199,15 @@ func NewHandlers(source *operations.Client, sourceAuth runtime.ClientAuthInfoWri
 	}
 }
 
-func (h *handlers) needsSync(bucketID, fileID, version, sourceChecksum string) (bool, error) {
+func (h *handlers) needsSync(ctx context.Context, bucketID, fileID, version, sourceChecksum string) (bool, error) {
 	// Verify in case file already exists in destination storage
-	params := operations.NewSyncFileMetadataParams().WithBucket(bucketID).WithFileID(fileID).WithVersion(version)
+	params := operations.NewSyncFileMetadataParams().
+		WithBucket(bucketID).
+		WithFileID(fileID).
+		WithVersion(version).
+		WithContext(ctx)
 	resp, err := h.destination.SyncFileMetadata(params, h.destinationAuth)
+
 	// File already exists
 	if resp != nil {
 		if resp.XChecksum != sourceChecksum {
@@ -213,8 +229,9 @@ func (h *handlers) needsSync(bucketID, fileID, version, sourceChecksum string) (
 	return true, nil
 }
 
-func (h *handlers) listBuckets(c *operations.Client, auth runtime.ClientAuthInfoWriter) ([]*models.BucketDescriptor, error) {
-	resp, err := c.SyncBucketList(nil, auth)
+func (h *handlers) listBuckets(ctx context.Context, c *operations.Client, auth runtime.ClientAuthInfoWriter) ([]*models.BucketDescriptor, error) {
+	params := operations.NewSyncBucketListParams().WithContext(ctx)
+	resp, err := c.SyncBucketList(params, auth)
 
 	if err != nil {
 		// If not found return empty, otherwise return error
@@ -228,8 +245,8 @@ func (h *handlers) listBuckets(c *operations.Client, auth runtime.ClientAuthInfo
 	return resp.Payload, nil
 }
 
-func (h *handlers) listFiles(c *operations.Client, auth runtime.ClientAuthInfoWriter, bucketID string) ([]*models.FileDescriptor, error) {
-	params := operations.NewSyncFileListParams().WithBucket(bucketID)
+func (h *handlers) listFiles(ctx context.Context, c *operations.Client, auth runtime.ClientAuthInfoWriter, bucketID string) ([]*models.FileDescriptor, error) {
+	params := operations.NewSyncFileListParams().WithBucket(bucketID).WithContext(ctx)
 	resp, err := c.SyncFileList(params, auth)
 
 	if err != nil {
@@ -244,8 +261,11 @@ func (h *handlers) listFiles(c *operations.Client, auth runtime.ClientAuthInfoWr
 	return resp.Payload, nil
 }
 
-func (h *handlers) listFileVersions(c *operations.Client, auth runtime.ClientAuthInfoWriter, bucketID, fileID string) ([]*models.FileDescriptor, error) {
-	params := operations.NewFileListVersionsParams().WithBucket(bucketID).WithFileID(fileID)
+func (h *handlers) listFileVersions(ctx context.Context, c *operations.Client, auth runtime.ClientAuthInfoWriter, bucketID, fileID string) ([]*models.FileDescriptor, error) {
+	params := operations.NewFileListVersionsParams().
+		WithBucket(bucketID).
+		WithFileID(fileID).
+		WithContext(ctx)
 	resp, err := c.FileListVersions(params, auth)
 
 	if err != nil {

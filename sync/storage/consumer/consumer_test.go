@@ -109,9 +109,10 @@ func TestStartFailureConnectionClosed(t *testing.T) {
 }
 
 func TestMessageHandling(t *testing.T) {
+	ctx := context.Background()
 	h, cleanHandlers := getMockHandlers(t)
 	defer cleanHandlers()
-	c, cleanService := getTestService(t, context.Background(), "Consumer", h)
+	c, cleanService := getTestService(t, ctx, "Consumer", h)
 	defer cleanService()
 	p, cleanPublisher := getTestPublisher(t)
 	defer cleanPublisher()
@@ -119,9 +120,9 @@ func TestMessageHandling(t *testing.T) {
 	// Expect handler call
 	called := make(chan bool)
 	h.EXPECT().
-		SyncFile(file1.BucketID, file1.FileID, file1.Version).
+		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version).
 		Return(nil).
-		Do(func(_, _, _ string) {
+		Do(func(_ context.Context, _, _, _ string) {
 			called <- true
 		}).
 		Times(1)
@@ -146,9 +147,10 @@ func TestMessageHandling(t *testing.T) {
 }
 
 func TestMessageHandlingOnlyOnce(t *testing.T) {
+	ctx := context.Background()
 	h, cleanHandlers := getMockHandlers(t)
 	defer cleanHandlers()
-	c, cleanService := getTestService(t, context.Background(), "Consumer", h)
+	c, cleanService := getTestService(t, ctx, "Consumer", h)
 	defer cleanService()
 	p, cleanPublisher := getTestPublisher(t)
 	defer cleanPublisher()
@@ -156,9 +158,9 @@ func TestMessageHandlingOnlyOnce(t *testing.T) {
 	// Expect handler call
 	called := make(chan bool)
 	h.EXPECT().
-		SyncFile(file1.BucketID, file1.FileID, file1.Version).
+		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version).
 		Return(nil).
-		Do(func(_, _, _ string) {
+		Do(func(_ context.Context, _, _, _ string) {
 			called <- true
 		}).
 		Times(1)
@@ -189,11 +191,12 @@ func TestMessageHandlingOnlyOnce(t *testing.T) {
 }
 
 func TestMessageHandlingOnlyOnceSeparateConnections(t *testing.T) {
+	ctx := context.Background()
 	h, cleanHandlers := getMockHandlers(t)
 	defer cleanHandlers()
-	c1, cleanService1 := getTestService(t, context.Background(), "clientID1", h)
+	c1, cleanService1 := getTestService(t, ctx, "clientID1", h)
 	defer cleanService1()
-	c2, cleanService2 := getTestService(t, context.Background(), "clientID2", h)
+	c2, cleanService2 := getTestService(t, ctx, "clientID2", h)
 	defer cleanService2()
 	p, cleanPublisher := getTestPublisher(t)
 	defer cleanPublisher()
@@ -201,9 +204,9 @@ func TestMessageHandlingOnlyOnceSeparateConnections(t *testing.T) {
 	// Expect handler call
 	called := make(chan bool)
 	h.EXPECT().
-		SyncFileDelete(file1.BucketID, file1.FileID, file1.Version).
+		SyncFileDelete(gomock.Any(), file1.BucketID, file1.FileID, file1.Version).
 		Return(nil).
-		Do(func(_, _, _ string) {
+		Do(func(_ context.Context, _, _, _ string) {
 			called <- true
 		}).
 		Times(1)
@@ -246,16 +249,16 @@ func TestMessageHandlingNack(t *testing.T) {
 	nack := make(chan bool)
 	ok := make(chan bool)
 	nackCall := h.EXPECT().
-		SyncFile(file1.BucketID, file1.FileID, file1.Version).
+		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version).
 		Return(fmt.Errorf("error")).
-		Do(func(_, _, _ string) {
+		Do(func(_ context.Context, _, _, _ string) {
 			nack <- true
 		}).
 		Times(1)
 	h.EXPECT().
-		SyncFile(file1.BucketID, file1.FileID, file1.Version).
+		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version).
 		Return(nil).
-		Do(func(_, _, _ string) {
+		Do(func(_ context.Context, _, _, _ string) {
 			ok <- true
 		}).
 		Times(1).
@@ -296,16 +299,16 @@ func TestDurability(t *testing.T) {
 	// Expect handler call
 	ok := make(chan bool)
 	firstHandlerCall := h.EXPECT().
-		SyncFile(file1.BucketID, file1.FileID, file1.Version).
+		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version).
 		Return(nil).
-		Do(func(_, _, _ string) {
+		Do(func(_ context.Context, _, _, _ string) {
 			ok <- true
 		}).
 		Times(1)
 	h.EXPECT().
-		SyncFile(file2.BucketID, file2.FileID, file2.Version).
+		SyncFile(gomock.Any(), file2.BucketID, file2.FileID, file2.Version).
 		Return(nil).
-		Do(func(_, _, _ string) {
+		Do(func(_ context.Context, _, _, _ string) {
 			ok <- true
 		}).
 		Times(1).
