@@ -143,6 +143,25 @@ func (s *Storage) initializeRolesAndRules() error {
 		}
 	}
 
+	_, err = s.GetUserByUsername("admin")
+	if err != nil {
+		user, _ := s.AddUser(&models.User{
+			Username: swag.String("admin"),
+			Email:    swag.String("admin@iryo.io"),
+			Password: "admin",
+		})
+		s.AddUserToAdminRole(user.ID)
+	}
+
+	_, err = s.GetUserByUsername("user")
+	if err != nil {
+		s.AddUser(&models.User{
+			Username: swag.String("user"),
+			Email:    swag.String("user@iryo.io"),
+			Password: "user",
+		})
+	}
+
 	s.AddRule(&models.Rule{
 		Subject:  &everyoneRole.ID,
 		Action:   swag.Int64(Write),
