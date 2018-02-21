@@ -10,8 +10,14 @@ import (
 
 // Handlers describes the actions supported by the authenticator handlers
 type Handlers interface {
+	// GetRenew is a handler for HTTP GET request that renews auth token
 	GetRenew() auth.GetRenewHandler
+
+	// PostLogin is a handler for HTTP POST request that logs in user and returns auth token
 	PostLogin() auth.PostLoginHandler
+
+	// PostValidate is a handler for HTTP POST request that checks if logged in user
+	// has permissions to do specified queries
 	PostValidate() auth.PostValidateHandler
 }
 

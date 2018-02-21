@@ -10,22 +10,49 @@ import (
 
 // Service describes actions supported by the accountManager service
 type Service interface {
+	// Users returns all users
 	Users(context.Context, string) ([]*models.User, error)
+
+	// Users returns user by its ID
 	User(context.Context, string) (*models.User, error)
+
+	// AddUser creates new user
 	AddUser(context.Context, *models.User) (*models.User, error)
+
+	// UpdateUser updates user
 	UpdateUser(context.Context, *models.User) (*models.User, error)
+
+	// RemoveUser removes user by its ID
 	RemoveUser(context.Context, string) error
 
+	// Roles returns all roles
 	Roles(context.Context, string) ([]*models.Role, error)
+
+	// Role returns role by its ID
 	Role(context.Context, string) (*models.Role, error)
+
+	// AddRole creates new role
 	AddRole(context.Context, *models.Role) (*models.Role, error)
+
+	// UpdateRole updates role
 	UpdateRole(context.Context, *models.Role) (*models.Role, error)
+
+	// RemoveRole removes role by its ID
 	RemoveRole(context.Context, string) error
 
+	// Rules returns all ACL rules
 	Rules(context.Context, string) ([]*models.Rule, error)
+
+	// Rule returns rule by its ID
 	Rule(context.Context, string) (*models.Rule, error)
+
+	// AddRule creates new rule
 	AddRule(context.Context, *models.Rule) (*models.Rule, error)
+
+	// UpdateRule updates rule
 	UpdateRule(context.Context, *models.Rule) (*models.Rule, error)
+
+	// RemoveRule removes rule by its ID
 	RemoveRule(context.Context, string) error
 }
 

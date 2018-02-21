@@ -26,6 +26,7 @@ type authSync struct {
 
 // Service describes actions supported by the authSync service
 type Service interface {
+	// Sync syncs auth database from cloud
 	Sync() error
 }
 

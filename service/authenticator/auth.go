@@ -26,11 +26,22 @@ import (
 
 // Service describes the actions supported by the authenticator service
 type Service interface {
+	// Login returns token that will be used for next requests or error if username/password is wrong
 	Login(ctx context.Context, username, password string) (string, error)
+
+	// Validate checks if user has permissions for specified paths and operations
 	Validate(ctx context.Context, userID *string, queries []*models.ValidationPair) ([]*models.ValidationResult, error)
+
+	// GetPublicKey returns public key
 	GetPublicKey(ctx context.Context, pubID string) (string, error)
+
+	// CreateTokenForUserID return token that is used for authentication
 	CreateTokenForUserID(ctx context.Context, userID *string) (string, error)
+
+	// GetPrincipalFromToken returns user ID if token is valid
 	GetPrincipalFromToken(token string) (*string, error)
+
+	// Authorizer returns function that checks if user is authorized to make a request
 	Authorizer() runtime.Authorizer
 }
 
