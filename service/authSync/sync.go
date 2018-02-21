@@ -64,7 +64,7 @@ func (a *authSync) Sync() error {
 
 	if response.StatusCode == http.StatusOK {
 		cloudEtag := strings.Trim(response.Header.Get("etag"), `"`)
-		a.logger.Debug().Str("cloudDBEtag", cloudEtag).Msg("Got new BD from cloud")
+		a.logger.Debug().Str("cloudDBEtag", cloudEtag).Msg("Got new DB from cloud")
 		checksum, err := base64.RawURLEncoding.DecodeString(cloudEtag)
 		if err != nil {
 			return err

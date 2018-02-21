@@ -101,8 +101,8 @@ func (s *Storage) ReplaceDB(src io.ReadCloser, checksum []byte) error {
 		return err
 	}
 	s.db = d
-
 	s.dbSync.Unlock()
+	s.enforcer.LoadPolicy()
 
 	return nil
 }

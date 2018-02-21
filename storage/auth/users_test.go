@@ -86,7 +86,14 @@ func TestAddUser(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
-	if role.Users[0] != user.ID {
+	found := false
+	for _, id := range role.Users {
+		if id == user.ID {
+			found = true
+			break
+		}
+	}
+	if !found {
 		t.Fatalf("Expected the user to be added to 'everyone' role.")
 	}
 
@@ -174,8 +181,8 @@ func TestGetUsers(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
-	if len(users) != 2 {
-		t.Fatalf("Expected 2 users; got %d", len(users))
+	if len(users) != 4 {
+		t.Fatalf("Expected 4 users; got %d", len(users))
 	}
 
 	usersMap := map[string]*models.User{}
@@ -245,8 +252,8 @@ func TestUpdateUser(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
-	if len(users) != 1 {
-		t.Fatalf("Expected length of user to be 1; got %d", len(users))
+	if len(users) != 3 {
+		t.Fatalf("Expected length of user to be 3; got %d", len(users))
 	}
 }
 
