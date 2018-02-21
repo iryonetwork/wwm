@@ -189,6 +189,7 @@ func TestGeneralContextCancelled(t *testing.T) {
 
 	s.PublishAsyncWithRetries(context.Background(), storageSync.FileNew, file)
 	cancel()
+	time.Sleep(time.Duration(50 * time.Millisecond))
 }
 
 func getTestPublisher(t *testing.T, ctx context.Context) (*stanPublisher, *mock.MockStanConnection, func()) {
