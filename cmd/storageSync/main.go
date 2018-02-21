@@ -21,6 +21,7 @@ import (
 	"github.com/iryonetwork/wwm/metrics"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 	"github.com/iryonetwork/wwm/sync/storage/consumer"
+	"github.com/iryonetwork/wwm/utils"
 )
 
 type clientAuthInfoWriter struct {
@@ -72,13 +73,13 @@ func main() {
 	var sc stan.Conn
 
 	// retry connection to nats if unsuccesful
-	err := retry(10, time.Duration(500*time.Millisecond), 2.0, logger.With().Str("connection", "nats").Logger(), func() error {
+	err := utils.Retry(10, time.Duration(500*time.Millisecond), 2.0, logger.With().Str("connection", "nats").Logger(), func() error {
 		var err error
 		nc, err = nats.Connect(URLs, nats.ClientCert(ClientCert, ClientKey))
 		return err
 	})
 	if err == nil {
-		err = retry(10, time.Duration(500*time.Millisecond), 3.0, logger.With().Str("connection", "nats").Logger(), func() error {
+		err = utils.Retry(10, time.Duration(500*time.Millisecond), 3.0, logger.With().Str("connection", "nats").Logger(), func() error {
 			var err error
 			sc, err = stan.Connect(ClusterID, ClientID, stan.NatsConn(nc))
 			return err
@@ -128,25 +129,4 @@ func main() {
 		cleanupDone <- true
 	}()
 	<-cleanupDone
-}
-
-// retry helper method to sanely retry connection
-func retry(attempts int, sleep time.Duration, factor float32, logger zerolog.Logger, toRetry func() error) (err error) {
-	for i := 0; ; i++ {
-		err = toRetry()
-		if err == nil {
-			return nil
-		}
-
-		if i >= (attempts - 1) {
-			break
-		}
-
-		logger.Error().Err(err).Msgf("retry number %d in %s", i+1, sleep)
-		time.Sleep(sleep)
-		sleep = time.Duration(float32(sleep) * factor) // increase time to sleep by factor
-	}
-	logger.Error().Msgf("failed to complete in %d retries", attempts)
-
-	return err
 }
