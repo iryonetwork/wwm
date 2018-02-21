@@ -75,13 +75,13 @@ func main() {
 	var p storageSync.Publisher
 
 	// retry connection to nats if unsuccesful
-	err = retry(5, time.Duration(500*time.Millisecond), 3.0, logger.With().Str("connect", "nats").Logger(), func() error {
+	err = utils.Retry(5, time.Duration(500*time.Millisecond), 3.0, logger.With().Str("connect", "nats").Logger(), func() error {
 		var err error
 		nc, err = nats.Connect(URLs, nats.ClientCert(ClientCert, ClientKey))
 		return err
 	})
 	if err == nil {
-		err = retry(5, time.Duration(500*time.Millisecond), 3.0, logger.With().Str("connect", "nats-streaming").Logger(), func() error {
+		err = utils.Retry(5, time.Duration(500*time.Millisecond), 3.0, logger.With().Str("connect", "nats-streaming").Logger(), func() error {
 			var err error
 			sc, err = stan.Connect(ClusterID, ClientID, stan.NatsConn(nc))
 			return err
@@ -188,27 +188,6 @@ func apiLogMiddleware(next http.Handler, logger zerolog.Logger) http.Handler {
 		logger.Debug().Str("method", r.Method).Str("path", r.URL.Path).Msg("New request")
 		next.ServeHTTP(w, r)
 	})
-}
-
-// retry helper method to sanely retry to connect
-func retry(attempts int, sleep time.Duration, factor float32, logger zerolog.Logger, toRetry func() error) (err error) {
-	for i := 0; ; i++ {
-		err = toRetry()
-		if err == nil {
-			return nil
-		}
-
-		if i >= (attempts - 1) {
-			break
-		}
-
-		logger.Error().Err(err).Msgf("retry number %d in %s", i+1, sleep)
-		time.Sleep(sleep)
-		sleep = time.Duration(float32(sleep) * factor) // increase time to sleep by factor
-	}
-	logger.Error().Msgf("failed to complete in %d retries", attempts)
-
-	return err
 }
 
 type WildcardConsumer struct{}
