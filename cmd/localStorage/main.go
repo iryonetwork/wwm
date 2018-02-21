@@ -74,20 +74,31 @@ func main() {
 	var sc publisher.StanConnection
 	var p storageSync.Publisher
 
-	// retry connection to nats if unsuccesful
+	// Connect to NATS
+	// retry connectng to nats if unsuccesful
 	err = utils.Retry(5, time.Duration(500*time.Millisecond), 3.0, logger.With().Str("connect", "nats").Logger(), func() error {
 		var err error
 		nc, err = nats.Connect(URLs, nats.ClientCert(ClientCert, ClientKey))
 		return err
 	})
+
+	// Connect to NATS-Streaming if NATS connection succesful
 	if err == nil {
+		// retry connecting to nats-straming if unsuccesful
 		err = utils.Retry(5, time.Duration(500*time.Millisecond), 3.0, logger.With().Str("connect", "nats-streaming").Logger(), func() error {
 			var err error
 			sc, err = stan.Connect(ClusterID, ClientID, stan.NatsConn(nc))
 			return err
 		})
 	}
-	if err == nil {
+
+	// Initialize publisher
+	if err != nil {
+		// if connection to nats-streaming was unsuccesful use null publisher
+		p = publisher.NewNullPublisher(context.Background())
+		logger.Error().Msg("storage service will be started with null storage sync publisher due to failed nats-streaming connection attempts")
+	} else {
+		// if connection to nats-streaming was succesful use nats-streaming publisher
 		// Register metrics
 		h := prometheus.NewHistogram(prometheus.HistogramOpts{
 			Namespace: "publisher",
@@ -111,10 +122,6 @@ func main() {
 		}
 		l := logger.With().Str("component", "sync/storage/publisher").Logger()
 		p = publisher.New(context.Background(), cfg, l, h, c)
-	} else {
-		// start localStorage with null publisher
-		p = publisher.NewNullPublisher(context.Background())
-		logger.Error().Msg("storage service will be started with null storage sync publisher due to failed nats-streaming connection attempts")
 	}
 	defer p.Close()
 

@@ -78,13 +78,15 @@ func main() {
 		nc, err = nats.Connect(URLs, nats.ClientCert(ClientCert, ClientKey))
 		return err
 	})
-	if err == nil {
-		err = utils.Retry(10, time.Duration(500*time.Millisecond), 3.0, logger.With().Str("connection", "nats").Logger(), func() error {
-			var err error
-			sc, err = stan.Connect(ClusterID, ClientID, stan.NatsConn(nc))
-			return err
-		})
+	if err != nil {
+		logger.Fatal().Msg("failed to connect to nats")
 	}
+
+	err = utils.Retry(10, time.Duration(500*time.Millisecond), 3.0, logger.With().Str("connection", "nats").Logger(), func() error {
+		var err error
+		sc, err = stan.Connect(ClusterID, ClientID, stan.NatsConn(nc))
+		return err
+	})
 	if err != nil {
 		logger.Fatal().Msg("failed to connect to nats-streaming")
 	}
