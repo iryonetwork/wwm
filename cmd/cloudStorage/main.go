@@ -19,6 +19,7 @@ import (
 	storage "github.com/iryonetwork/wwm/service/storage"
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/mock"
+	"github.com/iryonetwork/wwm/utils"
 )
 
 func main() {
@@ -56,6 +57,7 @@ func main() {
 	service := storage.New(s3, keys, logger.With().Str("component", "service/storage").Logger())
 
 	api := operations.NewStorageAPI(swaggerSpec)
+	api.ServeError = utils.ServeError
 	server := restapi.NewServer(api)
 	server.TLSHost = "0.0.0.0"
 	server.TLSPort = 443
