@@ -23,6 +23,7 @@ import (
 var (
 	time1, _ = strfmt.ParseDateTime("2018-01-18T15:22:46.123Z")
 	time2, _ = strfmt.ParseDateTime("2018-01-26T15:16:15.123Z")
+	time3, _ = strfmt.ParseDateTime("2018-01-29T11:06:51.223Z")
 	file1V1  = &models.FileDescriptor{
 		Archetype:   "openEHR-EHR-OBSERVATION.blood_pressure.v1",
 		Checksum:    "CHS",
@@ -60,7 +61,7 @@ var (
 		Archetype:   "",
 		Checksum:    "CHS",
 		ContentType: "image/jpeg",
-		Created:     time2,
+		Created:     time3,
 		Name:        "Image",
 		Path:        "BUCKET/Image/V2",
 		Version:     "V2",

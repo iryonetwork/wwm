@@ -5,6 +5,7 @@ package storage
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -37,6 +38,10 @@ type Consumer interface {
 	GetNumberOfSubsriptions() int
 	// Close closes all service consumers.
 	Close()
+}
+
+type BatchSync interface {
+	Sync(ctx context.Context, lastSuccessfulRun time.Time) error
 }
 
 type FileInfo struct {
