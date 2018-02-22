@@ -122,7 +122,7 @@ func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventT
 			return
 		}
 
-		err = h(ctx, f.BucketID, f.FileID, f.Version)
+		err = h(ctx, f.BucketID, f.FileID, f.Version, f.Created)
 		if err != nil {
 			c.logger.Error().Err(err).
 				Str("cmd", "MsgHandler").

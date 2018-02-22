@@ -7,6 +7,7 @@ import (
 	"context"
 
 	"github.com/go-openapi/runtime"
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/client/operations"
@@ -16,9 +17,9 @@ import (
 // Handlers describes public API for sync/storage event handlers
 type Handlers interface {
 	// SyncFile synchronizes new files and file updates to destination storage
-	SyncFile(ctx context.Context, bucketID, fileID, version string) error
+	SyncFile(ctx context.Context, bucketID, fileID, version string, timestamp strfmt.DateTime) error
 	// SyncFileDelete synchronizes file deletion to destination operations.
-	SyncFileDelete(ctx context.Context, bucketID, fileID, version string) error
+	SyncFileDelete(ctx context.Context, bucketID, fileID, version string, timestamp strfmt.DateTime) error
 	// ListSourceBuckets lists all the buckets in source storage.
 	ListSourceBuckets(ctx context.Context) ([]*models.BucketDescriptor, error)
 	// ListSourceFiles lists all the files in the bucket of source storage including files marked as delete.
@@ -30,7 +31,7 @@ type Handlers interface {
 }
 
 // Handler describes sync/storage handler function
-type Handler func(ctx context.Context, bucketID, fileID, version string) error
+type Handler func(ctx context.Context, bucketID, fileID, version string, created strfmt.DateTime) error
 
 type handlers struct {
 	source          *operations.Client
@@ -41,7 +42,7 @@ type handlers struct {
 }
 
 // SyncFile synchronizes new files and file updates to destination storage
-func (h *handlers) SyncFile(ctx context.Context, bucketID, fileID, version string) error {
+func (h *handlers) SyncFile(ctx context.Context, bucketID, fileID, version string, timestamp strfmt.DateTime) error {
 	// Get file from source storage
 	var buf bytes.Buffer
 
@@ -87,12 +88,12 @@ func (h *handlers) SyncFile(ctx context.Context, bucketID, fileID, version strin
 		WithBucket(bucketID).
 		WithFileID(fileID).
 		WithVersion(version).
-		WithContext(ctx)
+		WithContext(ctx).
+		WithCreated(resp.XCreated)
 	if resp.XArchetype != "" {
 		syncParams.SetArchetype(&resp.XArchetype)
 	}
 	syncParams.SetContentType(resp.ContentType)
-	syncParams.SetCreated(resp.XCreated)
 	syncParams.SetFile(runtime.NamedReader("FileReader", &buf))
 	ok, created, err := h.destination.SyncFile(syncParams, h.destinationAuth)
 
@@ -131,11 +132,12 @@ func (h *handlers) SyncFile(ctx context.Context, bucketID, fileID, version strin
 }
 
 // SyncFileDelete synchronizes file deletion to destination operations.
-func (h *handlers) SyncFileDelete(ctx context.Context, bucketID, fileID, version string) error {
+func (h *handlers) SyncFileDelete(ctx context.Context, bucketID, fileID, version string, timestamp strfmt.DateTime) error {
 	params := operations.NewSyncFileDeleteParams().
 		WithBucket(bucketID).
 		WithFileID(fileID).
 		WithVersion(version).
+		WithCreated(timestamp).
 		WithContext(ctx)
 	_, err := h.destination.SyncFileDelete(params, h.destinationAuth)
 

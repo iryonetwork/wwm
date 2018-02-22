@@ -173,7 +173,7 @@ func (s *service) FileNew(bucketID string, r io.Reader, contentType string, arch
 		s.publisher.PublishAsyncWithRetries(
 			context.Background(),
 			storageSync.FileNew,
-			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version},
+			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version, Created: fd.Created},
 		)
 	}
 	return fd, err
@@ -212,7 +212,7 @@ func (s *service) FileUpdate(bucketID, fileID string, r io.Reader, contentType s
 		s.publisher.PublishAsyncWithRetries(
 			context.Background(),
 			storageSync.FileUpdate,
-			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version},
+			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version, Created: fd.Created},
 		)
 	}
 	return fd, err
@@ -237,12 +237,12 @@ func (s *service) FileDelete(bucketID, fileID string) error {
 		Operation:   string(s3.Delete),
 	}
 
-	_, err = s.s3.Write(bucketID, no, &bytes.Buffer{})
+	fd, err = s.s3.Write(bucketID, no, &bytes.Buffer{})
 	if err == nil {
 		s.publisher.PublishAsyncWithRetries(
 			context.Background(),
 			storageSync.FileDelete,
-			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version},
+			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version, Created: fd.Created},
 		)
 	}
 	return err
