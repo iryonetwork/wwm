@@ -35,7 +35,6 @@ func (a *clientAuthInfoWriter) AuthenticateRequest(r runtime.ClientRequest, f st
 
 func main() {
 	// initialize logger
-	// initialize logger
 	logger := zerolog.New(os.Stdout).With().
 		Timestamp().
 		Str("service", "storageSync").
