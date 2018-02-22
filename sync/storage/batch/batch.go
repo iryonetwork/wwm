@@ -103,25 +103,31 @@ func (s *batchStorageSync) syncFile(ctx context.Context, lastSuccessfulRun time.
 	var errCount int
 
 	for _, f := range versions {
-		if time.Time(f.Created).After(lastSuccessfulRun) {
-			fmt.Println(f)
-			syncCount++
-			switch f.Operation {
-			case models.FileDescriptorOperationW:
-				err = s.handlers.SyncFile(ctx, bucketID, fileID, f.Version, f.Created)
-				if err != nil {
-					errCount++
-					s.logger.Error().Err(err).Str("bucket", bucketID).Str("file", fileID).Str("version", f.Version).Msg("failed to sync")
-				} else {
-					s.logger.Info().Str("bucket", bucketID).Str("file", fileID).Str("version", f.Version).Msg("successfully synced")
-				}
-			case models.FileDescriptorOperationD:
-				err = s.handlers.SyncFileDelete(ctx, bucketID, fileID, f.Version, f.Created)
-				if err != nil {
-					errCount++
-					s.logger.Error().Err(err).Str("bucket", bucketID).Str("file", fileID).Str("version", f.Version).Msg("failed to sync deletion")
-				} else {
-					s.logger.Info().Str("bucket", bucketID).Str("file", fileID).Str("version", f.Version).Msg("successfully synced deletion")
+		select {
+		case <-ctx.Done():
+			s.logger.Error().Str("bucket", bucketID).Str("file", fileID).Msg("aborting file sync due to context cancellation")
+			errCh <- errors.Wrap(ctx.Err(), fmt.Sprintf("aborting file sync due to context cancellation"))
+			return
+		default:
+			if time.Time(f.Created).After(lastSuccessfulRun) {
+				syncCount++
+				switch f.Operation {
+				case models.FileDescriptorOperationW:
+					err = s.handlers.SyncFile(ctx, bucketID, fileID, f.Version, f.Created)
+					if err != nil {
+						errCount++
+						s.logger.Error().Err(err).Str("bucket", bucketID).Str("file", fileID).Str("version", f.Version).Msg("failed to sync")
+					} else {
+						s.logger.Info().Str("bucket", bucketID).Str("file", fileID).Str("version", f.Version).Msg("successfully synced")
+					}
+				case models.FileDescriptorOperationD:
+					err = s.handlers.SyncFileDelete(ctx, bucketID, fileID, f.Version, f.Created)
+					if err != nil {
+						errCount++
+						s.logger.Error().Err(err).Str("bucket", bucketID).Str("file", fileID).Str("version", f.Version).Msg("failed to sync deletion")
+					} else {
+						s.logger.Info().Str("bucket", bucketID).Str("file", fileID).Str("version", f.Version).Msg("successfully synced deletion")
+					}
 				}
 			}
 		}

@@ -312,6 +312,45 @@ func TestSync(t *testing.T) {
 	}
 }
 
+func TestContextCancelled(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	h, cleanup := getMockHandlers(t)
+	defer cleanup()
+	s := getTestService(t, h)
+
+	called := make(chan bool)
+	contextCancelled := make(chan bool)
+
+	h.EXPECT().
+		ListSourceBuckets(gomock.Any()).
+		Return([]*models.BucketDescriptor{bucket1}, nil).
+		Times(1)
+	h.EXPECT().
+		ListSourceFiles(gomock.Any(), bucket1.Name).
+		Return([]*models.FileDescriptor{file1V3, file2V2}, nil).
+		Times(1)
+	h.EXPECT().
+		ListSourceFileVersions(gomock.Any(), bucket1.Name, file1V3.Name).
+		Return([]*models.FileDescriptor{file1V1, file1V2, file1V3}, nil).
+		Times(1)
+	h.EXPECT().
+		SyncFile(gomock.Any(), bucket1.Name, file1V2.Name, file1V2.Version, file1V2.Created).
+		Return(nil).
+		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
+			called <- true
+			<-contextCancelled
+		}).
+		Times(1)
+
+	go s.Sync(ctx, time.Time(time3))
+	<-called
+	cancel()
+	contextCancelled <- true
+	// If context cancellation failed there will be missing mock expectations as there were files to sync
+	time.Sleep(time.Duration(50 * time.Millisecond))
+}
+
 func getMockHandlers(t *testing.T) (*mock.MockHandlers, func()) {
 	mockHandlersCtrl := gomock.NewController(t)
 	mockHandlers := mock.NewMockHandlers(mockHandlersCtrl)
