@@ -25,9 +25,10 @@ import (
 var (
 	// clusterID for test server.
 	clusterID = "TestCluster"
-	time1, _  = strfmt.ParseDateTime("2018-02-05T15:16:15.123Z")
-	file1     = &storageSync.FileInfo{"bucket", "file1", "version"}
-	file2     = &storageSync.FileInfo{"bucket", "file2", "version"}
+	time1, _  = strfmt.ParseDateTime("2018-02-05T15:18:15.123Z")
+	time2, _  = strfmt.ParseDateTime("2018-02-05T15:26:15.123Z")
+	file1     = &storageSync.FileInfo{"bucket", "file1", "version", time1}
+	file2     = &storageSync.FileInfo{"bucket", "file2", "version", time2}
 )
 
 func TestMain(m *testing.M) {
@@ -120,9 +121,9 @@ func TestMessageHandling(t *testing.T) {
 	// Expect handler call
 	called := make(chan bool)
 	h.EXPECT().
-		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version).
+		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version, time1).
 		Return(nil).
-		Do(func(_ context.Context, _, _, _ string) {
+		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
 			called <- true
 		}).
 		Times(1)
@@ -158,9 +159,9 @@ func TestMessageHandlingOnlyOnce(t *testing.T) {
 	// Expect handler call
 	called := make(chan bool)
 	h.EXPECT().
-		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version).
+		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version, time1).
 		Return(nil).
-		Do(func(_ context.Context, _, _, _ string) {
+		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
 			called <- true
 		}).
 		Times(1)
@@ -204,9 +205,9 @@ func TestMessageHandlingOnlyOnceSeparateConnections(t *testing.T) {
 	// Expect handler call
 	called := make(chan bool)
 	h.EXPECT().
-		SyncFileDelete(gomock.Any(), file1.BucketID, file1.FileID, file1.Version).
+		SyncFileDelete(gomock.Any(), file1.BucketID, file1.FileID, file1.Version, time1).
 		Return(nil).
-		Do(func(_ context.Context, _, _, _ string) {
+		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
 			called <- true
 		}).
 		Times(1)
@@ -249,16 +250,16 @@ func TestMessageHandlingNack(t *testing.T) {
 	nack := make(chan bool)
 	ok := make(chan bool)
 	nackCall := h.EXPECT().
-		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version).
+		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version, time1).
 		Return(fmt.Errorf("error")).
-		Do(func(_ context.Context, _, _, _ string) {
+		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
 			nack <- true
 		}).
 		Times(1)
 	h.EXPECT().
-		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version).
+		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version, time1).
 		Return(nil).
-		Do(func(_ context.Context, _, _, _ string) {
+		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
 			ok <- true
 		}).
 		Times(1).
@@ -299,16 +300,16 @@ func TestDurability(t *testing.T) {
 	// Expect handler call
 	ok := make(chan bool)
 	firstHandlerCall := h.EXPECT().
-		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version).
+		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version, time1).
 		Return(nil).
-		Do(func(_ context.Context, _, _, _ string) {
+		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
 			ok <- true
 		}).
 		Times(1)
 	h.EXPECT().
-		SyncFile(gomock.Any(), file2.BucketID, file2.FileID, file2.Version).
+		SyncFile(gomock.Any(), file2.BucketID, file2.FileID, file2.Version, time2).
 		Return(nil).
-		Do(func(_ context.Context, _, _, _ string) {
+		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
 			ok <- true
 		}).
 		Times(1).

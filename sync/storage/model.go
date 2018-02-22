@@ -5,6 +5,8 @@ package storage
 import (
 	"context"
 	"encoding/json"
+
+	strfmt "github.com/go-openapi/strfmt"
 )
 
 // EventType defines event type
@@ -38,9 +40,10 @@ type Consumer interface {
 }
 
 type FileInfo struct {
-	BucketID string `json:"bucketID,omitempty"`
-	FileID   string `json:"fileID,omitempty"`
-	Version  string `json:"version,omitempty"`
+	BucketID string          `json:"bucketID,omitempty"`
+	FileID   string          `json:"fileID,omitempty"`
+	Version  string          `json:"version,omitempty"`
+	Created  strfmt.DateTime `json:"created,omitempty"`
 }
 
 func NewFileInfo() *FileInfo {

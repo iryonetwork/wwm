@@ -18,7 +18,7 @@ import (
 
 var (
 	time1, _   = strfmt.ParseDateTime("2018-02-05T15:16:15.123Z")
-	file       = &storageSync.FileInfo{"bucket", "file", "version"}
+	file       = &storageSync.FileInfo{"bucket", "file", "version", time1}
 	noErrors   = false
 	withErrors = true
 )
