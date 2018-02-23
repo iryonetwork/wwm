@@ -9,9 +9,12 @@ import (
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/push"
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/client"
+	"github.com/iryonetwork/wwm/storage/keyvalue"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 	"github.com/iryonetwork/wwm/sync/storage/batch"
 )
@@ -25,8 +28,15 @@ func (a *clientAuthInfoWriter) AuthenticateRequest(r runtime.ClientRequest, f st
 	return nil
 }
 
+var (
+	boltFilepath  string = "/data/batchStorageSync.db"
+	storageBucket string = "batchStorageSync"
+	storageKey    string = "lastSuccessfulRun"
+)
+
 func main() {
-	lastSuccessfulRun, _ := strfmt.ParseDateTime("2018-01-18T15:22:46.123Z")
+	// Create context with cancel func
+	ctx, shutdown := context.WithCancel(context.Background())
 
 	// initialize logger
 	logger := zerolog.New(os.Stdout).With().
@@ -34,9 +44,36 @@ func main() {
 		Str("service", "batchStorageSync").
 		Logger()
 
+	// initialize promethues metrics registry
+	metricsRegistry := prometheus.NewRegistry()
+
+	// initialize last successful run with 0 value
+	lastSuccessfulRun := time.Unix(0, 0)
+
+	// get metrics collection for key value storage and register in registry
+	m := keyvalue.GetPrometheusMetricsCollection()
+	for _, metric := range m {
+		metricsRegistry.MustRegister(metric)
+	}
+
+	// initialize bolt key value storage to read last succesful run
+	storage, err := keyvalue.NewBolt(ctx, boltFilepath, logger.With().Str("component", "storage/keyvalue").Logger(), m)
+	if err != nil {
+		shutdown()
+		logger.Fatal().Err(err).Msg("failed to initiazlie key value storage")
+	}
+	// read last succesful run
+	storedTimestamp := storage.Get(storageBucket, storageKey)
+	if storedTimestamp != nil {
+		timestamp, err := strfmt.ParseDateTime(string(storedTimestamp))
+		if err == nil {
+			lastSuccessfulRun = time.Time(timestamp)
+		}
+	}
+
 	// initialize local storage API client
 	localTransportCfg := &client.TransportConfig{
-		Host:     "iryo.local",
+		Host:     "localStorage",
 		BasePath: "storage",
 		Schemes:  []string{"https"},
 	}
@@ -44,7 +81,7 @@ func main() {
 
 	// initialize cloud storage API client
 	cloudTransportCfg := &client.TransportConfig{
-		Host:     "iryo.cloud",
+		Host:     "cloudStorage",
 		BasePath: "storage",
 		Schemes:  []string{"https"},
 	}
@@ -56,11 +93,21 @@ func main() {
 	// initialize handlers
 	handlers := storageSync.NewHandlers(localClient.Operations, auth, cloudClient.Operations, auth, logger.With().Str("component", "sync/storage/handlers").Logger())
 
-	// Create context with cancel func
-	ctx, shutdown := context.WithCancel(context.Background())
+	// get metrics collection for key value storage and register in registry
 
-	// Initialize batchStorageSync
-	s := batch.New(handlers, logger)
+	m = batch.GetPrometheusMetricsCollection()
+	for _, metric := range m {
+		metricsRegistry.MustRegister(metric)
+	}
+	// initialize batchStorageSync
+	s := batch.New(handlers, logger, m)
+
+	// initialize prometheus metrics pusher
+	metricsPusher := push.New("http://localPrometheusPushGateway:9091", "batchStorageSync").Gatherer(metricsRegistry)
+
+	// get current time to be saved as lastSuccesfulRun
+	// do it before sync to account for anything that might have happened during sync duration
+	startTime := strfmt.DateTime(time.Now())
 
 	// Run sync
 	errCh := make(chan error)
@@ -76,12 +123,21 @@ func main() {
 	select {
 	case err := <-errCh:
 		if err != nil {
-			logger.Fatal().Err(err).Msg("batch sync failed")
+			logger.Error().Err(err).Msg("batch sync failed")
+		} else {
+			logger.Info().Msg("batch sync successfull")
+			// save lastSuccesfulRun
+			storage.Update(storageBucket, storageKey, []byte(startTime.String()))
 		}
-		logger.Info().Msg("batch sync successfull")
-		// Save lastSuccesfulRun
 	case <-signalChan:
 		logger.Info().Msg("stopping batch sync due to interrupt")
-		shutdown()
 	}
+
+	// push metrics to the push gateway
+	err = metricsPusher.Add()
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to push metrics to push gateway")
+	}
+
+	shutdown()
 }

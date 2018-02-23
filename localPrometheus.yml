@@ -35,14 +35,6 @@ scrape_configs:
   static_configs:
   - targets:
     - localStorage:9090
-- job_name: auth
-  scrape_interval: 15s
-  scrape_timeout: 10s
-  metrics_path: /auth/metrics
-  scheme: http
-  static_configs:
-  - targets:
-    - localAuth:9090
 - job_name: storage_sync
   scrape_interval: 15s
   scrape_timeout: 10s
@@ -51,3 +43,12 @@ scrape_configs:
   static_configs:
   - targets:
     - storageSync:9090
+- job_name: pushgateway
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /metrics
+  honor_labels: true
+  scheme: http
+  static_configs:
+  - targets:
+    - localPrometheusPushGateway:9091
