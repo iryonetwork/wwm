@@ -176,3 +176,15 @@ services:
     - -nats-uri=http://localNats:8282/
     ports:
     - 9275:9275
+
+  batchStorageSync:
+    image: golang:1.9-alpine
+    command:
+    - /wwm/batchStorageSync
+    volumes:
+    - ./.bin/:/wwm
+    - ./.data/batchStorageSync:/data
+    - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+
+  localPrometheusPushGateway:
+    image: prom/pushgateway
