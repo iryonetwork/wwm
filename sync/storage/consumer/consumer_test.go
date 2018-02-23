@@ -14,7 +14,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/nats-io/go-nats-streaming"
 	"github.com/nats-io/nats-streaming-server/server"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
@@ -406,8 +405,6 @@ func getTestService(t *testing.T, ctx context.Context, clientID string, h storag
 		t.Fatal("Connection to test stan-straming server failed")
 	}
 
-	m := prometheus.NewHistogramVec(prometheus.HistogramOpts{Name: "task_seconds"}, []string{"event", "ack"})
-
 	// initalize consumer
 	cfg := Cfg{
 		Connection: conn,
@@ -415,7 +412,7 @@ func getTestService(t *testing.T, ctx context.Context, clientID string, h storag
 		Handlers:   h,
 	}
 
-	c := New(ctx, cfg, zerolog.New(os.Stdout), m)
+	c := New(ctx, cfg, zerolog.New(os.Stdout), GetPrometheusMetricsCollection())
 
 	cleanup := func() {
 		c.Close()
@@ -430,9 +427,6 @@ func getTestPublisher(t *testing.T) (storageSync.Publisher, func()) {
 		t.Fatal("Connection to test stan-straming server failed")
 	}
 
-	h := prometheus.NewHistogram(prometheus.HistogramOpts{Name: "publish_seconds"})
-	c := prometheus.NewCounter(prometheus.CounterOpts{Name: "publish_calls"})
-
 	cfg := publisher.Cfg{
 		Connection:      conn,
 		Retries:         5,
@@ -440,7 +434,7 @@ func getTestPublisher(t *testing.T) (storageSync.Publisher, func()) {
 		RetryWaitFactor: 1.0,
 	}
 
-	p := publisher.New(context.Background(), cfg, zerolog.New(os.Stdout), h, c)
+	p := publisher.New(context.Background(), cfg, zerolog.New(os.Stdout), publisher.GetPrometheusMetricsCollection())
 
 	cleanup := func() {
 		p.Close()

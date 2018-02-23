@@ -10,12 +10,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 
+	"github.com/iryonetwork/wwm/metrics"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 )
 
 type contextKey string
 
 const subID contextKey = "ID"
+const taskSeconds metrics.ID = "taskSeconds"
 
 type Cfg struct {
 	Connection stan.Conn
@@ -24,14 +26,14 @@ type Cfg struct {
 }
 
 type stanConsumer struct {
-	ctx         context.Context
-	conn        stan.Conn
-	ackWait     time.Duration
-	handlers    storageSync.Handlers
-	subs        []stan.Subscription
-	subsLock    sync.Mutex
-	logger      zerolog.Logger
-	taskSeconds *prometheus.HistogramVec
+	ctx               context.Context
+	conn              stan.Conn
+	ackWait           time.Duration
+	handlers          storageSync.Handlers
+	subs              []stan.Subscription
+	subsLock          sync.Mutex
+	logger            zerolog.Logger
+	metricsCollection map[metrics.ID]prometheus.Collector
 }
 
 // Start starts new nats-streaming queue subscription.
@@ -91,7 +93,6 @@ func (c *stanConsumer) Close() {
 	c.subs = []stan.Subscription{}
 	c.subsLock.Unlock()
 	c.conn.Close()
-	prometheus.Unregister(c.taskSeconds) // unregister metrics
 }
 
 func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventType, h storageSync.Handler) stan.MsgHandler {
@@ -101,7 +102,7 @@ func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventT
 		ack := false
 		defer func() {
 			duration := time.Since(start)
-			c.taskSeconds.
+			c.metricsCollection[taskSeconds].(*prometheus.HistogramVec).
 				With(prometheus.Labels{"event": string(typ), "ack": fmt.Sprintf("%t", ack)}).
 				Observe(duration.Seconds())
 		}()
@@ -143,15 +144,28 @@ func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventT
 	}
 }
 
+// GetPrometheusMetricsCollection returns all prometheus metrics collectors needed to initalize instance of consumer (for registration)
+func GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
+	metricsCollection := make(map[metrics.ID]prometheus.Collector)
+	h := prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Namespace: "consumer",
+		Name:      "task_seconds",
+		Help:      "Time taken to serve tasks",
+	}, []string{"event", "ack"})
+	metricsCollection[taskSeconds] = h
+
+	return metricsCollection
+}
+
 // New returns new consumer service with provided nats-streaming connection as underlying backend.
-func New(ctx context.Context, cfg Cfg, logger zerolog.Logger, durationMetrics *prometheus.HistogramVec) storageSync.Consumer {
+func New(ctx context.Context, cfg Cfg, logger zerolog.Logger, metricsCollection map[metrics.ID]prometheus.Collector) storageSync.Consumer {
 	c := &stanConsumer{
-		ctx:         ctx,
-		conn:        cfg.Connection,
-		handlers:    cfg.Handlers,
-		ackWait:     cfg.AckWait,
-		logger:      logger,
-		taskSeconds: durationMetrics,
+		ctx:               ctx,
+		conn:              cfg.Connection,
+		handlers:          cfg.Handlers,
+		ackWait:           cfg.AckWait,
+		logger:            logger,
+		metricsCollection: metricsCollection,
 	}
 
 	// Close if context is Done()
