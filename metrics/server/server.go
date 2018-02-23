@@ -1,4 +1,4 @@
-package metrics
+package server
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// ServePrometheusMetrics starts prometheus metrics server
 func ServePrometheusMetrics(ctx context.Context, addr string, namespace string) error {
 	// initialize metrics middleware
 	m := api.NewMetrics("metrics", "")

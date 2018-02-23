@@ -10,8 +10,12 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 
+	"github.com/iryonetwork/wwm/metrics"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 )
+
+const publishSeconds metrics.ID = "publishSeconds"
+const publishCalls metrics.ID = "publishCalls"
 
 // Connection interface describes actions that have to be supported by underlying connection with nats-streaming. For testing purposes.
 type StanConnection interface {
@@ -27,15 +31,14 @@ type Cfg struct {
 }
 
 type stanPublisher struct {
-	ctx             context.Context
-	conn            StanConnection
-	retries         int
-	startRetryWait  time.Duration
-	retryWaitFactor float32
-	wg              sync.WaitGroup
-	logger          zerolog.Logger
-	publishSeconds  prometheus.Histogram
-	publishCalls    prometheus.Counter
+	ctx               context.Context
+	conn              StanConnection
+	retries           int
+	startRetryWait    time.Duration
+	retryWaitFactor   float32
+	wg                sync.WaitGroup
+	logger            zerolog.Logger
+	metricsCollection map[metrics.ID]prometheus.Collector
 }
 
 type nullPublisher struct {
@@ -58,6 +61,13 @@ func (p *nullPublisher) Close() {
 
 // Publish pushes sync/storage event and returns synchronous response.
 func (p *stanPublisher) Publish(_ context.Context, typ storageSync.EventType, f *storageSync.FileInfo) error {
+	// Make sure we record duration metrics even if processing fails
+	start := time.Now()
+	defer func() {
+		duration := time.Since(start)
+		p.metricsCollection[publishSeconds].(prometheus.Histogram).Observe(duration.Seconds())
+	}()
+
 	msg, err := f.Marshal()
 	if err != nil {
 		p.logger.Error().Err(err).
@@ -68,6 +78,8 @@ func (p *stanPublisher) Publish(_ context.Context, typ storageSync.EventType, f 
 	}
 
 	err = p.conn.Publish(string(typ), msg)
+	p.metricsCollection[publishCalls].(prometheus.Counter).Inc() // increase publish calls counter metrics
+
 	if err != nil {
 		p.logger.Error().Err(err).
 			Str("cmd", "Publish").
@@ -83,7 +95,7 @@ func (p *stanPublisher) PublishAsyncWithRetries(ctx context.Context, typ storage
 	start := time.Now()
 	defer func() {
 		duration := time.Since(start)
-		p.publishSeconds.Observe(duration.Seconds())
+		p.metricsCollection[publishSeconds].(prometheus.Histogram).Observe(duration.Seconds())
 	}()
 
 	msg, err := f.Marshal()
@@ -108,7 +120,7 @@ func (p *stanPublisher) PublishAsyncWithRetries(ctx context.Context, typ storage
 				break RetryLoop
 			default:
 				err = p.conn.Publish(string(typ), msg)
-				p.publishCalls.Inc() // increase publish calls counter metrycs
+				p.metricsCollection[publishCalls].(prometheus.Counter).Inc() // increase publish calls counter metrics
 
 				if err == nil {
 					p.logger.Debug().
@@ -143,23 +155,38 @@ func (p *stanPublisher) PublishAsyncWithRetries(ctx context.Context, typ storage
 func (p *stanPublisher) Close() {
 	p.wg.Wait()
 	p.conn.Close()
+}
 
-	// unregister metrics
-	prometheus.Unregister(p.publishSeconds)
-	prometheus.Unregister(p.publishCalls)
+// GetPrometheusMetricsCollection returns all prometheus metrics collectors needed to initalize instance of publisher (for registration)
+func GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
+	metricsCollection := make(map[metrics.ID]prometheus.Collector)
+	h := prometheus.NewHistogram(prometheus.HistogramOpts{
+		Namespace: "publisher",
+		Name:      "publish_seconds",
+		Help:      "Time taken to publish task",
+	})
+	metricsCollection[publishSeconds] = h
+
+	c := prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: "publisher",
+		Name:      "publish_calls",
+		Help:      "Number of publish calls to nats-streaming",
+	})
+	metricsCollection[publishCalls] = c
+
+	return metricsCollection
 }
 
 // New returns new stanPublisher with provided nats-streaming connectiom as underlying backend.
-func New(ctx context.Context, cfg Cfg, logger zerolog.Logger, durationMetrics prometheus.Histogram, countMetrics prometheus.Counter) storageSync.Publisher {
+func New(ctx context.Context, cfg Cfg, logger zerolog.Logger, metricsCollection map[metrics.ID]prometheus.Collector) storageSync.Publisher {
 	p := &stanPublisher{
-		ctx:             ctx,
-		conn:            cfg.Connection,
-		retries:         cfg.Retries,
-		startRetryWait:  cfg.StartRetryWait,
-		retryWaitFactor: cfg.RetryWaitFactor,
-		logger:          logger,
-		publishSeconds:  durationMetrics,
-		publishCalls:    countMetrics,
+		ctx:               ctx,
+		conn:              cfg.Connection,
+		retries:           cfg.Retries,
+		startRetryWait:    cfg.StartRetryWait,
+		retryWaitFactor:   cfg.RetryWaitFactor,
+		logger:            logger,
+		metricsCollection: metricsCollection,
 	}
 	// Close if context is Done()
 	go func() {

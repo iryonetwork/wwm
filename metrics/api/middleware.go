@@ -8,17 +8,21 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
+	"github.com/iryonetwork/wwm/metrics"
 	"github.com/iryonetwork/wwm/utils"
 )
 
+const requestSeconds metrics.ID = "requestSeconds"
+
+// Metrics describes public methods of metrics middleware
 type Metrics interface {
 	Middleware(next http.Handler) http.Handler
 	WithURLSanitize(sanitize utils.URLSanitize) Metrics
 }
 
-type metrics struct {
-	requestSeconds *prometheus.HistogramVec
-	urlSanitize    utils.URLSanitize
+type apiMetrics struct {
+	metricsCollection map[metrics.ID]prometheus.Collector
+	urlSanitize       utils.URLSanitize
 }
 
 type codeRecordingResponseWriter struct {
@@ -26,7 +30,8 @@ type codeRecordingResponseWriter struct {
 	code int
 }
 
-func (m *metrics) Middleware(next http.Handler) http.Handler {
+// Middleware wraps http.Handler and adds http request serving metrics
+func (m *apiMetrics) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		method := strings.ToLower(r.Method)
@@ -40,7 +45,7 @@ func (m *metrics) Middleware(next http.Handler) http.Handler {
 		// Make sure we record even if fails
 		defer func() {
 			duration := time.Since(start)
-			m.requestSeconds.
+			m.metricsCollection[requestSeconds].(*prometheus.HistogramVec).
 				With(prometheus.Labels{"path": path, "method": method, "code": fmt.Sprintf("%d", code)}).
 				Observe(duration.Seconds())
 		}()
@@ -53,7 +58,9 @@ func (m *metrics) Middleware(next http.Handler) http.Handler {
 	})
 }
 
+// NewMetrics returns new metrics middleware instance
 func NewMetrics(namespace string, subsystem string) Metrics {
+	metricsCollection := make(map[metrics.ID]prometheus.Collector)
 	h := prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Namespace: namespace,
 		Subsystem: subsystem,
@@ -63,15 +70,18 @@ func NewMetrics(namespace string, subsystem string) Metrics {
 
 	// Register metrics
 	prometheus.MustRegister(h)
+	metricsCollection[requestSeconds] = h
 
-	return &metrics{requestSeconds: h}
+	return &apiMetrics{metricsCollection: metricsCollection}
 }
 
-func (m *metrics) WithURLSanitize(sanitize utils.URLSanitize) Metrics {
+// WithURLSanitize returns middleware metrics instance with specifice URLSanitize function
+func (m *apiMetrics) WithURLSanitize(sanitize utils.URLSanitize) Metrics {
 	m.urlSanitize = sanitize
 	return m
 }
 
+// WriteHeader implementation to preserve status code for metrics middleware
 func (w *codeRecordingResponseWriter) WriteHeader(code int) {
 	w.code = code
 	w.ResponseWriter.WriteHeader(code)

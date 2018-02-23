@@ -18,7 +18,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/client"
-	"github.com/iryonetwork/wwm/metrics"
+	metricsServer "github.com/iryonetwork/wwm/metrics/server"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 	"github.com/iryonetwork/wwm/sync/storage/consumer"
 	"github.com/iryonetwork/wwm/utils"
@@ -94,26 +94,26 @@ func main() {
 	ctx, shutdown := context.WithCancel(context.Background())
 
 	// Register metrics
-	h := prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Namespace: "consumer",
-		Name:      "task_seconds",
-		Help:      "Time taken to serve tasks",
-	}, []string{"event", "ack"})
-	prometheus.MustRegister(h)
-
+	coll := consumer.GetPrometheusMetricsCollection()
+	for _, m := range coll {
+		prometheus.MustRegister(m)
+		defer prometheus.Unregister(m)
+	}
 	// initalize consumer
 	cfg := consumer.Cfg{
 		Connection: sc,
 		AckWait:    time.Duration(time.Second),
 		Handlers:   handlers,
 	}
-	c := consumer.New(context.Background(), cfg, logger.With().Str("component", "sync/storage/consumer").Logger(), h)
+	c := consumer.New(context.Background(), cfg, logger.With().Str("component", "sync/storage/consumer").Logger(), coll)
+
+	// Star subscriptions
 	c.StartSubscription(storageSync.FileNew)
 	c.StartSubscription(storageSync.FileUpdate)
 	c.StartSubscription(storageSync.FileDelete)
 
 	go func() {
-		err := metrics.ServePrometheusMetrics(ctx, ":9090", "")
+		err := metricsServer.ServePrometheusMetrics(ctx, ":9090", "")
 		if err != nil {
 			logger.Error().Err(err).Msg("prometheus metrics server failure")
 		}

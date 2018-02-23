@@ -18,8 +18,8 @@ import (
 
 	"github.com/iryonetwork/wwm/gen/storage/restapi"
 	"github.com/iryonetwork/wwm/gen/storage/restapi/operations"
-	"github.com/iryonetwork/wwm/metrics"
 	APIMetrics "github.com/iryonetwork/wwm/metrics/api"
+	metricsServer "github.com/iryonetwork/wwm/metrics/server"
 	storage "github.com/iryonetwork/wwm/service/storage"
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/mock"
@@ -111,7 +111,7 @@ func main() {
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
-		errCh <- metrics.ServePrometheusMetrics(context.Background(), ":9090", "storage")
+		errCh <- metricsServer.ServePrometheusMetrics(context.Background(), ":9090", "storage")
 	}()
 
 	go func() {

@@ -22,8 +22,8 @@ import (
 
 	"github.com/iryonetwork/wwm/gen/storage/restapi"
 	"github.com/iryonetwork/wwm/gen/storage/restapi/operations"
-	"github.com/iryonetwork/wwm/metrics"
 	APIMetrics "github.com/iryonetwork/wwm/metrics/api"
+	metricsServer "github.com/iryonetwork/wwm/metrics/server"
 	storage "github.com/iryonetwork/wwm/service/storage"
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/mock"
@@ -100,19 +100,11 @@ func main() {
 	} else {
 		// if connection to nats-streaming was succesful use nats-streaming publisher
 		// Register metrics
-		h := prometheus.NewHistogram(prometheus.HistogramOpts{
-			Namespace: "publisher",
-			Name:      "publish_seconds",
-			Help:      "Time taken to publish task",
-		})
-		prometheus.MustRegister(h)
-
-		c := prometheus.NewCounter(prometheus.CounterOpts{
-			Namespace: "publisher",
-			Name:      "publish_calls",
-			Help:      "Number of publish calls to nats-streaming",
-		})
-		prometheus.MustRegister(c)
+		coll := publisher.GetPrometheusMetricsCollection()
+		for _, m := range coll {
+			prometheus.MustRegister(m)
+			defer prometheus.Unregister(m)
+		}
 
 		cfg := publisher.Cfg{
 			Connection:      sc,
@@ -121,7 +113,7 @@ func main() {
 			RetryWaitFactor: 2.0,
 		}
 		l := logger.With().Str("component", "sync/storage/publisher").Logger()
-		p = publisher.New(context.Background(), cfg, l, h, c)
+		p = publisher.New(context.Background(), cfg, l, coll)
 	}
 	defer p.Close()
 
@@ -175,7 +167,7 @@ func main() {
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
-		errCh <- metrics.ServePrometheusMetrics(context.Background(), ":9090", "storage")
+		errCh <- metricsServer.ServePrometheusMetrics(context.Background(), ":9090", "storage")
 	}()
 
 	go func() {
