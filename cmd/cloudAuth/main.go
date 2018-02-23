@@ -16,6 +16,7 @@ import (
 	"github.com/iryonetwork/wwm/service/accountManager"
 	"github.com/iryonetwork/wwm/service/authenticator"
 	"github.com/iryonetwork/wwm/storage/auth"
+	"github.com/iryonetwork/wwm/utils"
 )
 
 func main() {
@@ -75,6 +76,7 @@ func main() {
 	account := accountManager.New(storage, logger.With().Str("component", "service/accountManager").Logger())
 
 	api := operations.NewCloudAuthAPI(swaggerSpec)
+	api.ServeError = utils.ServeError
 	server := restapi.NewServer(api)
 	server.TLSPort = 443
 	server.TLSCertificate = "/certs/cloudAuth.pem"
