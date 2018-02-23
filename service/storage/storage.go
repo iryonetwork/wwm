@@ -102,25 +102,21 @@ func (s *service) FileList(bucketID string) ([]*models.FileDescriptor, error) {
 	}
 
 	// collect the list
-	list, err := s.s3.List(bucketID, "")
+	l, err := s.s3.List(bucketID, "")
 	if err != nil {
 		return nil, err
 	}
 
-	// extract only latest versions in a map; latest version is already sorted
-	// on top
-	m := map[string]*models.FileDescriptor{}
-	for _, f := range list {
+	// extract only latest versions; latest version is already sorted
+	// on top, add to return list; only include files with a write operation
+	m := map[string]bool{}
+	list := []*models.FileDescriptor{}
+	for _, f := range l {
 		if _, ok := m[f.Name]; !ok {
-			m[f.Name] = f
-		}
-	}
-
-	// extract a list out of a map; only include files with a write operation
-	list = []*models.FileDescriptor{}
-	for _, f := range m {
-		if s3.Operation(f.Operation) == s3.Write {
-			list = append(list, f)
+			m[f.Name] = true
+			if s3.Operation(f.Operation) == s3.Write {
+				list = append(list, f)
+			}
 		}
 	}
 
@@ -256,24 +252,20 @@ func (s *service) SyncFileList(bucketID string) ([]*models.FileDescriptor, error
 	}
 
 	// collect the list
-	list, err := s.s3.List(bucketID, "")
+	l, err := s.s3.List(bucketID, "")
 	if err != nil {
 		return nil, err
 	}
 
-	// extract only latest versions in a map; latest version is already sorted
-	// on top
-	m := map[string]*models.FileDescriptor{}
-	for _, f := range list {
+	// extract only latest versions; latest version is already sorted
+	// on top, add to return list
+	m := map[string]bool{}
+	list := []*models.FileDescriptor{}
+	for _, f := range l {
 		if _, ok := m[f.Name]; !ok {
-			m[f.Name] = f
+			m[f.Name] = true
+			list = append(list, f)
 		}
-	}
-
-	// extract a list out of a map
-	list = []*models.FileDescriptor{}
-	for _, f := range m {
-		list = append(list, f)
 	}
 
 	return list, nil
