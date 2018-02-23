@@ -16,6 +16,7 @@ import (
 	"github.com/iryonetwork/wwm/service/authSync"
 	"github.com/iryonetwork/wwm/service/authenticator"
 	"github.com/iryonetwork/wwm/storage/auth"
+	"github.com/iryonetwork/wwm/utils"
 )
 
 func main() {
@@ -76,6 +77,7 @@ func main() {
 		logger.Fatal().Err(err).Msg("Failed to initialize authSync service")
 	}
 	api := operations.NewCloudAuthAPI(swaggerSpec)
+	api.ServeError = utils.ServeError
 	server := restapi.NewServer(api)
 	server.TLSPort = 443
 	server.TLSCertificate = "/certs/localAuth.pem"
