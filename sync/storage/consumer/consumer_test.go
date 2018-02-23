@@ -121,7 +121,7 @@ func TestMessageHandling(t *testing.T) {
 	called := make(chan bool)
 	h.EXPECT().
 		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version, time1).
-		Return(nil).
+		Return(storageSync.ResultSynced, nil).
 		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
 			called <- true
 		}).
@@ -159,7 +159,7 @@ func TestMessageHandlingOnlyOnce(t *testing.T) {
 	called := make(chan bool)
 	h.EXPECT().
 		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version, time1).
-		Return(nil).
+		Return(storageSync.ResultSynced, nil).
 		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
 			called <- true
 		}).
@@ -205,7 +205,7 @@ func TestMessageHandlingOnlyOnceSeparateConnections(t *testing.T) {
 	called := make(chan bool)
 	h.EXPECT().
 		SyncFileDelete(gomock.Any(), file1.BucketID, file1.FileID, file1.Version, time1).
-		Return(nil).
+		Return(storageSync.ResultSynced, nil).
 		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
 			called <- true
 		}).
@@ -250,14 +250,14 @@ func TestMessageHandlingNack(t *testing.T) {
 	ok := make(chan bool)
 	nackCall := h.EXPECT().
 		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version, time1).
-		Return(fmt.Errorf("error")).
+		Return(storageSync.ResultError, fmt.Errorf("error")).
 		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
 			nack <- true
 		}).
 		Times(1)
 	h.EXPECT().
 		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version, time1).
-		Return(nil).
+		Return(storageSync.ResultSynced, nil).
 		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
 			ok <- true
 		}).
@@ -300,14 +300,14 @@ func TestDurability(t *testing.T) {
 	ok := make(chan bool)
 	firstHandlerCall := h.EXPECT().
 		SyncFile(gomock.Any(), file1.BucketID, file1.FileID, file1.Version, time1).
-		Return(nil).
+		Return(storageSync.ResultSyncNotNeeded, nil).
 		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
 			ok <- true
 		}).
 		Times(1)
 	h.EXPECT().
 		SyncFile(gomock.Any(), file2.BucketID, file2.FileID, file2.Version, time2).
-		Return(nil).
+		Return(storageSync.ResultSynced, nil).
 		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
 			ok <- true
 		}).
