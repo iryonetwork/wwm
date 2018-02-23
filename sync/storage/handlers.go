@@ -17,9 +17,9 @@ import (
 // Handlers describes public API for sync/storage event handlers
 type Handlers interface {
 	// SyncFile synchronizes new files and file updates to destination storage
-	SyncFile(ctx context.Context, bucketID, fileID, version string, timestamp strfmt.DateTime) error
+	SyncFile(ctx context.Context, bucketID, fileID, version string, timestamp strfmt.DateTime) (SyncResult, error)
 	// SyncFileDelete synchronizes file deletion to destination operations.
-	SyncFileDelete(ctx context.Context, bucketID, fileID, version string, timestamp strfmt.DateTime) error
+	SyncFileDelete(ctx context.Context, bucketID, fileID, version string, timestamp strfmt.DateTime) (SyncResult, error)
 	// ListSourceBuckets lists all the buckets in source storage.
 	ListSourceBuckets(ctx context.Context) ([]*models.BucketDescriptor, error)
 	// ListSourceFiles lists all the files in the bucket of source storage including files marked as delete.
@@ -30,8 +30,8 @@ type Handlers interface {
 	ListDestinationFileVersions(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error)
 }
 
-// Handler describes sync/storage handler function
-type Handler func(ctx context.Context, bucketID, fileID, version string, created strfmt.DateTime) error
+// Handler describes sync/storage sync handler function
+type Handler func(ctx context.Context, bucketID, fileID, version string, created strfmt.DateTime) (SyncResult, error)
 
 type handlers struct {
 	source          *operations.Client
@@ -42,7 +42,7 @@ type handlers struct {
 }
 
 // SyncFile synchronizes new files and file updates to destination storage
-func (h *handlers) SyncFile(ctx context.Context, bucketID, fileID, version string, timestamp strfmt.DateTime) error {
+func (h *handlers) SyncFile(ctx context.Context, bucketID, fileID, version string, timestamp strfmt.DateTime) (SyncResult, error) {
 	// Get file from source storage
 	var buf bytes.Buffer
 
@@ -62,7 +62,7 @@ func (h *handlers) SyncFile(ctx context.Context, bucketID, fileID, version strin
 				Msg("File does not exist in source operations.")
 
 			// File might have been already deleted; mark as succesful
-			return nil
+			return ResultSyncNotNeeded, nil
 		}
 
 		h.logger.Error().Err(err).
@@ -70,17 +70,18 @@ func (h *handlers) SyncFile(ctx context.Context, bucketID, fileID, version strin
 			Str("fileID", fileID).
 			Str("version", version).
 			Msg("Error on trying to fetch file from source operations.")
-		return err
+		return ResultError, err
 	}
 
 	// Check if sync is needed
 	needsSync, err := h.needsSync(ctx, bucketID, fileID, version, resp.XChecksum)
 	if err != nil {
-		return err
+		return ResultError, err
 	}
 	// Nothing to do
 	if !needsSync {
-		return nil
+		// all is good but nothing was synced
+		return ResultSyncNotNeeded, nil
 	}
 
 	// Sync file
@@ -122,17 +123,17 @@ func (h *handlers) SyncFile(ctx context.Context, bucketID, fileID, version strin
 		switch err.(type) {
 		case *operations.SyncFileConflict:
 			// another attempt at sync should not be performed
-			return nil
+			return ResultConflict, err
 		default:
-			return err
+			return ResultError, err
 		}
 	}
 
-	return nil
+	return ResultSynced, nil
 }
 
 // SyncFileDelete synchronizes file deletion to destination operations.
-func (h *handlers) SyncFileDelete(ctx context.Context, bucketID, fileID, version string, timestamp strfmt.DateTime) error {
+func (h *handlers) SyncFileDelete(ctx context.Context, bucketID, fileID, version string, timestamp strfmt.DateTime) (SyncResult, error) {
 	params := operations.NewSyncFileDeleteParams().
 		WithBucket(bucketID).
 		WithFileID(fileID).
@@ -151,12 +152,12 @@ func (h *handlers) SyncFileDelete(ctx context.Context, bucketID, fileID, version
 		switch err.(type) {
 		case *operations.SyncFileDeleteConflict:
 			// another attempt at sync should not be performed
-			return nil
+			return ResultConflict, err
 		case *operations.SyncFileDeleteNotFound:
 			// another attempt at sync should not be performed
-			return nil
+			return ResultSyncNotNeeded, err
 		default:
-			return err
+			return ResultError, err
 		}
 	}
 
@@ -167,7 +168,7 @@ func (h *handlers) SyncFileDelete(ctx context.Context, bucketID, fileID, version
 		Str("version", version).
 		Msg("Succesfully synced file deletion to destination storage")
 
-	return nil
+	return ResultSynced, nil
 }
 
 // ListSourceBuckets lists all the buckets in source storage.

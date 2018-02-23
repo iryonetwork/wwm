@@ -97,13 +97,15 @@ func (c *stanConsumer) Close() {
 
 func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventType, h storageSync.Handler) stan.MsgHandler {
 	return func(msg *stan.Msg) {
-		// Make sure we record duration metrics even if processing fails
+		// Make sure we record duration metrics even if processing fails, set default values for labels
 		start := time.Now()
 		ack := false
+		result := storageSync.ResultSyncNotNeeded
+
 		defer func() {
 			duration := time.Since(start)
 			c.metricsCollection[taskSeconds].(*prometheus.HistogramVec).
-				With(prometheus.Labels{"event": string(typ), "ack": fmt.Sprintf("%t", ack)}).
+				With(prometheus.Labels{"event": string(typ), "ack": fmt.Sprintf("%t", ack), "result": string(result)}).
 				Observe(duration.Seconds())
 		}()
 
@@ -123,18 +125,25 @@ func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventT
 			return
 		}
 
-		err = h(ctx, f.BucketID, f.FileID, f.Version, f.Created)
+		result, err = h(ctx, f.BucketID, f.FileID, f.Version, f.Created)
 		if err != nil {
 			c.logger.Error().Err(err).
 				Str("cmd", "MsgHandler").
 				Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).
 				Msg("Failed handler invocation")
 
+			if result == storageSync.ResultConflict {
+				// nothing can be done about this error, ack the message
+				ack = true
+				msg.Ack()
+			}
+
 			return
 		}
 
-		// Change ack variable value for metrics
+		// Change ack and result variables values for metrics
 		ack = true
+
 		// Acknowledge the message
 		msg.Ack()
 		c.logger.Debug().
@@ -151,7 +160,7 @@ func GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
 		Namespace: "consumer",
 		Name:      "task_seconds",
 		Help:      "Time taken to serve tasks",
-	}, []string{"event", "ack"})
+	}, []string{"event", "ack", "result"})
 	metricsCollection[taskSeconds] = h
 
 	return metricsCollection

@@ -157,15 +157,15 @@ func TestSync(t *testing.T) {
 						Times(1),
 					c.EXPECT().
 						SyncFile(gomock.Any(), bucket1.Name, file1V2.Name, file1V2.Version, file1V2.Created).
-						Return(nil).
+						Return(storageSync.ResultSyncNotNeeded, nil).
 						Times(1),
 					c.EXPECT().
 						SyncFileDelete(gomock.Any(), bucket1.Name, file1V3.Name, file1V3.Version, file1V3.Created).
-						Return(nil).
+						Return(storageSync.ResultSynced, nil).
 						Times(1),
 					c.EXPECT().
 						SyncFile(gomock.Any(), bucket2.Name, file3V3.Name, file3V3.Version, file3V3.Created).
-						Return(nil).
+						Return(storageSync.ResultSynced, nil).
 						Times(1),
 				}
 			},
@@ -195,7 +195,7 @@ func TestSync(t *testing.T) {
 						Times(1),
 					c.EXPECT().
 						SyncFileDelete(gomock.Any(), bucket1.Name, file1V3.Name, file1V3.Version, file1V3.Created).
-						Return(errors.Errorf("fail")).
+						Return(storageSync.ResultError, errors.Errorf("fail")).
 						Times(1),
 				}
 			},
@@ -229,7 +229,7 @@ func TestSync(t *testing.T) {
 						Times(1),
 					c.EXPECT().
 						SyncFile(gomock.Any(), bucket2.Name, file3V3.Name, file3V3.Version, file3V3.Created).
-						Return(nil).
+						Return(storageSync.ResultSynced, nil).
 						Times(1),
 				}
 			},
@@ -259,11 +259,11 @@ func TestSync(t *testing.T) {
 						Times(1),
 					c.EXPECT().
 						SyncFile(gomock.Any(), bucket2.Name, file3V2.Name, file3V2.Version, file3V2.Created).
-						Return(nil).
+						Return(storageSync.ResultSynced, nil).
 						Times(1),
 					c.EXPECT().
 						SyncFile(gomock.Any(), bucket2.Name, file3V3.Name, file3V3.Version, file3V3.Created).
-						Return(nil).
+						Return(storageSync.ResultSynced, nil).
 						Times(1),
 				}
 			},
@@ -336,7 +336,7 @@ func TestContextCancelled(t *testing.T) {
 		Times(1)
 	h.EXPECT().
 		SyncFile(gomock.Any(), bucket1.Name, file1V2.Name, file1V2.Version, file1V2.Created).
-		Return(nil).
+		Return(storageSync.ResultSynced, nil).
 		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
 			called <- true
 			<-contextCancelled
@@ -364,7 +364,8 @@ func getMockHandlers(t *testing.T) (*mock.MockHandlers, func()) {
 
 func getTestService(t *testing.T, handlers storageSync.Handlers) storageSync.BatchSync {
 	return &batchStorageSync{
-		handlers: handlers,
-		logger:   zerolog.New(os.Stdout),
+		handlers:          handlers,
+		logger:            zerolog.New(os.Stdout),
+		metricsCollection: GetPrometheusMetricsCollection(),
 	}
 }

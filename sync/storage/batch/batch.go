@@ -6,16 +6,21 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/models"
+	"github.com/iryonetwork/wwm/metrics"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 )
 
 type batchStorageSync struct {
-	handlers storageSync.Handlers
-	logger   zerolog.Logger
+	handlers          storageSync.Handlers
+	logger            zerolog.Logger
+	metricsCollection map[metrics.ID]prometheus.Collector
 }
+
+const syncSeconds metrics.ID = "syncSeconds"
 
 func (s *batchStorageSync) Sync(ctx context.Context, lastSuccessfulRun time.Time) error {
 	buckets, err := s.handlers.ListSourceBuckets(ctx)
@@ -49,10 +54,24 @@ func (s *batchStorageSync) Sync(ctx context.Context, lastSuccessfulRun time.Time
 	return nil
 }
 
-func New(handlers storageSync.Handlers, logger zerolog.Logger) storageSync.BatchSync {
+// GetPrometheusMetricsCollection returns all prometheus metrics collectors needed to initalize instance of batch (for registration)
+func GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
+	metricsCollection := make(map[metrics.ID]prometheus.Collector)
+	h := prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Namespace: "batch",
+		Name:      "file_version_sync_seconds",
+		Help:      "Time taken to sync file",
+	}, []string{"operation", "success", "result"})
+	metricsCollection[syncSeconds] = h
+
+	return metricsCollection
+}
+
+func New(handlers storageSync.Handlers, logger zerolog.Logger, metricsCollection map[metrics.ID]prometheus.Collector) storageSync.BatchSync {
 	return &batchStorageSync{
-		handlers: handlers,
-		logger:   logger,
+		handlers:          handlers,
+		logger:            logger,
+		metricsCollection: metricsCollection,
 	}
 }
 
@@ -111,23 +130,41 @@ func (s *batchStorageSync) syncFile(ctx context.Context, lastSuccessfulRun time.
 		default:
 			if time.Time(f.Created).After(lastSuccessfulRun) {
 				syncCount++
+
+				// Make sure we record duration metrics even if processing fails, set default values for labels
+				start := time.Now()
+				success := false
+				result := storageSync.ResultSyncNotNeeded
+				defer func() {
+					duration := time.Since(start)
+					s.metricsCollection[syncSeconds].(*prometheus.HistogramVec).
+						With(prometheus.Labels{"operation": string(f.Operation), "success": fmt.Sprintf("%t", success), "result": string(result)}).
+						Observe(duration.Seconds())
+				}()
+
 				switch f.Operation {
 				case models.FileDescriptorOperationW:
-					err = s.handlers.SyncFile(ctx, bucketID, fileID, f.Version, f.Created)
-					if err != nil {
-						errCount++
-						s.logger.Error().Err(err).Str("bucket", bucketID).Str("file", fileID).Str("version", f.Version).Msg("failed to sync")
-					} else {
-						s.logger.Info().Str("bucket", bucketID).Str("file", fileID).Str("version", f.Version).Msg("successfully synced")
-					}
+					result, err = s.handlers.SyncFile(ctx, bucketID, fileID, f.Version, f.Created)
 				case models.FileDescriptorOperationD:
-					err = s.handlers.SyncFileDelete(ctx, bucketID, fileID, f.Version, f.Created)
-					if err != nil {
-						errCount++
-						s.logger.Error().Err(err).Str("bucket", bucketID).Str("file", fileID).Str("version", f.Version).Msg("failed to sync deletion")
-					} else {
-						s.logger.Info().Str("bucket", bucketID).Str("file", fileID).Str("version", f.Version).Msg("successfully synced deletion")
-					}
+					result, err = s.handlers.SyncFileDelete(ctx, bucketID, fileID, f.Version, f.Created)
+				}
+
+				if err != nil {
+					errCount++
+					s.logger.Error().Err(err).
+						Str("bucket", bucketID).
+						Str("file", fileID).
+						Str("version", f.Version).
+						Str("operation", string(f.Operation)).
+						Msg("failed to sync")
+				} else {
+					success = true
+					s.logger.Info().
+						Str("bucket", bucketID).
+						Str("file", fileID).
+						Str("version", f.Version).
+						Str("operation", string(f.Operation)).
+						Msg("successfully synced")
 				}
 			}
 		}

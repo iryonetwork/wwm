@@ -13,6 +13,9 @@ import (
 // EventType defines event type
 type EventType string
 
+// SyncResult defines synchronization result
+type SyncResult string
+
 // EventType constants
 const (
 	FileNew    EventType = "file.new"
@@ -50,6 +53,11 @@ type FileInfo struct {
 	Version  string          `json:"version,omitempty"`
 	Created  strfmt.DateTime `json:"created,omitempty"`
 }
+
+var ResultSynced SyncResult = "synced"
+var ResultConflict SyncResult = "conflict"
+var ResultError SyncResult = "error"
+var ResultSyncNotNeeded SyncResult = "syncNotNeeded"
 
 func NewFileInfo() *FileInfo {
 	return &FileInfo{}
