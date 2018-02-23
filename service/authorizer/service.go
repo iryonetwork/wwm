@@ -25,7 +25,10 @@ import (
 
 // Service describes the actions supported by the authorizer service
 type Service interface {
+	// Authorizer returns function that checks if logged in user has permission to do a request
 	Authorizer() runtime.Authorizer
+
+	// GetPrincipalFromToken returns user ID parsed from token
 	GetPrincipalFromToken(tokenString string) (*string, error)
 }
 
@@ -77,6 +80,11 @@ const (
 	ErrUnauthorized = "Unauthorized"
 )
 
+type responseAndError struct {
+	r   *http.Response
+	err error
+}
+
 // Authorizer checks if logged in user has permission to do a request
 func (a *authorizer) Authorizer() runtime.Authorizer {
 	logger := a.logger.With().Str("cmd", "Authorizer").Logger()
@@ -97,26 +105,48 @@ func (a *authorizer) Authorizer() runtime.Authorizer {
 		}
 
 		r, err := http.NewRequest(http.MethodPost, a.validateURL, bytes.NewBuffer(body))
-		r.Header.Add("Authorization", request.Header.Get("Authorization"))
-
-		netClient := &http.Client{
-			Timeout: time.Second * 10,
-		}
-
-		response, err := netClient.Do(r)
 		if err != nil {
-			logger.Error().Err(err).Msg("Making request failed")
+			logger.Error().Err(err).Msg("Initializing request failed")
 			return err
 		}
-		defer response.Body.Close()
+		r.Header.Add("Authorization", request.Header.Get("Authorization"))
 
-		responseBody, err := ioutil.ReadAll(response.Body)
+		transport := &http.Transport{}
+		netClient := &http.Client{
+			Transport: transport,
+			Timeout:   time.Second * 10,
+		}
+
+		c := make(chan responseAndError)
+		go func() {
+			response, err := netClient.Do(r)
+			c <- responseAndError{response, err}
+		}()
+
+		var response responseAndError
+
+		select {
+		case <-request.Context().Done():
+			transport.CancelRequest(r)
+			<-c // wait for canceld request
+			logger.Error().Err(request.Context().Err()).Msg("Context was done")
+			return fmt.Errorf("Context was done")
+		case response = <-c:
+		}
+
+		if response.err != nil {
+			logger.Error().Err(response.err).Msg("Making request failed")
+			return response.err
+		}
+		defer response.r.Body.Close()
+
+		responseBody, err := ioutil.ReadAll(response.r.Body)
 		if err != nil {
 			logger.Error().Err(err).Msg("Reading response failed")
 			return err
 		}
 
-		if response.StatusCode == http.StatusOK {
+		if response.r.StatusCode == http.StatusOK {
 			validationResponse := models.PostValidateOKBody{}
 			err := swag.ReadJSON(responseBody, &validationResponse)
 			if err != nil {
