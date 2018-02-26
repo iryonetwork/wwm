@@ -140,19 +140,19 @@ func TestSync(t *testing.T) {
 						Return([]*models.BucketDescriptor{bucket1, bucket2}, nil).
 						Times(1),
 					c.EXPECT().
-						ListSourceFiles(gomock.Any(), bucket1.Name).
+						ListSourceFilesAsc(gomock.Any(), bucket1.Name).
 						Return([]*models.FileDescriptor{file1V3, file2V2}, nil).
 						Times(1),
 					c.EXPECT().
-						ListSourceFiles(gomock.Any(), bucket2.Name).
+						ListSourceFilesAsc(gomock.Any(), bucket2.Name).
 						Return([]*models.FileDescriptor{file3V3}, nil).
 						Times(1),
 					c.EXPECT().
-						ListSourceFileVersions(gomock.Any(), bucket1.Name, file1V3.Name).
+						ListSourceFileVersionsAsc(gomock.Any(), bucket1.Name, file1V3.Name).
 						Return([]*models.FileDescriptor{file1V1, file1V2, file1V3}, nil).
 						Times(1),
 					c.EXPECT().
-						ListSourceFileVersions(gomock.Any(), bucket2.Name, file3V3.Name).
+						ListSourceFileVersionsAsc(gomock.Any(), bucket2.Name, file3V3.Name).
 						Return([]*models.FileDescriptor{file3V1, file3V2, file3V3}, nil).
 						Times(1),
 					c.EXPECT().
@@ -182,15 +182,15 @@ func TestSync(t *testing.T) {
 						Return([]*models.BucketDescriptor{bucket1, bucket2}, nil).
 						Times(1),
 					c.EXPECT().
-						ListSourceFiles(gomock.Any(), bucket1.Name).
+						ListSourceFilesAsc(gomock.Any(), bucket1.Name).
 						Return([]*models.FileDescriptor{file1V3, file2V2}, nil).
 						Times(1),
 					c.EXPECT().
-						ListSourceFiles(gomock.Any(), bucket2.Name).
+						ListSourceFilesAsc(gomock.Any(), bucket2.Name).
 						Return([]*models.FileDescriptor{file3V3}, nil).
 						Times(1),
 					c.EXPECT().
-						ListSourceFileVersions(gomock.Any(), bucket1.Name, file1V3.Name).
+						ListSourceFileVersionsAsc(gomock.Any(), bucket1.Name, file1V3.Name).
 						Return([]*models.FileDescriptor{file1V1, file1V2, file1V3}, nil).
 						Times(1),
 					c.EXPECT().
@@ -212,19 +212,19 @@ func TestSync(t *testing.T) {
 						Return([]*models.BucketDescriptor{bucket1, bucket2}, nil).
 						Times(1),
 					c.EXPECT().
-						ListSourceFiles(gomock.Any(), bucket1.Name).
+						ListSourceFilesAsc(gomock.Any(), bucket1.Name).
 						Return([]*models.FileDescriptor{file1V3, file2V2}, nil).
 						Times(1),
 					c.EXPECT().
-						ListSourceFiles(gomock.Any(), bucket2.Name).
+						ListSourceFilesAsc(gomock.Any(), bucket2.Name).
 						Return([]*models.FileDescriptor{file3V3}, nil).
 						Times(1),
 					c.EXPECT().
-						ListSourceFileVersions(gomock.Any(), bucket1.Name, file1V3.Name).
+						ListSourceFileVersionsAsc(gomock.Any(), bucket1.Name, file1V3.Name).
 						Return(nil, errors.Errorf("fail")).
 						Times(1),
 					c.EXPECT().
-						ListSourceFileVersions(gomock.Any(), bucket2.Name, file3V3.Name).
+						ListSourceFileVersionsAsc(gomock.Any(), bucket2.Name, file3V3.Name).
 						Return([]*models.FileDescriptor{file3V1, file3V2, file3V3}, nil).
 						Times(1),
 					c.EXPECT().
@@ -246,15 +246,15 @@ func TestSync(t *testing.T) {
 						Return([]*models.BucketDescriptor{bucket1, bucket2}, nil).
 						Times(1),
 					c.EXPECT().
-						ListSourceFiles(gomock.Any(), bucket1.Name).
+						ListSourceFilesAsc(gomock.Any(), bucket1.Name).
 						Return(nil, errors.Errorf("fail")).
 						Times(1),
 					c.EXPECT().
-						ListSourceFiles(gomock.Any(), bucket2.Name).
+						ListSourceFilesAsc(gomock.Any(), bucket2.Name).
 						Return([]*models.FileDescriptor{file3V3}, nil).
 						Times(1),
 					c.EXPECT().
-						ListSourceFileVersions(gomock.Any(), bucket2.Name, file3V3.Name).
+						ListSourceFileVersionsAsc(gomock.Any(), bucket2.Name, file3V3.Name).
 						Return([]*models.FileDescriptor{file3V1, file3V2, file3V3}, nil).
 						Times(1),
 					c.EXPECT().
@@ -327,11 +327,11 @@ func TestContextCancelled(t *testing.T) {
 		Return([]*models.BucketDescriptor{bucket1}, nil).
 		Times(1)
 	h.EXPECT().
-		ListSourceFiles(gomock.Any(), bucket1.Name).
+		ListSourceFilesAsc(gomock.Any(), bucket1.Name).
 		Return([]*models.FileDescriptor{file1V3, file2V2}, nil).
 		Times(1)
 	h.EXPECT().
-		ListSourceFileVersions(gomock.Any(), bucket1.Name, file1V3.Name).
+		ListSourceFileVersionsAsc(gomock.Any(), bucket1.Name, file1V3.Name).
 		Return([]*models.FileDescriptor{file1V1, file1V2, file1V3}, nil).
 		Times(1)
 	h.EXPECT().

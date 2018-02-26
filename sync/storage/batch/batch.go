@@ -76,7 +76,7 @@ func New(handlers storageSync.Handlers, logger zerolog.Logger, metricsCollection
 }
 
 func (s *batchStorageSync) syncBucket(ctx context.Context, lastSuccessfulRun time.Time, bucketID string, errCh chan error) {
-	files, err := s.handlers.ListSourceFiles(ctx, bucketID)
+	files, err := s.handlers.ListSourceFilesAsc(ctx, bucketID)
 	if err != nil {
 		s.logger.Error().Err(err).Str("bucket", bucketID).Msg("failed to list source files")
 		errCh <- errors.Wrap(err, fmt.Sprintf("failed to list source files in bucket %s", bucketID))
@@ -111,7 +111,7 @@ func (s *batchStorageSync) syncBucket(ctx context.Context, lastSuccessfulRun tim
 }
 
 func (s *batchStorageSync) syncFile(ctx context.Context, lastSuccessfulRun time.Time, bucketID, fileID string, errCh chan error) {
-	versions, err := s.handlers.ListSourceFileVersions(ctx, bucketID, fileID)
+	versions, err := s.handlers.ListSourceFileVersionsAsc(ctx, bucketID, fileID)
 	if err != nil {
 		s.logger.Error().Err(err).Str("bucket", bucketID).Str("file", fileID).Msg("failed to list source versions")
 		errCh <- errors.Wrap(err, fmt.Sprintf("failed to list source versions of file %s in bucket %s", fileID, bucketID))
