@@ -65,7 +65,9 @@ func main() {
 	}
 
 	serviceCertsAndPaths := map[string][]string{
-		"/certs/localAuthSync.pem": []string{"/auth/database"},
+		"/certs/localAuthSync.pem":       []string{"/auth/database"},
+		"/certs/storageSyncConsumer.pem": []string{"/storage/sync"},
+		"/certs/batchStorageSync.pem":    []string{"/storage/sync"},
 	}
 
 	// initialize the service
