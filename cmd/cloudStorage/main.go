@@ -86,6 +86,7 @@ func main() {
 	api.SyncFileDeleteHandler = storageHandlers.SyncFileDelete()
 	api.SyncBucketListHandler = storageHandlers.SyncBucketList()
 	api.SyncFileListHandler = storageHandlers.SyncFileList()
+	api.SyncFileListVersionsHandler = storageHandlers.SyncFileListVersions()
 
 	api.RegisterConsumer("*/*", &WildcardConsumer{})
 

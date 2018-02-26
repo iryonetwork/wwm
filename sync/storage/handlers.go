@@ -267,11 +267,11 @@ func (h *handlers) listFilesAsc(ctx context.Context, c *operations.Client, auth 
 }
 
 func (h *handlers) listFileVersionsAsc(ctx context.Context, c *operations.Client, auth runtime.ClientAuthInfoWriter, bucketID, fileID string) ([]*models.FileDescriptor, error) {
-	params := operations.NewFileListVersionsParams().
+	params := operations.NewSyncFileListVersionsParams().
 		WithBucket(bucketID).
 		WithFileID(fileID).
 		WithContext(ctx)
-	resp, err := c.FileListVersions(params, auth)
+	resp, err := c.SyncFileListVersions(params, auth)
 
 	if err != nil {
 		// If not found return empty, otherwise return error
