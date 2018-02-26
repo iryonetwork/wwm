@@ -191,10 +191,10 @@ func TestFileList(t *testing.T) {
 		exactError    error
 	}{
 		{
-			"makeBucket fails",
+			"BucketExists fails",
 			func(s *mock.MockStorage) []*gomock.Call {
 				return []*gomock.Call{
-					s.EXPECT().MakeBucket("BUCKET").Return(fmt.Errorf("Error")),
+					s.EXPECT().BucketExists("BUCKET").Return(false, fmt.Errorf("Error")),
 				}
 			},
 			nil,
@@ -205,7 +205,7 @@ func TestFileList(t *testing.T) {
 			"List fails",
 			func(s *mock.MockStorage) []*gomock.Call {
 				return []*gomock.Call{
-					s.EXPECT().MakeBucket("BUCKET").Return(nil),
+					s.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					s.EXPECT().List("BUCKET", "").Return(nil, fmt.Errorf("Error")),
 				}
 			},
@@ -214,10 +214,21 @@ func TestFileList(t *testing.T) {
 			nil,
 		},
 		{
+			"Bucket does not exist",
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().BucketExists("BUCKET").Return(false, nil),
+				}
+			},
+			[]*models.FileDescriptor{},
+			noErrors,
+			nil,
+		},
+		{
 			"Successful call",
 			func(s *mock.MockStorage) []*gomock.Call {
 				return []*gomock.Call{
-					s.EXPECT().MakeBucket("BUCKET").Return(nil),
+					s.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					s.EXPECT().List("BUCKET", "").Return([]*models.FileDescriptor{file1V2, file2V2, file1V1, file2V1}, nil),
 				}
 			},
@@ -560,10 +571,10 @@ func TestSyncFileList(t *testing.T) {
 		exactError    error
 	}{
 		{
-			"makeBucket fails",
+			"BucketExsits fails",
 			func(s *mock.MockStorage) []*gomock.Call {
 				return []*gomock.Call{
-					s.EXPECT().MakeBucket("BUCKET").Return(fmt.Errorf("Error")),
+					s.EXPECT().BucketExists("BUCKET").Return(false, fmt.Errorf("Error")),
 				}
 			},
 			nil,
@@ -574,7 +585,7 @@ func TestSyncFileList(t *testing.T) {
 			"List fails",
 			func(s *mock.MockStorage) []*gomock.Call {
 				return []*gomock.Call{
-					s.EXPECT().MakeBucket("BUCKET").Return(nil),
+					s.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					s.EXPECT().List("BUCKET", "").Return(nil, fmt.Errorf("Error")),
 				}
 			},
@@ -583,10 +594,21 @@ func TestSyncFileList(t *testing.T) {
 			nil,
 		},
 		{
+			"Bucket does not exist",
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().BucketExists("BUCKET").Return(false, nil),
+				}
+			},
+			[]*models.FileDescriptor{},
+			noErrors,
+			nil,
+		},
+		{
 			"Successful call",
 			func(s *mock.MockStorage) []*gomock.Call {
 				return []*gomock.Call{
-					s.EXPECT().MakeBucket("BUCKET").Return(nil),
+					s.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					s.EXPECT().List("BUCKET", "").Return([]*models.FileDescriptor{file1V2, file2V2, file1V1, file2V1}, nil),
 				}
 			},
@@ -641,9 +663,21 @@ func TestSyncFile(t *testing.T) {
 		exactError    error
 	}{
 		{
+			"MakeBucket fails",
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().MakeBucket("BUCKET").Return(fmt.Errorf("Error")),
+				}
+			},
+			nil,
+			withErrors,
+			nil,
+		},
+		{
 			"Read fails",
 			func(s *mock.MockStorage) []*gomock.Call {
 				return []*gomock.Call{
+					s.EXPECT().MakeBucket("BUCKET").Return(nil),
 					s.EXPECT().Read("BUCKET", "FILE3", "V1").Return(nil, nil, fmt.Errorf("Error")),
 				}
 			},
@@ -655,6 +689,7 @@ func TestSyncFile(t *testing.T) {
 			"Already exists - matching checksum",
 			func(s *mock.MockStorage) []*gomock.Call {
 				return []*gomock.Call{
+					s.EXPECT().MakeBucket("BUCKET").Return(nil),
 					s.EXPECT().Read("BUCKET", "FILE3", "V1").Return(nil, file3V1, nil),
 				}
 			},
@@ -666,6 +701,7 @@ func TestSyncFile(t *testing.T) {
 			"Already exists - conflict",
 			func(s *mock.MockStorage) []*gomock.Call {
 				return []*gomock.Call{
+					s.EXPECT().MakeBucket("BUCKET").Return(nil),
 					s.EXPECT().Read("BUCKET", "FILE3", "V1").Return(nil, file3V1ALT, nil),
 				}
 			},
@@ -677,6 +713,7 @@ func TestSyncFile(t *testing.T) {
 			"Write fails",
 			func(s *mock.MockStorage) []*gomock.Call {
 				return []*gomock.Call{
+					s.EXPECT().MakeBucket("BUCKET").Return(nil),
 					s.EXPECT().Read("BUCKET", "FILE3", "V1").Return(nil, nil, s3.ErrNotFound),
 					s.EXPECT().Write("BUCKET", gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("Error")),
 				}
@@ -700,6 +737,7 @@ func TestSyncFile(t *testing.T) {
 				}
 
 				return []*gomock.Call{
+					s.EXPECT().MakeBucket("BUCKET").Return(nil),
 					s.EXPECT().Read("BUCKET", "FILE3", "V1").Return(nil, nil, s3.ErrNotFound),
 					s.EXPECT().Write("BUCKET", no, gomock.Any()).Return(file3V1, nil),
 				}

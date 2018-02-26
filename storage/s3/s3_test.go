@@ -156,6 +156,81 @@ func getTestObject(t *testing.T) (*objectmock.MockObject, func()) {
 	return obj, f
 }
 
+func TestBucketExists(t *testing.T) {
+	testCases := []struct {
+		description   string
+		calls         func(*mock.MockMinio) []*gomock.Call
+		errorExpected bool
+		exactError    error
+		expected      bool
+	}{
+		{
+			"bucket exists",
+			func(m *mock.MockMinio) []*gomock.Call {
+				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
+				}
+			},
+			noErrors,
+			nil,
+			true,
+		},
+		{
+			"bucket does not exist",
+			func(m *mock.MockMinio) []*gomock.Call {
+				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(false, nil),
+				}
+			},
+			noErrors,
+			nil,
+			false,
+		},
+		{
+			"bucketExists fails",
+			func(m *mock.MockMinio) []*gomock.Call {
+				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(false, fmt.Errorf("Error")),
+				}
+			},
+			withErrors,
+			nil,
+			false,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.description, func(t *testing.T) {
+			// init storage
+			s, m, _, c := getTestStorage(t)
+			defer c()
+
+			// setup calls
+			test.calls(m)
+
+			// call the MakeBucket
+			exists, err := s.BucketExists("BUCKET")
+
+			// check expected results
+			if !reflect.DeepEqual(exists, test.expected) {
+				t.Errorf("Expected result to equal '%t'; got %t", test.expected, exists)
+			}
+
+			// assert error
+			if test.errorExpected && err == nil {
+				t.Error("Expected error, got nil")
+			} else if !test.errorExpected && err != nil {
+				t.Errorf("Expected error to be nil, got %v", err)
+			}
+
+			// assert actual error
+			if test.exactError != nil && test.exactError != err {
+				t.Errorf("Expected error to equal '%v'; got %v", test.exactError, err)
+			}
+		})
+	}
+}
+
 func TestMakeBucket(t *testing.T) {
 	testCases := []struct {
 		description   string
