@@ -136,7 +136,7 @@ func New(cfg *Config, keys KeyProvider, logger zerolog.Logger) (Storage, error) 
 	return obj, nil
 }
 
-// Check if bycket already exits
+// Check if bucket already exists
 func (s *s3storage) BucketExists(bucketID string) (bool, error) {
 	s.logger.Debug().Str("cmd", "s3::BucketExists").Msgf("('%s')", bucketID)
 
