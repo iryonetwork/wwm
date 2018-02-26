@@ -37,7 +37,7 @@ func main() {
 	// if there is no database file download it from cloud
 	_, err = os.Stat(dbPath)
 	if _, err := os.Stat(dbPath); err != nil {
-		storage, err := auth.New(dbPath, key, false, logger.With().Str("component", "storage/auth-initialCloudDownload").Logger())
+		storage, err := auth.New(dbPath, key, false, false, logger)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("Failed to initialize auth storage")
 		}
@@ -60,7 +60,7 @@ func main() {
 		}
 		storage.Close()
 	}
-	storage, err := auth.New(dbPath, key, true, logger.With().Str("component", "storage/auth").Logger())
+	storage, err := auth.New(dbPath, key, true, true, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to initialize auth storage")
 	}

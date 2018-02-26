@@ -50,11 +50,10 @@ func newTestStorage(key []byte) *testStorage {
 	}
 
 	// open the database
-	db, err := New(path, key, false, zerolog.New(ioutil.Discard))
+	db, err := New(path, key, false, false, zerolog.New(ioutil.Discard))
 	if err != nil {
 		panic(err)
 	}
-	db.refreshRules = false
 
 	// return wrapped type
 	return &testStorage{db}

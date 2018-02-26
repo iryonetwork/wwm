@@ -61,7 +61,7 @@ func (s *Storage) ReplaceDB(src io.ReadCloser, checksum []byte) error {
 	src.Close()
 
 	// create new instance from received db and check checksum
-	testStorage, err := New(tmpFileName, s.encryptionKey, true, zerolog.New(ioutil.Discard))
+	testStorage, err := New(tmpFileName, s.encryptionKey, true, false, zerolog.New(ioutil.Discard))
 	if err != nil {
 		os.Remove(tmpFileName)
 		return err

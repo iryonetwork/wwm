@@ -47,7 +47,8 @@ var adminRole = &models.Role{
 var dbPermissions os.FileMode = 0666
 
 // New returns a new instance of storage
-func New(path string, key []byte, readOnly bool, logger zerolog.Logger) (*Storage, error) {
+func New(path string, key []byte, readOnly, refreshRules bool, logger zerolog.Logger) (*Storage, error) {
+	logger = logger.With().Str("component", "storage/auth").Logger()
 	logger.Debug().Msg("Initialize auth storage")
 	if len(key) != 32 {
 		return nil, fmt.Errorf("Encryption key must be 32 bytes long")
@@ -86,7 +87,7 @@ func New(path string, key []byte, readOnly bool, logger zerolog.Logger) (*Storag
 		db:            db,
 		encryptionKey: key,
 		dbSync:        &sync.RWMutex{},
-		refreshRules:  true,
+		refreshRules:  refreshRules,
 		logger:        logger,
 	}
 
