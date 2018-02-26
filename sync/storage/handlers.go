@@ -154,9 +154,6 @@ func (h *handlers) SyncFileDelete(ctx context.Context, bucketID, fileID, version
 		case *operations.SyncFileDeleteConflict:
 			// another attempt at sync should not be performed
 			return ResultConflict, err
-		case *operations.SyncFileDeleteNotFound:
-			// another attempt at sync should not be performed
-			return ResultSyncNotNeeded, err
 		default:
 			return ResultError, err
 		}
