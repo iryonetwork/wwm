@@ -370,7 +370,7 @@ func (s *service) SyncFileDelete(bucketID, fileID, version string, created strfm
 func (s *service) EnsureBucket(bucketID string) error {
 	// make sure bucket exists
 	if err := s.s3.MakeBucket(bucketID); err != nil && err != s3.ErrAlreadyExists {
-		s.logger.Info().Err(err).Str("bucket", bucketID).Msg("Failed to ensure bucket")
+		s.logger.Error().Err(err).Str("bucket", bucketID).Msg("Failed to ensure bucket")
 		return err
 	}
 
