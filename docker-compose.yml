@@ -183,7 +183,7 @@ services:
     - /wwm/batchStorageSync
     volumes:
     - ./.bin/:/wwm
-    - ./.data/batchStorageSync:/data
+    - ./.data/batchStorageSync:/data/
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
 
   localPrometheusPushGateway:
