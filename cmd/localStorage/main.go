@@ -131,6 +131,8 @@ func main() {
 
 	storageHandlers := storage.NewHandlers(service, logger.With().Str("component", "service/storage/handlers").Logger())
 
+	serverLogger := logger.WithLevel(zerolog.InfoLevel).Str("component", "server")
+	api.Logger = serverLogger.Msgf
 	api.TokenAuth = storageHandlers.GetUserIDFromToken
 	api.APIAuthorizer = storageHandlers.Authorizer()
 	api.FileListHandler = storageHandlers.FileList()

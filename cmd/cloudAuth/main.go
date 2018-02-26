@@ -7,7 +7,7 @@ import (
 	"os"
 
 	loads "github.com/go-openapi/loads"
-	"github.com/rs/cors"
+	//"github.com/rs/cors"
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/auth/models"
@@ -116,13 +116,13 @@ func main() {
 
 	api.DatabaseGetDatabaseHandler = getDatabase(storage)
 
-	handler := cors.New(cors.Options{
-		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
-		AllowedHeaders: []string{"Authorization", "Content-Type"},
-		Debug:          true,
-	}).Handler(api.Serve(nil))
+	// handler := cors.New(cors.Options{
+	// 	AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
+	// 	AllowedHeaders: []string{"Authorization", "Content-Type"},
+	// 	Debug:          true,
+	// }).Handler(api.Serve(nil))
 
-	server.SetHandler(handler)
+	server.SetHandler(api.Serve(nil))
 
 	if err := server.Serve(); err != nil {
 		logger.Fatal().Err(err).Msg("Failed to start server")

@@ -60,7 +60,7 @@ func (a *authorizer) GetPrincipalFromToken(tokenString string) (*string, error) 
 	})
 
 	if principal == "" {
-		a.logger.Error().Str("cmd", "GetPrincipalFromToken").Msg("Token is invalid")
+		a.logger.Error().Str("token", tokenString).Str("cmd", "GetPrincipalFromToken").Msg("Token is invalid")
 		return &principal, fmt.Errorf(ErrInvalidToken)
 	}
 

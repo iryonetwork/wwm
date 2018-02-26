@@ -98,6 +98,7 @@ const servicePrincipal = "__service__"
 // GetPrincipalFromToken validates a token and returns the userID for user tokens
 // or returns "sync" for tokens used in cloud sync
 func (a *service) GetPrincipalFromToken(tokenString string) (*string, error) {
+	a.logger.Error().Msg(tokenString)
 	principal := ""
 
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
@@ -138,12 +139,15 @@ func (a *service) Authorizer() runtime.Authorizer {
 		if !ok {
 			return fmt.Errorf("Principal type was '%T', expected '*string'", principal)
 		}
-
+		a.logger.Error().Str("sit", "before checking prefix").Msg(*userID)
 		// allow access for service operations without checking ACL
 		if strings.HasPrefix(*userID, servicePrincipal) {
 			keyID := (*userID)[len(servicePrincipal):]
+			a.logger.Error().Msg(keyID)
 			paths, ok := a.servicePaths[keyID]
+			a.logger.Error().Msgf("%v", paths)
 			if ok {
+				a.logger.Error().Msgf("%v", request.URL.EscapedPath())
 				_, ok := paths[request.URL.EscapedPath()]
 				if ok {
 					return nil
