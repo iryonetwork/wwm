@@ -37,6 +37,7 @@ var (
 func main() {
 	// Create context with cancel func
 	ctx, shutdown := context.WithCancel(context.Background())
+	defer shutdown()
 
 	// initialize logger
 	logger := zerolog.New(os.Stdout).With().
@@ -59,7 +60,6 @@ func main() {
 	// initialize bolt key value storage to read last succesful run
 	storage, err := keyvalue.NewBolt(ctx, boltFilepath, logger.With().Str("component", "storage/keyvalue").Logger(), m)
 	if err != nil {
-		shutdown()
 		logger.Fatal().Err(err).Msg("failed to initiazlie key value storage")
 	}
 	// read last succesful run
@@ -138,6 +138,4 @@ func main() {
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to push metrics to push gateway")
 	}
-
-	shutdown()
 }
