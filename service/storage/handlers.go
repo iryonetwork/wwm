@@ -23,6 +23,7 @@ type Handlers interface {
 	FileDelete() operations.FileDeleteHandler
 	SyncBucketList() operations.SyncBucketListHandler
 	SyncFileList() operations.SyncFileListHandler
+	SyncFileListVersions() operations.SyncFileListVersionsHandler
 	SyncFileMetadata() operations.SyncFileMetadataHandler
 	SyncFile() operations.SyncFileHandler
 	SyncFileDelete() operations.SyncFileDeleteHandler
@@ -114,6 +115,9 @@ func (h *handlers) FileListVersions() operations.FileListVersionsHandler {
 				Code:    "server_error",
 				Message: err.Error(),
 			})
+		}
+		if len(list) == 0 {
+			return operations.NewFileListVersionsNotFound()
 		}
 
 		return operations.NewFileListVersionsOK().WithPayload(list)
@@ -217,6 +221,23 @@ func (h *handlers) SyncFileList() operations.SyncFileListHandler {
 		}
 
 		return operations.NewSyncFileListOK().WithPayload(list)
+	})
+}
+
+func (h *handlers) SyncFileListVersions() operations.SyncFileListVersionsHandler {
+	return operations.SyncFileListVersionsHandlerFunc(func(params operations.SyncFileListVersionsParams, principal *string) middleware.Responder {
+		list, err := h.service.FileListVersions(params.Bucket, params.FileID)
+		if err != nil {
+			return operations.NewSyncFileListVersionsInternalServerError().WithPayload(&models.Error{
+				Code:    "server_error",
+				Message: err.Error(),
+			})
+		}
+		if len(list) == 0 {
+			return operations.NewSyncFileListVersionsNotFound()
+		}
+
+		return operations.NewSyncFileListVersionsOK().WithPayload(list)
 	})
 }
 
