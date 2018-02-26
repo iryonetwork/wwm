@@ -130,41 +130,9 @@ func (s *batchStorageSync) syncFile(ctx context.Context, lastSuccessfulRun time.
 		default:
 			if time.Time(f.Created).After(lastSuccessfulRun) {
 				syncCount++
-
-				// Make sure we record duration metrics even if processing fails, set default values for labels
-				start := time.Now()
-				success := false
-				result := storageSync.ResultSyncNotNeeded
-				defer func() {
-					duration := time.Since(start)
-					s.metricsCollection[syncSeconds].(*prometheus.HistogramVec).
-						With(prometheus.Labels{"operation": string(f.Operation), "success": fmt.Sprintf("%t", success), "result": string(result)}).
-						Observe(duration.Seconds())
-				}()
-
-				switch f.Operation {
-				case models.FileDescriptorOperationW:
-					result, err = s.handlers.SyncFile(ctx, bucketID, fileID, f.Version, f.Created)
-				case models.FileDescriptorOperationD:
-					result, err = s.handlers.SyncFileDelete(ctx, bucketID, fileID, f.Version, f.Created)
-				}
-
+				err := s.syncFileVersion(ctx, bucketID, fileID, f)
 				if err != nil {
 					errCount++
-					s.logger.Error().Err(err).
-						Str("bucket", bucketID).
-						Str("file", fileID).
-						Str("version", f.Version).
-						Str("operation", string(f.Operation)).
-						Msg("failed to sync")
-				} else {
-					success = true
-					s.logger.Info().
-						Str("bucket", bucketID).
-						Str("file", fileID).
-						Str("version", f.Version).
-						Str("operation", string(f.Operation)).
-						Msg("successfully synced")
 				}
 			}
 		}
@@ -176,4 +144,44 @@ func (s *batchStorageSync) syncFile(ctx context.Context, lastSuccessfulRun time.
 		return
 	}
 	errCh <- nil
+}
+
+func (s *batchStorageSync) syncFileVersion(ctx context.Context, bucketID, fileID string, f *models.FileDescriptor) error {
+	// Make sure we record duration metrics even if processing fails, set default values for labels
+	start := time.Now()
+	success := false
+	result := storageSync.ResultSyncNotNeeded
+	defer func() {
+		duration := time.Since(start)
+		s.metricsCollection[syncSeconds].(*prometheus.HistogramVec).
+			With(prometheus.Labels{"operation": string(f.Operation), "success": fmt.Sprintf("%t", success), "result": string(result)}).
+			Observe(duration.Seconds())
+	}()
+
+	var err error
+	switch f.Operation {
+	case models.FileDescriptorOperationW:
+		result, err = s.handlers.SyncFile(ctx, bucketID, fileID, f.Version, f.Created)
+	case models.FileDescriptorOperationD:
+		result, err = s.handlers.SyncFileDelete(ctx, bucketID, fileID, f.Version, f.Created)
+	}
+
+	if err != nil {
+		s.logger.Error().Err(err).
+			Str("bucket", bucketID).
+			Str("file", fileID).
+			Str("version", f.Version).
+			Str("operation", string(f.Operation)).
+			Msg("failed to sync")
+	} else {
+		success = true
+		s.logger.Info().
+			Str("bucket", bucketID).
+			Str("file", fileID).
+			Str("version", f.Version).
+			Str("operation", string(f.Operation)).
+			Msg("successfully synced")
+	}
+
+	return err
 }
