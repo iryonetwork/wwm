@@ -115,7 +115,7 @@ func (s *boltKeyValue) Get(bucket string, key string) []byte {
 
 	var val []byte
 
-	err := s.db.View(func(tx *bolt.Tx) error {
+	s.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucket))
 		if b == nil {
 			return nil
@@ -124,11 +124,6 @@ func (s *boltKeyValue) Get(bucket string, key string) []byte {
 		val = b.Get([]byte(key))
 		return nil
 	})
-
-	if err != nil {
-		s.logger.Error().Err(err).Str("bucket", bucket).Str("key", key).Msg("failed to fetch key")
-		return nil
-	}
 
 	success = true
 	return val
@@ -167,8 +162,12 @@ func (s *boltKeyValue) Delete(bucket string, key string) error {
 // Close releases DB.
 func (s *boltKeyValue) Close() error {
 	err := s.db.Close()
-	s.logger.Error().Err(err).Msg("error while closing db")
-	return errors.Wrap(err, "error while closing db")
+	if err != nil {
+		s.logger.Error().Err(err).Msg("error while closing db")
+		return errors.Wrap(err, "error while closing db")
+	}
+
+	return nil
 }
 
 // GetPrometheusMetricsCollection returns all prometheus metrics collectors needed to initaliza instance of consumer (for registration purposes)
