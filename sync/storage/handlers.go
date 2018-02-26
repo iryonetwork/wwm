@@ -5,6 +5,7 @@ package storage
 import (
 	"bytes"
 	"context"
+	"sort"
 
 	"github.com/go-openapi/runtime"
 	strfmt "github.com/go-openapi/strfmt"
@@ -22,12 +23,12 @@ type Handlers interface {
 	SyncFileDelete(ctx context.Context, bucketID, fileID, version string, timestamp strfmt.DateTime) (SyncResult, error)
 	// ListSourceBuckets lists all the buckets in source storage.
 	ListSourceBuckets(ctx context.Context) ([]*models.BucketDescriptor, error)
-	// ListSourceFiles lists all the files in the bucket of source storage including files marked as delete.
-	ListSourceFiles(ctx context.Context, bucketID string) ([]*models.FileDescriptor, error)
-	// ListSourceFileVersions lists all the file versions in the source storage.
-	ListSourceFileVersions(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error)
-	// ListDestinationFileVersions lists all the file versions in the destination storage.
-	ListDestinationFileVersions(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error)
+	// ListSourceFiles lists all the files in the bucket of source storage including files marked as delete, ascending order by Created timestamp ensured.
+	ListSourceFilesAsc(ctx context.Context, bucketID string) ([]*models.FileDescriptor, error)
+	// ListSourceFileVersions lists all the file versions in the source storage ascending order by Created timestamp ensured.
+	ListSourceFileVersionsAsc(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error)
+	// ListDestinationFileVersions lists all the file versions in the destination storage ascending order by Created timestamp ensured.
+	ListDestinationFileVersionsAsc(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error)
 }
 
 // Handler describes sync/storage sync handler function
@@ -177,18 +178,18 @@ func (h *handlers) ListSourceBuckets(ctx context.Context) ([]*models.BucketDescr
 }
 
 // ListSourceFiles lists all the files in the bucket of source storage including files marked as delete.
-func (h *handlers) ListSourceFiles(ctx context.Context, bucketID string) ([]*models.FileDescriptor, error) {
-	return h.listFiles(ctx, h.source, h.sourceAuth, bucketID)
+func (h *handlers) ListSourceFilesAsc(ctx context.Context, bucketID string) ([]*models.FileDescriptor, error) {
+	return h.listFilesAsc(ctx, h.source, h.sourceAuth, bucketID)
 }
 
 // ListSourceFileVersions lists all the file versions in the source storage.
-func (h *handlers) ListSourceFileVersions(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error) {
-	return h.listFileVersions(ctx, h.source, h.sourceAuth, bucketID, fileID)
+func (h *handlers) ListSourceFileVersionsAsc(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error) {
+	return h.listFileVersionsAsc(ctx, h.source, h.sourceAuth, bucketID, fileID)
 }
 
 // ListDestinationFileVersions lists all the file versions in the destination storage.
-func (h *handlers) ListDestinationFileVersions(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error) {
-	return h.listFileVersions(ctx, h.destination, h.destinationAuth, bucketID, fileID)
+func (h *handlers) ListDestinationFileVersionsAsc(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error) {
+	return h.listFileVersionsAsc(ctx, h.destination, h.destinationAuth, bucketID, fileID)
 }
 
 // NewApiHandlers returns Handlers with cloudStorage and localStorage API used.
@@ -248,7 +249,7 @@ func (h *handlers) listBuckets(ctx context.Context, c *operations.Client, auth r
 	return resp.Payload, nil
 }
 
-func (h *handlers) listFiles(ctx context.Context, c *operations.Client, auth runtime.ClientAuthInfoWriter, bucketID string) ([]*models.FileDescriptor, error) {
+func (h *handlers) listFilesAsc(ctx context.Context, c *operations.Client, auth runtime.ClientAuthInfoWriter, bucketID string) ([]*models.FileDescriptor, error) {
 	params := operations.NewSyncFileListParams().WithBucket(bucketID).WithContext(ctx)
 	resp, err := c.SyncFileList(params, auth)
 
@@ -261,10 +262,14 @@ func (h *handlers) listFiles(ctx context.Context, c *operations.Client, auth run
 		return []*models.FileDescriptor{}, nil
 	}
 
-	return resp.Payload, nil
+	// ensure ascending order by created time
+	files := resp.Payload
+	sort.Sort(ascByCreated(files))
+
+	return files, nil
 }
 
-func (h *handlers) listFileVersions(ctx context.Context, c *operations.Client, auth runtime.ClientAuthInfoWriter, bucketID, fileID string) ([]*models.FileDescriptor, error) {
+func (h *handlers) listFileVersionsAsc(ctx context.Context, c *operations.Client, auth runtime.ClientAuthInfoWriter, bucketID, fileID string) ([]*models.FileDescriptor, error) {
 	params := operations.NewFileListVersionsParams().
 		WithBucket(bucketID).
 		WithFileID(fileID).
@@ -280,5 +285,9 @@ func (h *handlers) listFileVersions(ctx context.Context, c *operations.Client, a
 		return []*models.FileDescriptor{}, nil
 	}
 
-	return resp.Payload, nil
+	// ensure ascending order by created time
+	files := resp.Payload
+	sort.Sort(ascByCreated(files))
+
+	return files, nil
 }
