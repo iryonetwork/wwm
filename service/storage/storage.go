@@ -95,10 +95,17 @@ func (s *service) BucketList() ([]*models.BucketDescriptor, error) {
 }
 
 func (s *service) FileList(bucketID string) ([]*models.FileDescriptor, error) {
-	// make sure bucket exists
-	if err := s.s3.MakeBucket(bucketID); err != nil && err != s3.ErrAlreadyExists {
-		s.logger.Info().Err(err).Str("bucket", bucketID).Msg("Failed to ensure bucket")
+	// init list to return
+	list := []*models.FileDescriptor{}
+
+	// check if bucket exists
+	exists, err := s.s3.BucketExists(bucketID)
+	if err != nil {
+		s.logger.Info().Err(err).Str("bucket", bucketID).Msg("Failed to check if bucket exists")
 		return nil, err
+	}
+	if !exists {
+		return list, nil
 	}
 
 	// collect the list
@@ -110,7 +117,6 @@ func (s *service) FileList(bucketID string) ([]*models.FileDescriptor, error) {
 	// extract only latest versions; latest version is already sorted
 	// on top, add to return list; only include files with a write operation
 	m := map[string]bool{}
-	list := []*models.FileDescriptor{}
 	for _, f := range l {
 		if _, ok := m[f.Name]; !ok {
 			m[f.Name] = true
@@ -136,9 +142,8 @@ func (s *service) FileListVersions(bucketID, fileID string) ([]*models.FileDescr
 }
 
 func (s *service) FileNew(bucketID string, r io.Reader, contentType string, archetype string) (*models.FileDescriptor, error) {
-	// make sure bucket exists
-	if err := s.s3.MakeBucket(bucketID); err != nil && err != s3.ErrAlreadyExists {
-		s.logger.Info().Err(err).Str("bucket", bucketID).Msg("Failed to ensure bucket")
+	err := s.EnsureBucket(bucketID)
+	if err != nil {
 		return nil, err
 	}
 
@@ -245,10 +250,17 @@ func (s *service) FileDelete(bucketID, fileID string) error {
 }
 
 func (s *service) SyncFileList(bucketID string) ([]*models.FileDescriptor, error) {
-	// make sure bucket exists
-	if err := s.s3.MakeBucket(bucketID); err != nil && err != s3.ErrAlreadyExists {
-		s.logger.Info().Err(err).Str("bucket", bucketID).Msg("Failed to ensure bucket")
+	// init list to return
+	list := []*models.FileDescriptor{}
+
+	// check if bucket exists
+	exists, err := s.s3.BucketExists(bucketID)
+	if err != nil {
+		s.logger.Info().Err(err).Str("bucket", bucketID).Msg("Failed to check if bucket exists")
 		return nil, err
+	}
+	if !exists {
+		return list, nil
 	}
 
 	// collect the list
@@ -260,7 +272,6 @@ func (s *service) SyncFileList(bucketID string) ([]*models.FileDescriptor, error
 	// extract only latest versions; latest version is already sorted
 	// on top, add to return list
 	m := map[string]bool{}
-	list := []*models.FileDescriptor{}
 	for _, f := range l {
 		if _, ok := m[f.Name]; !ok {
 			m[f.Name] = true
@@ -272,6 +283,11 @@ func (s *service) SyncFileList(bucketID string) ([]*models.FileDescriptor, error
 }
 
 func (s *service) SyncFile(bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string) (*models.FileDescriptor, error) {
+	err := s.EnsureBucket(bucketID)
+	if err != nil {
+		return nil, err
+	}
+
 	// calculate the checksum
 	var buf bytes.Buffer
 	tee := io.TeeReader(r, &buf)
@@ -349,6 +365,16 @@ func (s *service) SyncFileDelete(bucketID, fileID, version string, created strfm
 
 	_, err = s.s3.Write(bucketID, no, &bytes.Buffer{})
 	return err
+}
+
+func (s *service) EnsureBucket(bucketID string) error {
+	// make sure bucket exists
+	if err := s.s3.MakeBucket(bucketID); err != nil && err != s3.ErrAlreadyExists {
+		s.logger.Info().Err(err).Str("bucket", bucketID).Msg("Failed to ensure bucket")
+		return err
+	}
+
+	return nil
 }
 
 // New returns a new instance of storage service

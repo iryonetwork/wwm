@@ -55,6 +55,7 @@ const metaChecksum = "x-checksum"
 
 // Storage provides an interface for s3 public functions
 type Storage interface {
+	BucketExists(bucketID string) (bool, error)
 	MakeBucket(bucketID string) error
 	ListBuckets() ([]*models.BucketDescriptor, error)
 	List(bucketID, prefix string) ([]*models.FileDescriptor, error)
@@ -133,6 +134,18 @@ func New(cfg *Config, keys KeyProvider, logger zerolog.Logger) (Storage, error) 
 	}
 
 	return obj, nil
+}
+
+// Check if bycket already exits
+func (s *s3storage) BucketExists(bucketID string) (bool, error) {
+	s.logger.Debug().Str("cmd", "s3::BucketExists").Msgf("('%s')", bucketID)
+
+	exists, err := s.client.BucketExists(bucketID)
+	if err != nil {
+		return false, errors.Wrap(err, "Failed to check if bucket exists")
+	}
+
+	return exists, nil
 }
 
 // MakeBucket creates a bucket, return ErrAlreadyExists if bucket already exists
