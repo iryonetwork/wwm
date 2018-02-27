@@ -110,6 +110,7 @@ func (a *authorizer) Authorizer() runtime.Authorizer {
 			return err
 		}
 		r.Header.Add("Authorization", request.Header.Get("Authorization"))
+		r.Header.Add("Content-Type", "application/json")
 
 		transport := &http.Transport{}
 		netClient := &http.Client{

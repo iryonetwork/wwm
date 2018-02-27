@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sort"
 	"strings"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -54,8 +55,7 @@ type Storage interface {
 
 type service struct {
 	storage      Storage
-	serviceCerts map[string]crypto.PublicKey
-	servicePaths map[string]map[string]bool
+	syncServices map[string]syncService
 	logger       zerolog.Logger
 }
 
@@ -103,9 +103,9 @@ func (a *service) GetPrincipalFromToken(tokenString string) (*string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		claims := token.Claims.(*Claims)
 
-		if key, ok := a.serviceCerts[claims.KeyID]; ok {
+		if s, ok := a.syncServices[claims.KeyID]; ok {
 			principal = servicePrincipal + claims.KeyID
-			return key, nil
+			return s.publicKey, nil
 		}
 
 		if claims.KeyID == keyID {
@@ -142,11 +142,20 @@ func (a *service) Authorizer() runtime.Authorizer {
 		// allow access for service operations without checking ACL
 		if strings.HasPrefix(*userID, servicePrincipal) {
 			keyID := (*userID)[len(servicePrincipal):]
-			paths, ok := a.servicePaths[keyID]
+			s, ok := a.syncServices[keyID]
+			path := request.URL.EscapedPath()
 			if ok {
-				_, ok := paths[request.URL.EscapedPath()]
-				if ok {
+				if _, ok := s.paths[path]; ok {
 					return nil
+				}
+				for _, length := range s.wildcardLengths {
+					if length <= len(path) {
+						if _, ok := s.wildcards[length][path[:length]]; ok {
+							return nil
+						}
+					} else {
+						break
+					}
 				}
 			}
 			return utils.NewError(utils.ErrForbidden, "You do not have permissions for this resource")
@@ -181,13 +190,19 @@ func (a *service) GetPublicKey(_ context.Context, pubID string) (string, error) 
 	return publicKey, nil
 }
 
+type syncService struct {
+	publicKey       crypto.PublicKey
+	paths           map[string]bool
+	wildcards       map[int]map[string]bool
+	wildcardLengths []int
+}
+
 // New returns a new instance of authenticator service
 func New(storage Storage, allowedServiceCertsAndPaths map[string][]string, logger zerolog.Logger) (Service, error) {
 	logger = logger.With().Str("component", "service/authenticator").Logger()
 	logger.Debug().Msg("Initialize authenticator service")
 
-	serviceCerts := map[string]crypto.PublicKey{}
-	servicePaths := map[string]map[string]bool{}
+	syncServices := map[string]syncService{}
 
 	for cert, paths := range allowedServiceCertsAndPaths {
 		content, err := ioutil.ReadFile(cert)
@@ -209,22 +224,39 @@ func New(storage Storage, allowedServiceCertsAndPaths map[string][]string, logge
 		if err != nil {
 			return nil, err
 		}
-		serviceCerts[thumb] = c.PublicKey
 
-		_, ok := servicePaths[thumb]
-		if !ok {
-			servicePaths[thumb] = map[string]bool{}
+		s := syncService{
+			publicKey:       c.PublicKey,
+			paths:           map[string]bool{},
+			wildcardLengths: []int{},
 		}
+		lengthsMap := map[int]map[string]bool{}
 
 		for _, path := range paths {
-			servicePaths[thumb][path] = true
+			wildcard := strings.Index(path, "*")
+			if wildcard != -1 {
+				if _, ok := lengthsMap[wildcard]; !ok {
+					lengthsMap[wildcard] = map[string]bool{}
+				}
+				path = path[:wildcard]
+				lengthsMap[wildcard][path] = true
+			} else {
+				s.paths[path] = true
+			}
 		}
+
+		for length := range lengthsMap {
+			s.wildcardLengths = append(s.wildcardLengths, length)
+		}
+		sort.Ints(s.wildcardLengths)
+		s.wildcards = lengthsMap
+
+		syncServices[thumb] = s
 	}
 
 	return &service{
 		storage:      storage,
-		serviceCerts: serviceCerts,
-		servicePaths: servicePaths,
+		syncServices: syncServices,
 		logger:       logger,
 	}, nil
 }

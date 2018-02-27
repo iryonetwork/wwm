@@ -3,7 +3,11 @@ package authenticator
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"testing"
+
+	"github.com/rs/zerolog"
 
 	"github.com/go-openapi/swag"
 	"github.com/golang/mock/gomock"
@@ -70,4 +74,92 @@ func TestLogin(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error; got nil")
 	}
+}
+
+func TestNew(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	storage := mock.NewMockStorage(ctrl)
+
+	allowedServiceCertsAndPaths := map[string][]string{
+		"testdata/testCert.pem": {
+			"/auth/login",
+			"/storage/*",
+			"/something/other*",
+		},
+	}
+
+	ss, err := New(storage, allowedServiceCertsAndPaths, zerolog.New(ioutil.Discard))
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got %v", err)
+	}
+	s := ss.(*service)
+
+	syncService, ok := s.syncServices["YcS9Uj_ddqPxsJc9ISJYPLhJTRgIZPqE3T8fX3s9Q6I"]
+	if !ok {
+		t.Fatalf("Expected service to have syncService with key id 'YcS9Uj_ddqPxsJc9ISJYPLhJTRgIZPqE3T8fX3s9Q6I'; got sync services: %v", s.syncServices)
+	}
+
+	checkPaths := []string{"/auth/login"}
+	for _, path := range checkPaths {
+		_, ok := syncService.paths[path]
+		if !ok {
+			t.Errorf("Expected service to have path '%s'; have paths %v", path, syncService.paths)
+		}
+	}
+
+	checkLengths := []int{9, 16}
+	for i, length := range checkLengths {
+		if syncService.wildcardLengths[i] != length {
+			t.Errorf("Expected service to have wildcard length %d; have lengths %v", length, syncService.wildcardLengths)
+		}
+		if _, ok := syncService.wildcards[length]; !ok {
+			t.Errorf("Expected service to have wildcard with length %d; have wildcards %v", length, syncService.wildcards)
+		}
+	}
+}
+
+func TestAuthorizerForSyncPaths(t *testing.T) {
+	s := &service{
+		syncServices: map[string]syncService{
+			"test_cert_key_id": {
+				paths: map[string]bool{
+					"/auth/login": true,
+				},
+				wildcards: map[int]map[string]bool{
+					16: map[string]bool{"/something/other": true},
+					9:  map[string]bool{"/storage/": true},
+				},
+				wildcardLengths: []int{9, 16},
+			},
+		},
+	}
+
+	authorizer := s.Authorizer()
+
+	tests := []struct {
+		path    string
+		success bool
+	}{
+		{"/auth/login", true},
+		{"/auth/logindsa", false},
+		{"/storage/", true},
+		{"/storage/dsa", true},
+		{"storage", false},
+		{"/something/other", true},
+		{"/something/otherdsadsa", true},
+		{"/something/othe", false},
+	}
+
+	for _, test := range tests {
+		r, _ := http.NewRequest("GET", test.path, nil)
+		err := authorizer.Authorize(r, swag.String(servicePrincipal+"test_cert_key_id"))
+		if err == nil && !test.success {
+			t.Errorf("Authorizing path '%s' got success; expected fail", test.path)
+		}
+		if err != nil && test.success {
+			t.Errorf("Authorizing path '%s' got fail; expected success", test.path)
+		}
+	}
+
 }
