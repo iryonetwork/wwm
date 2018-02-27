@@ -18,18 +18,20 @@ type metadata struct {
 	created   time.Time
 	checksum  string
 	archetype string
+	labels    []string
 }
 
 var utc, _ = time.LoadLocation("UTC")
 
 func metadataFromKey(key string) (*metadata, error) {
-	items := strings.SplitN(key, ".", 6)
+	items := strings.SplitN(key, ".", 7)
 	md := &metadata{
 		filename:  items[0],
 		version:   items[1],
 		operation: Operation(items[2]),
 		checksum:  items[4],
-		archetype: items[5],
+		labels:    labelsStringToStringSlice(items[5]),
+		archetype: items[6],
 	}
 
 	// validate operation
@@ -59,6 +61,7 @@ func metadataFromNewFile(newFile *object.NewObjectInfo) (*metadata, error) {
 		checksum:  newFile.Checksum,
 		archetype: newFile.Archetype,
 		created:   time.Time(newFile.Created),
+		labels:    newFile.Labels,
 	}
 
 	// validate operation
@@ -76,6 +79,7 @@ func metadataFromFileDescriptor(fd *models.FileDescriptor) (*metadata, error) {
 		operation: Operation(fd.Operation),
 		checksum:  fd.Checksum,
 		archetype: fd.Archetype,
+		labels:    fd.Labels,
 	}
 
 	// parse created
@@ -89,13 +93,15 @@ func metadataFromFileDescriptor(fd *models.FileDescriptor) (*metadata, error) {
 }
 
 func (m *metadata) String() string {
-	return fmt.Sprintf("%s.%s.%s.%d.%s.%s",
+	return fmt.Sprintf("%s.%s.%s.%d.%s.%s.%s",
 		m.filename,
 		m.version,
 		m.operation,
 		m.created.UnixNano()/1000000,
 		m.checksum,
-		m.archetype)
+		stringSliceToLabelsString(m.labels),
+		m.archetype,
+	)
 }
 
 func (m *metadata) FileDescriptor() *models.FileDescriptor {
@@ -106,5 +112,17 @@ func (m *metadata) FileDescriptor() *models.FileDescriptor {
 		Created:   strfmt.DateTime(m.created),
 		Archetype: m.archetype,
 		Checksum:  m.checksum,
+		Labels:    m.labels,
 	}
+}
+
+func labelsStringToStringSlice(s string) []string {
+	if s == "" {
+		return nil
+	}
+	return strings.Split(s, "|")
+}
+
+func stringSliceToLabelsString(s []string) string {
+	return strings.Join(s, "|")
 }

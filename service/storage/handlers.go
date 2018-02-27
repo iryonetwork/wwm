@@ -2,6 +2,7 @@ package storage
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
@@ -39,6 +40,7 @@ type handlers struct {
 func (h *handlers) FileList() operations.FileListHandler {
 	return operations.FileListHandlerFunc(func(params operations.FileListParams, principal *string) middleware.Responder {
 		list, err := h.service.FileList(params.HTTPRequest.Context(), params.Bucket)
+
 		if err != nil {
 			return operations.NewFileListInternalServerError().WithPayload(&models.Error{
 				Code:    "server_error",
@@ -56,6 +58,7 @@ func (h *handlers) FileList() operations.FileListHandler {
 func (h *handlers) FileGet() operations.FileGetHandler {
 	return operations.FileGetHandlerFunc(func(params operations.FileGetParams, principal *string) middleware.Responder {
 		r, fd, err := h.service.FileGet(params.HTTPRequest.Context(), params.Bucket, params.FileID)
+
 		if err != nil {
 			switch err {
 			case ErrNotFound:
@@ -76,13 +79,15 @@ func (h *handlers) FileGet() operations.FileGetHandler {
 			WithXArchetype(fd.Archetype).
 			WithXChecksum(fd.Checksum).
 			WithXName(fd.Name).
-			WithXPath(fd.Path)
+			WithXPath(fd.Path).
+			WithXLabels(formatLabelsHeader(fd.Labels))
 	})
 }
 
 func (h *handlers) FileGetVersion() operations.FileGetVersionHandler {
 	return operations.FileGetVersionHandlerFunc(func(params operations.FileGetVersionParams, principal *string) middleware.Responder {
 		r, fd, err := h.service.FileGetVersion(params.HTTPRequest.Context(), params.Bucket, params.FileID, params.Version)
+
 		if err != nil {
 			switch err {
 			case ErrNotFound:
@@ -103,13 +108,15 @@ func (h *handlers) FileGetVersion() operations.FileGetVersionHandler {
 			WithXArchetype(fd.Archetype).
 			WithXChecksum(fd.Checksum).
 			WithXName(fd.Name).
-			WithXPath(fd.Path)
+			WithXPath(fd.Path).
+			WithXLabels(formatLabelsHeader(fd.Labels))
 	})
 }
 
 func (h *handlers) FileListVersions() operations.FileListVersionsHandler {
 	return operations.FileListVersionsHandlerFunc(func(params operations.FileListVersionsParams, principal *string) middleware.Responder {
 		list, err := h.service.FileListVersions(params.HTTPRequest.Context(), params.Bucket, params.FileID)
+
 		if err != nil {
 			return operations.NewFileListVersionsInternalServerError().WithPayload(&models.Error{
 				Code:    "server_error",
@@ -132,8 +139,8 @@ func (h *handlers) FileNew() operations.FileNewHandler {
 		}
 		defer params.File.Close()
 
-		// call service
-		fd, err := h.service.FileNew(params.HTTPRequest.Context(), params.Bucket, params.File, params.ContentType, archetype)
+		fd, err := h.service.FileNew(params.HTTPRequest.Context(), params.Bucket, params.File, params.ContentType, archetype, params.Labels)
+
 		if err != nil {
 			return operations.NewFileNewInternalServerError().WithPayload(&models.Error{
 				Code:    "server_error",
@@ -153,8 +160,8 @@ func (h *handlers) FileUpdate() operations.FileUpdateHandler {
 		}
 		defer params.File.Close()
 
-		// call service
-		fd, err := h.service.FileUpdate(params.HTTPRequest.Context(), params.Bucket, params.FileID, params.File, params.ContentType, archetype)
+		fd, err := h.service.FileUpdate(params.HTTPRequest.Context(), params.Bucket, params.FileID, params.File, params.ContentType, archetype, params.Labels)
+
 		if err != nil {
 			switch err {
 			case ErrNotFound:
@@ -174,6 +181,7 @@ func (h *handlers) FileUpdate() operations.FileUpdateHandler {
 func (h *handlers) FileDelete() operations.FileDeleteHandler {
 	return operations.FileDeleteHandlerFunc(func(params operations.FileDeleteParams, principal *string) middleware.Responder {
 		err := h.service.FileDelete(params.HTTPRequest.Context(), params.Bucket, params.FileID)
+
 		if err != nil {
 			switch err {
 			case ErrNotFound:
@@ -193,6 +201,7 @@ func (h *handlers) FileDelete() operations.FileDeleteHandler {
 func (h *handlers) SyncBucketList() operations.SyncBucketListHandler {
 	return operations.SyncBucketListHandlerFunc(func(params operations.SyncBucketListParams, principal *string) middleware.Responder {
 		list, err := h.service.BucketList(params.HTTPRequest.Context())
+
 		if err != nil {
 			return operations.NewSyncBucketListInternalServerError().WithPayload(&models.Error{
 				Code:    "server_error",
@@ -210,6 +219,7 @@ func (h *handlers) SyncBucketList() operations.SyncBucketListHandler {
 func (h *handlers) SyncFileList() operations.SyncFileListHandler {
 	return operations.SyncFileListHandlerFunc(func(params operations.SyncFileListParams, principal *string) middleware.Responder {
 		list, err := h.service.SyncFileList(params.HTTPRequest.Context(), params.Bucket)
+
 		if err != nil {
 			return operations.NewSyncFileListInternalServerError().WithPayload(&models.Error{
 				Code:    "server_error",
@@ -227,6 +237,7 @@ func (h *handlers) SyncFileList() operations.SyncFileListHandler {
 func (h *handlers) SyncFileListVersions() operations.SyncFileListVersionsHandler {
 	return operations.SyncFileListVersionsHandlerFunc(func(params operations.SyncFileListVersionsParams, principal *string) middleware.Responder {
 		list, err := h.service.FileListVersions(params.HTTPRequest.Context(), params.Bucket, params.FileID)
+
 		if err != nil {
 			return operations.NewSyncFileListVersionsInternalServerError().WithPayload(&models.Error{
 				Code:    "server_error",
@@ -244,6 +255,7 @@ func (h *handlers) SyncFileListVersions() operations.SyncFileListVersionsHandler
 func (h *handlers) SyncFileMetadata() operations.SyncFileMetadataHandler {
 	return operations.SyncFileMetadataHandlerFunc(func(params operations.SyncFileMetadataParams, principal *string) middleware.Responder {
 		_, fd, err := h.service.FileGetVersion(params.HTTPRequest.Context(), params.Bucket, params.FileID, params.Version)
+
 		if err != nil {
 			switch err {
 			case ErrNotFound:
@@ -261,17 +273,28 @@ func (h *handlers) SyncFileMetadata() operations.SyncFileMetadataHandler {
 			WithXArchetype(fd.Archetype).
 			WithXChecksum(fd.Checksum).
 			WithXName(fd.Name).
-			WithXPath(fd.Path)
+			WithXPath(fd.Path).
+			WithXLabels(formatLabelsHeader(fd.Labels))
 	})
 }
 
 func (h *handlers) SyncFile() operations.SyncFileHandler {
 	return operations.SyncFileHandlerFunc(func(params operations.SyncFileParams, principal *string) middleware.Responder {
 		defer params.File.Close()
-
-		// call service
 		archetype := swag.StringValue(params.Archetype)
-		fd, err := h.service.SyncFile(params.HTTPRequest.Context(), params.Bucket, params.FileID, params.Version, params.File, params.ContentType, params.Created, archetype)
+
+		fd, err := h.service.SyncFile(
+			params.HTTPRequest.Context(),
+			params.Bucket,
+			params.FileID,
+			params.Version,
+			params.File,
+			params.ContentType,
+			params.Created,
+			archetype,
+			params.Labels,
+		)
+
 		if err != nil {
 			switch err {
 			case ErrAlreadyExists:
@@ -326,4 +349,8 @@ func (h *handlers) GetUserIDFromToken(token string) (*string, error) {
 // NewHandlers returns a new instance of authenticator handlers
 func NewHandlers(service Service, logger zerolog.Logger) Handlers {
 	return &handlers{service: service, logger: logger}
+}
+
+func formatLabelsHeader(l []string) string {
+	return strings.Join(l, "|")
 }

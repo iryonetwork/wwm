@@ -30,4 +30,5 @@ type NewObjectInfo struct {
 	Name        string
 	Version     string
 	Operation   string
+	Labels      []string
 }

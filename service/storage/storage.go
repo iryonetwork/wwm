@@ -17,6 +17,7 @@ import (
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/object"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
+	"github.com/iryonetwork/wwm/utils"
 )
 
 // Service describes storage service's public API.
@@ -42,10 +43,10 @@ type Service interface {
 	FileListVersions(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error)
 
 	// FileNew creates a new file.
-	FileNew(ctx context.Context, bucketID string, r io.Reader, contentType string, archetype string) (*models.FileDescriptor, error)
+	FileNew(ctx context.Context, bucketID string, r io.Reader, contentType string, archetype string, labels []string) (*models.FileDescriptor, error)
 
 	// FileUpdate creates a new version of a file.
-	FileUpdate(ctx context.Context, bucketID, fileID string, r io.Reader, contentType string, archetype string) (*models.FileDescriptor, error)
+	FileUpdate(ctx context.Context, bucketID, fileID string, r io.Reader, contentType string, archetype string, labels []string) (*models.FileDescriptor, error)
 
 	// FileDelete marks file as deleted.
 	FileDelete(ctx context.Context, bucketID, fileID string) error
@@ -55,7 +56,7 @@ type Service interface {
 	SyncFileList(ctx context.Context, bucketID string) ([]*models.FileDescriptor, error)
 
 	// SyncFile syncs file with provided fileID and version.
-	SyncFile(ctx context.Context, bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string) (*models.FileDescriptor, error)
+	SyncFile(ctx context.Context, bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string, labels []string) (*models.FileDescriptor, error)
 
 	// SyncFileDelete sync file deletion.
 	SyncFileDelete(ctx context.Context, bucketID, fileID, version string, created strfmt.DateTime) error
@@ -141,7 +142,7 @@ func (s *service) FileListVersions(ctx context.Context, bucketID, fileID string)
 	return s.s3.List(ctx, bucketID, fileID)
 }
 
-func (s *service) FileNew(ctx context.Context, bucketID string, r io.Reader, contentType string, archetype string) (*models.FileDescriptor, error) {
+func (s *service) FileNew(ctx context.Context, bucketID string, r io.Reader, contentType string, archetype string, labels []string) (*models.FileDescriptor, error) {
 	err := s.EnsureBucket(ctx, bucketID)
 	if err != nil {
 		return nil, err
@@ -152,7 +153,7 @@ func (s *service) FileNew(ctx context.Context, bucketID string, r io.Reader, con
 	tee := io.TeeReader(r, &buf)
 	checksum, err := s.Checksum(tee)
 	if err != nil {
-		s.logger.Info().Err(err).Msg("Failed to calculate checksum")
+		s.logger.Error().Err(err).Msg("Failed to calculate checksum")
 		return nil, err
 	}
 
@@ -167,6 +168,7 @@ func (s *service) FileNew(ctx context.Context, bucketID string, r io.Reader, con
 		Version:     version,
 		Name:        fileID,
 		Operation:   string(s3.Write),
+		Labels:      labels,
 	}
 
 	fd, err := s.s3.Write(ctx, bucketID, no, &buf)
@@ -176,13 +178,20 @@ func (s *service) FileNew(ctx context.Context, bucketID string, r io.Reader, con
 			storageSync.FileNew,
 			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version, Created: fd.Created},
 		)
+		for _, label := range labels {
+			err := s.updateFilesCollection(ctx, s3.Write, bucketID, label, fd)
+			if err != nil {
+				s.logger.Error().Err(err).Msgf("failed to update files collection %s", label)
+			}
+		}
 	}
+
 	return fd, err
 }
 
-func (s *service) FileUpdate(ctx context.Context, bucketID, fileID string, r io.Reader, contentType string, archetype string) (*models.FileDescriptor, error) {
+func (s *service) FileUpdate(ctx context.Context, bucketID, fileID string, r io.Reader, contentType string, archetype string, labels []string) (*models.FileDescriptor, error) {
 	// get the previous file
-	_, _, err := s.s3.Read(ctx, bucketID, fileID, "")
+	_, old, err := s.s3.Read(ctx, bucketID, fileID, "")
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +201,7 @@ func (s *service) FileUpdate(ctx context.Context, bucketID, fileID string, r io.
 	tee := io.TeeReader(r, &buf)
 	checksum, err := s.Checksum(tee)
 	if err != nil {
-		s.logger.Info().Err(err).Msg("Failed to calculate checksum")
+		s.logger.Error().Err(err).Msg("Failed to calculate checksum")
 		return nil, err
 	}
 
@@ -206,6 +215,7 @@ func (s *service) FileUpdate(ctx context.Context, bucketID, fileID string, r io.
 		Version:     version,
 		Name:        fileID,
 		Operation:   string(s3.Write),
+		Labels:      labels,
 	}
 
 	fd, err := s.s3.Write(ctx, bucketID, no, &buf)
@@ -215,6 +225,21 @@ func (s *service) FileUpdate(ctx context.Context, bucketID, fileID string, r io.
 			storageSync.FileUpdate,
 			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version, Created: fd.Created},
 		)
+
+		for _, label := range labels {
+			err := s.updateFilesCollection(ctx, s3.Write, bucketID, label, fd)
+			if err != nil {
+				s.logger.Error().Err(err).Msgf("failed to update files collection %s", label)
+			}
+		}
+
+		droppedLabels := utils.DiffSlice(old.Labels, labels)
+		for _, label := range droppedLabels {
+			err := s.updateFilesCollection(ctx, s3.Delete, bucketID, label, fd)
+			if err != nil {
+				s.logger.Error().Err(err).Msgf("failed to update files collection %s", label)
+			}
+		}
 	}
 	return fd, err
 }
@@ -236,6 +261,7 @@ func (s *service) FileDelete(ctx context.Context, bucketID, fileID string) error
 		Version:     version,
 		Name:        fileID,
 		Operation:   string(s3.Delete),
+		Labels:      fd.Labels,
 	}
 
 	fd, err = s.s3.Write(ctx, bucketID, no, &bytes.Buffer{})
@@ -245,6 +271,12 @@ func (s *service) FileDelete(ctx context.Context, bucketID, fileID string) error
 			storageSync.FileDelete,
 			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version, Created: fd.Created},
 		)
+		for _, label := range fd.Labels {
+			err := s.updateFilesCollection(ctx, s3.Delete, bucketID, label, fd)
+			if err != nil {
+				s.logger.Error().Err(err).Msgf("failed to update files collection %s", label)
+			}
+		}
 	}
 	return err
 }
@@ -282,7 +314,7 @@ func (s *service) SyncFileList(ctx context.Context, bucketID string) ([]*models.
 	return list, nil
 }
 
-func (s *service) SyncFile(ctx context.Context, bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string) (*models.FileDescriptor, error) {
+func (s *service) SyncFile(ctx context.Context, bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string, labels []string) (*models.FileDescriptor, error) {
 	err := s.EnsureBucket(ctx, bucketID)
 	if err != nil {
 		return nil, err
@@ -293,7 +325,7 @@ func (s *service) SyncFile(ctx context.Context, bucketID, fileID, version string
 	tee := io.TeeReader(r, &buf)
 	checksum, err := s.Checksum(tee)
 	if err != nil {
-		s.logger.Info().Err(err).Msg("Failed to calculate checksum")
+		s.logger.Error().Err(err).Msg("Failed to calculate checksum")
 		return nil, err
 	}
 
@@ -327,6 +359,7 @@ func (s *service) SyncFile(ctx context.Context, bucketID, fileID, version string
 		Version:     version,
 		Name:        fileID,
 		Operation:   string(s3.Write),
+		Labels:      labels,
 	}
 
 	return s.s3.Write(ctx, bucketID, no, &buf)
@@ -361,6 +394,7 @@ func (s *service) SyncFileDelete(ctx context.Context, bucketID, fileID, version 
 		Version:     version,
 		Name:        fileID,
 		Operation:   string(s3.Delete),
+		Labels:      fd.Labels,
 	}
 
 	_, err = s.s3.Write(ctx, bucketID, no, &bytes.Buffer{})
@@ -373,6 +407,73 @@ func (s *service) EnsureBucket(ctx context.Context, bucketID string) error {
 		s.logger.Error().Err(err).Str("bucket", bucketID).Msg("Failed to ensure bucket")
 		return err
 	}
+
+	return nil
+}
+
+func (s *service) updateFilesCollection(ctx context.Context, operation s3.Operation, bucketID, label string, fd *models.FileDescriptor) error {
+	var c *filesCollection
+
+	r, _, err := s.s3.Read(ctx, bucketID, label, "")
+	if err != nil {
+		if err != s3.ErrNotFound {
+			return err
+		}
+		c = &filesCollection{}
+	} else {
+		c, err = FilesCollection(r)
+		if err != nil {
+			s.logger.Error().Err(err).Msg("failed to parse file collection file")
+			return err
+		}
+	}
+
+	switch operation {
+	case s3.Write:
+		c.Update(fd)
+	case s3.Delete:
+		c.Remove(fd)
+	}
+
+	f, err := c.GetFile()
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to generate file collection file")
+		return err
+	}
+
+	// calculate the checksum
+	var buf bytes.Buffer
+	tee := io.TeeReader(f, &buf)
+	checksum, err := s.Checksum(tee)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to calculate checksum")
+		return err
+	}
+
+	fileID := label
+	version := getUUID()
+	no := &object.NewObjectInfo{
+		Checksum:    checksum,
+		Size:        int64(buf.Len()),
+		Created:     getTime(),
+		ContentType: "text/json",
+		Version:     version,
+		Name:        fileID,
+		Operation:   string(s3.Write),
+		Labels:      []string{labelFilesCollection},
+	}
+
+	fd, err = s.s3.Write(ctx, bucketID, no, &buf)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to write file collection file")
+		return err
+	}
+
+	s.publisher.PublishAsyncWithRetries(
+		ctx,
+		storageSync.FileUpdate,
+		&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: fd.Version, Created: fd.Created},
+	)
 
 	return nil
 }

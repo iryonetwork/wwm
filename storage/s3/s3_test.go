@@ -47,6 +47,7 @@ var (
 		Version:     "V1",
 		Size:        8,
 		Operation:   "w",
+		Labels:      []string{"vitalSigns"},
 	}
 	file1V2 = &models.FileDescriptor{
 		Archetype:   "openEHR-EHR-OBSERVATION.blood_pressure.v1",
@@ -58,6 +59,7 @@ var (
 		Version:     "V2",
 		Size:        8,
 		Operation:   "w",
+		Labels:      []string{"vitalSigns", "basicPatientInfo"},
 	}
 	file2V1 = &models.FileDescriptor{
 		Archetype:   "",
@@ -83,22 +85,22 @@ var (
 	}
 	info1V1 = minio.ObjectInfo{
 		ContentType: "text/openEhrXml",
-		Key:         "File1.V1.w.1516288966123.CHS.openEHR-EHR-OBSERVATION.blood_pressure.v1",
+		Key:         "File1.V1.w.1516288966123.CHS.vitalSigns.openEHR-EHR-OBSERVATION.blood_pressure.v1",
 		Size:        8,
 	}
 	info1V2 = minio.ObjectInfo{
 		ContentType: "text/openEhrXml",
-		Key:         "File1.V2.w.1516979775123.CHS.openEHR-EHR-OBSERVATION.blood_pressure.v1",
+		Key:         "File1.V2.w.1516979775123.CHS.vitalSigns|basicPatientInfo.openEHR-EHR-OBSERVATION.blood_pressure.v1",
 		Size:        8,
 	}
 	info2V1 = minio.ObjectInfo{
 		ContentType: "image/jpeg",
-		Key:         "Image.V1.w.1516288966123.CHS.",
+		Key:         "Image.V1.w.1516288966123.CHS..",
 		Size:        15698,
 	}
 	info2V2 = minio.ObjectInfo{
 		ContentType: "image/jpeg",
-		Key:         "Image.V2.d.1516979775123.CHS.",
+		Key:         "Image.V2.d.1516979775123.CHS..",
 		Size:        0,
 	} //Fri Jan 26 16:16:26
 	infoErr = minio.ObjectInfo{
@@ -106,7 +108,7 @@ var (
 	}
 	infoBrokenFD = minio.ObjectInfo{
 		ContentType: "text/err",
-		Key:         "Error.V1.w.invalid.CHS.",
+		Key:         "Error.V1.w.invalid.CHS..",
 		Size:        15698,
 	}
 	newInfo = &object.NewObjectInfo{
@@ -117,6 +119,7 @@ var (
 		Name:        "File1",
 		Version:     "version",
 		Size:        8,
+		Labels:      []string{string("vitalSigns")},
 	}
 	noErrors   = false
 	withErrors = true
@@ -428,7 +431,7 @@ func TestS3List(t *testing.T) {
 }
 
 func TestS3Read(t *testing.T) {
-	expectedFileName := "File1.V2.w.1516979775123.CHS.openEHR-EHR-OBSERVATION.blood_pressure.v1"
+	expectedFileName := "File1.V2.w.1516979775123.CHS.vitalSigns|basicPatientInfo.openEHR-EHR-OBSERVATION.blood_pressure.v1"
 
 	testCases := []struct {
 		description   string

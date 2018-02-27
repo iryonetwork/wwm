@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"sort"
+	"strings"
 
 	"github.com/go-openapi/runtime"
 	strfmt "github.com/go-openapi/strfmt"
@@ -93,6 +94,10 @@ func (h *handlers) SyncFile(ctx context.Context, bucketID, fileID, version strin
 	if resp.XArchetype != "" {
 		syncParams.SetArchetype(&resp.XArchetype)
 	}
+	if resp.XLabels != "" {
+		syncParams.SetLabels(formatLabelsFromHeader(resp.XLabels))
+	}
+
 	syncParams.SetContentType(resp.ContentType)
 	syncParams.SetFile(runtime.NamedReader("FileReader", &buf))
 	ok, created, err := h.destination.SyncFile(syncParams, h.destinationAuth)
@@ -285,4 +290,8 @@ func (h *handlers) listFileVersionsAsc(ctx context.Context, c *operations.Client
 	sort.Sort(ascByCreated(files))
 
 	return files, nil
+}
+
+func formatLabelsFromHeader(h string) []string {
+	return strings.Split(h, "|")
 }

@@ -53,6 +53,7 @@ import (
 const metaArchetype = "x-archetype"
 const metaCreated = "x-created"
 const metaChecksum = "x-checksum"
+const metaLabels = "x-labels"
 
 // Storage provides an interface for s3 public functions
 type Storage interface {
@@ -302,6 +303,7 @@ func (s *s3storage) Write(ctx context.Context, bucketID string, newFile *object.
 		ContentType: newFile.ContentType,
 		Checksum:    newFile.Checksum,
 		Created:     newFile.Created,
+		Labels:      newFile.Labels,
 		Path:        fmt.Sprintf("%s/%s/%s", bucketID, meta.filename, meta.version),
 		Size:        newFile.Size,
 		Operation:   string(op),
@@ -327,6 +329,7 @@ func objectInfoToFileDescriptor(info minio.ObjectInfo, bucketID string) (*models
 		Created:     strfmt.DateTime(meta.created),
 		Archetype:   meta.archetype,
 		Operation:   string(meta.operation),
+		Labels:      meta.labels,
 	}
 
 	return fd, nil

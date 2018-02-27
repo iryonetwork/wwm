@@ -91,6 +91,15 @@ paths:
           required: false
           type: string
 
+        - in: formData
+          name: labels
+          description: Optional labels
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: pipes
+
       responses:
         201:
           description: File created
@@ -160,6 +169,9 @@ paths:
             X-Path:
               type: string
               description: File's full path
+            X-Labels:
+              type: string
+              description: Pipe-delimited file's labels
 
         403:
           $ref: '#/responses/403'
@@ -209,6 +221,15 @@ paths:
           description: Optional archetype ID
           required: false
           type: string
+
+        - in: formData
+          name: labels
+          description: Optional labels
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: pipes
 
       responses:
         201:
@@ -359,6 +380,9 @@ paths:
             X-Path:
               type: string
               description: File's full path
+            X-Labels:
+              type: string
+              description: Pipe-delimited file's labels
 
         403:
           $ref: '#/responses/403'
@@ -523,6 +547,9 @@ paths:
             X-Path:
               type: string
               description: File's full path
+            X-Labels:
+              type: string
+              description: Pipe-delimited file's labels
 
         403:
           description: Forbidden
@@ -583,6 +610,15 @@ paths:
           description: Optional archetype ID
           required: false
           type: string
+
+        - in: formData
+          name: labels
+          description: Optional labels
+          required: false
+          type: array
+          items:
+            type: string
+          collectionFormat: pipes
 
       responses:
         200:
@@ -664,6 +700,13 @@ definitions:
         type: string
         description: Name of the file
         example: 6a0b7d41-b2d9-4fee-9296-7d678186396d
+      labels:
+        type: array
+        description: Labels of the file
+        items:
+          type: string
+          enum: [filesCollection, basicPatientInfo, vitalSigns, diagnosis]
+        example: ['basicPatientInfo']
       version:
         type: string
         description: Version of the file
