@@ -3,10 +3,10 @@ package auth
 import (
 	"strconv"
 
-	bolt "github.com/coreos/bbolt"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 	"github.com/iryonetwork/wwm/utils"
 )
 
@@ -21,13 +21,8 @@ func (s *Storage) GetRules() ([]*models.Rule, error) {
 		b := tx.Bucket(bucketACLRules)
 
 		return b.ForEach(func(_, data []byte) error {
-			data, err := s.decrypt(data)
-			if err != nil {
-				return err
-			}
-
 			rule := &models.Rule{}
-			err = rule.UnmarshalBinary(data)
+			err := rule.UnmarshalBinary(data)
 			if err != nil {
 				return err
 			}
@@ -57,11 +52,6 @@ func (s *Storage) GetRule(id string) (*models.Rule, error) {
 		data := tx.Bucket(bucketACLRules).Get(ruleUUID.Bytes())
 		if data == nil {
 			return utils.NewError(utils.ErrNotFound, "Failed to find rule by id = '%s'", id)
-		}
-
-		data, err = s.decrypt(data)
-		if err != nil {
-			return err
 		}
 
 		// decode the rule
@@ -122,11 +112,6 @@ func (s *Storage) AddRule(rule *models.Rule) (*models.Rule, error) {
 			return err
 		}
 
-		data, err = s.encrypt(data)
-		if err != nil {
-			return err
-		}
-
 		// insert rule
 		return tx.Bucket(bucketACLRules).Put(id.Bytes(), data)
 	})
@@ -163,11 +148,6 @@ func (s *Storage) UpdateRule(rule *models.Rule) (*models.Rule, error) {
 		}
 
 		data, err := rule.MarshalBinary()
-		if err != nil {
-			return err
-		}
-
-		data, err = s.encrypt(data)
 		if err != nil {
 			return err
 		}

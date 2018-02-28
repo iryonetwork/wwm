@@ -1,10 +1,10 @@
 package auth
 
 import (
-	bolt "github.com/coreos/bbolt"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 	"github.com/iryonetwork/wwm/utils"
 )
 
@@ -19,13 +19,8 @@ func (s *Storage) GetRoles() ([]*models.Role, error) {
 		b := tx.Bucket(bucketRoles)
 
 		return b.ForEach(func(_, data []byte) error {
-			data, err := s.decrypt(data)
-			if err != nil {
-				return err
-			}
-
 			role := &models.Role{}
-			err = role.UnmarshalBinary(data)
+			err := role.UnmarshalBinary(data)
 			if err != nil {
 				return err
 			}
@@ -55,11 +50,6 @@ func (s *Storage) GetRole(id string) (*models.Role, error) {
 		data := tx.Bucket(bucketRoles).Get(roleUUID.Bytes())
 		if data == nil {
 			return utils.NewError(utils.ErrNotFound, "Failed to find role by id = '%s'", id)
-		}
-
-		data, err := s.decrypt(data)
-		if err != nil {
-			return err
 		}
 
 		// decode the role
@@ -94,11 +84,6 @@ func (s *Storage) AddRole(role *models.Role) (*models.Role, error) {
 		}
 
 		data, err := role.MarshalBinary()
-		if err != nil {
-			return err
-		}
-
-		data, err = s.encrypt(data)
 		if err != nil {
 			return err
 		}
@@ -162,11 +147,6 @@ func (s *Storage) UpdateRole(role *models.Role) (*models.Role, error) {
 		role.Users = users[:length]
 
 		data, err := role.MarshalBinary()
-		if err != nil {
-			return err
-		}
-
-		data, err = s.encrypt(data)
 		if err != nil {
 			return err
 		}

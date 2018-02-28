@@ -1,11 +1,11 @@
 package auth
 
 import (
-	bolt "github.com/coreos/bbolt"
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 	"github.com/iryonetwork/wwm/utils"
 )
 
@@ -20,13 +20,8 @@ func (s *Storage) GetUsers() ([]*models.User, error) {
 		b := tx.Bucket(bucketUsers)
 
 		return b.ForEach(func(_, data []byte) error {
-			data, err := s.decrypt(data)
-			if err != nil {
-				return err
-			}
-
 			user := &models.User{}
-			err = user.UnmarshalBinary(data)
+			err := user.UnmarshalBinary(data)
 			if err != nil {
 				return err
 			}
@@ -56,11 +51,6 @@ func (s *Storage) GetUser(id string) (*models.User, error) {
 		data := tx.Bucket(bucketUsers).Get(userUUID.Bytes())
 		if data == nil {
 			return utils.NewError(utils.ErrNotFound, "Failed to find user by id = '%s'", id)
-		}
-
-		data, err = s.decrypt(data)
-		if err != nil {
-			return err
 		}
 
 		// decode the user
@@ -99,24 +89,14 @@ func (s *Storage) AddUser(user *models.User) (*models.User, error) {
 			return err
 		}
 
-		data, err = s.encrypt(data)
-		if err != nil {
-			return err
-		}
-
 		// insert user
 		err = tx.Bucket(bucketUsers).Put(id.Bytes(), data)
 		if err != nil {
 			return err
 		}
 
-		data, err = s.encrypt(id.Bytes())
-		if err != nil {
-			return err
-		}
-
 		// insert username
-		return tx.Bucket(bucketUsernames).Put([]byte(*user.Username), data)
+		return tx.Bucket(bucketUsernames).Put([]byte(*user.Username), id.Bytes())
 	})
 	if err != nil {
 		return nil, err
@@ -148,10 +128,6 @@ func (s *Storage) UpdateUser(user *models.User) (*models.User, error) {
 		if userData == nil {
 			return utils.NewError(utils.ErrNotFound, "Failed to find user by id = '%s'", user.ID)
 		}
-		userData, err = s.decrypt(userData)
-		if err != nil {
-			return err
-		}
 
 		currentUser := &models.User{}
 		err = currentUser.UnmarshalBinary(userData)
@@ -165,12 +141,7 @@ func (s *Storage) UpdateUser(user *models.User) (*models.User, error) {
 				return err
 			}
 
-			data, err := s.encrypt(userUUID.Bytes())
-			if err != nil {
-				return err
-			}
-
-			err = bUsernames.Put([]byte(*user.Username), data)
+			err = bUsernames.Put([]byte(*user.Username), userUUID.Bytes())
 			if err != nil {
 				return err
 			}
@@ -188,11 +159,6 @@ func (s *Storage) UpdateUser(user *models.User) (*models.User, error) {
 		}
 
 		data, err := user.MarshalBinary()
-		if err != nil {
-			return err
-		}
-
-		data, err = s.encrypt(data)
 		if err != nil {
 			return err
 		}
@@ -240,24 +206,14 @@ func (s *Storage) GetUserByUsername(username string) (*models.User, error) {
 			return utils.NewError(utils.ErrNotFound, "Failed to find username %s", username)
 		}
 
-		id, err := s.decrypt(id)
-		if err != nil {
-			return err
-		}
-
 		// read user by id
 		data := tx.Bucket(bucketUsers).Get(id)
 		if data == nil {
 			return utils.NewError(utils.ErrNotFound, "Failed to find user by username %s (id = %s)", username, id)
 		}
 
-		data, err = s.decrypt(data)
-		if err != nil {
-			return err
-		}
-
 		// decode the user
-		err = user.UnmarshalBinary(data)
+		err := user.UnmarshalBinary(data)
 		if err != nil {
 			return err
 		}

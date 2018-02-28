@@ -1,21 +1,17 @@
 package auth
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
 	"fmt"
-	"io"
 	"os"
 	"sync"
 
 	"github.com/casbin/casbin"
 	"github.com/go-openapi/swag"
-	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/rs/zerolog"
 	uuid "github.com/satori/go.uuid"
 
-	bolt "github.com/coreos/bbolt"
+	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 )
 
 type Storage struct {
@@ -54,7 +50,7 @@ func New(path string, key []byte, readOnly, refreshRules bool, logger zerolog.Lo
 		return nil, fmt.Errorf("Encryption key must be 32 bytes long")
 	}
 
-	db, err := bolt.Open(path, dbPermissions, &bolt.Options{ReadOnly: readOnly})
+	db, err := bolt.Open(key, path, dbPermissions, &bolt.Options{ReadOnly: readOnly})
 	if err != nil {
 		return nil, err
 	}
@@ -114,11 +110,6 @@ func (s *Storage) initializeRolesAndRules() error {
 			roleUUID, _ := uuid.FromString(everyoneRole.ID)
 			data, _ := everyoneRole.MarshalBinary()
 
-			data, err = s.encrypt(data)
-			if err != nil {
-				return err
-			}
-
 			return tx.Bucket(bucketRoles).Put(roleUUID.Bytes(), data)
 		})
 		if err != nil {
@@ -131,11 +122,6 @@ func (s *Storage) initializeRolesAndRules() error {
 		err := s.db.Update(func(tx *bolt.Tx) error {
 			roleUUID, _ := uuid.FromString(adminRole.ID)
 			data, _ := adminRole.MarshalBinary()
-
-			data, err = s.encrypt(data)
-			if err != nil {
-				return err
-			}
 
 			return tx.Bucket(bucketRoles).Put(roleUUID.Bytes(), data)
 		})
@@ -194,41 +180,6 @@ func (s *Storage) initializeRolesAndRules() error {
 	})
 
 	return nil
-}
-
-const nonceLength = 12
-
-func (s *Storage) encrypt(data []byte) ([]byte, error) {
-	block, err := aes.NewCipher(s.encryptionKey)
-	if err != nil {
-		return nil, err
-	}
-
-	nonce := make([]byte, nonceLength)
-	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		return nil, err
-	}
-
-	aesgcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
-
-	return append(nonce, aesgcm.Seal(nil, nonce, data, nil)...), nil
-}
-
-func (s *Storage) decrypt(data []byte) ([]byte, error) {
-	block, err := aes.NewCipher(s.encryptionKey)
-	if err != nil {
-		return nil, err
-	}
-
-	aesgcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
-
-	return aesgcm.Open(nil, data[:nonceLength], data[nonceLength:], nil)
 }
 
 // Close closes the database

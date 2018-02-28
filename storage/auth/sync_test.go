@@ -5,28 +5,9 @@ import (
 	"reflect"
 	"sync"
 	"testing"
-
-	bolt "github.com/coreos/bbolt"
 )
 
 var testDBChecksum = []byte{0xbf, 0x6, 0x5c, 0x82, 0xd3, 0x7a, 0x57, 0xe9, 0x2c, 0x74, 0x95, 0x8e, 0x53, 0xc8, 0x5, 0xb4, 0x9b, 0x6b, 0x0, 0xaf, 0x15, 0xdf, 0x33, 0x90, 0x89, 0x4b, 0xa9, 0xd7, 0x65, 0xd2, 0xbc, 0x2d}
-
-func TestGetChecksum(t *testing.T) {
-	db, _ := bolt.Open("testdata/test.db", 0x600, &bolt.Options{ReadOnly: true})
-	defer db.Close()
-
-	storage := &Storage{
-		db: db,
-	}
-
-	checksum, err := storage.GetChecksum()
-	if err != nil {
-		t.Fatalf("Expected error to be nil; got '%v'", err)
-	}
-	if !reflect.DeepEqual(checksum, testDBChecksum) {
-		t.Fatalf("Expected checksum to be '%v'; got '%v'", testDBChecksum, checksum)
-	}
-}
 
 func TestReplaceDB(t *testing.T) {
 	f, _ := os.Open("testdata/test.db")

@@ -8,9 +8,10 @@ import (
 	"io/ioutil"
 	"os"
 
-	bolt "github.com/coreos/bbolt"
 	blake2b "github.com/minio/blake2b-simd"
 	"github.com/rs/zerolog"
+
+	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 )
 
 // GetChecksum calculates and returns checksum of the whole database
@@ -96,7 +97,7 @@ func (s *Storage) ReplaceDB(src io.ReadCloser, checksum []byte) error {
 		return err
 	}
 
-	d, err := bolt.Open(path, dbPermissions, &bolt.Options{ReadOnly: readOnly})
+	d, err := bolt.Open(s.encryptionKey, path, dbPermissions, &bolt.Options{ReadOnly: readOnly})
 	if err != nil {
 		return err
 	}
