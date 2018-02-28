@@ -1,0 +1,387 @@
+swagger: '2.0'
+
+info:
+  title: IRYO waitlist API
+  version: '1.0'
+
+host: iryo.local
+schemes:
+  - https
+basePath: /waitlist
+consumes:
+  - application/json
+produces:
+  - application/json; charset=utf-8
+
+securityDefinitions:
+  token:
+    type: apiKey
+    name: Authorization
+    in: header
+
+security:
+  - token: []
+
+paths:
+  /:
+    get:
+      tags:
+        - waitlist
+
+      summary: Waitlists
+      description: Lists all waiting lists
+
+      responses:
+        200:
+          description: List of waitlists
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/List'
+
+        500:
+          $ref: '#/responses/500'
+
+    post:
+      tags:
+        - waitlist
+
+      parameters:
+        - in: body
+          name: list
+          required: true
+          schema:
+            $ref: '#/definitions/List'
+
+      summary: Create waitlist
+      description: Create a new waitlist
+
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/List'
+
+        500:
+          $ref: '#/responses/500'
+
+
+  /{listId}:
+    get:
+      tags:
+        - item
+
+      parameters:
+        - in: path
+          name: listId
+          required: true
+          type: string
+
+      summary: Waitlist
+      description: Lists all people in the waiting list ordered by priority and time.
+
+      responses:
+        200:
+          description: Waitlist
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Item'
+
+        403:
+          $ref: '#/responses/403'
+
+        500:
+          $ref: '#/responses/500'
+
+    post:
+      tags:
+        - item
+      summary: Create waitlist item
+      description: Add new person to the waitlist
+
+      parameters:
+        - in: path
+          name: listId
+          required: true
+          type: string
+
+        - in: body
+          name: item
+          required: true
+          schema:
+            $ref: '#/definitions/Item'
+
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Item'
+
+        400:
+          $ref: '#/responses/400'
+
+        403:
+          $ref: '#/responses/403'
+
+        500:
+          $ref: '#/responses/500'
+
+
+    put:
+      tags:
+        - waitlist
+
+      parameters:
+        - in: path
+          name: listId
+          required: true
+          type: string
+
+        - in: body
+          name: list
+          required: true
+          schema:
+            $ref: '#/definitions/List'
+
+      summary: Update waitlist
+      description: Update waitlist metadata
+
+      responses:
+        204:
+          description: List was updated
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    delete:
+      tags:
+        - waitlist
+
+      parameters:
+        - in: path
+          name: listId
+          required: true
+          type: string
+
+      summary: Delete waitlist
+
+      responses:
+        204:
+          description: Deleted
+
+        500:
+          $ref: '#/responses/500'
+
+
+  /{listId}/{itemId}:
+    put:
+      summary: Updates item on the waitlist
+      tags:
+        - item
+
+      parameters:
+        - in: path
+          name: listId
+          required: true
+          type: string
+
+        - in: path
+          name: itemId
+          required: true
+          type: string
+
+        - in: body
+          name: item
+          required: true
+          schema:
+            $ref: '#/definitions/Item'
+
+      responses:
+        204:
+          description: Item was updated
+
+        400:
+          $ref: '#/responses/400'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    delete:
+      summary: Remove item from list
+      tags:
+        - item
+
+      parameters:
+        - in: path
+          name: listId
+          required: true
+          type: string
+
+        - in: path
+          name: itemId
+          required: true
+          type: string
+
+        - in: query
+          name: reason
+          required: true
+          type: string
+          enum:
+            - finished
+            - canceled
+
+      responses:
+        204:
+          description: Deleted
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+
+definitions:
+  List:
+    type: object
+    required:
+      - name
+    properties:
+      id:
+        type: string
+        description: Items UUID
+        readOnly: true
+        example: 1bdf4870-00b1-4f00-b3b1-e4758f5c7c03
+      name:
+        type: string
+        description: Waitlist name
+        example: Room 1
+
+  Item:
+    type: object
+    required:
+      - person_id
+      - priority
+      - status
+    properties:
+      id:
+        type: string
+        description: Items UUID
+        readOnly: true
+        example: 1bdf4870-00b1-4f00-b3b1-e4758f5c7c03
+      person_id:
+        type: string
+        description: Persons UUID
+        example: 6a0b7d41-b2d9-4fee-9296-7d678186396d
+      person:
+        $ref: '#/definitions/Person'
+      priority:
+        type: integer
+        description: Priority to treat person (1=urgent, 4=normal)
+        default: 4
+        example: 4
+      status:
+        type: string
+        description: Status of person in waitlist
+        enum:
+          - waiting
+          - finished
+          - canceled
+        default: waiting
+        example: waiting
+      complaint:
+        type: string
+        description: Main complaint
+        example: Genital infection
+      vital_signs:
+        type: object
+        additionalProperties: 
+          type: string
+      added:
+        type: string
+        description: Date and time when person was added to waitlist
+        format: datetime
+        example: '2018-01-09T13:10:07Z'
+        readOnly: true
+      finished:
+        type: string
+        description: Date and time when person was removed from waitlist
+        format: datetime
+        example: '2018-01-09T13:18:07Z'
+        readOnly: true
+
+
+  Person:
+    type: object
+    readOnly: true
+    properties:
+      name:
+        type: string
+        description: Persons name
+      sex:
+        type: string
+        enum:
+          - male
+          - female
+      birthdate:
+        type: string
+        description: Date of birth
+        format: date
+        example: '1985-01-09'
+
+
+  Error:
+    type: object
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+
+
+responses:
+  400:
+    description: Request is badly formatted
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: bad_request
+        message: Request is badly formatted
+
+  403:
+    description: Forbiden
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: forbiden
+        message: You do not have permissions to do this
+
+  404:
+    description: Required entity cannot be found
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: not_found
+        message: Required entity cannot be found
+
+  500:
+    description: Internal server error
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: internal_error
+        message: Internal server error
