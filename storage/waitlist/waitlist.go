@@ -3,9 +3,6 @@ package waitlist
 import (
 	"bytes"
 	"fmt"
-	"time"
-
-	"github.com/go-openapi/strfmt"
 
 	"github.com/boltdb/bolt"
 	"github.com/go-openapi/swag"
@@ -13,7 +10,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func (s *Storage) Lists() ([]*models.List, error) {
+// Lists returns all active lists
+func (s *storage) Lists() ([]*models.List, error) {
 	var lists []*models.List
 
 	err := s.db.View(func(tx *bolt.Tx) error {
@@ -45,7 +43,8 @@ func (s *Storage) Lists() ([]*models.List, error) {
 	return lists, nil
 }
 
-func (s *Storage) AddList(name string) (*models.List, error) {
+// AddList adds new list
+func (s *storage) AddList(name string) (*models.List, error) {
 	list := &models.List{
 		Name: &name,
 	}
@@ -69,7 +68,8 @@ func (s *Storage) AddList(name string) (*models.List, error) {
 	return list, nil
 }
 
-func (s *Storage) UpdateList(list *models.List) (*models.List, error) {
+// UpdateList updates list metadata
+func (s *storage) UpdateList(list *models.List) (*models.List, error) {
 	id, err := uuid.FromString(list.ID)
 	if err != nil {
 		return nil, err
@@ -85,7 +85,8 @@ func (s *Storage) UpdateList(list *models.List) (*models.List, error) {
 	return list, nil
 }
 
-func (s *Storage) DeleteList(waitlistID []byte) error {
+// DeleteList removes list from active lists and move its items to history
+func (s *storage) DeleteList(waitlistID []byte) error {
 	return s.db.Update(func(tx *bolt.Tx) error {
 		bCurrent := tx.Bucket(bucketCurrent).Bucket(waitlistID)
 		if bCurrent == nil {
@@ -110,16 +111,9 @@ func (s *Storage) DeleteList(waitlistID []byte) error {
 				return err
 			}
 
-			item.Status = swag.String(models.ItemStatusCanceled)
-			item.Finished = strfmt.DateTime(time.Now())
+			item.Status = models.ItemStatusCanceled
 
-			data, err := item.MarshalBinary()
-			if err != nil {
-				return err
-			}
-
-			// maybe use time.Now as key?
-			return bHistory.Put(k, data)
+			return s.moveToHistory(bHistory, k, &item)
 		})
 		if err != nil {
 			return err

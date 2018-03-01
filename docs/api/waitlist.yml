@@ -272,7 +272,6 @@ definitions:
     required:
       - person_id
       - priority
-      - status
     properties:
       id:
         type: string
@@ -293,6 +292,7 @@ definitions:
       status:
         type: string
         description: Status of person in waitlist
+        readOnly: true
         enum:
           - waiting
           - finished
