@@ -84,31 +84,27 @@ var (
 		Operation:   "d",
 	}
 	info1V1 = minio.ObjectInfo{
-		ContentType: "text/openEhrXml",
-		Key:         "File1.V1.w.1516288966123.CHS.vitalSigns.openEHR-EHR-OBSERVATION.blood_pressure.v1",
-		Size:        8,
+		Key:  "File1.V1.w.1516288966123.CHS.dGV4dC9vcGVuRWhyWG1s.b3BlbkVIUi1FSFItT0JTRVJWQVRJT04uYmxvb2RfcHJlc3N1cmUudjE=.dml0YWxTaWducw==",
+		Size: 8,
 	}
 	info1V2 = minio.ObjectInfo{
-		ContentType: "text/openEhrXml",
-		Key:         "File1.V2.w.1516979775123.CHS.vitalSigns|basicPatientInfo.openEHR-EHR-OBSERVATION.blood_pressure.v1",
-		Size:        8,
+		Key:  "File1.V2.w.1516979775123.CHS.dGV4dC9vcGVuRWhyWG1s.b3BlbkVIUi1FSFItT0JTRVJWQVRJT04uYmxvb2RfcHJlc3N1cmUudjE=.dml0YWxTaWduc3xiYXNpY1BhdGllbnRJbmZv",
+		Size: 8,
 	}
 	info2V1 = minio.ObjectInfo{
-		ContentType: "image/jpeg",
-		Key:         "Image.V1.w.1516288966123.CHS..",
-		Size:        15698,
+		Key:  "Image.V1.w.1516288966123.CHS.aW1hZ2UvanBlZw==..",
+		Size: 15698,
 	}
 	info2V2 = minio.ObjectInfo{
-		ContentType: "image/jpeg",
-		Key:         "Image.V2.d.1516979775123.CHS..",
-		Size:        0,
+		Key:  "Image.V2.d.1516979775123.CHS.aW1hZ2UvanBlZw==..",
+		Size: 0,
 	} //Fri Jan 26 16:16:26
 	infoErr = minio.ObjectInfo{
 		Err: errors.New("error occurred"),
 	}
 	infoBrokenFD = minio.ObjectInfo{
 		ContentType: "text/err",
-		Key:         "Error.V1.w.invalid.CHS..",
+		Key:         "Error.V1.w.invalid.CHS...",
 		Size:        15698,
 	}
 	newInfo = &object.NewObjectInfo{
@@ -431,7 +427,7 @@ func TestS3List(t *testing.T) {
 }
 
 func TestS3Read(t *testing.T) {
-	expectedFileName := "File1.V2.w.1516979775123.CHS.vitalSigns|basicPatientInfo.openEHR-EHR-OBSERVATION.blood_pressure.v1"
+	expectedFileName := "File1.V2.w.1516979775123.CHS.dGV4dC9vcGVuRWhyWG1s.b3BlbkVIUi1FSFItT0JTRVJWQVRJT04uYmxvb2RfcHJlc3N1cmUudjE=.dml0YWxTaWduc3xiYXNpY1BhdGllbnRJbmZv"
 
 	testCases := []struct {
 		description   string
@@ -637,12 +633,14 @@ func TestS3Write(t *testing.T) {
 		{
 			"valid call",
 			&object.NewObjectInfo{
-				Name:      "File1",
-				Version:   "V1",
-				Operation: "w",
-				Created:   time1,
-				Archetype: "openEHR-EHR-OBSERVATION.blood_pressure.v1",
-				Checksum:  "CHS",
+				Name:        "File1",
+				Version:     "V1",
+				Operation:   "w",
+				Created:     time1,
+				ContentType: "text/openEhrXml",
+				Archetype:   "openEHR-EHR-OBSERVATION.blood_pressure.v1",
+				Checksum:    "CHS",
+				Labels:      []string{"vitalSigns", "basicPatientInfo"},
 			},
 			func(r io.Reader, m *mock.MockMinio, k *mock.MockKeyProvider) []*gomock.Call {
 				return []*gomock.Call{
@@ -650,7 +648,7 @@ func TestS3Write(t *testing.T) {
 					m.EXPECT().PutObjectWithContext(
 						gomock.Any(),
 						"BUCKET",
-						"File1.V1.w.1516288966123.CHS.openEHR-EHR-OBSERVATION.blood_pressure.v1",
+						"File1.V1.w.1516288966123.CHS.dGV4dC9vcGVuRWhyWG1s.b3BlbkVIUi1FSFItT0JTRVJWQVRJT04uYmxvb2RfcHJlc3N1cmUudjE=.dml0YWxTaWduc3xiYXNpY1BhdGllbnRJbmZv",
 						r,
 						int64(-1),
 						gomock.Any(),

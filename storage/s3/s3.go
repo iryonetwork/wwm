@@ -218,6 +218,9 @@ func (s *s3storage) List(_ context.Context, bucketID, prefix string) ([]*models.
 			return nil, errors.Wrap(info.Err, "Failed to read object from a list")
 		}
 
+		s.logger.Error().Msgf("%s", info)
+		s.logger.Error().Msgf("%s", info.ContentType)
+
 		fd, err := objectInfoToFileDescriptor(info, bucketID)
 		if err != nil {
 			return nil, errors.Wrap(err, "Failed to convert object to fileDescriptor")
@@ -321,7 +324,7 @@ func objectInfoToFileDescriptor(info minio.ObjectInfo, bucketID string) (*models
 	// copy basic data
 	fd := &models.FileDescriptor{
 		Size:        info.Size,
-		ContentType: info.ContentType,
+		ContentType: meta.contentType,
 		Path:        fmt.Sprintf("%s/%s/%s", bucketID, meta.filename, meta.version),
 		Name:        meta.filename,
 		Version:     meta.version,

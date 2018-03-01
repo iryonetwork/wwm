@@ -1,37 +1,59 @@
 package s3
 
 import (
+	"encoding/base64"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/go-openapi/strfmt"
+	"github.com/pkg/errors"
+
 	"github.com/iryonetwork/wwm/gen/storage/models"
 	"github.com/iryonetwork/wwm/storage/s3/object"
 )
 
 type metadata struct {
-	filename  string
-	version   string
-	operation Operation
-	created   time.Time
-	checksum  string
-	archetype string
-	labels    []string
+	filename    string
+	version     string
+	operation   Operation
+	created     time.Time
+	checksum    string
+	contentType string
+	archetype   string
+	labels      []string
 }
 
 var utc, _ = time.LoadLocation("UTC")
 
 func metadataFromKey(key string) (*metadata, error) {
-	items := strings.SplitN(key, ".", 7)
+	items := strings.SplitN(key, ".", 8)
+
+	// decode contentType
+	ct, err := decode(items[5])
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to decode contentType from key")
+	}
+	// decode archetype
+	arch, err := decode(items[6])
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to decode archetype from key")
+	}
+	labelsString, err := decode(items[7])
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to decode archetype from key")
+	}
+	labels := labelsStringToSlice(labelsString)
+
 	md := &metadata{
-		filename:  items[0],
-		version:   items[1],
-		operation: Operation(items[2]),
-		checksum:  items[4],
-		labels:    labelsStringToStringSlice(items[5]),
-		archetype: items[6],
+		filename:    items[0],
+		version:     items[1],
+		operation:   Operation(items[2]),
+		checksum:    items[4],
+		contentType: ct,
+		archetype:   arch,
+		labels:      labels,
 	}
 
 	// validate operation
@@ -55,13 +77,14 @@ func metadataFromKey(key string) (*metadata, error) {
 
 func metadataFromNewFile(newFile *object.NewObjectInfo) (*metadata, error) {
 	md := &metadata{
-		filename:  newFile.Name,
-		version:   newFile.Version,
-		operation: Operation(newFile.Operation),
-		checksum:  newFile.Checksum,
-		archetype: newFile.Archetype,
-		created:   time.Time(newFile.Created),
-		labels:    newFile.Labels,
+		filename:    newFile.Name,
+		version:     newFile.Version,
+		operation:   Operation(newFile.Operation),
+		checksum:    newFile.Checksum,
+		created:     time.Time(newFile.Created),
+		contentType: newFile.ContentType,
+		archetype:   newFile.Archetype,
+		labels:      newFile.Labels,
 	}
 
 	// validate operation
@@ -74,12 +97,13 @@ func metadataFromNewFile(newFile *object.NewObjectInfo) (*metadata, error) {
 
 func metadataFromFileDescriptor(fd *models.FileDescriptor) (*metadata, error) {
 	md := &metadata{
-		filename:  fd.Name,
-		version:   fd.Version,
-		operation: Operation(fd.Operation),
-		checksum:  fd.Checksum,
-		archetype: fd.Archetype,
-		labels:    fd.Labels,
+		filename:    fd.Name,
+		version:     fd.Version,
+		operation:   Operation(fd.Operation),
+		checksum:    fd.Checksum,
+		contentType: fd.ContentType,
+		archetype:   fd.Archetype,
+		labels:      fd.Labels,
 	}
 
 	// parse created
@@ -93,36 +117,38 @@ func metadataFromFileDescriptor(fd *models.FileDescriptor) (*metadata, error) {
 }
 
 func (m *metadata) String() string {
-	return fmt.Sprintf("%s.%s.%s.%d.%s.%s.%s",
+	return fmt.Sprintf("%s.%s.%s.%d.%s.%s.%s.%s",
 		m.filename,
 		m.version,
 		m.operation,
 		m.created.UnixNano()/1000000,
 		m.checksum,
-		stringSliceToLabelsString(m.labels),
-		m.archetype,
+		encode(m.contentType),
+		encode(m.archetype),
+		encode(sliceToLabelsString(m.labels)),
 	)
 }
 
-func (m *metadata) FileDescriptor() *models.FileDescriptor {
-	return &models.FileDescriptor{
-		Name:      m.filename,
-		Version:   m.version,
-		Operation: string(m.operation),
-		Created:   strfmt.DateTime(m.created),
-		Archetype: m.archetype,
-		Checksum:  m.checksum,
-		Labels:    m.labels,
-	}
+func encode(src string) string {
+	return base64.URLEncoding.EncodeToString([]byte(src))
 }
 
-func labelsStringToStringSlice(s string) []string {
+func decode(base64URL string) (string, error) {
+	b, err := base64.URLEncoding.DecodeString(base64URL)
+	if err != nil {
+		return "", err
+	}
+
+	return string(b), nil
+}
+
+func labelsStringToSlice(s string) []string {
 	if s == "" {
 		return nil
 	}
 	return strings.Split(s, "|")
 }
 
-func stringSliceToLabelsString(s []string) string {
+func sliceToLabelsString(s []string) string {
 	return strings.Join(s, "|")
 }
