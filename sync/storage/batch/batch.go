@@ -14,6 +14,11 @@ import (
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 )
 
+type syncError struct {
+	id  string // identifier of resource that failed to sync
+	err error
+}
+
 type batchStorageSync struct {
 	handlers          storageSync.Handlers
 	logger            zerolog.Logger
@@ -29,26 +34,23 @@ func (s *batchStorageSync) Sync(ctx context.Context, lastSuccessfulRun time.Time
 		return errors.Wrap(err, "failed to list source buckets")
 	}
 
-	errChannels := make(map[string]chan error)
+	ch := make(chan *syncError)
 	for _, b := range buckets {
-		ch := make(chan error)
-		errChannels[b.Name] = ch
-
 		go s.syncBucket(ctx, lastSuccessfulRun, b.Name, ch)
 	}
 
 	var errCount int
-	for bucketID, ch := range errChannels {
-		err := <-ch
-		if err != nil {
-			s.logger.Error().Err(err).Str("bucket", bucketID).Msg("failed to sync")
+	for i := 0; i < len(buckets); i++ {
+		syncErr := <-ch
+		if syncErr != nil {
+			s.logger.Error().Err(syncErr.err).Str("bucket", syncErr.id).Msg("failed to sync")
 			errCount++
 		}
 	}
 
 	if errCount > 0 {
-		s.logger.Error().Msgf("%d failure(s) out of %d bucket(s) to sync", errCount, len(errChannels))
-		return errors.Errorf("%d failure(s) out of %d bucket(s) to sync", errCount, len(errChannels))
+		s.logger.Error().Msgf("%d failure(s) out of %d bucket(s) to sync", errCount, len(buckets))
+		return errors.Errorf("%d failure(s) out of %d bucket(s) to sync", errCount, len(buckets))
 	}
 
 	return nil
@@ -75,46 +77,46 @@ func New(handlers storageSync.Handlers, logger zerolog.Logger, metricsCollection
 	}
 }
 
-func (s *batchStorageSync) syncBucket(ctx context.Context, lastSuccessfulRun time.Time, bucketID string, errCh chan error) {
+func (s *batchStorageSync) syncBucket(ctx context.Context, lastSuccessfulRun time.Time, bucketID string, errCh chan *syncError) {
 	files, err := s.handlers.ListSourceFilesAsc(ctx, bucketID)
 	if err != nil {
 		s.logger.Error().Err(err).Str("bucket", bucketID).Msg("failed to list source files")
-		errCh <- errors.Wrap(err, fmt.Sprintf("failed to list source files in bucket %s", bucketID))
+		errCh <- &syncError{bucketID, errors.Wrap(err, fmt.Sprintf("failed to list source files in bucket %s", bucketID))}
 		return
 	}
 
-	errChannels := make(map[string]chan error)
+	var syncCount int
+	var errCount int
+	ch := make(chan *syncError)
+
 	for _, f := range files {
 		if time.Time(f.Created).After(lastSuccessfulRun) {
-			ch := make(chan error)
-			errChannels[f.Name] = ch
-
+			syncCount++
 			go s.syncFile(ctx, lastSuccessfulRun, bucketID, f.Name, ch)
 		}
 	}
 
-	var errCount int
-	for fileID, ch := range errChannels {
-		err := <-ch
-		if err != nil {
-			s.logger.Error().Err(err).Str("bucket", bucketID).Str("file", fileID).Msg("failed to sync")
+	for i := 0; i < syncCount; i++ {
+		syncErr := <-ch
+		if syncErr != nil {
+			s.logger.Error().Err(syncErr.err).Str("bucket", bucketID).Str("file", syncErr.id).Msg("failed to sync")
 			errCount++
 		}
 	}
 
 	if errCount > 0 {
-		s.logger.Error().Str("bucket", bucketID).Msgf("%d failure(s) out of %d file(s) to sync", errCount, len(errChannels))
-		errCh <- errors.Errorf("%d failure(s) out of %d file(s) to sync in bucket %s", errCount, len(errChannels), bucketID)
+		s.logger.Error().Str("bucket", bucketID).Msgf("%d failure(s) out of %d file(s) to sync", errCount, syncCount)
+		errCh <- &syncError{bucketID, errors.Errorf("%d failure(s) out of %d file(s) to sync in bucket %s", errCount, syncCount, bucketID)}
 		return
 	}
 	errCh <- nil
 }
 
-func (s *batchStorageSync) syncFile(ctx context.Context, lastSuccessfulRun time.Time, bucketID, fileID string, errCh chan error) {
+func (s *batchStorageSync) syncFile(ctx context.Context, lastSuccessfulRun time.Time, bucketID, fileID string, errCh chan *syncError) {
 	versions, err := s.handlers.ListSourceFileVersionsAsc(ctx, bucketID, fileID)
 	if err != nil {
 		s.logger.Error().Err(err).Str("bucket", bucketID).Str("file", fileID).Msg("failed to list source versions")
-		errCh <- errors.Wrap(err, fmt.Sprintf("failed to list source versions of file %s in bucket %s", fileID, bucketID))
+		errCh <- &syncError{fileID, errors.Wrap(err, fmt.Sprintf("failed to list source versions of file %s in bucket %s", fileID, bucketID))}
 		return
 	}
 
@@ -125,7 +127,7 @@ func (s *batchStorageSync) syncFile(ctx context.Context, lastSuccessfulRun time.
 		select {
 		case <-ctx.Done():
 			s.logger.Error().Str("bucket", bucketID).Str("file", fileID).Msg("aborting file sync due to context cancellation")
-			errCh <- errors.Wrap(ctx.Err(), fmt.Sprintf("aborting file sync due to context cancellation"))
+			errCh <- &syncError{fileID, errors.Wrap(ctx.Err(), fmt.Sprintf("aborting file sync due to context cancellation"))}
 			return
 		default:
 			if time.Time(f.Created).After(lastSuccessfulRun) {
@@ -140,7 +142,7 @@ func (s *batchStorageSync) syncFile(ctx context.Context, lastSuccessfulRun time.
 
 	if errCount > 0 {
 		s.logger.Error().Str("bucket", bucketID).Str("file", fileID).Msgf("%d failure(s) out of %d version(s) to sync", errCount, syncCount)
-		errCh <- errors.Errorf("%d failure(s) out of %d version(s) to sync for file %s in bucket %s", errCount, syncCount, fileID, bucketID)
+		errCh <- &syncError{fileID, errors.Errorf("%d failure(s) out of %d version(s) to sync for file %s in bucket %s", errCount, syncCount, fileID, bucketID)}
 		return
 	}
 	errCh <- nil
