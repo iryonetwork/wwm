@@ -36,7 +36,7 @@ var (
 		Version:     "V1",
 		Size:        8,
 		Operation:   "w",
-		Labels:      []string{"vitalSigns", "basicPatientInfo"},
+		Labels:      []string{"vitalSign", "basicPatientInfo"},
 	}
 	file1V2 = &models.FileDescriptor{
 		Archetype:   "openEHR-EHR-OBSERVATION.blood_pressure.v1",
@@ -48,7 +48,7 @@ var (
 		Version:     "V2",
 		Size:        8,
 		Operation:   "w",
-		Labels:      []string{"vitalSigns"},
+		Labels:      []string{"vitalSign"},
 	}
 	file2V1 = &models.FileDescriptor{
 		Archetype:   "",
@@ -97,21 +97,21 @@ var (
 		Operation:   "w",
 	}
 	vital1 = &models.FileDescriptor{
-		Checksum:    "bQ5Ty37yGlgw6JkW8m86ktok1idPr6FbER37s93BZUg=",
-		Size:        int64(268),
+		Checksum:    "0WFNTCC01hbAmkorjbSqB9u7XNLZoyGHAIeQczbG11o=",
+		Size:        int64(267),
 		Created:     strfmt.DateTime(time1),
-		ContentType: "application/json; charset=utf-8",
+		ContentType: "application/x-collection+json",
 		Version:     "UUID",
-		Name:        "vitalSigns",
-		Path:        "BUCKET/vitalSigns/UUID",
+		Name:        "vitalSign",
+		Path:        "BUCKET/vitalSign/UUID",
 		Operation:   string(s3.Write),
 		Labels:      []string{labelFilesCollection},
 	}
 	basic1 = &models.FileDescriptor{
-		Checksum:    "bQ5Ty37yGlgw6JkW8m86ktok1idPr6FbER37s93BZUg=",
-		Size:        int64(268),
+		Checksum:    "0WFNTCC01hbAmkorjbSqB9u7XNLZoyGHAIeQczbG11o=",
+		Size:        int64(267),
 		Created:     strfmt.DateTime(time1),
-		ContentType: "application/json; charset=utf-8",
+		ContentType: "application/x-collection+json",
 		Version:     "UUID",
 		Name:        "basicPatientInfo",
 		Path:        "BUCKET/basicPatientInfo/UUID",
@@ -119,21 +119,21 @@ var (
 		Labels:      []string{labelFilesCollection},
 	}
 	vital2 = &models.FileDescriptor{
-		Checksum:    "zK3qMM838ZqPbeBP0Cc64TxkLFxiEbV6rprjDCRJvQM=",
-		Size:        int64(446),
+		Checksum:    "Et5UCjJ_OcfwVbiLbULmsFF_6ZT_WR8leEWb9L75VqA=",
+		Size:        int64(457),
 		Created:     strfmt.DateTime(time2),
-		ContentType: "application/json; charset=utf-8",
+		ContentType: "application/x-collection+json",
 		Version:     "UUID",
-		Name:        "vitalSigns",
-		Path:        "BUCKET/vitalSigns/UUID",
+		Name:        "vitalSign",
+		Path:        "BUCKET/vitalSign/UUID",
 		Operation:   string(s3.Write),
 		Labels:      []string{labelFilesCollection},
 	}
 	basic2 = &models.FileDescriptor{
-		Checksum:    "YJI7moOjGyYmNAbhmNQm0tSy-W0LZ_cSBZFFmt8wE-w=",
-		Size:        int64(198),
+		Checksum:    "iDutjx8jUBuooMS9smzDOexPWy5BvV3YbPBHCb_dVT4=",
+		Size:        int64(210),
 		Created:     strfmt.DateTime(time2),
-		ContentType: "application/json; charset=utf-8",
+		ContentType: "application/x-collection+json",
 		Version:     "UUID",
 		Name:        "basicPatientInfo",
 		Path:        "BUCKET/basicPatientInfo/UUID",
@@ -144,7 +144,7 @@ var (
 		Checksum:    "T1PNoYwrqgwDVLtfmj7L5e0Sq02OEbqHPC8RFhICuUU=",
 		Size:        int64(2),
 		Created:     strfmt.DateTime(time3),
-		ContentType: "application/json; charset=utf-8",
+		ContentType: "application/x-collection+json",
 		Version:     "UUID",
 		Name:        "basicPatientInfo",
 		Path:        "BUCKET/basicPatientInfo/UUID",
@@ -157,7 +157,7 @@ var (
 	        "checksum":"CHS",
 	        "contentType":"text/openEhrXml",
 	        "created":"2018-01-18T15:22:46.123Z",
-	        "labels":["vitalSigns","basicPatientInfo"],
+	        "labels":["vitalSign", "basicPatientInfo"],
 	        "name":"Image",
 	        "operation":"w",
 	        "path":"BUCKET/Image/V1",
@@ -169,7 +169,7 @@ var (
 	        "checksum":"CHS",
 	        "contentType":"image/jpeg",
 	        "created":"2018-01-18T15:22:46.123Z",
-	        "labels":["basicPatientInfo"],
+	        "labels":["vitalSign", "basicPatientInfo"],
 	        "name":"Image",
 	        "operation":"w",
 	        "path":"BUCKET/Image/V1",
@@ -419,23 +419,23 @@ func TestFileNew(t *testing.T) {
 					Version:     "UUID",
 					Name:        "UUID",
 					Operation:   "w",
-					Labels:      []string{"vitalSigns", "basicPatientInfo"},
+					Labels:      []string{"vitalSign", "basicPatientInfo"},
 				}
 				vitalNo := &object.NewObjectInfo{
-					Checksum:    "bQ5Ty37yGlgw6JkW8m86ktok1idPr6FbER37s93BZUg=",
-					Size:        int64(268),
+					Checksum:    "0WFNTCC01hbAmkorjbSqB9u7XNLZoyGHAIeQczbG11o=",
+					Size:        int64(267),
 					Created:     strfmt.DateTime(time1),
-					ContentType: "application/json; charset=utf-8",
+					ContentType: "application/x-collection+json",
 					Version:     "UUID",
-					Name:        "vitalSigns",
+					Name:        "vitalSign",
 					Operation:   string(s3.Write),
 					Labels:      []string{labelFilesCollection},
 				}
 				basicNo := &object.NewObjectInfo{
-					Checksum:    "bQ5Ty37yGlgw6JkW8m86ktok1idPr6FbER37s93BZUg=",
-					Size:        int64(268),
+					Checksum:    "0WFNTCC01hbAmkorjbSqB9u7XNLZoyGHAIeQczbG11o=",
+					Size:        int64(267),
 					Created:     strfmt.DateTime(time1),
-					ContentType: "application/json; charset=utf-8",
+					ContentType: "application/x-collection+json",
 					Version:     "UUID",
 					Name:        "basicPatientInfo",
 					Operation:   string(s3.Write),
@@ -446,9 +446,9 @@ func TestFileNew(t *testing.T) {
 					s.EXPECT().MakeBucket(gomock.Any(), "BUCKET").Return(nil),
 					s.EXPECT().Write(gomock.Any(), "BUCKET", no, gomock.Any()).Return(file1V1, nil).Times(1),
 					p.EXPECT().PublishAsyncWithRetries(gomock.Any(), storageSync.FileNew, gomock.Eq(&storageSync.FileInfo{"BUCKET", "UUID", "UUID", time1})).Times(1),
-					s.EXPECT().Read(gomock.Any(), "BUCKET", "vitalSigns", "").Return(nil, nil, s3.ErrNotFound),
+					s.EXPECT().Read(gomock.Any(), "BUCKET", "vitalSign", "").Return(nil, nil, s3.ErrNotFound),
 					s.EXPECT().Write(gomock.Any(), "BUCKET", vitalNo, gomock.Any()).Return(vital1, nil).Times(1),
-					p.EXPECT().PublishAsyncWithRetries(gomock.Any(), storageSync.FileUpdate, gomock.Eq(&storageSync.FileInfo{"BUCKET", "vitalSigns", "UUID", time1})).Times(1),
+					p.EXPECT().PublishAsyncWithRetries(gomock.Any(), storageSync.FileUpdate, gomock.Eq(&storageSync.FileInfo{"BUCKET", "vitalSign", "UUID", time1})).Times(1),
 					s.EXPECT().Read(gomock.Any(), "BUCKET", "basicPatientInfo", "").Return(nil, nil, s3.ErrNotFound),
 					s.EXPECT().Write(gomock.Any(), "BUCKET", basicNo, gomock.Any()).Return(nil, fmt.Errorf("fail")).Times(1),
 				}
@@ -469,23 +469,23 @@ func TestFileNew(t *testing.T) {
 					Version:     "UUID",
 					Name:        "UUID",
 					Operation:   "w",
-					Labels:      []string{"vitalSigns", "basicPatientInfo"},
+					Labels:      []string{"vitalSign", "basicPatientInfo"},
 				}
 				vitalNo := &object.NewObjectInfo{
-					Checksum:    "bQ5Ty37yGlgw6JkW8m86ktok1idPr6FbER37s93BZUg=",
-					Size:        int64(268),
+					Checksum:    "0WFNTCC01hbAmkorjbSqB9u7XNLZoyGHAIeQczbG11o=",
+					Size:        int64(267),
 					Created:     strfmt.DateTime(time1),
-					ContentType: "application/json; charset=utf-8",
+					ContentType: "application/x-collection+json",
 					Version:     "UUID",
-					Name:        "vitalSigns",
+					Name:        "vitalSign",
 					Operation:   string(s3.Write),
 					Labels:      []string{labelFilesCollection},
 				}
 				basicNo := &object.NewObjectInfo{
-					Checksum:    "bQ5Ty37yGlgw6JkW8m86ktok1idPr6FbER37s93BZUg=",
-					Size:        int64(268),
+					Checksum:    "0WFNTCC01hbAmkorjbSqB9u7XNLZoyGHAIeQczbG11o=",
+					Size:        int64(267),
 					Created:     strfmt.DateTime(time1),
-					ContentType: "application/json; charset=utf-8",
+					ContentType: "application/x-collection+json",
 					Version:     "UUID",
 					Name:        "basicPatientInfo",
 					Operation:   string(s3.Write),
@@ -496,9 +496,9 @@ func TestFileNew(t *testing.T) {
 					s.EXPECT().MakeBucket(gomock.Any(), "BUCKET").Return(nil),
 					s.EXPECT().Write(gomock.Any(), "BUCKET", no, gomock.Any()).Return(file1V1, nil).Times(1),
 					p.EXPECT().PublishAsyncWithRetries(gomock.Any(), storageSync.FileNew, gomock.Eq(&storageSync.FileInfo{"BUCKET", "UUID", "UUID", time1})).Times(1),
-					s.EXPECT().Read(gomock.Any(), "BUCKET", "vitalSigns", "").Return(nil, nil, s3.ErrNotFound),
+					s.EXPECT().Read(gomock.Any(), "BUCKET", "vitalSign", "").Return(nil, nil, s3.ErrNotFound),
 					s.EXPECT().Write(gomock.Any(), "BUCKET", vitalNo, gomock.Any()).Return(vital1, nil).Times(1),
-					p.EXPECT().PublishAsyncWithRetries(gomock.Any(), storageSync.FileUpdate, gomock.Eq(&storageSync.FileInfo{"BUCKET", "vitalSigns", "UUID", time1})).Times(1),
+					p.EXPECT().PublishAsyncWithRetries(gomock.Any(), storageSync.FileUpdate, gomock.Eq(&storageSync.FileInfo{"BUCKET", "vitalSign", "UUID", time1})).Times(1),
 					s.EXPECT().Read(gomock.Any(), "BUCKET", "basicPatientInfo", "").Return(nil, nil, s3.ErrNotFound),
 					s.EXPECT().Write(gomock.Any(), "BUCKET", basicNo, gomock.Any()).Return(basic1, nil).Times(1),
 					p.EXPECT().PublishAsyncWithRetries(gomock.Any(), storageSync.FileUpdate, gomock.Eq(&storageSync.FileInfo{"BUCKET", "basicPatientInfo", "UUID", time1})).Times(1),
@@ -526,8 +526,7 @@ func TestFileNew(t *testing.T) {
 			// prepare the reader
 			r := bytes.NewReader([]byte("contents"))
 
-			// call the MakeBucket
-			out, err := svc.FileNew(context.TODO(), "BUCKET", r, "CONT/TYPE", "ARCH", []string{"vitalSigns", "basicPatientInfo"})
+			out, err := svc.FileNew(context.TODO(), "BUCKET", r, "CONT/TYPE", "ARCH", []string{"vitalSign", "basicPatientInfo"})
 
 			// check expected results
 			if !reflect.DeepEqual(out, test.expected) {
@@ -596,26 +595,26 @@ func TestFileUpdate(t *testing.T) {
 					Version:     "UUID",
 					Name:        "FILE",
 					Operation:   "w",
-					Labels:      []string{"vitalSigns"},
+					Labels:      []string{"vitalSign"},
 				}
 				// prepare the reader for existing collection file
 				r1 := ioutil.NopCloser(bytes.NewReader([]byte(collectionFileV1)))
 				r2 := ioutil.NopCloser(bytes.NewReader([]byte(collectionFileV1)))
 				vitalNo := &object.NewObjectInfo{
-					Checksum:    "zK3qMM838ZqPbeBP0Cc64TxkLFxiEbV6rprjDCRJvQM=",
-					Size:        int64(446),
+					Checksum:    "Et5UCjJ_OcfwVbiLbULmsFF_6ZT_WR8leEWb9L75VqA=",
+					Size:        int64(457),
 					Created:     strfmt.DateTime(time2),
-					ContentType: "application/json; charset=utf-8",
+					ContentType: "application/x-collection+json",
 					Version:     "UUID",
-					Name:        "vitalSigns",
+					Name:        "vitalSign",
 					Operation:   string(s3.Write),
 					Labels:      []string{labelFilesCollection},
 				}
 				basicNo := &object.NewObjectInfo{
-					Checksum:    "YJI7moOjGyYmNAbhmNQm0tSy-W0LZ_cSBZFFmt8wE-w=",
-					Size:        int64(198),
+					Checksum:    "iDutjx8jUBuooMS9smzDOexPWy5BvV3YbPBHCb_dVT4=",
+					Size:        int64(210),
 					Created:     strfmt.DateTime(time2),
-					ContentType: "application/json; charset=utf-8",
+					ContentType: "application/x-collection+json",
 					Version:     "UUID",
 					Name:        "basicPatientInfo",
 					Operation:   string(s3.Write),
@@ -626,9 +625,9 @@ func TestFileUpdate(t *testing.T) {
 					s.EXPECT().Read(gomock.Any(), "BUCKET", "FILE", "").Return(nil, file1V1, nil),
 					s.EXPECT().Write(gomock.Any(), "BUCKET", no, gomock.Any()).Return(file1V2, nil),
 					p.EXPECT().PublishAsyncWithRetries(gomock.Any(), storageSync.FileUpdate, gomock.Eq(&storageSync.FileInfo{"BUCKET", "FILE", "UUID", time2})),
-					s.EXPECT().Read(gomock.Any(), "BUCKET", "vitalSigns", "").Return(r1, vital1, nil),
+					s.EXPECT().Read(gomock.Any(), "BUCKET", "vitalSign", "").Return(r1, vital1, nil),
 					s.EXPECT().Write(gomock.Any(), "BUCKET", vitalNo, gomock.Any()).Return(vital2, nil).Times(1),
-					p.EXPECT().PublishAsyncWithRetries(gomock.Any(), storageSync.FileUpdate, gomock.Eq(&storageSync.FileInfo{"BUCKET", "vitalSigns", "UUID", time2})).Times(1),
+					p.EXPECT().PublishAsyncWithRetries(gomock.Any(), storageSync.FileUpdate, gomock.Eq(&storageSync.FileInfo{"BUCKET", "vitalSign", "UUID", time2})).Times(1),
 					s.EXPECT().Read(gomock.Any(), "BUCKET", "basicPatientInfo", "").Return(r2, basic1, nil),
 					s.EXPECT().Write(gomock.Any(), "BUCKET", basicNo, gomock.Any()).Return(basic2, nil).Times(1),
 					p.EXPECT().PublishAsyncWithRetries(gomock.Any(), storageSync.FileUpdate, gomock.Eq(&storageSync.FileInfo{"BUCKET", "basicPatientInfo", "UUID", time2})).Times(1),
@@ -656,8 +655,7 @@ func TestFileUpdate(t *testing.T) {
 			// prepare the reader
 			r := bytes.NewReader([]byte("contents"))
 
-			// call the MakeBucket
-			out, err := svc.FileUpdate(context.TODO(), "BUCKET", "FILE", r, "CONT/TYPE", "ARCH", []string{"vitalSigns"})
+			out, err := svc.FileUpdate(context.TODO(), "BUCKET", "FILE", r, "CONT/TYPE", "ARCH", []string{"vitalSign"})
 
 			// check expected results
 			if !reflect.DeepEqual(out, test.expected) {
@@ -729,7 +727,7 @@ func TestFileDelete(t *testing.T) {
 					Checksum:    "T1PNoYwrqgwDVLtfmj7L5e0Sq02OEbqHPC8RFhICuUU=",
 					Size:        int64(2),
 					Created:     strfmt.DateTime(time3),
-					ContentType: "application/json; charset=utf-8",
+					ContentType: "application/x-collection+json",
 					Version:     "UUID",
 					Name:        "basicPatientInfo",
 					Operation:   string(s3.Write),
@@ -1054,7 +1052,7 @@ func TestSyncFileDelete(t *testing.T) {
 					Version:     "DEL_VERSION",
 					Name:        "FILE",
 					Operation:   "d",
-					Labels:      []string{"vitalSigns", "basicPatientInfo"},
+					Labels:      []string{"vitalSign", "basicPatientInfo"},
 				}
 
 				return []*gomock.Call{

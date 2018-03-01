@@ -127,6 +127,9 @@ paths:
       produces:
         - application/octet-stream
         - application/json; charset=utf-8
+        - text/openEhrXml
+        - text/openEhrJson
+        - application/x-collection+json
 
       parameters:
         - in: path
@@ -332,6 +335,10 @@ paths:
       operationId: fileGetVersion
       produces:
         - application/octet-stream
+        - application/json; charset=utf-8
+        - text/openEhrXml
+        - text/openEhrJson
+        - application/x-collection+json
 
       parameters:
         - in: path
@@ -705,7 +712,7 @@ definitions:
         description: Labels of the file
         items:
           type: string
-          enum: [filesCollection, basicPatientInfo, vitalSigns, diagnosis]
+          enum: [filesCollection, basicPatientInfo, vitalSign, diagnosis]
         example: ['basicPatientInfo']
       version:
         type: string

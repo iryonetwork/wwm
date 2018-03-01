@@ -456,7 +456,7 @@ func (s *service) updateFilesCollection(ctx context.Context, operation s3.Operat
 		Checksum:    checksum,
 		Size:        int64(buf.Len()),
 		Created:     getTime(),
-		ContentType: "application/json; charset=utf-8",
+		ContentType: "application/x-collection+json",
 		Version:     version,
 		Name:        fileID,
 		Operation:   string(s3.Write),

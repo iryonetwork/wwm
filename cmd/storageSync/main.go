@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	runtimeClient "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 	"github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats-streaming"
@@ -31,20 +32,14 @@ func main() {
 		Logger()
 
 	// initialize local storage API client
-	localTransportCfg := &client.TransportConfig{
-		Host:     "localStorage",
-		BasePath: "storage",
-		Schemes:  []string{"https"},
-	}
-	localClient := client.NewHTTPClientWithConfig(strfmt.NewFormats(), localTransportCfg)
+	local := runtimeClient.New("localStorage", "storage", []string{"https"})
+	local.Consumers = utils.ConsumersForSync()
+	localClient := client.New(local, strfmt.Default)
 
 	// initialize cloud storage API client
-	cloudTransportCfg := &client.TransportConfig{
-		Host:     "cloudStorage",
-		BasePath: "storage",
-		Schemes:  []string{"https"},
-	}
-	cloudClient := client.NewHTTPClientWithConfig(strfmt.NewFormats(), cloudTransportCfg)
+	cloud := runtimeClient.New("cloudStorage", "storage", []string{"https"})
+	cloud.Consumers = utils.ConsumersForSync()
+	cloudClient := client.New(cloud, strfmt.Default)
 
 	// initialize request authenticator
 	auth, err := storageSync.NewRequestAuthenticator("/certs/public.crt", "/certs/private.key", logger.With().Str("component", "sync/storage/auth").Logger())
