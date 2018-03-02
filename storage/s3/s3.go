@@ -34,6 +34,7 @@ package s3
 //go:generate ../../bin/mockgen.sh storage/s3 Storage,KeyProvider,Minio $GOFILE
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"regexp"
@@ -55,12 +56,12 @@ const metaChecksum = "x-checksum"
 
 // Storage provides an interface for s3 public functions
 type Storage interface {
-	BucketExists(bucketID string) (bool, error)
-	MakeBucket(bucketID string) error
-	ListBuckets() ([]*models.BucketDescriptor, error)
-	List(bucketID, prefix string) ([]*models.FileDescriptor, error)
-	Read(bucketID, fileID, version string) (io.ReadCloser, *models.FileDescriptor, error)
-	Write(bucketID string, newFile *object.NewObjectInfo, r io.Reader) (*models.FileDescriptor, error)
+	BucketExists(ctx context.Context, bucketID string) (bool, error)
+	MakeBucket(ctx context.Context, bucketID string) error
+	ListBuckets(ctx context.Context) ([]*models.BucketDescriptor, error)
+	List(ctx context.Context, bucketID, prefix string) ([]*models.FileDescriptor, error)
+	Read(ctx context.Context, bucketID, fileID, version string) (io.ReadCloser, *models.FileDescriptor, error)
+	Write(ctx context.Context, bucketID string, newFile *object.NewObjectInfo, r io.Reader) (*models.FileDescriptor, error)
 }
 
 // KeyProvider lists methods required for reading encryption keys
@@ -76,9 +77,9 @@ type Minio interface {
 	BucketExists(bucketName string) (bool, error)
 	ListBuckets() ([]minio.BucketInfo, error)
 	ListObjectsV2(bucketName, prefix string, recursive bool, doneCh <-chan struct{}) <-chan minio.ObjectInfo
-	GetObject(bucketName, objectName string, opts minio.GetObjectOptions) (object.Object, error)
+	GetObjectWithContext(ctx context.Context, bucketName, objectName string, opts minio.GetObjectOptions) (io.ReadCloser, error)
 	GetEncryptedObject(bucketName, objectName string, encryptMaterials encrypt.Materials) (io.ReadCloser, error)
-	PutObject(bucketName, objectName string, reader io.Reader, objectSize int64,
+	PutObjectWithContext(ctx context.Context, bucketName, objectName string, reader io.Reader, objectSize int64,
 		opts minio.PutObjectOptions) (n int64, err error)
 	PutEncryptedObject(bucketName, objectName string, reader io.Reader, encryptMaterials encrypt.Materials) (n int64, err error)
 }
@@ -137,7 +138,7 @@ func New(cfg *Config, keys KeyProvider, logger zerolog.Logger) (Storage, error) 
 }
 
 // Check if bucket already exists
-func (s *s3storage) BucketExists(bucketID string) (bool, error) {
+func (s *s3storage) BucketExists(_ context.Context, bucketID string) (bool, error) {
 	s.logger.Debug().Str("cmd", "s3::BucketExists").Msgf("('%s')", bucketID)
 
 	exists, err := s.client.BucketExists(bucketID)
@@ -149,7 +150,7 @@ func (s *s3storage) BucketExists(bucketID string) (bool, error) {
 }
 
 // MakeBucket creates a bucket, return ErrAlreadyExists if bucket already exists
-func (s *s3storage) MakeBucket(bucketID string) error {
+func (s *s3storage) MakeBucket(_ context.Context, bucketID string) error {
 	s.logger.Debug().Str("cmd", "s3::MakeBucket").Msgf("('%s')", bucketID)
 
 	exists, err := s.client.BucketExists(bucketID)
@@ -171,7 +172,7 @@ func (s *s3storage) MakeBucket(bucketID string) error {
 }
 
 // ListBuckets returns a list of buckets
-func (s *s3storage) ListBuckets() ([]*models.BucketDescriptor, error) {
+func (s *s3storage) ListBuckets(_ context.Context) ([]*models.BucketDescriptor, error) {
 	s.logger.Debug().Str("cmd", "s3::ListBuckets")
 
 	b, err := s.client.ListBuckets()
@@ -193,7 +194,7 @@ func (s *s3storage) ListBuckets() ([]*models.BucketDescriptor, error) {
 }
 
 // List returns a list of files stored inside a bucket
-func (s *s3storage) List(bucketID, prefix string) ([]*models.FileDescriptor, error) {
+func (s *s3storage) List(_ context.Context, bucketID, prefix string) ([]*models.FileDescriptor, error) {
 	s.logger.Debug().Str("cmd", "s3::List").Msgf("('%s', '%s')", bucketID, prefix)
 
 	// Check if bucket exists first
@@ -229,7 +230,7 @@ func (s *s3storage) List(bucketID, prefix string) ([]*models.FileDescriptor, err
 }
 
 // Read fetches contents from the storage
-func (s *s3storage) Read(bucketID, fileID, version string) (io.ReadCloser, *models.FileDescriptor, error) {
+func (s *s3storage) Read(ctx context.Context, bucketID, fileID, version string) (io.ReadCloser, *models.FileDescriptor, error) {
 	s.logger.Debug().Str("cmd", "s3::Read").Msgf("('%s', '%s', '%s')", bucketID, fileID, version)
 
 	// find the file
@@ -237,7 +238,7 @@ func (s *s3storage) Read(bucketID, fileID, version string) (io.ReadCloser, *mode
 	if version != "" {
 		prefix += fmt.Sprintf("%s.", version)
 	}
-	list, err := s.List(bucketID, prefix)
+	list, err := s.List(ctx, bucketID, prefix)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "Failed to list files")
 	}
@@ -256,7 +257,8 @@ func (s *s3storage) Read(bucketID, fileID, version string) (io.ReadCloser, *mode
 	}
 
 	// fetch the file
-	reader, err := s.client.GetEncryptedObject(bucketID, md.String(), em)
+	reader, err := s.client.GetObjectWithContext(ctx, bucketID, md.String(), minio.GetObjectOptions{Materials: em})
+
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "Failed to fetch enc. object")
 	}
@@ -265,7 +267,7 @@ func (s *s3storage) Read(bucketID, fileID, version string) (io.ReadCloser, *mode
 }
 
 // Write creates a new file in the storage
-func (s *s3storage) Write(bucketID string, newFile *object.NewObjectInfo, r io.Reader) (*models.FileDescriptor, error) {
+func (s *s3storage) Write(ctx context.Context, bucketID string, newFile *object.NewObjectInfo, r io.Reader) (*models.FileDescriptor, error) {
 	s.logger.Debug().Str("cmd", "s3::Write").Msgf("('%s', '%+v', reader)", bucketID, newFile)
 
 	// validate operation
@@ -280,12 +282,6 @@ func (s *s3storage) Write(bucketID string, newFile *object.NewObjectInfo, r io.R
 		s.logger.Info().Err(err).Msg("Failed to set the CBC key")
 	}
 
-	// // compose the put options
-	// opts := minio.PutObjectOptions{
-	// 	ContentType:      newFile.ContentType,
-	// 	EncryptMaterials: em,
-	// }
-
 	// collect meta data
 	meta, err := metadataFromNewFile(newFile)
 	if err != nil {
@@ -293,7 +289,7 @@ func (s *s3storage) Write(bucketID string, newFile *object.NewObjectInfo, r io.R
 	}
 
 	// upload the file
-	_, err = s.client.PutEncryptedObject(bucketID, meta.String(), r, em)
+	_, err = s.client.PutObjectWithContext(ctx, bucketID, meta.String(), r, -1, minio.PutObjectOptions{EncryptMaterials: em})
 	if err != nil {
 		s.logger.Info().Err(err).Msg("Failed to call PutObject")
 	}

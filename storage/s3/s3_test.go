@@ -2,6 +2,7 @@ package s3
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -209,7 +210,7 @@ func TestBucketExists(t *testing.T) {
 			test.calls(m)
 
 			// call the MakeBucket
-			exists, err := s.BucketExists("BUCKET")
+			exists, err := s.BucketExists(context.TODO(), "BUCKET")
 
 			// check expected results
 			if !reflect.DeepEqual(exists, test.expected) {
@@ -292,7 +293,7 @@ func TestMakeBucket(t *testing.T) {
 			test.calls(m)
 
 			// call the MakeBucket
-			err := s.MakeBucket("BUCKET")
+			err := s.MakeBucket(context.TODO(), "BUCKET")
 
 			// assert error
 			if test.errorExpected && err == nil {
@@ -400,7 +401,7 @@ func TestS3List(t *testing.T) {
 			test.calls(infos, m)
 
 			// call List method
-			list, err := s.List("BUCKET", "PREFIX")
+			list, err := s.List(context.TODO(), "BUCKET", "PREFIX")
 
 			// check expected results
 			if !reflect.DeepEqual(list, test.expected) {
@@ -449,7 +450,7 @@ func TestS3Read(t *testing.T) {
 					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX.", false, gomock.Any()).Return(i),
 					k.EXPECT().Get("BUCKET").Return("SECRET-KEY", nil),
-					m.EXPECT().GetEncryptedObject("BUCKET", expectedFileName, gomock.Any()).Return(rc, nil),
+					m.EXPECT().GetObjectWithContext(gomock.Any(), "BUCKET", expectedFileName, gomock.Any()).Return(rc, nil),
 				}
 			},
 			[]byte("contents"),
@@ -467,7 +468,7 @@ func TestS3Read(t *testing.T) {
 					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX.VERSION.", false, gomock.Any()).Return(i),
 					k.EXPECT().Get("BUCKET").Return("SECRET-KEY", nil),
-					m.EXPECT().GetEncryptedObject("BUCKET", expectedFileName, gomock.Any()).Return(rc, nil),
+					m.EXPECT().GetObjectWithContext(gomock.Any(), "BUCKET", expectedFileName, gomock.Any()).Return(rc, nil),
 				}
 			},
 			[]byte("contents"),
@@ -485,7 +486,7 @@ func TestS3Read(t *testing.T) {
 					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX.VERSION.", false, gomock.Any()).Return(i),
 					k.EXPECT().Get("BUCKET").Return("SECRET-KEY", nil),
-					m.EXPECT().GetEncryptedObject("BUCKET", expectedFileName, gomock.Any()).Return(rc, nil),
+					m.EXPECT().GetObjectWithContext(gomock.Any(), "BUCKET", expectedFileName, gomock.Any()).Return(rc, nil),
 				}
 			},
 			[]byte("contents"),
@@ -562,7 +563,7 @@ func TestS3Read(t *testing.T) {
 					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
 					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX.VERSION.", false, gomock.Any()).Return(i),
 					k.EXPECT().Get("BUCKET").Return("SECRET-KEY", nil),
-					m.EXPECT().GetEncryptedObject("BUCKET", expectedFileName, gomock.Any()).Return(nil, errors.New("Error")),
+					m.EXPECT().GetObjectWithContext(gomock.Any(), "BUCKET", expectedFileName, gomock.Any()).Return(nil, errors.New("Error")),
 				}
 			},
 			nil,
@@ -589,7 +590,7 @@ func TestS3Read(t *testing.T) {
 			test.calls(infos, m, k)
 
 			// call List method
-			reader, fd, err := s.Read("BUCKET", "PREFIX", test.version)
+			reader, fd, err := s.Read(context.TODO(), "BUCKET", "PREFIX", test.version)
 
 			// check expected results
 			if !reflect.DeepEqual(fd, test.descriptor) {
@@ -643,7 +644,14 @@ func TestS3Write(t *testing.T) {
 			func(r io.Reader, m *mock.MockMinio, k *mock.MockKeyProvider) []*gomock.Call {
 				return []*gomock.Call{
 					k.EXPECT().Get("BUCKET").Return("SECRET", nil),
-					m.EXPECT().PutEncryptedObject("BUCKET", "File1.V1.w.1516288966123.CHS.openEHR-EHR-OBSERVATION.blood_pressure.v1", r, gomock.Any()).Return(int64(8), nil),
+					m.EXPECT().PutObjectWithContext(
+						gomock.Any(),
+						"BUCKET",
+						"File1.V1.w.1516288966123.CHS.openEHR-EHR-OBSERVATION.blood_pressure.v1",
+						r,
+						int64(-1),
+						gomock.Any(),
+					).Return(int64(8), nil),
 				}
 			},
 			noErrors,
@@ -664,7 +672,7 @@ func TestS3Write(t *testing.T) {
 			test.calls(reader, m, k)
 
 			// call List method
-			_, err := s.Write("BUCKET", test.newObject, reader)
+			_, err := s.Write(context.TODO(), "BUCKET", test.newObject, reader)
 
 			// assert error
 			if test.errorExpected && err == nil {

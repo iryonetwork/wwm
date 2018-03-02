@@ -17,6 +17,7 @@ import (
 type Object interface {
 	Stat() (minio.ObjectInfo, error)
 	Read(b []byte) (n int, err error)
+	Close() (err error)
 }
 
 // NewObjectInfo holds data required to create a new file

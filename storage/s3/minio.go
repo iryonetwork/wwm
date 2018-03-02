@@ -1,7 +1,9 @@
 package s3
 
 import (
-	"github.com/iryonetwork/wwm/storage/s3/object"
+	"context"
+	"io"
+
 	minio "github.com/minio/minio-go"
 )
 
@@ -10,8 +12,8 @@ type iminio struct {
 	minio.Client
 }
 
-func (m iminio) GetObject(bucketName, objectName string, opts minio.GetObjectOptions) (object.Object, error) {
-	return m.Client.GetObject(bucketName, objectName, opts)
+func (m iminio) GetObjectWithContext(ctx context.Context, bucketName, objectName string, opts minio.GetObjectOptions) (io.ReadCloser, error) {
+	return m.Client.GetObjectWithContext(ctx, bucketName, objectName, opts)
 }
 
 // BucketExists is a wrapper for original BucketExists method to fix incorrect handling of 404 returned as response

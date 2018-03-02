@@ -25,40 +25,40 @@ type Service interface {
 	Checksum(r io.Reader) (string, error)
 
 	// BucketList returns list of all the buckets.
-	BucketList() ([]*models.BucketDescriptor, error)
+	BucketList(ctx context.Context) ([]*models.BucketDescriptor, error)
 
 	// FileList returns a list of latest versions of files. Older versions and
 	// files marked as deleted are removed from the list.
-	FileList(bucketID string) ([]*models.FileDescriptor, error)
+	FileList(ctx context.Context, bucketID string) ([]*models.FileDescriptor, error)
 
 	// FileGet returns the latest version of the file by returning the reader
 	// and file details.
-	FileGet(bucketID, fileID string) (io.ReadCloser, *models.FileDescriptor, error)
+	FileGet(ctx context.Context, bucketID, fileID string) (io.ReadCloser, *models.FileDescriptor, error)
 
 	// FileGetVersion returns a specific version of a file.
-	FileGetVersion(bucketID, fileID, version string) (io.ReadCloser, *models.FileDescriptor, error)
+	FileGetVersion(ctx context.Context, bucketID, fileID, version string) (io.ReadCloser, *models.FileDescriptor, error)
 
 	// FileListVersions returns a list of all modifications to a file.
-	FileListVersions(bucketID, fileID string) ([]*models.FileDescriptor, error)
+	FileListVersions(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error)
 
 	// FileNew creates a new file.
-	FileNew(bucketID string, r io.Reader, contentType string, archetype string) (*models.FileDescriptor, error)
+	FileNew(ctx context.Context, bucketID string, r io.Reader, contentType string, archetype string) (*models.FileDescriptor, error)
 
 	// FileUpdate creates a new version of a file.
-	FileUpdate(bucketID, fileID string, r io.Reader, contentType string, archetype string) (*models.FileDescriptor, error)
+	FileUpdate(ctx context.Context, bucketID, fileID string, r io.Reader, contentType string, archetype string) (*models.FileDescriptor, error)
 
 	// FileDelete marks file as deleted.
-	FileDelete(bucketID, fileID string) error
+	FileDelete(ctx context.Context, bucketID, fileID string) error
 
 	// SyncFileList returns a list of latest versions of files. Older versions are removed from the list.
 	// Files marked as deleted are kept in the list.
-	SyncFileList(bucketID string) ([]*models.FileDescriptor, error)
+	SyncFileList(ctx context.Context, bucketID string) ([]*models.FileDescriptor, error)
 
 	// SyncFile syncs file with provided fileID and version.
-	SyncFile(bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string) (*models.FileDescriptor, error)
+	SyncFile(ctx context.Context, bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string) (*models.FileDescriptor, error)
 
 	// SyncFileDelete sync file deletion.
-	SyncFileDelete(bucketID, fileID, version string, created strfmt.DateTime) error
+	SyncFileDelete(ctx context.Context, bucketID, fileID, version string, created strfmt.DateTime) error
 }
 
 // Bucket or item was already deleted
@@ -89,17 +89,17 @@ func (s *service) Checksum(r io.Reader) (string, error) {
 	return base64.URLEncoding.EncodeToString(h.Sum(nil)), nil
 }
 
-func (s *service) BucketList() ([]*models.BucketDescriptor, error) {
+func (s *service) BucketList(ctx context.Context) ([]*models.BucketDescriptor, error) {
 	// get the list and return
-	return s.s3.ListBuckets()
+	return s.s3.ListBuckets(ctx)
 }
 
-func (s *service) FileList(bucketID string) ([]*models.FileDescriptor, error) {
+func (s *service) FileList(ctx context.Context, bucketID string) ([]*models.FileDescriptor, error) {
 	// init list to return
 	list := []*models.FileDescriptor{}
 
 	// check if bucket exists
-	exists, err := s.s3.BucketExists(bucketID)
+	exists, err := s.s3.BucketExists(ctx, bucketID)
 	if err != nil {
 		s.logger.Info().Err(err).Str("bucket", bucketID).Msg("Failed to check if bucket exists")
 		return nil, err
@@ -109,7 +109,7 @@ func (s *service) FileList(bucketID string) ([]*models.FileDescriptor, error) {
 	}
 
 	// collect the list
-	l, err := s.s3.List(bucketID, "")
+	l, err := s.s3.List(ctx, bucketID, "")
 	if err != nil {
 		return nil, err
 	}
@@ -129,20 +129,20 @@ func (s *service) FileList(bucketID string) ([]*models.FileDescriptor, error) {
 	return list, nil
 }
 
-func (s *service) FileGet(bucketID, fileID string) (io.ReadCloser, *models.FileDescriptor, error) {
-	return s.s3.Read(bucketID, fileID, "")
+func (s *service) FileGet(ctx context.Context, bucketID, fileID string) (io.ReadCloser, *models.FileDescriptor, error) {
+	return s.s3.Read(ctx, bucketID, fileID, "")
 }
 
-func (s *service) FileGetVersion(bucketID, fileID, version string) (io.ReadCloser, *models.FileDescriptor, error) {
-	return s.s3.Read(bucketID, fileID, version)
+func (s *service) FileGetVersion(ctx context.Context, bucketID, fileID, version string) (io.ReadCloser, *models.FileDescriptor, error) {
+	return s.s3.Read(ctx, bucketID, fileID, version)
 }
 
-func (s *service) FileListVersions(bucketID, fileID string) ([]*models.FileDescriptor, error) {
-	return s.s3.List(bucketID, fileID)
+func (s *service) FileListVersions(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error) {
+	return s.s3.List(ctx, bucketID, fileID)
 }
 
-func (s *service) FileNew(bucketID string, r io.Reader, contentType string, archetype string) (*models.FileDescriptor, error) {
-	err := s.EnsureBucket(bucketID)
+func (s *service) FileNew(ctx context.Context, bucketID string, r io.Reader, contentType string, archetype string) (*models.FileDescriptor, error) {
+	err := s.EnsureBucket(ctx, bucketID)
 	if err != nil {
 		return nil, err
 	}
@@ -169,10 +169,10 @@ func (s *service) FileNew(bucketID string, r io.Reader, contentType string, arch
 		Operation:   string(s3.Write),
 	}
 
-	fd, err := s.s3.Write(bucketID, no, &buf)
+	fd, err := s.s3.Write(ctx, bucketID, no, &buf)
 	if err == nil {
 		s.publisher.PublishAsyncWithRetries(
-			context.Background(),
+			ctx,
 			storageSync.FileNew,
 			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version, Created: fd.Created},
 		)
@@ -180,9 +180,9 @@ func (s *service) FileNew(bucketID string, r io.Reader, contentType string, arch
 	return fd, err
 }
 
-func (s *service) FileUpdate(bucketID, fileID string, r io.Reader, contentType string, archetype string) (*models.FileDescriptor, error) {
+func (s *service) FileUpdate(ctx context.Context, bucketID, fileID string, r io.Reader, contentType string, archetype string) (*models.FileDescriptor, error) {
 	// get the previous file
-	_, _, err := s.s3.Read(bucketID, fileID, "")
+	_, _, err := s.s3.Read(ctx, bucketID, fileID, "")
 	if err != nil {
 		return nil, err
 	}
@@ -208,10 +208,10 @@ func (s *service) FileUpdate(bucketID, fileID string, r io.Reader, contentType s
 		Operation:   string(s3.Write),
 	}
 
-	fd, err := s.s3.Write(bucketID, no, &buf)
+	fd, err := s.s3.Write(ctx, bucketID, no, &buf)
 	if err == nil {
 		s.publisher.PublishAsyncWithRetries(
-			context.Background(),
+			ctx,
 			storageSync.FileUpdate,
 			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version, Created: fd.Created},
 		)
@@ -219,9 +219,9 @@ func (s *service) FileUpdate(bucketID, fileID string, r io.Reader, contentType s
 	return fd, err
 }
 
-func (s *service) FileDelete(bucketID, fileID string) error {
+func (s *service) FileDelete(ctx context.Context, bucketID, fileID string) error {
 	// get the previous file
-	_, fd, err := s.s3.Read(bucketID, fileID, "")
+	_, fd, err := s.s3.Read(ctx, bucketID, fileID, "")
 	if err != nil {
 		return err
 	}
@@ -238,10 +238,10 @@ func (s *service) FileDelete(bucketID, fileID string) error {
 		Operation:   string(s3.Delete),
 	}
 
-	fd, err = s.s3.Write(bucketID, no, &bytes.Buffer{})
+	fd, err = s.s3.Write(ctx, bucketID, no, &bytes.Buffer{})
 	if err == nil {
 		s.publisher.PublishAsyncWithRetries(
-			context.Background(),
+			ctx,
 			storageSync.FileDelete,
 			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version, Created: fd.Created},
 		)
@@ -249,12 +249,12 @@ func (s *service) FileDelete(bucketID, fileID string) error {
 	return err
 }
 
-func (s *service) SyncFileList(bucketID string) ([]*models.FileDescriptor, error) {
+func (s *service) SyncFileList(ctx context.Context, bucketID string) ([]*models.FileDescriptor, error) {
 	// init list to return
 	list := []*models.FileDescriptor{}
 
 	// check if bucket exists
-	exists, err := s.s3.BucketExists(bucketID)
+	exists, err := s.s3.BucketExists(ctx, bucketID)
 	if err != nil {
 		s.logger.Info().Err(err).Str("bucket", bucketID).Msg("Failed to check if bucket exists")
 		return nil, err
@@ -264,7 +264,7 @@ func (s *service) SyncFileList(bucketID string) ([]*models.FileDescriptor, error
 	}
 
 	// collect the list
-	l, err := s.s3.List(bucketID, "")
+	l, err := s.s3.List(ctx, bucketID, "")
 	if err != nil {
 		return nil, err
 	}
@@ -282,8 +282,8 @@ func (s *service) SyncFileList(bucketID string) ([]*models.FileDescriptor, error
 	return list, nil
 }
 
-func (s *service) SyncFile(bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string) (*models.FileDescriptor, error) {
-	err := s.EnsureBucket(bucketID)
+func (s *service) SyncFile(ctx context.Context, bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string) (*models.FileDescriptor, error) {
+	err := s.EnsureBucket(ctx, bucketID)
 	if err != nil {
 		return nil, err
 	}
@@ -298,7 +298,7 @@ func (s *service) SyncFile(bucketID, fileID, version string, r io.Reader, conten
 	}
 
 	// try to fetch
-	_, fd, err := s.s3.Read(bucketID, fileID, version)
+	_, fd, err := s.s3.Read(ctx, bucketID, fileID, version)
 
 	switch {
 	// Already exists and does not conflict
@@ -329,12 +329,12 @@ func (s *service) SyncFile(bucketID, fileID, version string, r io.Reader, conten
 		Operation:   string(s3.Write),
 	}
 
-	return s.s3.Write(bucketID, no, &buf)
+	return s.s3.Write(ctx, bucketID, no, &buf)
 }
 
-func (s *service) SyncFileDelete(bucketID, fileID, version string, created strfmt.DateTime) error {
+func (s *service) SyncFileDelete(ctx context.Context, bucketID, fileID, version string, created strfmt.DateTime) error {
 	// get the previous file
-	_, fd, err := s.s3.Read(bucketID, fileID, "")
+	_, fd, err := s.s3.Read(ctx, bucketID, fileID, "")
 	if err != nil {
 		return err
 	}
@@ -363,13 +363,13 @@ func (s *service) SyncFileDelete(bucketID, fileID, version string, created strfm
 		Operation:   string(s3.Delete),
 	}
 
-	_, err = s.s3.Write(bucketID, no, &bytes.Buffer{})
+	_, err = s.s3.Write(ctx, bucketID, no, &bytes.Buffer{})
 	return err
 }
 
-func (s *service) EnsureBucket(bucketID string) error {
+func (s *service) EnsureBucket(ctx context.Context, bucketID string) error {
 	// make sure bucket exists
-	if err := s.s3.MakeBucket(bucketID); err != nil && err != s3.ErrAlreadyExists {
+	if err := s.s3.MakeBucket(ctx, bucketID); err != nil && err != s3.ErrAlreadyExists {
 		s.logger.Error().Err(err).Str("bucket", bucketID).Msg("Failed to ensure bucket")
 		return err
 	}
