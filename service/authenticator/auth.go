@@ -10,12 +10,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"sort"
 	"strings"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
+	"github.com/gobwas/glob"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/acme"
 	"golang.org/x/crypto/bcrypt"
@@ -143,20 +143,8 @@ func (a *service) Authorizer() runtime.Authorizer {
 		if strings.HasPrefix(*userID, servicePrincipal) {
 			keyID := (*userID)[len(servicePrincipal):]
 			s, ok := a.syncServices[keyID]
-			path := request.URL.EscapedPath()
-			if ok {
-				if _, ok := s.paths[path]; ok {
-					return nil
-				}
-				for _, length := range s.wildcardLengths {
-					if length <= len(path) {
-						if _, ok := s.wildcards[length][path[:length]]; ok {
-							return nil
-						}
-					} else {
-						break
-					}
-				}
+			if ok && s.glob.Match(request.URL.EscapedPath()) {
+				return nil
 			}
 			return utils.NewError(utils.ErrForbidden, "You do not have permissions for this resource")
 		}
@@ -191,10 +179,8 @@ func (a *service) GetPublicKey(_ context.Context, pubID string) (string, error) 
 }
 
 type syncService struct {
-	publicKey       crypto.PublicKey
-	paths           map[string]bool
-	wildcards       map[int]map[string]bool
-	wildcardLengths []int
+	publicKey crypto.PublicKey
+	glob      glob.Glob
 }
 
 // New returns a new instance of authenticator service
@@ -225,31 +211,15 @@ func New(storage Storage, allowedServiceCertsAndPaths map[string][]string, logge
 			return nil, err
 		}
 
+		g, err := glob.Compile("{" + strings.Join(paths, ",") + "}")
+		if err != nil {
+			return nil, err
+		}
+
 		s := syncService{
-			publicKey:       c.PublicKey,
-			paths:           map[string]bool{},
-			wildcardLengths: []int{},
+			publicKey: c.PublicKey,
+			glob:      g,
 		}
-		lengthsMap := map[int]map[string]bool{}
-
-		for _, path := range paths {
-			wildcard := strings.Index(path, "*")
-			if wildcard != -1 {
-				if _, ok := lengthsMap[wildcard]; !ok {
-					lengthsMap[wildcard] = map[string]bool{}
-				}
-				path = path[:wildcard]
-				lengthsMap[wildcard][path] = true
-			} else {
-				s.paths[path] = true
-			}
-		}
-
-		for length := range lengthsMap {
-			s.wildcardLengths = append(s.wildcardLengths, length)
-		}
-		sort.Ints(s.wildcardLengths)
-		s.wildcards = lengthsMap
 
 		syncServices[thumb] = s
 	}

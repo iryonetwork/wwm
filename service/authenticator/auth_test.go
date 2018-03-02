@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/gobwas/glob"
+
 	"github.com/rs/zerolog"
 
 	"github.com/go-openapi/swag"
@@ -95,27 +97,9 @@ func TestNew(t *testing.T) {
 	}
 	s := ss.(*service)
 
-	syncService, ok := s.syncServices["YcS9Uj_ddqPxsJc9ISJYPLhJTRgIZPqE3T8fX3s9Q6I"]
+	_, ok := s.syncServices["YcS9Uj_ddqPxsJc9ISJYPLhJTRgIZPqE3T8fX3s9Q6I"]
 	if !ok {
 		t.Fatalf("Expected service to have syncService with key id 'YcS9Uj_ddqPxsJc9ISJYPLhJTRgIZPqE3T8fX3s9Q6I'; got sync services: %v", s.syncServices)
-	}
-
-	checkPaths := []string{"/auth/login"}
-	for _, path := range checkPaths {
-		_, ok := syncService.paths[path]
-		if !ok {
-			t.Errorf("Expected service to have path '%s'; have paths %v", path, syncService.paths)
-		}
-	}
-
-	checkLengths := []int{9, 16}
-	for i, length := range checkLengths {
-		if syncService.wildcardLengths[i] != length {
-			t.Errorf("Expected service to have wildcard length %d; have lengths %v", length, syncService.wildcardLengths)
-		}
-		if _, ok := syncService.wildcards[length]; !ok {
-			t.Errorf("Expected service to have wildcard with length %d; have wildcards %v", length, syncService.wildcards)
-		}
 	}
 }
 
@@ -123,14 +107,7 @@ func TestAuthorizerForSyncPaths(t *testing.T) {
 	s := &service{
 		syncServices: map[string]syncService{
 			"test_cert_key_id": {
-				paths: map[string]bool{
-					"/auth/login": true,
-				},
-				wildcards: map[int]map[string]bool{
-					16: map[string]bool{"/something/other": true},
-					9:  map[string]bool{"/storage/": true},
-				},
-				wildcardLengths: []int{9, 16},
+				glob: glob.MustCompile("{/auth/login,/storage/*,/something/other*,/storage/*/bucket}"),
 			},
 		},
 	}
@@ -149,6 +126,7 @@ func TestAuthorizerForSyncPaths(t *testing.T) {
 		{"/something/other", true},
 		{"/something/otherdsadsa", true},
 		{"/something/othe", false},
+		{"/storage/abc/bucket", true},
 	}
 
 	for _, test := range tests {
