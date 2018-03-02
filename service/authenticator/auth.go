@@ -170,7 +170,7 @@ func (a *service) Authorizer() runtime.Authorizer {
 
 		result := a.storage.FindACL(*userID, []*models.ValidationPair{{
 			Actions:  &action,
-			Resource: swag.String(request.URL.EscapedPath()),
+			Resource: swag.String("/api" + request.URL.EscapedPath()),
 		}})
 
 		if !result[0].Result {

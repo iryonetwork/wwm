@@ -90,7 +90,7 @@ func (a *authorizer) Authorizer() runtime.Authorizer {
 	logger := a.logger.With().Str("cmd", "Authorizer").Logger()
 	return runtime.AuthorizerFunc(func(request *http.Request, principal interface{}) error {
 		action := methodToAction(request.Method)
-		resource := request.URL.EscapedPath()
+		resource := "/api" + request.URL.EscapedPath()
 		pairs := models.PostValidateParamsBody{
 			&models.ValidationPair{
 				Actions:  &action,

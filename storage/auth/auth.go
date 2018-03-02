@@ -158,19 +158,19 @@ func (s *Storage) initializeRolesAndRules() error {
 	s.AddRule(&models.Rule{
 		Subject:  &everyoneRole.ID,
 		Action:   swag.Int64(Write),
-		Resource: swag.String("/auth/validate"),
+		Resource: swag.String("/api/auth/validate"),
 	})
 
 	s.AddRule(&models.Rule{
 		Subject:  &everyoneRole.ID,
 		Action:   swag.Int64(Read),
-		Resource: swag.String("/auth/renew"),
+		Resource: swag.String("/api/auth/renew"),
 	})
 
 	s.AddRule(&models.Rule{
 		Subject:  &everyoneRole.ID,
 		Action:   swag.Int64(Read | Write),
-		Resource: swag.String("/auth/users/{self}"),
+		Resource: swag.String("/api/auth/users/{self}"),
 	})
 
 	s.AddRule(&models.Rule{

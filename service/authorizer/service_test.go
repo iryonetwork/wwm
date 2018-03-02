@@ -131,8 +131,8 @@ func TestAuthorizer(t *testing.T) {
 				t.Errorf("#%d Authorize(method: %s, path: %s) action = %d; expected %d", i, test.requestMethod, test.requestPath, *pairs[0].Actions, methodToAction(test.requestMethod))
 			}
 
-			if *pairs[0].Resource != test.requestPath {
-				t.Errorf("#%d Authorize(method: %s, path: %s) action = %s; expected %s", i, test.requestMethod, test.requestPath, *pairs[0].Resource, test.requestPath)
+			if *pairs[0].Resource != "/api"+test.requestPath {
+				t.Errorf("#%d Authorize(method: %s, path: %s) path = %s; expected /api%s", i, test.requestMethod, test.requestPath, *pairs[0].Resource, test.requestPath)
 			}
 
 			w.Header().Set("Content-Type", "application/json")

@@ -151,11 +151,11 @@ func TestRules(t *testing.T) {
 				},
 				{
 					Actions:  swag.Int64(Read),
-					Resource: swag.String("/auth/renew"),
+					Resource: swag.String("/api/auth/renew"),
 				},
 				{
 					Actions:  swag.Int64(Write),
-					Resource: swag.String("/auth/validate"),
+					Resource: swag.String("/api/auth/validate"),
 				},
 			},
 			results: []bool{
