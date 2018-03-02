@@ -3,15 +3,17 @@ package server
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 
-	"github.com/iryonetwork/wwm/metrics/api"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/rs/zerolog"
+
+	"github.com/iryonetwork/wwm/log"
+	"github.com/iryonetwork/wwm/metrics/api"
 )
 
 // ServePrometheusMetrics starts prometheus metrics server
-func ServePrometheusMetrics(ctx context.Context, addr string, namespace string) error {
+func ServePrometheusMetrics(ctx context.Context, addr string, namespace string, logger zerolog.Logger) error {
 	// initialize metrics middleware
 	m := api.NewMetrics("metrics", "")
 
@@ -24,7 +26,7 @@ func ServePrometheusMetrics(ctx context.Context, addr string, namespace string) 
 	mux.Handle(path, prometheus.Handler())
 	s := &http.Server{
 		Addr:    addr,
-		Handler: m.Middleware(mux),
+		Handler: m.Middleware(log.APILogMiddleware(mux, logger.With().Str("component", "logMW").Logger())),
 	}
 
 	go func() {
@@ -32,7 +34,7 @@ func ServePrometheusMetrics(ctx context.Context, addr string, namespace string) 
 		s.Shutdown(ctx)
 	}()
 
-	log.Printf("Starting metrics server at %s%s", addr, path)
+	logger.Info().Msgf("Starting metrics server at %s%s", addr, path)
 
 	return s.ListenAndServe()
 }

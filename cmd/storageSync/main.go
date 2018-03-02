@@ -101,7 +101,7 @@ func main() {
 	c.StartSubscription(storageSync.FileDelete)
 
 	go func() {
-		err := metricsServer.ServePrometheusMetrics(ctx, ":9090", "")
+		err := metricsServer.ServePrometheusMetrics(ctx, ":9090", "", logger.With().Str("component", "metrics/server").Logger())
 		if err != nil {
 			logger.Error().Err(err).Msg("prometheus metrics server failure")
 		}

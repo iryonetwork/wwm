@@ -8,7 +8,6 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"sync"
 	"time"
@@ -22,6 +21,7 @@ import (
 
 	"github.com/iryonetwork/wwm/gen/storage/restapi"
 	"github.com/iryonetwork/wwm/gen/storage/restapi/operations"
+	logMW "github.com/iryonetwork/wwm/log"
 	APIMetrics "github.com/iryonetwork/wwm/metrics/api"
 	metricsServer "github.com/iryonetwork/wwm/metrics/server"
 	storage "github.com/iryonetwork/wwm/service/storage"
@@ -152,7 +152,7 @@ func main() {
 		WithURLSanitize(utils.WhitelistURLSanitize([]string{"storage", "versions", "sync"}))
 
 	// set handler with middlewares
-	apiHandler := apiLogMiddleware(api.Serve(nil), logger.With().Str("component", "logMW").Logger())
+	apiHandler := logMW.APILogMiddleware(api.Serve(nil), logger.With().Str("component", "logMW").Logger())
 	apiHandler = m.Middleware(apiHandler)
 
 	server.SetHandler(apiHandler)
@@ -169,7 +169,7 @@ func main() {
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
-		errCh <- metricsServer.ServePrometheusMetrics(context.Background(), ":9090", "storage")
+		errCh <- metricsServer.ServePrometheusMetrics(context.Background(), ":9090", "storage", logger.With().Str("component", "metrics/server").Logger())
 	}()
 
 	go func() {
@@ -184,13 +184,6 @@ func main() {
 			logger.Fatal().Err(err).Msg("Failed to start server")
 		}
 	}
-}
-
-func apiLogMiddleware(next http.Handler, logger zerolog.Logger) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.Debug().Str("method", r.Method).Str("path", r.URL.Path).Msg("New request")
-		next.ServeHTTP(w, r)
-	})
 }
 
 type WildcardConsumer struct{}
