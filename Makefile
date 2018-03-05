@@ -1,14 +1,14 @@
 BASIC_SERVICES = traefik vault localMinio cloudMinio localNats cloudAuth localAuth localStorage cloudStorage localNats storageSync
 
-.PHONY: up run stop build specs
+.PHONY: up run stop build
 
 ifeq ($(CI),)
-ALL: vendorSync generate specs yarnInstall certs rebuildDocker
+ALL: vendorSync generate yarnInstall certs rebuildDocker
 else
-ALL: vendorSync specs generate
+ALL: vendorSync generate
 endif
 
-clear: clearGenerate clearSpecs ## clears artifacts
+clear: clearGenerate ## clears artifacts
 	docker-compose down
 	rm -fr .bin
 	rm -fr .data
@@ -54,12 +54,6 @@ test/unit: ## run all unit tests
 
 test/unit/%: ## run unit tests for a specific project
 	go test ./$*
-
-specs: ## rebuild specs
-	$(MAKE) -C specs
-
-clearSpecs:
-	$(MAKE) -C specs clear
 
 vendorSync: vendor/vendor.json ## syncs the vendor folder to match vendor.json
 	govendor sync

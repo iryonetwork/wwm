@@ -4,11 +4,7 @@ go:
 sudo: true
 
 before_install:
-  - sudo add-apt-repository -y ppa:maarten-fonville/protobuf
-  - sudo apt-get -qq update
-  - sudo apt-get install -qq protobuf-compiler
   - go get github.com/golang/mock/mockgen
-           github.com/golang/protobuf/protoc-gen-go
            github.com/dominikznidar/govendor
            github.com/go-swagger/go-swagger/cmd/swagger
   - make
