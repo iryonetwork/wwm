@@ -124,7 +124,7 @@ func TestAuthorizer(t *testing.T) {
 			defer r.Body.Close()
 			body, _ := ioutil.ReadAll(r.Body)
 
-			pairs := models.PostValidateParamsBody{}
+			pairs := []*models.ValidationPair{}
 			swag.ReadJSON(body, &pairs)
 
 			if *pairs[0].Actions != methodToAction(test.requestMethod) {

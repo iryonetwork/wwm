@@ -91,8 +91,8 @@ func (a *authorizer) Authorizer() runtime.Authorizer {
 	return runtime.AuthorizerFunc(func(request *http.Request, principal interface{}) error {
 		action := methodToAction(request.Method)
 		resource := "/api" + request.URL.EscapedPath()
-		pairs := models.PostValidateParamsBody{
-			&models.ValidationPair{
+		pairs := []*models.ValidationPair{
+			{
 				Actions:  &action,
 				Resource: &resource,
 			},
@@ -148,7 +148,7 @@ func (a *authorizer) Authorizer() runtime.Authorizer {
 		}
 
 		if response.r.StatusCode == http.StatusOK {
-			validationResponse := models.PostValidateOKBody{}
+			validationResponse := []*models.ValidationResult{}
 			err := swag.ReadJSON(responseBody, &validationResponse)
 			if err != nil {
 				logger.Error().Err(err).Msg("Parsing response failed")
