@@ -10,7 +10,7 @@ before_install:
   - make
 
 script:
-  - go test -short ./...
+  - make test
 
 cache:
   directories:

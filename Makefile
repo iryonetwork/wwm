@@ -50,7 +50,7 @@ clearGenerate: ## clears artifacts created by generate
 test: test/unit ## run all tests
 
 test/unit: ## run all unit tests
-	go test ./...
+	go test -short ./...
 
 test/unit/%: ## run unit tests for a specific project
 	go test ./$*
