@@ -1,6 +1,6 @@
 package publisher
 
-//go:generate sh ../../../bin/mockgen.sh sync/storage/publisher StanConnection $GOFILE
+//go:generate ../../../bin/mockgen.sh sync/storage/publisher StanConnection $GOFILE
 
 import (
 	"context"

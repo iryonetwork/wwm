@@ -5,7 +5,7 @@ cycles in unit tests.
 */
 package object
 
-//go:generate sh ../../../bin/mockgen.sh storage/s3/object Object $GOFILE
+//go:generate ../../../bin/mockgen.sh storage/s3/object Object $GOFILE
 
 import (
 	"github.com/go-openapi/strfmt"

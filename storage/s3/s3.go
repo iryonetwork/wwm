@@ -31,7 +31,7 @@ value can be up to 886 characters long.
 */
 package s3
 
-//go:generate sh ../../bin/mockgen.sh storage/s3 Storage,KeyProvider,Minio $GOFILE
+//go:generate ../../bin/mockgen.sh storage/s3 Storage,KeyProvider,Minio $GOFILE
 
 import (
 	"fmt"

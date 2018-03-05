@@ -1,6 +1,6 @@
 package consumer
 
-//go:generate sh ../../../bin/mockgen.sh sync/storage/consumer Handlers $GOFILE
+//go:generate ../../../bin/mockgen.sh sync/storage/consumer Handlers $GOFILE
 
 import (
 	"context"
