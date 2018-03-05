@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/casbin/casbin"
 	casbinmodel "github.com/casbin/casbin/model"
 	"github.com/casbin/casbin/persist"
+	"github.com/gobwas/glob"
 	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/rs/zerolog"
 )
@@ -121,6 +123,31 @@ func SelfMatchFunc(args ...interface{}) (interface{}, error) {
 	return (bool)(SelfMatch(key1, key2, subject)), nil
 }
 
+type wildcardMatch struct {
+	globs sync.Map
+}
+
+func (w *wildcardMatch) Match(args ...interface{}) (interface{}, error) {
+	request := args[0].(string)
+	policy := args[1].(string)
+
+	var rule glob.Glob
+	g, ok := w.globs.Load(policy)
+	if !ok {
+		newGlob, err := glob.Compile(policy)
+		if err != nil {
+			return nil, err
+		}
+
+		w.globs.Store(policy, newGlob)
+		rule = newGlob
+	} else {
+		rule = g.(glob.Glob)
+	}
+
+	return rule.Match(request), nil
+}
+
 // NewEnforcer returns new casbin enforcer
 func NewEnforcer(storage *Storage) (*casbin.Enforcer, error) {
 	m := casbin.NewModel(`[request_definition]
@@ -136,12 +163,15 @@ g = _, _
 e = some(where (p.eft == allow)) && !some(where (p.eft == deny))
 
 [matchers]
-m = g(r.sub, p.sub) && (keyMatch(r.obj, p.obj) || selfMatch(r.obj, p.obj, r.sub)) && binaryMatch(r.act, p.act)`)
+m = g(r.sub, p.sub) && (wildcardMatch(r.obj, p.obj) || selfMatch(r.obj, p.obj, r.sub)) && binaryMatch(r.act, p.act)`)
 
 	a := NewAdapter(storage)
 	e := casbin.NewEnforcer(m, a, false)
 	e.AddFunction("binaryMatch", BinaryMatchFunc)
 	e.AddFunction("selfMatch", SelfMatchFunc)
+
+	w := &wildcardMatch{}
+	e.AddFunction("wildcardMatch", w.Match)
 
 	err := e.LoadPolicy()
 	if err != nil {

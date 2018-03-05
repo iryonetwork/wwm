@@ -189,6 +189,50 @@ func TestRules(t *testing.T) {
 				false,
 			},
 		},
+		{
+			rules: []*models.Rule{
+				{
+					Action:   swag.Int64(Write),
+					Resource: swag.String("/storage/*/read"),
+					Subject:  &g1.ID,
+				},
+				{
+					Action:   swag.Int64(Write),
+					Resource: swag.String("/storage/*/*/other"),
+					Subject:  &g1.ID,
+				},
+			},
+			userID: u1.ID,
+			validations: []*models.ValidationPair{
+				{
+					Actions:  swag.Int64(Write),
+					Resource: swag.String("/storage/test/read"),
+				},
+				{
+					Actions:  swag.Int64(Write),
+					Resource: swag.String("/storage/test/read/other"),
+				},
+				{
+					Actions:  swag.Int64(Write),
+					Resource: swag.String("/storage/test"),
+				},
+				{
+					Actions:  swag.Int64(Write),
+					Resource: swag.String("/storage/test/"),
+				},
+				{
+					Actions:  swag.Int64(Write),
+					Resource: swag.String("cat"),
+				},
+			},
+			results: []bool{
+				true,
+				true,
+				false,
+				false,
+				false,
+			},
+		},
 	}
 
 	for testIndex, test := range tests {
