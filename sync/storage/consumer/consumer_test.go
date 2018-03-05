@@ -331,6 +331,8 @@ func TestDurability(t *testing.T) {
 
 	// Stop consumer
 	cleanService()
+	// wait for disconnection
+	<-time.After(time.Duration(10 * time.Millisecond))
 
 	// Publish another one
 	err = p.Publish(context.Background(), storageSync.FileNew, file2)
