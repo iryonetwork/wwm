@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/boltdb/bolt"
 	"github.com/go-openapi/swag"
-	"github.com/iryonetwork/wwm/gen/waitlist/models"
 	uuid "github.com/satori/go.uuid"
+
+	"github.com/iryonetwork/wwm/gen/waitlist/models"
+	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 )
 
 // Lists returns all active lists

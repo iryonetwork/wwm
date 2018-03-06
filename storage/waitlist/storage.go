@@ -3,9 +3,10 @@ package waitlist
 import (
 	"fmt"
 
-	"github.com/boltdb/bolt"
-	"github.com/iryonetwork/wwm/gen/waitlist/models"
 	"github.com/rs/zerolog"
+
+	"github.com/iryonetwork/wwm/gen/waitlist/models"
+	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 )
 
 // Storage provides an interface for waitlist public functions
@@ -57,7 +58,7 @@ func New(path string, key []byte, logger zerolog.Logger) (Storage, error) {
 		return nil, fmt.Errorf("Encryption key must be 32 bytes long")
 	}
 
-	db, err := bolt.Open(path, 0x600, nil)
+	db, err := bolt.Open(key, path, 0x600, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"time"
 
-	"github.com/boltdb/bolt"
 	"github.com/go-openapi/strfmt"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/iryonetwork/wwm/gen/waitlist/models"
+	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 	"github.com/iryonetwork/wwm/utils"
 )
 
