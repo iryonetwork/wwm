@@ -6,6 +6,7 @@ import (
 	"os"
 
 	loads "github.com/go-openapi/loads"
+	"github.com/go-openapi/swag"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 
@@ -39,8 +40,8 @@ func main() {
 	api := operations.NewWaitlistAPI(swaggerSpec)
 	server := restapi.NewServer(api)
 	server.TLSPort = 443
-	server.TLSCertificate = "/certs/waitlist.pem"
-	server.TLSCertificateKey = "/certs/waitlist-key.pem"
+	server.TLSCertificate = "/certs/public.crt"
+	server.TLSCertificateKey = "/certs/private.key"
 	server.EnabledListeners = []string{"https"}
 	defer server.Shutdown()
 
@@ -55,6 +56,10 @@ func main() {
 	api.ItemGetListIDHandler = h.ItemGetListID()
 	api.ItemPostListIDHandler = h.ItemPostListID()
 	api.ItemPutListIDItemIDHandler = h.ItemPutListIDItemID()
+
+	api.TokenAuth = func(token string) (*string, error) {
+		return swag.String("test"), nil
+	}
 
 	handler := cors.New(cors.Options{
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},

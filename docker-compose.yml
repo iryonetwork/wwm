@@ -190,3 +190,13 @@ services:
 
   localPrometheusPushGateway:
     image: prom/pushgateway
+    
+  waitlist:
+    image: golang:1.9-alpine
+    command:
+    - /wwm/waitlist
+    volumes:
+    - ./.bin/:/wwm
+    - ./.data/waitlist:/data
+    - ./bin/tls/waitlist-key.pem:/certs/private.key:ro
+    - ./bin/tls/waitlist.pem:/certs/public.crt:ro

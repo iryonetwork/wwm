@@ -40,6 +40,10 @@ address = ":8080"
     [backends.localstorageMetrics.servers.server1]
     url = "http://localStorage:9090"
 
+  [backends.waitlist]
+    [backends.waitlist.servers.server1]
+    url = "https://waitlist"
+
   [backends.localMinio]
     [backends.localMinio.servers.server1]
     url = "https://localMinio:9000"
@@ -113,6 +117,11 @@ address = ":8080"
   backend = "localstorageMetrics"
     [frontends.localstorageMetrics.routes.route1]
     rule = "Host:iryo.local;PathPrefix:/storage/metrics"
+
+  [frontends.waitlist]
+  backend = "waitlist"
+    [frontends.waitlist.routes.route1]
+    rule = "Host:iryo.local;PathPrefix:/waitlist"
 
   [frontends.localMinio]
   backend = "localMinio"
