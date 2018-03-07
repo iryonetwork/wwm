@@ -92,6 +92,14 @@ address = ":8080"
     [backends.localPrometheusPushGateway.servers.server1]
     url = "http://localPrometheusPushGateway:9091"
 
+  [backends.localStatusReporter]
+    [backends.localStatusReporter.servers.server1]
+    url = "https://localStatusReporter"
+
+  [backends.localStatusReporterMetrics]
+    [backends.localStatusReporterMetrics.servers.server1]
+    url = "http://localStatusReporterMetrics:9090"
+
 [frontends]
   [frontends.localauth]
   backend = "localauth"
@@ -167,3 +175,8 @@ address = ":8080"
   backend = "cloudPrometheus"
     [frontends.cloudPrometheus.routes.route1]
     rule = "Host:prometheus.iryo.cloud"
+
+  [frontends.localStatus]
+  backend = "localStatusReporter"
+    [frontends.localStatus.routes.route1]
+    rule = "Host:iryo.local;PathPrefix:/status"

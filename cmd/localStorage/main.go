@@ -25,6 +25,7 @@ import (
 	APIMetrics "github.com/iryonetwork/wwm/metrics/api"
 	metricsServer "github.com/iryonetwork/wwm/metrics/server"
 	storage "github.com/iryonetwork/wwm/service/storage"
+	statusServer "github.com/iryonetwork/wwm/status/server"
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/mock"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
@@ -160,18 +161,29 @@ func main() {
 	// Start servers
 	errCh := make(chan error)
 	var wg sync.WaitGroup
-
 	go func() {
 		wg.Wait()
 		close(errCh)
 	}()
 
+	// start serving metrics
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
 		errCh <- metricsServer.ServePrometheusMetrics(context.Background(), ":9090", "storage", logger.With().Str("component", "metrics/server").Logger())
 	}()
 
+	// start serving status
+	go func() {
+		wg.Add(1)
+		ss := statusServer.New(logger.With().Str("component", "status/server").Logger())
+		defer ss.Close()
+		defer wg.Done()
+
+		errCh <- ss.ListenAndServeHTTPs("localStorage:4433", "", "/certs/localStorage.pem", "/certs/localStorage-key.pem")
+	}()
+
+	// start serving API
 	go func() {
 		wg.Add(1)
 		defer server.Shutdown()

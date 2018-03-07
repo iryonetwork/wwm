@@ -190,7 +190,7 @@ services:
 
   localPrometheusPushGateway:
     image: prom/pushgateway
-    
+
   waitlist:
     build:
       context: .
@@ -202,3 +202,12 @@ services:
     - ./.data/waitlist:/data
     - ./bin/tls/waitlist-key.pem:/certs/private.key:ro
     - ./bin/tls/waitlist.pem:/certs/public.crt:ro
+
+  localStatusReporter:
+    image: golang:1.9-alpine
+    command:
+    - /wwm/localStatusReporter
+    volumes:
+    - ./.bin/:/wwm
+    - ./bin/tls:/certs:ro
+    - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro

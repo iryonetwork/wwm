@@ -5,6 +5,7 @@ package main
 import (
 	"flag"
 	"os"
+	"sync"
 
 	loads "github.com/go-openapi/loads"
 	"github.com/rs/cors"
@@ -15,6 +16,7 @@ import (
 	"github.com/iryonetwork/wwm/gen/auth/restapi/operations"
 	"github.com/iryonetwork/wwm/service/accountManager"
 	"github.com/iryonetwork/wwm/service/authenticator"
+	statusServer "github.com/iryonetwork/wwm/status/server"
 	"github.com/iryonetwork/wwm/storage/auth"
 	"github.com/iryonetwork/wwm/utils"
 )
@@ -124,8 +126,35 @@ func main() {
 
 	server.SetHandler(handler)
 
-	if err := server.Serve(); err != nil {
-		logger.Fatal().Err(err).Msg("Failed to start server")
-	}
+	// Start servers
+	errCh := make(chan error)
+	var wg sync.WaitGroup
+	go func() {
+		wg.Wait()
+		close(errCh)
+	}()
 
+	// start serving status
+	go func() {
+		wg.Add(1)
+		ss := statusServer.New(logger.With().Str("component", "status/server").Logger())
+		defer ss.Close()
+		defer wg.Done()
+
+		errCh <- ss.ListenAndServeHTTPs("cloudAuth:4433", "", "/certs/cloudAuth.pem", "/certs/cloudAuth-key.pem")
+	}()
+
+	// start serving API
+	go func() {
+		wg.Add(1)
+		defer server.Shutdown()
+		defer wg.Done()
+		errCh <- server.Serve()
+	}()
+
+	for err := range errCh {
+		if err != nil {
+			logger.Fatal().Err(err).Msg("Failed to start server")
+		}
+	}
 }
