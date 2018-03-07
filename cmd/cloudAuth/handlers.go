@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/iryonetwork/wwm/gen/auth/restapi/operations/database"
 	"github.com/iryonetwork/wwm/gen/auth/restapi/operations/roles"
 	"github.com/iryonetwork/wwm/gen/auth/restapi/operations/rules"
@@ -22,10 +21,7 @@ func getUsers(service accountManager.Service) users.GetUsersHandler {
 		u, err := service.Users(params.HTTPRequest.Context(), "")
 
 		if err != nil {
-			return users.NewGetUsersInternalServerError().WithPayload(&models.Error{
-				Code:    utils.ErrServerError,
-				Message: err.Error(),
-			})
+			return utils.NewErrorResponse(err)
 		}
 
 		return users.NewGetUsersOK().WithPayload(u)
@@ -37,18 +33,7 @@ func getUsersID(service accountManager.Service) users.GetUsersIDHandler {
 		u, err := service.User(params.HTTPRequest.Context(), params.ID)
 
 		if err != nil {
-			if e, ok := err.(utils.Error); ok {
-				if e.Code() == utils.ErrNotFound {
-					return users.NewGetUsersIDNotFound().WithPayload(e.Payload())
-				} else if e.Code() == utils.ErrBadRequest {
-					return users.NewGetUsersIDBadRequest().WithPayload(e.Payload())
-				}
-			}
-
-			return users.NewGetUsersIDInternalServerError().WithPayload(&models.Error{
-				Code:    utils.ErrServerError,
-				Message: err.Error(),
-			})
+			return utils.NewErrorResponse(err)
 		}
 
 		return users.NewGetUsersIDOK().WithPayload(u)
@@ -60,14 +45,7 @@ func postUsers(service accountManager.Service) users.PostUsersHandler {
 		u, err := service.AddUser(params.HTTPRequest.Context(), params.User)
 
 		if err != nil {
-			if e, ok := err.(utils.Error); ok && e.Code() == utils.ErrBadRequest {
-				return users.NewPostUsersBadRequest().WithPayload(e.Payload())
-			}
-
-			return users.NewPostUsersInternalServerError().WithPayload(&models.Error{
-				Code:    utils.ErrServerError,
-				Message: err.Error(),
-			})
+			return utils.NewErrorResponse(err)
 		}
 
 		return users.NewPostUsersCreated().WithPayload(u)
@@ -79,18 +57,7 @@ func putUsersID(service accountManager.Service) users.PutUsersIDHandler {
 		_, err := service.UpdateUser(params.HTTPRequest.Context(), params.User)
 
 		if err != nil {
-			if e, ok := err.(utils.Error); ok {
-				if e.Code() == utils.ErrNotFound {
-					return users.NewPutUsersIDNotFound().WithPayload(e.Payload())
-				} else if e.Code() == utils.ErrBadRequest {
-					return users.NewPutUsersIDBadRequest().WithPayload(e.Payload())
-				}
-			}
-
-			return users.NewPutUsersIDInternalServerError().WithPayload(&models.Error{
-				Code:    utils.ErrServerError,
-				Message: err.Error(),
-			})
+			return utils.NewErrorResponse(err)
 		}
 
 		return users.NewPutUsersIDNoContent()
@@ -102,18 +69,7 @@ func deleteUsersID(service accountManager.Service) users.DeleteUsersIDHandler {
 		err := service.RemoveUser(params.HTTPRequest.Context(), params.ID)
 
 		if err != nil {
-			if e, ok := err.(utils.Error); ok {
-				if e.Code() == utils.ErrNotFound {
-					return users.NewDeleteUsersIDNotFound().WithPayload(e.Payload())
-				} else if e.Code() == utils.ErrBadRequest {
-					return users.NewDeleteUsersIDBadRequest().WithPayload(e.Payload())
-				}
-			}
-
-			return users.NewDeleteUsersIDInternalServerError().WithPayload(&models.Error{
-				Code:    utils.ErrServerError,
-				Message: err.Error(),
-			})
+			return utils.NewErrorResponse(err)
 		}
 
 		return users.NewDeleteUsersIDNoContent()
@@ -125,10 +81,7 @@ func getRoles(service accountManager.Service) roles.GetRolesHandler {
 		r, err := service.Roles(params.HTTPRequest.Context(), "")
 
 		if err != nil {
-			return roles.NewGetRolesInternalServerError().WithPayload(&models.Error{
-				Code:    utils.ErrServerError,
-				Message: err.Error(),
-			})
+			return utils.NewErrorResponse(err)
 		}
 
 		return roles.NewGetRolesOK().WithPayload(r)
@@ -140,18 +93,7 @@ func getRolesID(service accountManager.Service) roles.GetRolesIDHandler {
 		r, err := service.Role(params.HTTPRequest.Context(), params.ID)
 
 		if err != nil {
-			if e, ok := err.(utils.Error); ok {
-				if e.Code() == utils.ErrNotFound {
-					return roles.NewGetRolesIDNotFound().WithPayload(e.Payload())
-				} else if e.Code() == utils.ErrBadRequest {
-					return roles.NewGetRolesIDBadRequest().WithPayload(e.Payload())
-				}
-			}
-
-			return roles.NewGetRolesIDInternalServerError().WithPayload(&models.Error{
-				Code:    utils.ErrServerError,
-				Message: err.Error(),
-			})
+			return utils.NewErrorResponse(err)
 		}
 
 		return roles.NewGetRolesIDOK().WithPayload(r)
@@ -163,14 +105,7 @@ func postRoles(service accountManager.Service) roles.PostRolesHandler {
 		r, err := service.AddRole(params.HTTPRequest.Context(), params.Role)
 
 		if err != nil {
-			if e, ok := err.(utils.Error); ok && e.Code() == utils.ErrBadRequest {
-				return roles.NewPostRolesBadRequest().WithPayload(e.Payload())
-			}
-
-			return roles.NewPostRolesInternalServerError().WithPayload(&models.Error{
-				Code:    utils.ErrServerError,
-				Message: err.Error(),
-			})
+			return utils.NewErrorResponse(err)
 		}
 
 		return roles.NewPostRolesCreated().WithPayload(r)
@@ -182,18 +117,7 @@ func putRolesID(service accountManager.Service) roles.PutRolesIDHandler {
 		_, err := service.UpdateRole(params.HTTPRequest.Context(), params.Role)
 
 		if err != nil {
-			if e, ok := err.(utils.Error); ok {
-				if e.Code() == utils.ErrNotFound {
-					return roles.NewPutRolesIDNotFound().WithPayload(e.Payload())
-				} else if e.Code() == utils.ErrBadRequest {
-					return roles.NewPutRolesIDBadRequest().WithPayload(e.Payload())
-				}
-			}
-
-			return roles.NewPutRolesIDInternalServerError().WithPayload(&models.Error{
-				Code:    utils.ErrServerError,
-				Message: err.Error(),
-			})
+			return utils.NewErrorResponse(err)
 		}
 
 		return roles.NewPutRolesIDNoContent()
@@ -205,18 +129,7 @@ func deleteRolesID(service accountManager.Service) roles.DeleteRolesIDHandler {
 		err := service.RemoveRole(params.HTTPRequest.Context(), params.ID)
 
 		if err != nil {
-			if e, ok := err.(utils.Error); ok {
-				if e.Code() == utils.ErrNotFound {
-					return roles.NewDeleteRolesIDNotFound().WithPayload(e.Payload())
-				} else if e.Code() == utils.ErrBadRequest {
-					return roles.NewDeleteRolesIDBadRequest().WithPayload(e.Payload())
-				}
-			}
-
-			return roles.NewDeleteRolesIDInternalServerError().WithPayload(&models.Error{
-				Code:    utils.ErrServerError,
-				Message: err.Error(),
-			})
+			return utils.NewErrorResponse(err)
 		}
 
 		return roles.NewDeleteRolesIDNoContent()
@@ -228,10 +141,7 @@ func getRules(service accountManager.Service) rules.GetRulesHandler {
 		r, err := service.Rules(params.HTTPRequest.Context(), "")
 
 		if err != nil {
-			return rules.NewGetRulesInternalServerError().WithPayload(&models.Error{
-				Code:    utils.ErrServerError,
-				Message: err.Error(),
-			})
+			return utils.NewErrorResponse(err)
 		}
 
 		return rules.NewGetRulesOK().WithPayload(r)
@@ -243,18 +153,7 @@ func getRulesID(service accountManager.Service) rules.GetRulesIDHandler {
 		r, err := service.Rule(params.HTTPRequest.Context(), params.ID)
 
 		if err != nil {
-			if e, ok := err.(utils.Error); ok {
-				if e.Code() == utils.ErrNotFound {
-					return rules.NewGetRulesIDNotFound().WithPayload(e.Payload())
-				} else if e.Code() == utils.ErrBadRequest {
-					return rules.NewGetRulesIDBadRequest().WithPayload(e.Payload())
-				}
-			}
-
-			return rules.NewGetRulesIDInternalServerError().WithPayload(&models.Error{
-				Code:    utils.ErrServerError,
-				Message: err.Error(),
-			})
+			return utils.NewErrorResponse(err)
 		}
 
 		return rules.NewGetRulesIDOK().WithPayload(r)
@@ -266,14 +165,7 @@ func postRules(service accountManager.Service) rules.PostRulesHandler {
 		r, err := service.AddRule(params.HTTPRequest.Context(), params.Rule)
 
 		if err != nil {
-			if e, ok := err.(utils.Error); ok && e.Code() == utils.ErrBadRequest {
-				return rules.NewPostRulesBadRequest().WithPayload(e.Payload())
-			}
-
-			return rules.NewPutRulesIDInternalServerError().WithPayload(&models.Error{
-				Code:    utils.ErrServerError,
-				Message: err.Error(),
-			})
+			return utils.NewErrorResponse(err)
 		}
 
 		return rules.NewPostRulesCreated().WithPayload(r)
@@ -285,18 +177,7 @@ func putRulesID(service accountManager.Service) rules.PutRulesIDHandler {
 		_, err := service.UpdateRule(params.HTTPRequest.Context(), params.Rule)
 
 		if err != nil {
-			if e, ok := err.(utils.Error); ok {
-				if e.Code() == utils.ErrNotFound {
-					return rules.NewPutRulesIDNotFound().WithPayload(e.Payload())
-				} else if e.Code() == utils.ErrBadRequest {
-					return rules.NewPutRulesIDBadRequest().WithPayload(e.Payload())
-				}
-			}
-
-			return rules.NewPutRulesIDInternalServerError().WithPayload(&models.Error{
-				Code:    utils.ErrServerError,
-				Message: err.Error(),
-			})
+			return utils.NewErrorResponse(err)
 		}
 
 		return rules.NewPutRulesIDNoContent()
@@ -308,15 +189,7 @@ func deleteRulesID(service accountManager.Service) rules.DeleteRulesIDHandler {
 		err := service.RemoveRule(params.HTTPRequest.Context(), params.ID)
 
 		if err != nil {
-			if e, ok := err.(utils.Error); ok {
-				if e.Code() == utils.ErrNotFound {
-					return rules.NewDeleteRulesIDNotFound().WithPayload(e.Payload())
-				} else if e.Code() == utils.ErrBadRequest {
-					return rules.NewDeleteRulesIDBadRequest().WithPayload(e.Payload())
-				}
-			}
-
-			return rules.NewDeleteRulesIDInternalServerError().WithPayload(utils.ServerError(err))
+			return utils.NewErrorResponse(err)
 		}
 
 		return rules.NewDeleteRulesIDNoContent()
@@ -329,7 +202,7 @@ func getDatabase(storage *auth.Storage) database.GetDatabaseHandler {
 
 		checksum, err := storage.GetChecksum()
 		if err != nil {
-			return utils.UseProducer(database.NewGetDatabaseInternalServerError().WithPayload(utils.ServerError(err)), utils.JSONProducer)
+			return utils.UseProducer(utils.NewServerError(err), utils.JSONProducer)
 		}
 
 		currentEtag := base64.RawURLEncoding.EncodeToString(checksum)

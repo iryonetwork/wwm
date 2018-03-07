@@ -2,8 +2,12 @@ package utils
 
 import (
 	"fmt"
+	"net/http"
 
-	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/go-openapi/runtime"
+
+	authModels "github.com/iryonetwork/wwm/gen/auth/models"
+	waitlistModels "github.com/iryonetwork/wwm/gen/waitlist/models"
 )
 
 // error codes
@@ -16,37 +20,72 @@ const (
 
 // Error wraps models.Error so it will implement error interface
 type Error struct {
-	e models.Error
+	e interface{}
 }
 
+// Error returns error message
 func (err Error) Error() string {
-	return err.e.Message
+	switch e := err.e.(type) {
+	case authModels.Error:
+		return e.Message
+	case waitlistModels.Error:
+		return e.Message
+	}
+	return ""
 }
 
 // Code returns errors code
 func (err Error) Code() string {
-	return err.e.Code
+	switch e := err.e.(type) {
+	case authModels.Error:
+		return e.Code
+	case waitlistModels.Error:
+		return e.Code
+	}
+	return ""
 }
 
-// Payload returns inner error
-func (err Error) Payload() *models.Error {
-	return &err.e
+// WriteResponse uses producer to write the error as http response
+func (err Error) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+	switch err.Code() {
+	case ErrBadRequest:
+		rw.WriteHeader(400)
+	case ErrForbidden:
+		rw.WriteHeader(403)
+	case ErrNotFound:
+		rw.WriteHeader(404)
+	default:
+		rw.WriteHeader(500)
+	}
+
+	if err.e != nil {
+		payload := err.e
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }
 
 // NewError returns new Error object
 func NewError(code, message string, a ...interface{}) Error {
 	return Error{
-		e: models.Error{
+		e: authModels.Error{
 			Code:    code,
 			Message: fmt.Sprintf(message, a...),
 		},
 	}
 }
 
-// ServerError converts error to models.Error
-func ServerError(err error) *models.Error {
-	return &models.Error{
-		Code:    ErrServerError,
-		Message: err.Error(),
+// NewServerError creates new server error
+func NewServerError(err error) Error {
+	return NewError(ErrServerError, err.Error())
+}
+
+// NewErrorResponse takes error or Error and returns Error
+func NewErrorResponse(e interface{}) Error {
+	if err, ok := e.(Error); ok {
+		return err
 	}
+
+	return NewServerError(e.(error))
 }
