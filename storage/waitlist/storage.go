@@ -53,7 +53,9 @@ const priorityLevels = 4
 
 // New returns a new instance of storage
 func New(path string, key []byte, logger zerolog.Logger) (Storage, error) {
+	logger = logger.With().Str("component", "storage/waitlist").Logger()
 	logger.Debug().Msg("Initialize waitlist storage")
+
 	if len(key) != 32 {
 		return nil, fmt.Errorf("Encryption key must be 32 bytes long")
 	}

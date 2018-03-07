@@ -9,6 +9,7 @@ import (
 
 	"github.com/iryonetwork/wwm/gen/waitlist/models"
 	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
+	"github.com/iryonetwork/wwm/utils"
 )
 
 // Lists returns all active lists
@@ -73,7 +74,7 @@ func (s *storage) AddList(name string) (*models.List, error) {
 func (s *storage) UpdateList(list *models.List) (*models.List, error) {
 	id, err := uuid.FromString(list.ID)
 	if err != nil {
-		return nil, err
+		return nil, utils.NewError(utils.ErrBadRequest, err.Error())
 	}
 
 	err = s.db.Update(func(tx *bolt.Tx) error {
@@ -91,7 +92,7 @@ func (s *storage) DeleteList(waitlistID []byte) error {
 	return s.db.Update(func(tx *bolt.Tx) error {
 		bCurrent := tx.Bucket(bucketCurrent).Bucket(waitlistID)
 		if bCurrent == nil {
-			return nil
+			return utils.NewError(utils.ErrNotFound, "waitlist not found")
 		}
 
 		bHistory, err := tx.Bucket(bucketHistory).CreateBucketIfNotExists(waitlistID)

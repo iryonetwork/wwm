@@ -1,0 +1,141 @@
+package main
+
+import (
+	"github.com/go-openapi/runtime/middleware"
+	uuid "github.com/satori/go.uuid"
+
+	"github.com/iryonetwork/wwm/gen/waitlist/restapi/operations/item"
+	"github.com/iryonetwork/wwm/gen/waitlist/restapi/operations/waitlist"
+	storage "github.com/iryonetwork/wwm/storage/waitlist"
+	"github.com/iryonetwork/wwm/utils"
+)
+
+type handlers struct {
+	s storage.Storage
+}
+
+func (h *handlers) WaitlistGet() waitlist.GetHandler {
+	return waitlist.GetHandlerFunc(func(params waitlist.GetParams, principal *string) middleware.Responder {
+		lists, err := h.s.Lists()
+		if err != nil {
+			return utils.NewErrorResponse(err)
+		}
+
+		return waitlist.NewGetOK().WithPayload(lists)
+	})
+}
+
+func (h *handlers) WaitlistPost() waitlist.PostHandler {
+	return waitlist.PostHandlerFunc(func(params waitlist.PostParams, principal *string) middleware.Responder {
+		list, err := h.s.AddList(*params.List.Name)
+		if err != nil {
+			return utils.NewErrorResponse(err)
+		}
+
+		return waitlist.NewPostCreated().WithPayload(list)
+	})
+}
+
+func (h *handlers) WaitlistPutListID() waitlist.PutListIDHandler {
+	return waitlist.PutListIDHandlerFunc(func(params waitlist.PutListIDParams, principal *string) middleware.Responder {
+		if params.ListID != params.List.ID {
+			return utils.NewError(utils.ErrBadRequest, "URL list ID and body list ID do not match")
+		}
+
+		_, err := h.s.UpdateList(params.List)
+		if err != nil {
+			return utils.NewErrorResponse(err)
+		}
+
+		return waitlist.NewPutListIDNoContent()
+	})
+}
+
+func (h *handlers) WaitlistDeleteListID() waitlist.DeleteListIDHandler {
+	return waitlist.DeleteListIDHandlerFunc(func(params waitlist.DeleteListIDParams, principal *string) middleware.Responder {
+		id, err := uuid.FromString(params.ListID)
+		if err != nil {
+			return utils.NewError(utils.ErrBadRequest, err.Error())
+		}
+
+		err = h.s.DeleteList(id.Bytes())
+		if err != nil {
+			return utils.NewErrorResponse(err)
+		}
+
+		return waitlist.NewDeleteListIDNoContent()
+	})
+}
+
+func (h *handlers) ItemGetListID() item.GetListIDHandler {
+	return item.GetListIDHandlerFunc(func(params item.GetListIDParams, principal *string) middleware.Responder {
+		id, err := uuid.FromString(params.ListID)
+		if err != nil {
+			return utils.NewError(utils.ErrBadRequest, err.Error())
+		}
+
+		items, err := h.s.ListItems(id.Bytes())
+		if err != nil {
+			return utils.NewErrorResponse(err)
+		}
+
+		return item.NewGetListIDOK().WithPayload(items)
+	})
+}
+
+func (h *handlers) ItemDeleteListIDItemID() item.DeleteListIDItemIDHandler {
+	return item.DeleteListIDItemIDHandlerFunc(func(params item.DeleteListIDItemIDParams, principal *string) middleware.Responder {
+		listID, err := uuid.FromString(params.ListID)
+		if err != nil {
+			return utils.NewError(utils.ErrBadRequest, err.Error())
+		}
+
+		itemID, err := uuid.FromString(params.ItemID)
+		if err != nil {
+			return utils.NewError(utils.ErrBadRequest, err.Error())
+		}
+
+		err = h.s.DeleteItem(listID.Bytes(), itemID.Bytes(), params.Reason)
+		if err != nil {
+			return utils.NewErrorResponse(err)
+		}
+
+		return item.NewDeleteListIDItemIDNoContent()
+	})
+}
+
+func (h *handlers) ItemPostListID() item.PostListIDHandler {
+	return item.PostListIDHandlerFunc(func(params item.PostListIDParams, principal *string) middleware.Responder {
+		listID, err := uuid.FromString(params.ListID)
+		if err != nil {
+			return utils.NewError(utils.ErrBadRequest, err.Error())
+		}
+
+		newItem, err := h.s.AddItem(listID.Bytes(), params.Item)
+		if err != nil {
+			return utils.NewErrorResponse(err)
+		}
+
+		return item.NewPostListIDCreated().WithPayload(newItem)
+	})
+}
+
+func (h *handlers) ItemPutListIDItemID() item.PutListIDItemIDHandler {
+	return item.PutListIDItemIDHandlerFunc(func(params item.PutListIDItemIDParams, principal *string) middleware.Responder {
+		listID, err := uuid.FromString(params.ListID)
+		if err != nil {
+			return utils.NewError(utils.ErrBadRequest, err.Error())
+		}
+
+		if params.ItemID != params.Item.ID {
+			return utils.NewError(utils.ErrBadRequest, "URL item ID and body item ID do not match")
+		}
+
+		_, err = h.s.UpdateItem(listID.Bytes(), params.Item)
+		if err != nil {
+			return utils.NewErrorResponse(err)
+		}
+
+		return item.NewPutListIDItemIDNoContent()
+	})
+}

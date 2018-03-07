@@ -1,12 +1,69 @@
 package main
 
-import (
-	"fmt"
-)
-
 //go:generate sh -c "mkdir -p ../../gen/waitlist/ && swagger generate server -A waitlist -t ../../gen/waitlist/ -f ../../docs/api/waitlist.yml --exclude-main --principal string"
 
+import (
+	"os"
+
+	loads "github.com/go-openapi/loads"
+	"github.com/rs/cors"
+	"github.com/rs/zerolog"
+
+	"github.com/iryonetwork/wwm/gen/waitlist/restapi"
+	"github.com/iryonetwork/wwm/gen/waitlist/restapi/operations"
+	"github.com/iryonetwork/wwm/storage/waitlist"
+)
+
 func main() {
-	key := []byte{0x19, 0xa1, 0xeb, 0xf0, 0x71, 0x80, 0x5d, 0xc7, 0x7c, 0xd8, 0x3a, 0x5b, 0x9c, 0xd1, 0x1c, 0xde, 0x24, 0xb5, 0x6d, 0xd6, 0x59, 0x64, 0x3a, 0x96, 0x83, 0xd6, 0x14, 0xa6, 0xcf, 0x5, 0x55, 0x49}
-	fmt.Println(key)
+	// initialize logger
+	logger := zerolog.New(os.Stdout).With().
+		Timestamp().
+		Str("service", "waitlist").
+		Logger()
+
+	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Failed to load swagger spec")
+		return
+	}
+
+	// TODO: don't hardcode this key
+	key := []byte{0x8c, 0x7b, 0x71, 0x7f, 0xd9, 0x13, 0xaf, 0xef, 0x5d, 0xcb, 0x18, 0x84, 0xc9, 0x9c, 0xc, 0x44, 0x61, 0x8b, 0xa6, 0xa9, 0x78, 0x69, 0x31, 0x0, 0x21, 0x55, 0x51, 0x22, 0xc2, 0xf4, 0xa0, 0xe3}
+
+	// initialize the service
+	storage, err := waitlist.New("/data/waitlist.db", key, logger)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Failed to initialize waitlist storage")
+	}
+
+	api := operations.NewWaitlistAPI(swaggerSpec)
+	server := restapi.NewServer(api)
+	server.TLSPort = 443
+	server.TLSCertificate = "/certs/waitlist.pem"
+	server.TLSCertificateKey = "/certs/waitlist-key.pem"
+	server.EnabledListeners = []string{"https"}
+	defer server.Shutdown()
+
+	h := &handlers{s: storage}
+
+	api.WaitlistDeleteListIDHandler = h.WaitlistDeleteListID()
+	api.WaitlistGetHandler = h.WaitlistGet()
+	api.WaitlistPostHandler = h.WaitlistPost()
+	api.WaitlistPutListIDHandler = h.WaitlistPutListID()
+
+	api.ItemDeleteListIDItemIDHandler = h.ItemDeleteListIDItemID()
+	api.ItemGetListIDHandler = h.ItemGetListID()
+	api.ItemPostListIDHandler = h.ItemPostListID()
+	api.ItemPutListIDItemIDHandler = h.ItemPutListIDItemID()
+
+	handler := cors.New(cors.Options{
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders: []string{"Authorization", "Content-Type"},
+	}).Handler(api.Serve(nil))
+
+	server.SetHandler(handler)
+
+	if err := server.Serve(); err != nil {
+		logger.Fatal().Err(err).Msg("Failed to start server")
+	}
 }

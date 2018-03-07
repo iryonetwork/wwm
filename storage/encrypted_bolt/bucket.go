@@ -84,6 +84,11 @@ func (eb *Bucket) Put(key, value []byte) error {
 
 func (eb *Bucket) ForEach(fn func(k, v []byte) error) error {
 	return eb.b.Bucket.ForEach(func(k, v []byte) error {
+		// value is bucket
+		if v == nil {
+			return fn(k, v)
+		}
+
 		decrypted, err := decrypt(v, *eb.encryptionKey)
 		if err != nil {
 			return ErrDecrypt

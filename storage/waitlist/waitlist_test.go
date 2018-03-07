@@ -8,11 +8,11 @@ import (
 	"testing"
 
 	"github.com/go-openapi/swag"
-	"github.com/iryonetwork/wwm/gen/waitlist/models"
+	"github.com/rs/zerolog"
 	uuid "github.com/satori/go.uuid"
 
-	"github.com/boltdb/bolt"
-	"github.com/rs/zerolog"
+	"github.com/iryonetwork/wwm/gen/waitlist/models"
+	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 )
 
 type testStorage struct {

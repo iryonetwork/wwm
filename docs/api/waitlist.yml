@@ -91,6 +91,9 @@ paths:
         403:
           $ref: '#/responses/403'
 
+        404:
+          $ref: '#/responses/404'
+
         500:
           $ref: '#/responses/500'
 
@@ -172,6 +175,9 @@ paths:
       responses:
         204:
           description: Deleted
+
+        404:
+          $ref: '#/responses/404'
 
         500:
           $ref: '#/responses/500'
