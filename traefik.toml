@@ -27,14 +27,22 @@ address = ":8080"
     [backends.localauthMetrics.servers.server1]
     url = "http://localAuth:9090"
 
-  [backends.localstorage]
-    [backends.localstorage.servers.server1]
-    url = "https://localStorage"
+  [backends.localauthStatus]
+    [backends.localauthStatus.servers.server1]
+    url = "http://localAuth:4433"
 
   [backends.cloudauth]
     [backends.cloudauth.servers.server1]
     url = "https://cloudAuth"
     weight = 10
+
+  [backends.cloudauthStatus]
+    [backends.cloudauthStatus.servers.server1]
+    url = "http://cloudAuth:4433"
+
+  [backends.localstorage]
+    [backends.localstorage.servers.server1]
+    url = "https://localStorage"
 
   [backends.localstorageMetrics]
     [backends.localstorageMetrics.servers.server1]
@@ -43,6 +51,10 @@ address = ":8080"
   [backends.waitlist]
     [backends.waitlist.servers.server1]
     url = "https://waitlist"
+
+  [backends.localstorageStatus]
+    [backends.localstorageStatus.servers.server1]
+    url = "https://localStorage:4433"
 
   [backends.localMinio]
     [backends.localMinio.servers.server1]
@@ -55,6 +67,10 @@ address = ":8080"
   [backends.cloudstorageMetrics]
     [backends.cloudstorageMetrics.servers.server1]
     url = "http://cloudStorage:9090"
+
+  [backends.cloudstorageStatus]
+    [backends.cloudstorageStatus.servers.server1]
+    url = "https://cloudStorage:4433"
 
   [backends.cloudMinio]
     [backends.cloudMinio.servers.server1]

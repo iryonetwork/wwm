@@ -1,6 +1,6 @@
 package status
 
-//go:generate sh ../bin/mockgen.sh status Server,Component $GOFILE
+//go:generate sh ../bin/mockgen.sh status Component $GOFILE
 
 type Value string
 

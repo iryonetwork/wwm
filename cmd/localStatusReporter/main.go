@@ -80,7 +80,7 @@ func main() {
 		logger.With().Str("component", "URLPolling").Str("url", "https://cloudStorage:4433/status").Logger(),
 	)
 	cloudStorage.Start(ctx)
-	r.AddComponent(statusReporter.Cloud, "storage", localStorage)
+	r.AddComponent(statusReporter.Cloud, "storage", cloudStorage)
 	cloudAuth := polling.New(
 		polling.NewInternalURL("https://cloudAuth:4433/status", defaultTimeout),
 		pollingCfg,
