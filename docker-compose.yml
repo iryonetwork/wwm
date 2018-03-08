@@ -46,7 +46,7 @@ services:
   localAuth:
     build:
       context: .
-    image: auth
+    image: golang
     depends_on:
     - cloudAuth
     command:
@@ -109,7 +109,7 @@ services:
   cloudAuth:
     build:
       context: .
-    image: auth
+    image: golang
     command:
     - /wwm/cloudAuth
     volumes:
@@ -192,7 +192,9 @@ services:
     image: prom/pushgateway
     
   waitlist:
-    image: golang:1.9-alpine
+    build:
+      context: .
+    image: golang
     command:
     - /wwm/waitlist
     volumes:

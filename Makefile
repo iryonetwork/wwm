@@ -73,7 +73,7 @@ watch/%:
 	watchmedo shell-command -i "./.git/*;./.data/*;./.bin/*;./gen/*;gen_*.go" --recursive --ignore-directories --wait --command "$(MAKE) $*"
 
 rebuildDocker: ## rebuilds docker container to include all certificates
-	docker-compose build traefik localAuth cloudAuth
+	docker-compose build traefik localAuth cloudAuth waitlist
 
 yarnInstall: ## installs requrements for frontend
 	cd frontend/cloud && yarn install

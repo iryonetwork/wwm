@@ -6,13 +6,14 @@ import (
 	"os"
 
 	loads "github.com/go-openapi/loads"
-	"github.com/go-openapi/swag"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/waitlist/restapi"
 	"github.com/iryonetwork/wwm/gen/waitlist/restapi/operations"
+	"github.com/iryonetwork/wwm/service/authorizer"
 	"github.com/iryonetwork/wwm/storage/waitlist"
+	"github.com/iryonetwork/wwm/utils"
 )
 
 func main() {
@@ -37,7 +38,13 @@ func main() {
 		logger.Fatal().Err(err).Msg("Failed to initialize waitlist storage")
 	}
 
+	auth := authorizer.New("https://localAuth/auth/validate", logger)
+
 	api := operations.NewWaitlistAPI(swaggerSpec)
+	api.ServeError = utils.ServeError
+	api.TokenAuth = auth.GetPrincipalFromToken
+	api.APIAuthorizer = auth.Authorizer()
+
 	server := restapi.NewServer(api)
 	server.TLSPort = 443
 	server.TLSCertificate = "/certs/public.crt"
@@ -56,10 +63,6 @@ func main() {
 	api.ItemGetListIDHandler = h.ItemGetListID()
 	api.ItemPostListIDHandler = h.ItemPostListID()
 	api.ItemPutListIDItemIDHandler = h.ItemPutListIDItemID()
-
-	api.TokenAuth = func(token string) (*string, error) {
-		return swag.String("test"), nil
-	}
 
 	handler := cors.New(cors.Options{
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
