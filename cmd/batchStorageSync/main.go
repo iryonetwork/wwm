@@ -7,7 +7,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/push"
@@ -18,15 +17,6 @@ import (
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 	"github.com/iryonetwork/wwm/sync/storage/batch"
 )
-
-type clientAuthInfoWriter struct {
-	apiKey string
-}
-
-func (a *clientAuthInfoWriter) AuthenticateRequest(r runtime.ClientRequest, f strfmt.Registry) error {
-	r.SetHeaderParam("Authorization", a.apiKey)
-	return nil
-}
 
 var (
 	boltFilepath  string = "/data/batchStorageSync.db"
@@ -87,8 +77,11 @@ func main() {
 	}
 	cloudClient := client.NewHTTPClientWithConfig(strfmt.NewFormats(), cloudTransportCfg)
 
-	// initizalize mock request authenticator
-	auth := &clientAuthInfoWriter{"SECRETSECRETSECRETSECRETSECRETSE"}
+	// initialize request authenticator
+	auth, err := storageSync.NewRequestAuthenticator("/certs/public.crt", "/certs/private.key", logger.With().Str("component", "sync/storage/auth").Logger())
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to initiazlie storage API request authenticator")
+	}
 
 	// initialize handlers
 	handlers := storageSync.NewHandlers(localClient.Operations, auth, cloudClient.Operations, auth, logger.With().Str("component", "sync/storage/handlers").Logger())

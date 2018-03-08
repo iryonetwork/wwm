@@ -20,6 +20,7 @@ import (
 	"github.com/iryonetwork/wwm/gen/storage/restapi/operations"
 	APIMetrics "github.com/iryonetwork/wwm/metrics/api"
 	metricsServer "github.com/iryonetwork/wwm/metrics/server"
+	"github.com/iryonetwork/wwm/service/authorizer"
 	storage "github.com/iryonetwork/wwm/service/storage"
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/mock"
@@ -61,6 +62,9 @@ func main() {
 	// initialize the service
 	service := storage.New(s3, keys, publisher.NewNullPublisher(context.Background()), logger.With().Str("component", "service/storage").Logger())
 
+	// initialize authorizer
+	auth := authorizer.New("https://cloudAuth/auth/validate", logger.With().Str("component", "service/authorizer").Logger())
+
 	api := operations.NewStorageAPI(swaggerSpec)
 	api.ServeError = utils.ServeError
 	server := restapi.NewServer(api)
@@ -72,8 +76,10 @@ func main() {
 
 	storageHandlers := storage.NewHandlers(service, logger.With().Str("component", "service/storage/handlers").Logger())
 
-	api.TokenAuth = storageHandlers.GetUserIDFromToken
-	api.APIAuthorizer = storageHandlers.Authorizer()
+	serverLogger := logger.WithLevel(zerolog.InfoLevel).Str("component", "server")
+	api.Logger = serverLogger.Msgf
+	api.TokenAuth = auth.GetPrincipalFromToken
+	api.APIAuthorizer = auth.Authorizer()
 	api.FileListHandler = storageHandlers.FileList()
 	api.FileGetHandler = storageHandlers.FileGet()
 	api.FileGetVersionHandler = storageHandlers.FileGetVersion()

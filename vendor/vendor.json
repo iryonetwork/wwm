@@ -261,12 +261,6 @@
 			"revisionTime": "2017-11-12T03:14:02Z"
 		},
 		{
-			"checksumSHA1": "FhLvgtYfuKY0ow9wtLJRoeg7d6w=",
-			"path": "github.com/gogo/protobuf/gogoproto",
-			"revision": "26de2f9a7d3b1826f275e7a97c8cad5080589426",
-			"revisionTime": "2018-01-21T16:00:31Z"
-		},
-		{
 			"checksumSHA1": "/RE0VzeaXdaBUNeNMUXWqzly7qY=",
 			"path": "github.com/gobwas/glob",
 			"revision": "19c076cdf202b3d1c0489bdfa2f2f289f634474b",
@@ -313,6 +307,12 @@
 			"path": "github.com/gobwas/glob/util/strings",
 			"revision": "19c076cdf202b3d1c0489bdfa2f2f289f634474b",
 			"revisionTime": "2018-02-08T21:18:42Z"
+		},
+		{
+			"checksumSHA1": "FhLvgtYfuKY0ow9wtLJRoeg7d6w=",
+			"path": "github.com/gogo/protobuf/gogoproto",
+			"revision": "26de2f9a7d3b1826f275e7a97c8cad5080589426",
+			"revisionTime": "2018-01-21T16:00:31Z"
 		},
 		{
 			"checksumSHA1": "8UEp6v0Dczw/SlasE0DivB0mAHA=",

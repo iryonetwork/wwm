@@ -1,6 +1,6 @@
 package storage
 
-//go:generate ../../bin/mockgen.sh sync/storage Publisher,Consumer $GOFILE
+//go:generate ../../bin/mockgen.sh sync/storage Publisher,Consumer,Handlers $GOFILE
 
 import (
 	"context"

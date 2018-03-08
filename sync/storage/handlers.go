@@ -1,7 +1,5 @@
 package storage
 
-//go:generate sh ../../bin/mockgen.sh sync/storage Handlers $GOFILE
-
 import (
 	"bytes"
 	"context"
