@@ -1,6 +1,6 @@
 package polling
 
-//go:generate sh ../../../bin/mockgen.sh service/statusReporter/polling URLStatusEndpoint $GOFILE
+//go:generate ../../../bin/mockgen.sh service/statusReporter/polling URLStatusEndpoint $GOFILE
 
 import (
 	"context"
