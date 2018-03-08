@@ -143,7 +143,7 @@ func (a *service) Authorizer() runtime.Authorizer {
 		if strings.HasPrefix(*userID, servicePrincipal) {
 			keyID := (*userID)[len(servicePrincipal):]
 			s, ok := a.syncServices[keyID]
-			if ok && s.glob.Match(request.URL.EscapedPath()) {
+			if ok && (request.URL.EscapedPath() == "/auth/validate" || s.glob.Match(request.URL.EscapedPath())) {
 				return nil
 			}
 			return utils.NewError(utils.ErrForbidden, "You do not have permissions for this resource")
