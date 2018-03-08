@@ -85,6 +85,18 @@ func (a *service) Login(_ context.Context, username, password string) (string, e
 // Validate checks if the user has the capability to execute the specific
 // actions on a resource
 func (a *service) Validate(_ context.Context, userID *string, queries []*models.ValidationPair) ([]*models.ValidationResult, error) {
+	// skip db for services
+	if strings.HasPrefix(*userID, servicePrincipal) {
+		results := make([]*models.ValidationResult, len(queries))
+		for i, query := range queries {
+			results[i] = &models.ValidationResult{
+				Query:  query,
+				Result: true,
+			}
+		}
+		return results, nil
+	}
+
 	return a.storage.FindACL(*userID, queries), nil
 }
 
@@ -96,7 +108,7 @@ func (a *service) CreateTokenForUserID(_ context.Context, userID *string) (strin
 const servicePrincipal = "__service__"
 
 // GetPrincipalFromToken validates a token and returns the userID for user tokens
-// or returns "sync" for tokens used in cloud sync
+// or returns "__service__<KeyID>" for tokens used in cloud sync
 func (a *service) GetPrincipalFromToken(tokenString string) (*string, error) {
 	principal := ""
 
