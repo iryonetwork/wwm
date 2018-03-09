@@ -43,17 +43,17 @@ func main() {
 	// initialize last successful run with 0 value
 	lastSuccessfulRun := time.Unix(0, 0)
 
+	// initialize bolt key value storage to read last succesful run
+	storage, err := keyvalue.NewBolt(ctx, boltFilepath, logger.With().Str("component", "storage/keyvalue").Logger())
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to initialize key value storage")
+	}
 	// get metrics collection for key value storage and register in registry
-	m := keyvalue.GetPrometheusMetricsCollection()
+	m := storage.GetPrometheusMetricsCollection()
 	for _, metric := range m {
 		metricsRegistry.MustRegister(metric)
 	}
 
-	// initialize bolt key value storage to read last succesful run
-	storage, err := keyvalue.NewBolt(ctx, boltFilepath, logger.With().Str("component", "storage/keyvalue").Logger(), m)
-	if err != nil {
-		logger.Fatal().Err(err).Msg("failed to initiazlie key value storage")
-	}
 	// read last succesful run
 	storedTimestamp := storage.Get(storageBucket, storageKey)
 	if storedTimestamp != nil {

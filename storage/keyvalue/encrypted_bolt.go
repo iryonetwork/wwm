@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	bolt "github.com/coreos/bbolt"
+	bolt "github.com/iryonetwork/wwm/storage/encrypted_bolt"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
@@ -13,24 +13,7 @@ import (
 	"github.com/iryonetwork/wwm/metrics"
 )
 
-const (
-	operationSeconds metrics.ID = "operationSeconds"
-	operationAdd     string     = "add"
-	operationUpdate  string     = "update"
-	operationGet     string     = "get"
-	operationDelete  string     = "delete"
-)
-
-// Storage interface
-type Storage interface {
-	Add(bucket string, key string, value []byte) error
-	Update(bucket string, key string, value []byte) error
-	Get(bucket string, key string) []byte
-	Delete(bucket string, key string) error
-	GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector
-}
-
-type boltKeyValue struct {
+type encryptedBoltKeyValue struct {
 	ctx               context.Context
 	db                *bolt.DB
 	logger            zerolog.Logger
@@ -38,7 +21,7 @@ type boltKeyValue struct {
 }
 
 // Add item to in-memory key-value storage
-func (s *boltKeyValue) Add(bucket string, key string, value []byte) error {
+func (s *encryptedBoltKeyValue) Add(bucket string, key string, value []byte) error {
 	// Make sure we record duration metrics even if processing fails
 	start := time.Now()
 	success := false
@@ -74,7 +57,7 @@ func (s *boltKeyValue) Add(bucket string, key string, value []byte) error {
 }
 
 // Update item in in-memory key-value storage
-func (s *boltKeyValue) Update(bucket string, key string, value []byte) error {
+func (s *encryptedBoltKeyValue) Update(bucket string, key string, value []byte) error {
 	// Make sure we record duration metrics even if processing fails
 	start := time.Now()
 	success := false
@@ -105,7 +88,7 @@ func (s *boltKeyValue) Update(bucket string, key string, value []byte) error {
 }
 
 // Get item from in-memory key-value storage
-func (s *boltKeyValue) Get(bucket string, key string) []byte {
+func (s *encryptedBoltKeyValue) Get(bucket string, key string) []byte {
 	// Make sure we record duration metrics even if processing fails
 	start := time.Now()
 	success := false
@@ -133,7 +116,7 @@ func (s *boltKeyValue) Get(bucket string, key string) []byte {
 }
 
 // Delete item from in-memory key-value storage
-func (s *boltKeyValue) Delete(bucket string, key string) error {
+func (s *encryptedBoltKeyValue) Delete(bucket string, key string) error {
 	// Make sure we record duration metrics even if processing fails
 	start := time.Now()
 	success := false
@@ -163,7 +146,7 @@ func (s *boltKeyValue) Delete(bucket string, key string) error {
 }
 
 // Close releases DB.
-func (s *boltKeyValue) Close() error {
+func (s *encryptedBoltKeyValue) Close() error {
 	err := s.db.Close()
 	if err != nil {
 		s.logger.Error().Err(err).Msg("error while closing db")
@@ -174,27 +157,27 @@ func (s *boltKeyValue) Close() error {
 }
 
 //getPrometheusMetricsCollection returns all prometheus metrics collectors that should be registered to expose metrics of component
-func (s *boltKeyValue) GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
+func (s *encryptedBoltKeyValue) GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
 	return s.metricsCollection
 }
 
 // NewBolt creates & returns new bolt based key-value storage
-func NewBolt(ctx context.Context, filepath string, logger zerolog.Logger) (Storage, error) {
-	b, err := bolt.Open(filepath, 0644, nil)
+func NewEncryptedBolt(ctx context.Context, key []byte, filepath string, logger zerolog.Logger) (Storage, error) {
+	b, err := bolt.Open(key, filepath, 0644, nil)
 	if err != nil {
-		logger.Error().Err(err).Str("filepath", filepath).Msg("failed to initialize bolt key value storage")
-		return nil, errors.Wrapf(err, "failed to initialie bolt key value storage with %s", filepath)
+		logger.Error().Err(err).Str("filepath", filepath).Msg("failed to initialize encrypted bolt key value storage")
+		return nil, errors.Wrapf(err, "failed to initialie encrypted bolt key value storage with %s", filepath)
 	}
 
 	metricsCollection := make(map[metrics.ID]prometheus.Collector)
 	h := prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Namespace: "bolt_key_value",
+		Namespace: "encyrpted_bolt_key_value",
 		Name:      "operation_seconds",
 		Help:      "Time taken to execute key-value storage operation",
 	}, []string{"operation", "success"})
 	metricsCollection[operationSeconds] = h
 
-	s := &boltKeyValue{ctx: ctx, db: b, logger: logger, metricsCollection: metricsCollection}
+	s := &encryptedBoltKeyValue{ctx: ctx, db: b, logger: logger, metricsCollection: metricsCollection}
 
 	// close on context done
 	go func() {
