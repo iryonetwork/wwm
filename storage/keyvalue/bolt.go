@@ -180,6 +180,8 @@ func (s *boltKeyValue) GetPrometheusMetricsCollection() map[metrics.ID]prometheu
 
 // NewBolt creates & returns new bolt based key-value storage
 func NewBolt(ctx context.Context, filepath string, logger zerolog.Logger) (Storage, error) {
+	logger = logger.With().Str("component", "storage/keyvalue").Logger()
+
 	b, err := bolt.Open(filepath, 0644, nil)
 	if err != nil {
 		logger.Error().Err(err).Str("filepath", filepath).Msg("failed to initialize bolt key value storage")

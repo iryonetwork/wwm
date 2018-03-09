@@ -163,6 +163,8 @@ func (s *encryptedBoltKeyValue) GetPrometheusMetricsCollection() map[metrics.ID]
 
 // NewBolt creates & returns new bolt based key-value storage
 func NewEncryptedBolt(ctx context.Context, key []byte, filepath string, logger zerolog.Logger) (Storage, error) {
+	logger = logger.With().Str("component", "storage/keyvalue").Logger()
+
 	b, err := bolt.Open(key, filepath, 0644, nil)
 	if err != nil {
 		logger.Error().Err(err).Str("filepath", filepath).Msg("failed to initialize encrypted bolt key value storage")

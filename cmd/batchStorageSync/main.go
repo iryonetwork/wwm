@@ -44,7 +44,7 @@ func main() {
 	lastSuccessfulRun := time.Unix(0, 0)
 
 	// initialize bolt key value storage to read last succesful run
-	storage, err := keyvalue.NewBolt(ctx, boltFilepath, logger.With().Str("component", "storage/keyvalue").Logger())
+	storage, err := keyvalue.NewBolt(ctx, boltFilepath, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to initialize key value storage")
 	}
