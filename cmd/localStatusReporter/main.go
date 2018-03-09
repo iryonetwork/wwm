@@ -96,7 +96,7 @@ func main() {
 	handler := cors.New(cors.Options{
 		AllowedMethods: []string{"GET"},
 		AllowedHeaders: []string{"Authorization", "Content-Type"},
-	}).Handler(m.Middleware(log.APILogMiddleware(r.Handler("status"), logger.With().Str("component", "logMW").Logger())))
+	}).Handler(m.Middleware(log.APILogMiddleware(r.Handler("status"), logger)))
 
 	server := &http.Server{
 		Addr:    addr,

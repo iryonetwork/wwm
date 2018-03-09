@@ -151,7 +151,7 @@ func main() {
 		WithURLSanitize(utils.WhitelistURLSanitize([]string{"storage", "versions", "sync"}))
 
 	// set handler with middlewares
-	apiHandler := logMW.APILogMiddleware(api.Serve(nil), logger.With().Str("component", "logMW").Logger())
+	apiHandler := logMW.APILogMiddleware(api.Serve(nil), logger)
 	apiHandler = m.Middleware(apiHandler)
 
 	server.SetHandler(apiHandler)
