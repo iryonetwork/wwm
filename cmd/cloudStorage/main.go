@@ -55,13 +55,13 @@ func main() {
 		Secure:       true,
 		Region:       "us-east-1",
 	}
-	s3, err := s3.New(cfg, keys, logger.With().Str("component", "storage/s3").Logger())
+	s3, err := s3.New(cfg, keys, logger)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	// initialize the service
-	service := storage.New(s3, keys, publisher.NewNullPublisher(context.Background()), logger.With().Str("component", "service/storage").Logger())
+	service := storage.New(s3, keys, publisher.NewNullPublisher(context.Background()), logger)
 
 	// initialize authorizer
 	auth := authorizer.New("https://cloudAuth/auth/validate", logger.With().Str("component", "service/authorizer").Logger())
@@ -75,7 +75,7 @@ func main() {
 	server.TLSCertificateKey = "/certs/cloudStorage-key.pem"
 	server.TLSCertificate = "/certs/cloudStorage.pem"
 
-	storageHandlers := storage.NewHandlers(service, logger.With().Str("component", "service/storage/handlers").Logger())
+	storageHandlers := storage.NewHandlers(service, logger)
 
 	serverLogger := logger.WithLevel(zerolog.InfoLevel).Str("component", "server")
 	api.Logger = serverLogger.Msgf

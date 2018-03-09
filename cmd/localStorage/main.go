@@ -59,7 +59,7 @@ func main() {
 		Secure:       true,
 		Region:       "us-east-1",
 	}
-	s3, err := s3.New(cfg, keys, logger.With().Str("component", "storage/s3").Logger())
+	s3, err := s3.New(cfg, keys, logger)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -117,7 +117,7 @@ func main() {
 	defer p.Close()
 
 	// initialize the servicex
-	service := storage.New(s3, keys, p, logger.With().Str("component", "service/storage").Logger())
+	service := storage.New(s3, keys, p, logger)
 
 	api := operations.NewStorageAPI(swaggerSpec)
 	api.ServeError = utils.ServeError
@@ -128,7 +128,7 @@ func main() {
 	server.TLSCertificateKey = "/certs/localStorage-key.pem"
 	server.TLSCertificate = "/certs/localStorage.pem"
 
-	storageHandlers := storage.NewHandlers(service, logger.With().Str("component", "service/storage/handlers").Logger())
+	storageHandlers := storage.NewHandlers(service, logger)
 
 	serverLogger := logger.WithLevel(zerolog.InfoLevel).Str("component", "server")
 	api.Logger = serverLogger.Msgf

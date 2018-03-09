@@ -348,6 +348,8 @@ func (h *handlers) GetUserIDFromToken(token string) (*string, error) {
 
 // NewHandlers returns a new instance of authenticator handlers
 func NewHandlers(service Service, logger zerolog.Logger) Handlers {
+	logger = logger.With().Str("component", "service/storage/handlers").Logger()
+
 	return &handlers{service: service, logger: logger}
 }
 

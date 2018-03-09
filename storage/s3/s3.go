@@ -123,6 +123,8 @@ var ErrDeleted = errors.New("File was deleted")
 
 // New creates a new instance of s3 storage
 func New(cfg *Config, keys KeyProvider, logger zerolog.Logger) (Storage, error) {
+	logger = logger.With().Str("component", "storage/s3").Logger()
+
 	c, err := minio.NewWithRegion(cfg.Endpoint, cfg.AccessKey, cfg.AccessSecret, cfg.Secure, cfg.Region)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to initialize minio with region")

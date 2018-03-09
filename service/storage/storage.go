@@ -479,8 +479,10 @@ func (s *service) updateFilesCollection(ctx context.Context, operation s3.Operat
 }
 
 // New returns a new instance of storage service
-func New(s3 s3.Storage, keyProvider s3.KeyProvider, publisher storageSync.Publisher, log zerolog.Logger) Service {
-	return &service{s3: s3, keyProvider: keyProvider, publisher: publisher, logger: log}
+func New(s3 s3.Storage, keyProvider s3.KeyProvider, publisher storageSync.Publisher, logger zerolog.Logger) Service {
+	logger = logger.With().Str("component", "service/storage").Logger()
+
+	return &service{s3: s3, keyProvider: keyProvider, publisher: publisher, logger: logger}
 }
 
 var getUUID = func() string {
