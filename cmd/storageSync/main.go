@@ -7,6 +7,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -19,6 +20,7 @@ import (
 
 	"github.com/iryonetwork/wwm/gen/storage/client"
 	metricsServer "github.com/iryonetwork/wwm/metrics/server"
+	statusServer "github.com/iryonetwork/wwm/status/server"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 	"github.com/iryonetwork/wwm/sync/storage/consumer"
 	"github.com/iryonetwork/wwm/utils"
@@ -100,11 +102,29 @@ func main() {
 	c.StartSubscription(storageSync.FileUpdate)
 	c.StartSubscription(storageSync.FileDelete)
 
+	// Start servers
+	errCh := make(chan error)
+	var wg sync.WaitGroup
 	go func() {
-		err := metricsServer.ServePrometheusMetrics(ctx, ":9090", "", logger)
-		if err != nil {
-			logger.Error().Err(err).Msg("prometheus metrics server failure")
-		}
+		wg.Wait()
+		close(errCh)
+	}()
+
+	// start serving metrics
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		errCh <- metricsServer.ServePrometheusMetrics(ctx, ":9090", "", logger)
+	}()
+
+	// start serving status
+	go func() {
+		wg.Add(1)
+		ss := statusServer.New(logger)
+		defer ss.Close()
+		defer wg.Done()
+
+		errCh <- ss.ListenAndServeHTTPs("localStorage:4433", "", "/certs/public.crt", "/certs/private.key")
 	}()
 
 	// Run cleanup when sigint or sigterm is received

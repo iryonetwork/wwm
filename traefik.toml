@@ -104,6 +104,10 @@ address = ":8080"
     [backends.storagesyncMetrics.servers.server1]
     url = "http://storageSync:9090"
 
+  [backends.storagesyncStatus]
+    [backends.storagesyncStatus.servers.server1]
+    url = "http://storageSync:4433"
+
   [backends.localPrometheusPushGateway]
     [backends.localPrometheusPushGateway.servers.server1]
     url = "http://localPrometheusPushGateway:9091"
