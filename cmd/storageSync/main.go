@@ -81,7 +81,7 @@ func main() {
 	}
 
 	// Create context with cancel func
-	ctx, shutdown := context.WithCancel(context.Background())
+	ctx, cancelContext := context.WithCancel(context.Background())
 
 	// initalize consumer
 	cfg := consumer.Cfg{
@@ -89,7 +89,7 @@ func main() {
 		AckWait:    time.Duration(time.Second),
 		Handlers:   handlers,
 	}
-	c := consumer.New(context.Background(), cfg, logger)
+	c := consumer.New(ctx, cfg, logger)
 	// Register metrics
 	m := c.GetPrometheusMetricsCollection()
 	for _, metric := range m {
@@ -104,38 +104,41 @@ func main() {
 
 	// Start servers
 	errCh := make(chan error)
+	// waitGroup for all main go routines
 	var wg sync.WaitGroup
-	go func() {
-		wg.Wait()
-		close(errCh)
-	}()
 
 	// start serving metrics
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
+
 		errCh <- metricsServer.ServePrometheusMetrics(ctx, ":9090", "", logger)
 	}()
 
 	// start serving status
 	go func() {
 		wg.Add(1)
-		ss := statusServer.New(logger)
-		defer ss.Close()
 		defer wg.Done()
 
-		errCh <- ss.ListenAndServeHTTPs("localStorage:4433", "", "/certs/public.crt", "/certs/private.key")
+		ss := statusServer.New(logger)
+		errCh <- ss.ListenAndServeHTTPs(ctx, "storageSync:4433", "", "/certs/public.crt", "/certs/private.key")
 	}()
 
-	// Run cleanup when sigint or sigterm is received
+	// run cleanup when sigint or sigterm is received or error on starting server happened
 	signalChan := make(chan os.Signal, 1)
-	cleanupDone := make(chan bool)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		<-signalChan
-		c.Close()
-		shutdown()
-		cleanupDone <- true
+		wg.Add(1)
+		defer cancelContext()
+		defer wg.Done()
+
+		select {
+		case err := <-errCh:
+			logger.Error().Err(err).Msg("failed to start server")
+		case <-signalChan:
+			logger.Error().Msg("received interrupt")
+		}
 	}()
-	<-cleanupDone
+
+	wg.Wait()
 }

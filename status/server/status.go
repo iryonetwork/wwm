@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -55,7 +56,7 @@ func (s *statusServer) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 // ListenAndServeHTTP starts serving status endpoint
-func (s *statusServer) ListenAndServeHTTPs(addr string, namespace string, certFile, keyFile string) error {
+func (s *statusServer) ListenAndServeHTTPs(ctx context.Context, addr string, namespace string, certFile, keyFile string) error {
 	if s.server != nil {
 		s.server.Close()
 	}
@@ -74,6 +75,11 @@ func (s *statusServer) ListenAndServeHTTPs(addr string, namespace string, certFi
 		Addr:    addr,
 		Handler: m.Middleware(log.APILogMiddleware(mux, s.logger.With().Str("component", "logMW").Logger())),
 	}
+
+	go func() {
+		<-ctx.Done()
+		s.Close()
+	}()
 
 	s.logger.Info().Msgf("Starting status server at %s%s", addr, path)
 

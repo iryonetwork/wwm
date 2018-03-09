@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -97,9 +98,15 @@ func main() {
 	// do it before sync to account for anything that might have happened during sync duration
 	startTime := strfmt.DateTime(time.Now())
 
+	// waitGroup for all main go routines
+	var wg sync.WaitGroup
+
 	// Run sync
 	errCh := make(chan error)
 	go func() {
+		wg.Add(1)
+		defer wg.Done()
+
 		err := s.Sync(ctx, time.Time(lastSuccessfulRun))
 		errCh <- err
 	}()
@@ -107,7 +114,6 @@ func main() {
 	// Run cleanup when sigint or sigterm is received
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
-
 	select {
 	case err := <-errCh:
 		if err != nil {
@@ -120,6 +126,8 @@ func main() {
 	case <-signalChan:
 		logger.Info().Msg("stopping batch sync due to interrupt")
 	}
+
+	wg.Wait()
 
 	// push metrics to the push gateway
 	err = metricsPusher.Add()

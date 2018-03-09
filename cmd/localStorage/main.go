@@ -9,7 +9,9 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	loads "github.com/go-openapi/loads"
@@ -157,43 +159,64 @@ func main() {
 	server.SetHandler(apiHandler)
 
 	// Start servers
-	errCh := make(chan error)
+	// create context with cancel func
+	ctx, cancelContext := context.WithCancel(context.Background())
+	// waitGroup for all main go routines
 	var wg sync.WaitGroup
-	go func() {
-		wg.Wait()
-		close(errCh)
-	}()
+	// create error channel
+	errCh := make(chan error)
 
 	// start serving metrics
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
-		errCh <- metricsServer.ServePrometheusMetrics(context.Background(), ":9090", "storage", logger)
-	}()
 
+		errCh <- metricsServer.ServePrometheusMetrics(ctx, ":9090", "storage", logger)
+	}()
 	// start serving status
 	go func() {
 		wg.Add(1)
-		ss := statusServer.New(logger)
-		defer ss.Close()
 		defer wg.Done()
 
-		errCh <- ss.ListenAndServeHTTPs("localStorage:4433", "", "/certs/localStorage.pem", "/certs/localStorage-key.pem")
+		ss := statusServer.New(logger)
+		errCh <- ss.ListenAndServeHTTPs(ctx, "localStorage:4433", "", "/certs/localStorage.pem", "/certs/localStorage-key.pem")
 	}()
-
 	// start serving API
 	go func() {
 		wg.Add(1)
-		defer server.Shutdown()
 		defer wg.Done()
-		errCh <- server.Serve()
+		defer server.Shutdown()
+
+		localErrCh := make(chan error)
+		go func() {
+			localErrCh <- server.Serve()
+		}()
+
+		select {
+		case err := <-localErrCh:
+			localErrCh <- err
+		case <-ctx.Done():
+			//do nothing except deferred cleanup
+		}
 	}()
 
-	for err := range errCh {
-		if err != nil {
-			logger.Fatal().Err(err).Msg("Failed to start server")
+	// run cleanup when sigint or sigterm is received or error on starting server happened
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		wg.Add(1)
+		defer cancelContext()
+		defer wg.Done()
+
+		select {
+		case err := <-errCh:
+			logger.Error().Err(err).Msg("failed to start server")
+		case <-signalChan:
+			logger.Error().Msg("received interrupt")
 		}
-	}
+	}()
+
+	wg.Wait()
 }
 
 type WildcardConsumer struct{}
