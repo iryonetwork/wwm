@@ -76,7 +76,7 @@ func main() {
 	// initialize request authenticator
 	auth, err := storageSync.NewRequestAuthenticator("/certs/public.crt", "/certs/private.key", logger)
 	if err != nil {
-		logger.Fatal().Err(err).Msg("failed to initiazlie storage API request authenticator")
+		logger.Fatal().Err(err).Msg("failed to initialize storage API request authenticator")
 	}
 
 	// initialize handlers
