@@ -120,6 +120,8 @@ func (c *URLPollingComponent) Start(ctx context.Context) {
 
 // NewURLPollingComponent returns new URL Polling status component
 func New(url URLStatusEndpoint, cfg *Cfg, logger zerolog.Logger) *URLPollingComponent {
+	logger = logger.With().Str("component", "service/statusReporter/polling").Str("url", url.String()).Logger()
+
 	c := &URLPollingComponent{
 		url:            url,
 		interval:       defaultInterval,

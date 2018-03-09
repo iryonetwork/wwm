@@ -38,7 +38,7 @@ func main() {
 	defer cancel()
 
 	// initialize status reporter
-	r := statusReporter.New(logger.With().Str("component", "statusReporter").Logger())
+	r := statusReporter.New(logger)
 
 	// add URL Status Polling components
 	pollingCfg := &polling.Cfg{
@@ -46,46 +46,28 @@ func main() {
 		CountThreshold: &countThreshold,
 		StatusValidity: &statusValidity,
 	}
-	g := polling.New(
-		polling.NewExternalURL("https://www.google.com", defaultTimeout),
-		pollingCfg,
-		logger.With().Str("component", "URLPolling").Str("url", "https://www.google.com").Logger(),
-	)
+
+	g := polling.New(polling.NewExternalURL("https://www.google.com", defaultTimeout), pollingCfg, logger)
 	g.Start(ctx)
 	r.AddComponent(statusReporter.External, "google", g)
-	n := polling.New(
-		polling.NewExternalURL("http://nna-leb.gov.lb", defaultTimeout),
-		pollingCfg,
-		logger.With().Str("component", "URLPolling").Str("url", "http://nna-leb.gov.lb").Logger(),
-	)
+
+	n := polling.New(polling.NewExternalURL("http://nna-leb.gov.lb", defaultTimeout), pollingCfg, logger)
 	n.Start(ctx)
 	r.AddComponent(statusReporter.External, "Lebanese National News Agency", n)
-	localStorage := polling.New(
-		polling.NewInternalURL("https://localStorage:4433/status", defaultTimeout),
-		pollingCfg,
-		logger.With().Str("component", "URLPolling").Str("url", "https://localStorage:4433/status").Logger(),
-	)
+
+	localStorage := polling.New(polling.NewInternalURL("https://localStorage:4433/status", defaultTimeout), pollingCfg, logger)
 	localStorage.Start(ctx)
 	r.AddComponent(statusReporter.Local, "storage", localStorage)
-	localAuth := polling.New(
-		polling.NewInternalURL("https://localAuth:4433/status", defaultTimeout),
-		pollingCfg,
-		logger.With().Str("component", "URLPolling").Str("url", "https://localAuth:4433/status").Logger(),
-	)
+
+	localAuth := polling.New(polling.NewInternalURL("https://localAuth:4433/status", defaultTimeout), pollingCfg, logger)
 	localAuth.Start(ctx)
 	r.AddComponent(statusReporter.Local, "auth", localAuth)
-	cloudStorage := polling.New(
-		polling.NewInternalURL("https://cloudStorage:4433/status", defaultTimeout),
-		pollingCfg,
-		logger.With().Str("component", "URLPolling").Str("url", "https://cloudStorage:4433/status").Logger(),
-	)
+
+	cloudStorage := polling.New(polling.NewInternalURL("https://cloudStorage:4433/status", defaultTimeout), pollingCfg, logger)
 	cloudStorage.Start(ctx)
 	r.AddComponent(statusReporter.Cloud, "storage", cloudStorage)
-	cloudAuth := polling.New(
-		polling.NewInternalURL("https://cloudAuth:4433/status", defaultTimeout),
-		pollingCfg,
-		logger.With().Str("component", "URLPolling").Str("url", "https://cloudAuth:4433/status").Logger(),
-	)
+
+	cloudAuth := polling.New(polling.NewInternalURL("https://cloudAuth:4433/status", defaultTimeout), pollingCfg, logger)
 	cloudAuth.Start(ctx)
 	r.AddComponent(statusReporter.Cloud, "auth", cloudAuth)
 

@@ -259,14 +259,17 @@ func getMockURLStatusEndpoints(t *testing.T, localN, cloudN, externalN int) ([]*
 
 	for i := 0; i < localN; i++ {
 		url := mock.NewMockURLStatusEndpoint(ctrl)
+		url.EXPECT().String().Return("mock://url")
 		local = append(local, url)
 	}
 	for i := 0; i < cloudN; i++ {
 		url := mock.NewMockURLStatusEndpoint(ctrl)
+		url.EXPECT().String().Return("mock://url")
 		cloud = append(cloud, url)
 	}
 	for i := 0; i < externalN; i++ {
 		url := mock.NewMockURLStatusEndpoint(ctrl)
+		url.EXPECT().String().Return("mock://url")
 		external = append(external, url)
 	}
 

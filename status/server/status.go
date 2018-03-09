@@ -85,6 +85,8 @@ func (s *statusServer) Close() error {
 }
 
 func New(logger zerolog.Logger) *statusServer {
+	logger = logger.With().Str("component", "status/server").Logger()
+
 	components := make(map[string]status.Component)
 
 	return &statusServer{logger: logger, components: components}

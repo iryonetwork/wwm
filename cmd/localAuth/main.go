@@ -118,7 +118,7 @@ func main() {
 	// start serving status
 	go func() {
 		wg.Add(1)
-		ss := statusServer.New(logger.With().Str("component", "status/server").Logger())
+		ss := statusServer.New(logger)
 		defer ss.Close()
 		defer wg.Done()
 

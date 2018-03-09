@@ -145,6 +145,8 @@ func handlerFunc(f func() interface{}) http.HandlerFunc {
 
 // NewStatusReporter returns instance of status reporter service
 func New(logger zerolog.Logger) *StatusReporter {
+	logger = logger.With().Str("component", "service/statusReporter").Logger()
+
 	return &StatusReporter{
 		local:    make(map[string]status.Component),
 		cloud:    make(map[string]status.Component),
