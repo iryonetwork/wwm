@@ -123,7 +123,7 @@ func main() {
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
-		errCh <- metricsServer.ServePrometheusMetrics(context.Background(), metricsAddr, "status", logger.With().Str("component", "metrics/server").Logger())
+		errCh <- metricsServer.ServePrometheusMetrics(context.Background(), metricsAddr, "status", logger)
 	}()
 
 	for err := range errCh {

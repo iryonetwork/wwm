@@ -14,6 +14,8 @@ import (
 
 // ServePrometheusMetrics starts prometheus metrics server
 func ServePrometheusMetrics(ctx context.Context, addr string, namespace string, logger zerolog.Logger) error {
+	logger = logger.With().Str("component", "metrics/server").Logger()
+
 	// initialize metrics middleware
 	m := api.NewMetrics("metrics", "")
 

@@ -168,7 +168,7 @@ func main() {
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
-		errCh <- metricsServer.ServePrometheusMetrics(context.Background(), ":9090", "storage", logger.With().Str("component", "metrics/server").Logger())
+		errCh <- metricsServer.ServePrometheusMetrics(context.Background(), ":9090", "storage", logger)
 	}()
 
 	// start serving status
