@@ -194,6 +194,8 @@ func (h *handlers) ListDestinationFileVersionsAsc(ctx context.Context, bucketID,
 
 // NewApiHandlers returns Handlers with cloudStorage and localStorage API used.
 func NewHandlers(source *operations.Client, sourceAuth runtime.ClientAuthInfoWriter, destination *operations.Client, destinationAuth runtime.ClientAuthInfoWriter, logger zerolog.Logger) Handlers {
+	logger = logger.With().Str("component", "sync/storage/handlers").Logger()
+
 	return &handlers{
 		source:          source,
 		sourceAuth:      sourceAuth,

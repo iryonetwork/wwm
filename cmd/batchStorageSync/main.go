@@ -80,10 +80,9 @@ func main() {
 	}
 
 	// initialize handlers
-	handlers := storageSync.NewHandlers(localClient.Operations, auth, cloudClient.Operations, auth, logger.With().Str("component", "sync/storage/handlers").Logger())
+	handlers := storageSync.NewHandlers(localClient.Operations, auth, cloudClient.Operations, auth, logger)
 
 	// get metrics collection for key value storage and register in registry
-
 	m = batch.GetPrometheusMetricsCollection()
 	for _, metric := range m {
 		metricsRegistry.MustRegister(metric)

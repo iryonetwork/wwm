@@ -48,7 +48,7 @@ func main() {
 	}
 
 	// initialize handlers
-	handlers := storageSync.NewHandlers(localClient.Operations, auth, cloudClient.Operations, auth, logger.With().Str("component", "sync/storage/handlers").Logger())
+	handlers := storageSync.NewHandlers(localClient.Operations, auth, cloudClient.Operations, auth, logger)
 
 	// create nats/nats-streaming connection
 	URLs := "tls://nats:secret@localNats:4242"
