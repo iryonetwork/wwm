@@ -56,8 +56,14 @@ func (s *batchStorageSync) Sync(ctx context.Context, lastSuccessfulRun time.Time
 	return nil
 }
 
-// GetPrometheusMetricsCollection returns all prometheus metrics collectors needed to initalize instance of batch (for registration)
-func GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
+// GetPrometheusMetricsCollection returns all prometheus metrics collectors to be registered
+func (s *batchStorageSync) GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
+	return s.metricsCollection
+}
+
+func New(handlers storageSync.Handlers, logger zerolog.Logger) storageSync.BatchSync {
+	logger = logger.With().Str("component", "sync/storage/batch").Logger()
+
 	metricsCollection := make(map[metrics.ID]prometheus.Collector)
 	h := prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Namespace: "batch",
@@ -66,10 +72,6 @@ func GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
 	}, []string{"operation", "success", "result"})
 	metricsCollection[syncSeconds] = h
 
-	return metricsCollection
-}
-
-func New(handlers storageSync.Handlers, logger zerolog.Logger, metricsCollection map[metrics.ID]prometheus.Collector) storageSync.BatchSync {
 	return &batchStorageSync{
 		handlers:          handlers,
 		logger:            logger,

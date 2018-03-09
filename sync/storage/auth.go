@@ -39,6 +39,8 @@ func (a *storageRequestAuthenticator) AuthenticateRequest(r runtime.ClientReques
 
 // New returns new instance of storageRequestAuthenticator that implements runtime.ClientAuthInfoWriter
 func NewRequestAuthenticator(certFile, keyFile string, logger zerolog.Logger) (runtime.ClientAuthInfoWriter, error) {
+	logger = logger.With().Str("component", "sync/storage/auth").Logger()
+
 	logger.Debug().Msg("Initialize storage API request authenticator")
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {

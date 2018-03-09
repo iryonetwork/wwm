@@ -100,21 +100,19 @@ func main() {
 		logger.Error().Msg("storage service will be started with null storage sync publisher due to failed nats-streaming connection attempts")
 	} else {
 		// if connection to nats-streaming was succesful use nats-streaming publisher
-		// Register metrics
-		coll := publisher.GetPrometheusMetricsCollection()
-		for _, m := range coll {
-			prometheus.MustRegister(m)
-			defer prometheus.Unregister(m)
-		}
-
 		cfg := publisher.Cfg{
 			Connection:      sc,
 			Retries:         5,
 			StartRetryWait:  time.Duration(10 * time.Second),
 			RetryWaitFactor: 2.0,
 		}
-		l := logger.With().Str("component", "sync/storage/publisher").Logger()
-		p = publisher.New(context.Background(), cfg, l, coll)
+		p = publisher.New(context.Background(), cfg, logger)
+		// Register metrics
+		m := p.GetPrometheusMetricsCollection()
+		for _, metric := range m {
+			prometheus.MustRegister(metric)
+			defer prometheus.Unregister(metric)
+		}
 	}
 	defer p.Close()
 

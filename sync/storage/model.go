@@ -8,6 +8,9 @@ import (
 	"time"
 
 	strfmt "github.com/go-openapi/strfmt"
+	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/iryonetwork/wwm/metrics"
 )
 
 // EventType defines event type
@@ -31,6 +34,8 @@ type Publisher interface {
 	PublishAsyncWithRetries(ctx context.Context, typ EventType, f *FileInfo) error
 	// Close waits for all async publish routines to finish and closes underlying connection.
 	Close()
+	// GetPrometheusMetricsCollection returns metrics to be registered for the component.
+	GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector
 }
 
 // Consumer describes public methods of consumer used by storageSync service.
@@ -41,10 +46,14 @@ type Consumer interface {
 	GetNumberOfSubsriptions() int
 	// Close closes all service consumers.
 	Close()
+	// GetPrometheusMetricsCollection returns metrics to be registered for the component.
+	GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector
 }
 
 type BatchSync interface {
 	Sync(ctx context.Context, lastSuccessfulRun time.Time) error
+	// GetPrometheusMetricsCollection returns metrics to be registered for the component.
+	GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector
 }
 
 type FileInfo struct {

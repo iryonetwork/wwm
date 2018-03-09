@@ -363,9 +363,5 @@ func getMockHandlers(t *testing.T) (*mock.MockHandlers, func()) {
 }
 
 func getTestService(t *testing.T, handlers storageSync.Handlers) storageSync.BatchSync {
-	return &batchStorageSync{
-		handlers:          handlers,
-		logger:            zerolog.New(os.Stdout),
-		metricsCollection: GetPrometheusMetricsCollection(),
-	}
+	return New(handlers, zerolog.New(os.Stdout))
 }

@@ -74,7 +74,7 @@ func main() {
 	cloudClient := client.New(cloud, strfmt.Default)
 
 	// initialize request authenticator
-	auth, err := storageSync.NewRequestAuthenticator("/certs/public.crt", "/certs/private.key", logger.With().Str("component", "sync/storage/auth").Logger())
+	auth, err := storageSync.NewRequestAuthenticator("/certs/public.crt", "/certs/private.key", logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to initiazlie storage API request authenticator")
 	}
@@ -82,13 +82,13 @@ func main() {
 	// initialize handlers
 	handlers := storageSync.NewHandlers(localClient.Operations, auth, cloudClient.Operations, auth, logger)
 
-	// get metrics collection for key value storage and register in registry
-	m = batch.GetPrometheusMetricsCollection()
+	// initialize batchStorageSync
+	s := batch.New(handlers, logger)
+	// get prometheus metrics collection for batch sync and register in registry
+	m = s.GetPrometheusMetricsCollection()
 	for _, metric := range m {
 		metricsRegistry.MustRegister(metric)
 	}
-	// initialize batchStorageSync
-	s := batch.New(handlers, logger, m)
 
 	// initialize prometheus metrics pusher
 	metricsPusher := push.New("http://localPrometheusPushGateway:9091", "batchStorageSync").Gatherer(metricsRegistry)

@@ -412,7 +412,7 @@ func getTestService(t *testing.T, ctx context.Context, clientID string, h storag
 		Handlers:   h,
 	}
 
-	c := New(ctx, cfg, zerolog.New(os.Stdout), GetPrometheusMetricsCollection())
+	c := New(ctx, cfg, zerolog.New(os.Stdout))
 
 	cleanup := func() {
 		c.Close()
@@ -434,7 +434,7 @@ func getTestPublisher(t *testing.T) (storageSync.Publisher, func()) {
 		RetryWaitFactor: 1.0,
 	}
 
-	p := publisher.New(context.Background(), cfg, zerolog.New(os.Stdout), publisher.GetPrometheusMetricsCollection())
+	p := publisher.New(context.Background(), cfg, zerolog.New(os.Stdout))
 
 	cleanup := func() {
 		p.Close()

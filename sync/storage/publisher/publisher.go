@@ -59,6 +59,12 @@ func (p *nullPublisher) Close() {
 	return
 }
 
+// GetPrometheusMetricsCollection of nullPublisher returns empty map
+func (p *nullPublisher) GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
+	m := make(map[metrics.ID]prometheus.Collector)
+	return m
+}
+
 // Publish pushes sync/storage event and returns synchronous response.
 func (p *stanPublisher) Publish(_ context.Context, typ storageSync.EventType, f *storageSync.FileInfo) error {
 	// Make sure we record duration metrics even if processing fails
@@ -157,8 +163,15 @@ func (p *stanPublisher) Close() {
 	p.conn.Close()
 }
 
-// GetPrometheusMetricsCollection returns all prometheus metrics collectors needed to initalize instance of publisher (for registration)
-func GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
+// GetPrometheusMetricsCollection returns all prometheus metrics collectors needed to be registered
+func (p *stanPublisher) GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
+	return p.metricsCollection
+}
+
+// New returns new stanPublisher with provided nats-streaming connectiom as underlying backend.
+func New(ctx context.Context, cfg Cfg, logger zerolog.Logger) storageSync.Publisher {
+	logger = logger.With().Str("component", "sync/storage/publisher").Logger()
+
 	metricsCollection := make(map[metrics.ID]prometheus.Collector)
 	h := prometheus.NewHistogram(prometheus.HistogramOpts{
 		Namespace: "publisher",
@@ -174,11 +187,6 @@ func GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
 	})
 	metricsCollection[publishCalls] = c
 
-	return metricsCollection
-}
-
-// New returns new stanPublisher with provided nats-streaming connectiom as underlying backend.
-func New(ctx context.Context, cfg Cfg, logger zerolog.Logger, metricsCollection map[metrics.ID]prometheus.Collector) storageSync.Publisher {
 	p := &stanPublisher{
 		ctx:               ctx,
 		conn:              cfg.Connection,

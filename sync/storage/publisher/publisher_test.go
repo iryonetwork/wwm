@@ -202,7 +202,7 @@ func getTestPublisher(t *testing.T, ctx context.Context) (*stanPublisher, *mock.
 		RetryWaitFactor: 1.0,
 	}
 
-	publisher := New(ctx, cfg, zerolog.New(os.Stdout), GetPrometheusMetricsCollection())
+	publisher := New(ctx, cfg, zerolog.New(os.Stdout))
 
 	cleanup := func() {
 		mockConn.EXPECT().Close().Times(1)

@@ -95,6 +95,11 @@ func (c *stanConsumer) Close() {
 	c.conn.Close()
 }
 
+// GetPrometheusMetricsCollection returns all prometheus metrics collectors to be registered
+func (c *stanConsumer) GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
+	return c.metricsCollection
+}
+
 func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventType, h storageSync.Handler) stan.MsgHandler {
 	return func(msg *stan.Msg) {
 		// Make sure we record duration metrics even if processing fails, set default values for labels
@@ -153,8 +158,10 @@ func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventT
 	}
 }
 
-// GetPrometheusMetricsCollection returns all prometheus metrics collectors needed to initalize instance of consumer (for registration)
-func GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
+// New returns new consumer service with provided nats-streaming connection as underlying backend.
+func New(ctx context.Context, cfg Cfg, logger zerolog.Logger) storageSync.Consumer {
+	logger = logger.With().Str("component", "sync/storage/consumer").Logger()
+
 	metricsCollection := make(map[metrics.ID]prometheus.Collector)
 	h := prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Namespace: "consumer",
@@ -163,11 +170,6 @@ func GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
 	}, []string{"event", "ack", "result"})
 	metricsCollection[taskSeconds] = h
 
-	return metricsCollection
-}
-
-// New returns new consumer service with provided nats-streaming connection as underlying backend.
-func New(ctx context.Context, cfg Cfg, logger zerolog.Logger, metricsCollection map[metrics.ID]prometheus.Collector) storageSync.Consumer {
 	c := &stanConsumer{
 		ctx:               ctx,
 		conn:              cfg.Connection,

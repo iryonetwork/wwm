@@ -42,7 +42,7 @@ func main() {
 	cloudClient := client.New(cloud, strfmt.Default)
 
 	// initialize request authenticator
-	auth, err := storageSync.NewRequestAuthenticator("/certs/public.crt", "/certs/private.key", logger.With().Str("component", "sync/storage/auth").Logger())
+	auth, err := storageSync.NewRequestAuthenticator("/certs/public.crt", "/certs/private.key", logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to initiazlie storage API request authenticator")
 	}
@@ -81,19 +81,19 @@ func main() {
 	// Create context with cancel func
 	ctx, shutdown := context.WithCancel(context.Background())
 
-	// Register metrics
-	coll := consumer.GetPrometheusMetricsCollection()
-	for _, m := range coll {
-		prometheus.MustRegister(m)
-		defer prometheus.Unregister(m)
-	}
 	// initalize consumer
 	cfg := consumer.Cfg{
 		Connection: sc,
 		AckWait:    time.Duration(time.Second),
 		Handlers:   handlers,
 	}
-	c := consumer.New(context.Background(), cfg, logger.With().Str("component", "sync/storage/consumer").Logger(), coll)
+	c := consumer.New(context.Background(), cfg, logger)
+	// Register metrics
+	m := c.GetPrometheusMetricsCollection()
+	for _, metric := range m {
+		prometheus.MustRegister(metric)
+		defer prometheus.Unregister(metric)
+	}
 
 	// Start subscriptions
 	c.StartSubscription(storageSync.FileNew)
