@@ -73,7 +73,7 @@ func (s *statusServer) ListenAndServeHTTPs(ctx context.Context, addr string, nam
 	mux.Handle(path, s)
 	s.server = &http.Server{
 		Addr:    addr,
-		Handler: m.Middleware(log.APILogMiddleware(mux, s.logger.With().Str("component", "logMW").Logger())),
+		Handler: m.Middleware(log.APILogMiddleware(mux, s.logger)),
 	}
 
 	go func() {

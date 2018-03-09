@@ -28,7 +28,7 @@ func ServePrometheusMetrics(ctx context.Context, addr string, namespace string, 
 	mux.Handle(path, prometheus.Handler())
 	s := &http.Server{
 		Addr:    addr,
-		Handler: m.Middleware(log.APILogMiddleware(mux, logger.With().Str("component", "logMW").Logger())),
+		Handler: m.Middleware(log.APILogMiddleware(mux, logger)),
 	}
 
 	go func() {
