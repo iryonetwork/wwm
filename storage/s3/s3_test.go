@@ -88,7 +88,7 @@ var (
 		Size: 8,
 	}
 	info1V2 = minio.ObjectInfo{
-		Key:  "File1.V2.w.1516979775123.CHS.dGV4dC9vcGVuRWhyWG1s.b3BlbkVIUi1FSFItT0JTRVJWQVRJT04uYmxvb2RfcHJlc3N1cmUudjE=.dml0YWxTaWdufGJhc2ljUGF0aWVudEluZm8=",
+		Key:  "File1.V2.w.1516979775123.CHS.dGV4dC9vcGVuRWhyWG1s.b3BlbkVIUi1FSFItT0JTRVJWQVRJT04uYmxvb2RfcHJlc3N1cmUudjE=.dml0YWxTaWduLGJhc2ljUGF0aWVudEluZm8=",
 		Size: 8,
 	}
 	info2V1 = minio.ObjectInfo{
@@ -427,7 +427,7 @@ func TestS3List(t *testing.T) {
 }
 
 func TestS3Read(t *testing.T) {
-	expectedFileName := "File1.V2.w.1516979775123.CHS.dGV4dC9vcGVuRWhyWG1s.b3BlbkVIUi1FSFItT0JTRVJWQVRJT04uYmxvb2RfcHJlc3N1cmUudjE=.dml0YWxTaWdufGJhc2ljUGF0aWVudEluZm8="
+	expectedFileName := "File1.V2.w.1516979775123.CHS.dGV4dC9vcGVuRWhyWG1s.b3BlbkVIUi1FSFItT0JTRVJWQVRJT04uYmxvb2RfcHJlc3N1cmUudjE=.dml0YWxTaWduLGJhc2ljUGF0aWVudEluZm8="
 
 	testCases := []struct {
 		description   string
@@ -648,7 +648,7 @@ func TestS3Write(t *testing.T) {
 					m.EXPECT().PutObjectWithContext(
 						gomock.Any(),
 						"BUCKET",
-						"File1.V1.w.1516288966123.CHS.dGV4dC9vcGVuRWhyWG1s.b3BlbkVIUi1FSFItT0JTRVJWQVRJT04uYmxvb2RfcHJlc3N1cmUudjE=.dml0YWxTaWdufGJhc2ljUGF0aWVudEluZm8=",
+						"File1.V1.w.1516288966123.CHS.dGV4dC9vcGVuRWhyWG1s.b3BlbkVIUi1FSFItT0JTRVJWQVRJT04uYmxvb2RfcHJlc3N1cmUudjE=.dml0YWxTaWduLGJhc2ljUGF0aWVudEluZm8=",
 						r,
 						int64(-1),
 						gomock.Any(),

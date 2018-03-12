@@ -146,9 +146,9 @@ func labelsStringToSlice(s string) []string {
 	if s == "" {
 		return nil
 	}
-	return strings.Split(s, "|")
+	return strings.Split(s, ",")
 }
 
 func sliceToLabelsString(s []string) string {
-	return strings.Join(s, "|")
+	return strings.Join(s, ",")
 }

@@ -98,7 +98,7 @@ paths:
           type: array
           items:
             type: string
-          collectionFormat: pipes
+          collectionFormat: csv
 
       responses:
         201:
@@ -232,7 +232,7 @@ paths:
           type: array
           items:
             type: string
-          collectionFormat: pipes
+          collectionFormat: csv
 
       responses:
         201:
@@ -625,7 +625,7 @@ paths:
           type: array
           items:
             type: string
-          collectionFormat: pipes
+          collectionFormat: csv
 
       responses:
         200:
