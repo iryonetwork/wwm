@@ -4,14 +4,15 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
 
 	loads "github.com/go-openapi/loads"
 	"github.com/jasonlvhit/gocron"
+	flags "github.com/jessevdk/go-flags"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 
@@ -30,6 +31,16 @@ func main() {
 		Str("service", "localAuth").
 		Logger()
 
+	// create context with cancel func
+	ctx, cancelContext := context.WithCancel(context.Background())
+	defer cancelContext()
+
+	// get config
+	cfg, err := GetConfig()
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to get config")
+	}
+
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to load swagger spec")
@@ -39,7 +50,7 @@ func main() {
 	// TODO: get key from vault
 	key := []byte{0xe9, 0xf8, 0x2d, 0xf9, 0xc4, 0x14, 0xc1, 0x41, 0xdb, 0x87, 0x31, 0x1a, 0x95, 0x79, 0x5, 0xbf, 0x71, 0x12, 0x30, 0xd3, 0x2d, 0x8b, 0x59, 0x9d, 0x27, 0x13, 0xfa, 0x84, 0x55, 0x63, 0x64, 0x64}
 
-	dbPath := "/data/localAuth.db"
+	dbPath := cfg.BoltDBFilepath
 	// if there is no database file download it from cloud
 	_, err = os.Stat(dbPath)
 	if _, err := os.Stat(dbPath); err != nil {
@@ -48,7 +59,7 @@ func main() {
 			logger.Fatal().Err(err).Msg("Failed to initialize auth storage")
 		}
 
-		authSync, err := authSync.New(storage, "/certs/localAuthSync.pem", "/certs/localAuthSync-key.pem", "https://cloudAuth/auth/database", logger.With().Str("component", "service/authSync-initialCloudDownload").Logger())
+		authSync, err := authSync.New(storage, cfg.AuthSyncCertPath, cfg.AuthSyncKeyPath, fmt.Sprintf("https://%s/%s/database", cfg.CloudAuthHost, cfg.CloudAuthPath), logger.With().Str("component", "service/authSync-initialCloudDownload").Logger())
 		if err != nil {
 			logger.Fatal().Err(err).Msg("Failed to initialize authSync service")
 		}
@@ -77,16 +88,17 @@ func main() {
 		logger.Fatal().Err(err).Msg("Failed to initialize authenticator service")
 	}
 
-	authSync, err := authSync.New(storage, "/certs/localAuthSync.pem", "/certs/localAuthSync-key.pem", "https://cloudAuth/auth/database", logger.With().Str("component", "service/authSync").Logger())
+	authSync, err := authSync.New(storage, cfg.AuthSyncCertPath, cfg.AuthSyncKeyPath, fmt.Sprintf("https://%s/%s/database", cfg.CloudAuthHost, cfg.CloudAuthPath), logger.With().Str("component", "service/authSync").Logger())
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to initialize authSync service")
 	}
 	api := operations.NewCloudAuthAPI(swaggerSpec)
 	api.ServeError = utils.ServeError
 	server := restapi.NewServer(api)
-	server.TLSPort = 443
-	server.TLSCertificate = "/certs/localAuth.pem"
-	server.TLSCertificateKey = "/certs/localAuth-key.pem"
+	server.TLSHost = cfg.ServerHost
+	server.TLSPort = cfg.ServerPort
+	server.TLSCertificate = flags.Filename(cfg.CertPath)
+	server.TLSCertificateKey = flags.Filename(cfg.KeyPath)
 	server.EnabledListeners = []string{"https"}
 	defer server.Shutdown()
 
@@ -111,37 +123,33 @@ func main() {
 	go gocron.Start()
 
 	// Start servers
-	// create context with cancel func
-	ctx, cancelContext := context.WithCancel(context.Background())
-	// waitGroup for all main go routines
-	var wg sync.WaitGroup
-	// create error channel
-	errCh := make(chan error)
+	// create exit channel that is used to wait for all servers goroutines to exit orederly and carry the errors
+	exitCh := make(chan error, 2)
 
 	// start serving status
 	go func() {
-		wg.Add(1)
-		defer wg.Done()
-
 		ss := statusServer.New(logger)
-		errCh <- ss.ListenAndServeHTTPs(ctx, "localAuth:4433", "", "/certs/localAuth.pem", "/certs/localAuth-key.pem")
+		exitCh <- ss.ListenAndServeHTTPs(ctx, fmt.Sprintf("%s:%d", cfg.ServerHost, cfg.StatusPort), cfg.StatusNamespace, cfg.CertPath, cfg.KeyPath)
 	}()
 	// start serving API
 	go func() {
-		wg.Add(1)
-		defer wg.Done()
 		defer server.Shutdown()
 
-		localErrCh := make(chan error)
+		errCh := make(chan error)
 		go func() {
-			localErrCh <- server.Serve()
+			errCh <- server.Serve()
 		}()
 
-		select {
-		case err := <-localErrCh:
-			localErrCh <- err
-		case <-ctx.Done():
-			//do nothing except deferred cleanup
+		for {
+			select {
+			case err := <-errCh:
+				exitCh <- err
+				return
+			case <-ctx.Done():
+				exitCh <- fmt.Errorf("API server exiting because of cancelled context")
+				// do nothing, shutdown is deferred
+				return
+			}
 		}
 	}()
 
@@ -149,17 +157,27 @@ func main() {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		wg.Add(1)
 		defer cancelContext()
-		defer wg.Done()
 
-		select {
-		case err := <-errCh:
-			logger.Error().Err(err).Msg("failed to start server")
-		case <-signalChan:
-			logger.Error().Msg("received interrupt")
+		for {
+			select {
+			case err := <-exitCh:
+				logger.Info().Msg("exiting application because of exiting server goroutine")
+				// pass error back to channel satisfy exit condition
+				exitCh <- err
+				return
+			case <-signalChan:
+				logger.Info().Msg("received interrupt")
+				return
+			}
 		}
 	}()
 
-	wg.Wait()
+	<-ctx.Done()
+	for i := 0; i < 2; i++ {
+		err := <-exitCh
+		if err != nil {
+			logger.Debug().Err(err).Msg("gouroutine exit message")
+		}
+	}
 }

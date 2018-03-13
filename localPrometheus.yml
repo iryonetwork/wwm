@@ -30,7 +30,7 @@ scrape_configs:
 - job_name: storage
   scrape_interval: 15s
   scrape_timeout: 10s
-  metrics_path: /storage/metrics
+  metrics_path: /metrics
   scheme: http
   static_configs:
   - targets:
@@ -46,7 +46,7 @@ scrape_configs:
 - job_name: local_status_reporter
   scrape_interval: 15s
   scrape_timeout: 10s
-  metrics_path: /status/metrics
+  metrics_path: /metrics
   scheme: http
   static_configs:
   - targets:

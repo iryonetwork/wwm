@@ -10,11 +10,11 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 
 	loads "github.com/go-openapi/loads"
 	"github.com/golang/mock/gomock"
+	flags "github.com/jessevdk/go-flags"
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/restapi"
@@ -38,6 +38,15 @@ func main() {
 		Str("service", "cloudStorage").
 		Logger()
 
+	// create context with cancel func
+	ctx, cancelContext := context.WithCancel(context.Background())
+
+	// get config
+	cfg, err := GetConfig()
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to get config")
+	}
+
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to load swagger spec")
@@ -49,33 +58,36 @@ func main() {
 	keys := mock.NewMockKeyProvider(ctrl)
 	keys.EXPECT().Get(gomock.Any()).AnyTimes().Return("SECRETSECRETSECRETSECRETSECRETSE", nil)
 
+	// TODO: fetch from vault
+	s3secret := "cloudminio"
+
 	// initialize storage
-	cfg := &s3.Config{
-		Endpoint:     "cloudMinio:9000",
-		AccessKey:    "cloud",
-		AccessSecret: "cloudminio",
+	s3cfg := &s3.Config{
+		Endpoint:     cfg.S3Endpoint,
+		AccessKey:    cfg.S3AccessKey,
+		AccessSecret: s3secret,
 		Secure:       true,
-		Region:       "us-east-1",
+		Region:       cfg.S3Region,
 	}
-	s3, err := s3.New(cfg, keys, logger)
+	s3, err := s3.New(s3cfg, keys, logger)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	// initialize the service
-	service := storage.New(s3, keys, publisher.NewNullPublisher(context.Background()), logger)
+	service := storage.New(s3, keys, publisher.NewNullPublisher(ctx), logger)
 
 	// initialize authorizer
-	auth := authorizer.New("https://cloudAuth/auth/validate", logger.With().Str("component", "service/authorizer").Logger())
+	auth := authorizer.New(fmt.Sprintf("https://%s/%s/validate", cfg.AuthHost, cfg.AuthPath), logger.With().Str("component", "service/authorizer").Logger())
 
 	api := operations.NewStorageAPI(swaggerSpec)
 	api.ServeError = utils.ServeError
 	server := restapi.NewServer(api)
-	server.TLSHost = "0.0.0.0"
-	server.TLSPort = 443
+	server.TLSHost = cfg.ServerHost
+	server.TLSPort = cfg.ServerPort
 	server.EnabledListeners = []string{"https"}
-	server.TLSCertificateKey = "/certs/cloudStorage-key.pem"
-	server.TLSCertificate = "/certs/cloudStorage.pem"
+	server.TLSCertificateKey = flags.Filename(cfg.KeyPath)
+	server.TLSCertificate = flags.Filename(cfg.CertPath)
 
 	storageHandlers := storage.NewHandlers(service, logger)
 
@@ -110,42 +122,37 @@ func main() {
 	server.SetHandler(apiHandler)
 
 	// Start servers
-	// create context with cancel func
-	ctx, cancelContext := context.WithCancel(context.Background())
-	// waitGroup for all main go routines
-	var wg sync.WaitGroup
-	// create error channel
-	errCh := make(chan error)
+	// create exit channel that is used to wait for all servers goroutines to exit orederly and carry the errors
+	exitCh := make(chan error, 3)
 
 	// start serving metrics
 	go func() {
-		wg.Add(1)
-		defer wg.Done()
-		errCh <- metricsServer.ServePrometheusMetrics(ctx, ":9090", "storage", logger)
+		exitCh <- metricsServer.ServePrometheusMetrics(ctx, fmt.Sprintf("%s:%d", cfg.ServerHost, cfg.MetricsPort), cfg.MetricsNamespace, logger)
 	}()
 	// start serving status
 	go func() {
-		wg.Add(1)
-		defer wg.Done()
 		ss := statusServer.New(logger)
-		errCh <- ss.ListenAndServeHTTPs(ctx, "cloudStorage:4433", "", "/certs/cloudStorage.pem", "/certs/cloudStorage-key.pem")
+		exitCh <- ss.ListenAndServeHTTPs(ctx, fmt.Sprintf("%s:%d", cfg.ServerHost, cfg.StatusPort), cfg.StatusNamespace, cfg.CertPath, cfg.KeyPath)
 	}()
 	// start serving API
 	go func() {
-		wg.Add(1)
-		defer wg.Done()
 		defer server.Shutdown()
 
-		localErrCh := make(chan error)
+		errCh := make(chan error)
 		go func() {
-			localErrCh <- server.Serve()
+			errCh <- server.Serve()
 		}()
 
-		select {
-		case err := <-localErrCh:
-			localErrCh <- err
-		case <-ctx.Done():
-			//do nothing except deferred cleanup
+		for {
+			select {
+			case err := <-errCh:
+				exitCh <- err
+				return
+			case <-ctx.Done():
+				exitCh <- fmt.Errorf("API server exiting because of cancelled context")
+				// do nothing, shutdown is deferred
+				return
+			}
 		}
 	}()
 
@@ -153,19 +160,29 @@ func main() {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		wg.Add(1)
 		defer cancelContext()
-		defer wg.Done()
 
-		select {
-		case err := <-errCh:
-			logger.Error().Err(err).Msg("failed to start server")
-		case <-signalChan:
-			logger.Error().Msg("received interrupt")
+		for {
+			select {
+			case err := <-exitCh:
+				logger.Info().Msg("exiting application because of exiting server goroutine")
+				// pass error back to channel satisfy exit condition
+				exitCh <- err
+				return
+			case <-signalChan:
+				logger.Info().Msg("received interrupt")
+				return
+			}
 		}
 	}()
 
-	wg.Wait()
+	<-ctx.Done()
+	for i := 0; i < 3; i++ {
+		err := <-exitCh
+		if err != nil {
+			logger.Debug().Err(err).Msg("gouroutine exit message")
+		}
+	}
 }
 
 type WildcardConsumer struct{}

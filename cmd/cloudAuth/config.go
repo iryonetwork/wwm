@@ -1,0 +1,59 @@
+package main
+
+import (
+	"io/ioutil"
+	"reflect"
+
+	"github.com/caarlos0/env"
+	"gopkg.in/yaml.v2"
+
+	"github.com/iryonetwork/wwm/config"
+)
+
+// Config represents configuration of cloudAuth
+type Config struct {
+	config.Config
+	BoltDBFilepath string `env:"BOLT_DB_FILEPATH" envDefault:"/data/cloudAuth.db"`
+	// filepath to yaml
+	ServiceCertsAndPaths Services `env:"SERVICES_FILEPATH" envDefault:"/serviceCertsAndPaths.yml"`
+}
+
+// Services is a wrapper struct for map of allowed services certs and paths
+// to make env parser to execute custom parser without "type not suppoered" config
+type Services struct {
+	Map map[string][]string
+}
+
+// GetConfig parses environment variables and returns pointer to config / error
+func GetConfig() (*Config, error) {
+	common, err := config.New()
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := &Config{Config: *common}
+
+	parsers := map[reflect.Type]env.ParserFunc{
+		reflect.TypeOf(cfg.ServiceCertsAndPaths): parseServiceCertsAndPaths,
+	}
+
+	return cfg, env.ParseWithFuncs(cfg, parsers)
+}
+
+func parseServiceCertsAndPaths(filepath string) (interface{}, error) {
+	serviceCertsAndPaths := Services{
+		Map: make(map[string][]string),
+	}
+
+	yamlFile, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		return serviceCertsAndPaths, nil
+	}
+
+	err = yaml.Unmarshal(yamlFile, &serviceCertsAndPaths.Map)
+	if err != nil {
+		return nil, err
+	}
+
+	return serviceCertsAndPaths, nil
+}

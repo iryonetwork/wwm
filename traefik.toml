@@ -126,11 +126,6 @@ address = ":8080"
     [frontends.localauth.routes.route1]
     rule = "Host:iryo.local;PathPrefix:/auth"
 
-  [frontends.localauthMetrics]
-  backend = "localauthMetrics"
-    [frontends.localauthMetrics.routes.route1]
-    rule = "Host:iryo.local;PathPrefix:/auth/metrics"
-
   [frontends.localstorage]
   backend = "localstorage"
     [frontends.localstorage.routes.route1]
@@ -160,11 +155,6 @@ address = ":8080"
   backend = "cloudstorage"
     [frontends.cloudstorage.routes.route1]
     rule = "Host:iryo.cloud;PathPrefix:/storage"
-
-  [frontends.cloudstorageMetrics]
-  backend = "cloudstorageMetrics"
-    [frontends.cloudstorageMetrics.routes.route1]
-    rule = "Host:iryo.cloud;PathPrefix:/storage/metrics"
 
   [frontends.cloudMinio]
   backend = "cloudMinio"

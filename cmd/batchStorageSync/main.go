@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
 
@@ -21,22 +20,27 @@ import (
 	"github.com/iryonetwork/wwm/utils"
 )
 
-var (
-	boltFilepath  string = "/data/batchStorageSync.db"
-	storageBucket string = "batchStorageSync"
-	storageKey    string = "lastSuccessfulRun"
+const (
+	StorageBucket string = "batchStorageSync"
+	StorageKey    string = "lastSuccessfulRun"
 )
 
 func main() {
-	// Create context with cancel func
-	ctx, shutdown := context.WithCancel(context.Background())
-	defer shutdown()
-
 	// initialize logger
 	logger := zerolog.New(os.Stdout).With().
 		Timestamp().
 		Str("service", "batchStorageSync").
 		Logger()
+
+	// Create context with cancel func
+	ctx, cancelContext := context.WithCancel(context.Background())
+	defer cancelContext()
+
+	// get config
+	cfg, err := GetConfig()
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to get config")
+	}
 
 	// initialize promethues metrics registry
 	metricsRegistry := prometheus.NewRegistry()
@@ -45,7 +49,7 @@ func main() {
 	lastSuccessfulRun := time.Unix(0, 0)
 
 	// initialize bolt key value storage to read last succesful run
-	storage, err := keyvalue.NewBolt(ctx, boltFilepath, logger)
+	storage, err := keyvalue.NewBolt(ctx, cfg.BoltDBFilepath, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to initialize key value storage")
 	}
@@ -56,7 +60,7 @@ func main() {
 	}
 
 	// read last succesful run
-	storedTimestamp := storage.Get(storageBucket, storageKey)
+	storedTimestamp := storage.Get(StorageBucket, StorageKey)
 	if storedTimestamp != nil {
 		timestamp, err := strfmt.ParseDateTime(string(storedTimestamp))
 		if err == nil {
@@ -65,17 +69,17 @@ func main() {
 	}
 
 	// initialize local storage API client
-	local := runtimeClient.New("localStorage", "storage", []string{"https"})
+	local := runtimeClient.New(cfg.StorageHost, cfg.StoragePath, []string{"https"})
 	local.Consumers = utils.ConsumersForSync()
 	localClient := client.New(local, strfmt.Default)
 
 	// initialize cloud storage API client
-	cloud := runtimeClient.New("cloudStorage", "storage", []string{"https"})
+	cloud := runtimeClient.New(cfg.CloudStorageHost, cfg.CloudStoragePath, []string{"https"})
 	cloud.Consumers = utils.ConsumersForSync()
 	cloudClient := client.New(cloud, strfmt.Default)
 
 	// initialize request authenticator
-	auth, err := storageSync.NewRequestAuthenticator("/certs/public.crt", "/certs/private.key", logger)
+	auth, err := storageSync.NewRequestAuthenticator(cfg.CertPath, cfg.KeyPath, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to initialize storage API request authenticator")
 	}
@@ -92,42 +96,40 @@ func main() {
 	}
 
 	// initialize prometheus metrics pusher
-	metricsPusher := push.New("http://localPrometheusPushGateway:9091", "batchStorageSync").Gatherer(metricsRegistry)
+	metricsPusher := push.New(cfg.PrometheusPushGatewayAddress, "batchStorageSync").Gatherer(metricsRegistry)
 
 	// get current time to be saved as lastSuccesfulRun
 	// do it before sync to account for anything that might have happened during sync duration
 	startTime := strfmt.DateTime(time.Now())
 
-	// waitGroup for all main go routines
-	var wg sync.WaitGroup
-
 	// Run sync
-	errCh := make(chan error)
+	exitCh := make(chan error)
 	go func() {
-		wg.Add(1)
-		defer wg.Done()
-
-		err := s.Sync(ctx, time.Time(lastSuccessfulRun))
-		errCh <- err
+		exitCh <- s.Sync(ctx, time.Time(lastSuccessfulRun))
 	}()
 
 	// Run cleanup when sigint or sigterm is received
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
-	select {
-	case err := <-errCh:
-		if err != nil {
-			logger.Error().Err(err).Msg("batch sync failed")
-		} else {
-			logger.Info().Msg("batch sync successfull")
-			// save lastSuccesfulRun
-			storage.Update(storageBucket, storageKey, []byte(startTime.String()))
-		}
-	case <-signalChan:
-		logger.Info().Msg("stopping batch sync due to interrupt")
-	}
 
-	wg.Wait()
+Loop:
+	for {
+		select {
+		case err := <-exitCh:
+			if err != nil {
+				logger.Error().Err(err).Msg("batch sync failed")
+			} else {
+				logger.Info().Msg("batch sync successfull")
+				// save lastSuccesfulRun
+				storage.Update(StorageBucket, StorageKey, []byte(startTime.String()))
+			}
+			break Loop
+		case <-signalChan:
+			logger.Info().Msg("stopping batch sync due to interrupt")
+			cancelContext()
+			break Loop
+		}
+	}
 
 	// push metrics to the push gateway
 	err = metricsPusher.Add()

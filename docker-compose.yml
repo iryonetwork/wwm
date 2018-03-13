@@ -54,7 +54,13 @@ services:
     volumes:
     - ./.bin/:/wwm
     - ./.data/localAuth:/data
-    - ./bin/tls:/certs
+    - ./bin/tls:/certs:ro
+    - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    environment:
+    - KEY_PATH=/certs/localAuth-key.pem
+    - CERT_PATH=/certs/localAuth.pem
+    - AUTH_SYNC_KEY_PATH=/certs/localAuthSync-key.pem
+    - AUTH_SYNC_CERT_PATH=/certs/localAuthSync.pem
 
   localStorage:
     image: golang:1.9-alpine
@@ -64,8 +70,9 @@ services:
     - ./.bin/:/wwm
     - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
-    # environment:
-    # - DEBUG=1
+    environment:
+    - KEY_PATH=/certs/localStorage-key.pem
+    - CERT_PATH=/certs/localStorage.pem
 
   localMinio:
     image: minio/minio
@@ -90,8 +97,9 @@ services:
     - ./.bin/:/wwm
     - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
-    # environment:
-    # - DEBUG=1
+    environment:
+    - KEY_PATH=/certs/cloudStorage-key.pem
+    - CERT_PATH=/certs/cloudStorage.pem
 
   cloudMinio:
     image: minio/minio
@@ -115,7 +123,12 @@ services:
     volumes:
     - ./.bin/:/wwm
     - ./.data/cloudAuth:/data
-    - ./bin/tls:/certs
+    - ./bin/tls:/certs:ro
+    - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - ./cmd/cloudAuth/serviceCertsAndPaths.yml:/serviceCertsAndPaths.yml:ro
+    environment:
+    - KEY_PATH=/certs/cloudAuth-key.pem
+    - CERT_PATH=/certs/cloudAuth.pem
 
   localNats:
     image: nats-streaming
@@ -125,13 +138,10 @@ services:
     command:
     - --stan_config=/etc/nats/config.conf
     volumes:
-    - ./bin/tls/localNats-key.pem:/etc/nats/certs/private.key:ro
-    - ./bin/tls/localNats.pem:/etc/nats/certs/public.crt:ro
-    - ./bin/tls/ca.pem:/etc/nats/certs/ca-iryo.pem:ro
-    - ./bin/tls/localNatsStreaming-key.pem:/etc/nats/certs/streaming_client_private.key:ro
-    - ./bin/tls/localNatsStreaming.pem:/etc/nats/certs/streaming_client_public.crt:ro
     - ./localNats.conf:/etc/nats/config.conf:ro
     - ./.data/localNats:/data
+    - ./bin/tls:/certs:ro
+    - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
 
   storageSync:
     image: golang:1.9-alpine
@@ -139,9 +149,11 @@ services:
     - /wwm/storageSync
     volumes:
     - ./.bin/:/wwm
-    - ./bin/tls/storageSyncConsumer-key.pem:/certs/private.key:ro
-    - ./bin/tls/storageSyncConsumer.pem:/certs/public.crt:ro
+    - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    environment:
+    - KEY_PATH=/certs/storageSync-key.pem
+    - CERT_PATH=/certs/storageSync.pem
 
   localPrometheus:
     image: prom/prometheus
@@ -151,10 +163,9 @@ services:
     volumes:
     - ./localPrometheus.yml:/etc/prometheus.yml:ro
     - ./localPrometheusRules.yml:/etc/rules.yml:ro
-    - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
-    - ./bin/tls/localPrometheus-key.pem:/certs/private.key:ro
-    - ./bin/tls/localPrometheus.pem:/certs/public.crt:ro
     - ./.data/localPrometheus:/data
+    - ./bin/tls:/certs:ro
+    - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
 
   cloudPrometheus:
     image: prom/prometheus
@@ -164,10 +175,9 @@ services:
     volumes:
     - ./cloudPrometheus.yml:/etc/prometheus.yml:ro
     - ./localPrometheusRules.yml:/etc/rules.yml:ro
-    - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
-    - ./bin/tls/cloudPrometheus-key.pem:/certs/private.key:ro
-    - ./bin/tls/cloudPrometheus.pem:/certs/public.crt:ro
     - ./.data/cloudPrometheus:/data
+    - ./bin/tls:/certs:ro
+    - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
 
   natsStreamingExporter:
     image: registry.gitlab.com/civist/nats-streaming-exporter
@@ -184,9 +194,11 @@ services:
     volumes:
     - ./.bin/:/wwm
     - ./.data/batchStorageSync:/data/
-    - ./bin/tls/batchStorageSync-key.pem:/certs/private.key:ro
-    - ./bin/tls/batchStorageSync.pem:/certs/public.crt:ro
+    - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    environment:
+    - KEY_PATH=/certs/batchStorageSync-key.pem
+    - CERT_PATH=/certs/batchStorageSync.pem
 
   localPrometheusPushGateway:
     image: prom/pushgateway
@@ -211,3 +223,7 @@ services:
     - ./.bin/:/wwm
     - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - ./cmd/localStatusReporter/statusReporterComponents.yml:/components.yml:ro
+    environment:
+    - KEY_PATH=/certs/localStatusReporter-key.pem
+    - CERT_PATH=/certs/localStatusReporter.pem

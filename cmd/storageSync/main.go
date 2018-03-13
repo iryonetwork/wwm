@@ -5,9 +5,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
 
@@ -33,18 +33,28 @@ func main() {
 		Str("service", "storageSync").
 		Logger()
 
+	// create context with cancel func
+	ctx, cancelContext := context.WithCancel(context.Background())
+	defer cancelContext()
+
+	// get config
+	cfg, err := GetConfig()
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to get config")
+	}
+
 	// initialize local storage API client
-	local := runtimeClient.New("localStorage", "storage", []string{"https"})
+	local := runtimeClient.New(cfg.StorageHost, cfg.StoragePath, []string{"https"})
 	local.Consumers = utils.ConsumersForSync()
 	localClient := client.New(local, strfmt.Default)
 
 	// initialize cloud storage API client
-	cloud := runtimeClient.New("cloudStorage", "storage", []string{"https"})
+	cloud := runtimeClient.New(cfg.CloudStorageHost, cfg.CloudStoragePath, []string{"https"})
 	cloud.Consumers = utils.ConsumersForSync()
 	cloudClient := client.New(cloud, strfmt.Default)
 
 	// initialize request authenticator
-	auth, err := storageSync.NewRequestAuthenticator("/certs/public.crt", "/certs/private.key", logger)
+	auth, err := storageSync.NewRequestAuthenticator(cfg.CertPath, cfg.KeyPath, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to initialize storage API request authenticator")
 	}
@@ -53,16 +63,18 @@ func main() {
 	handlers := storageSync.NewHandlers(localClient.Operations, auth, cloudClient.Operations, auth, logger)
 
 	// create nats/nats-streaming connection
-	URLs := "tls://nats:secret@localNats:4242"
-	ClusterID := "localNats"
-	ClientID := "storageSync"
-	ClientCert := "/certs/public.crt"
-	ClientKey := "/certs/private.key"
+	// TODO: get secret from vault
+	secret := "secret"
+	URLs := fmt.Sprintf("tls://%s:%s@%s", cfg.NatsUsername, secret, cfg.NatsAddr)
+	ClusterID := cfg.NatsClusterID
+	ClientID := cfg.NatsClientID
+	ClientCert := cfg.CertPath
+	ClientKey := cfg.KeyPath
 	var nc *nats.Conn
 	var sc stan.Conn
 
 	// retry connection to nats if unsuccesful
-	err = utils.Retry(10, time.Duration(500*time.Millisecond), 2.0, logger.With().Str("connection", "nats").Logger(), func() error {
+	err = utils.Retry(cfg.NatsConnRetries, cfg.NatsConnWait, cfg.NatsConnWaitFactor, logger.With().Str("connection", "nats").Logger(), func() error {
 		var err error
 		nc, err = nats.Connect(URLs, nats.ClientCert(ClientCert, ClientKey))
 		return err
@@ -71,7 +83,7 @@ func main() {
 		logger.Fatal().Msg("failed to connect to nats")
 	}
 
-	err = utils.Retry(10, time.Duration(500*time.Millisecond), 3.0, logger.With().Str("connection", "nats").Logger(), func() error {
+	err = utils.Retry(cfg.NatsConnRetries, cfg.NatsConnWait, cfg.NatsConnWaitFactor, logger.With().Str("connection", "nats").Logger(), func() error {
 		var err error
 		sc, err = stan.Connect(ClusterID, ClientID, stan.NatsConn(nc))
 		return err
@@ -80,16 +92,13 @@ func main() {
 		logger.Fatal().Msg("failed to connect to nats-streaming")
 	}
 
-	// Create context with cancel func
-	ctx, cancelContext := context.WithCancel(context.Background())
-
 	// initalize consumer
-	cfg := consumer.Cfg{
+	consumerCfg := consumer.Cfg{
 		Connection: sc,
 		AckWait:    time.Duration(time.Second),
 		Handlers:   handlers,
 	}
-	c := consumer.New(ctx, cfg, logger)
+	c := consumer.New(ctx, consumerCfg, logger)
 	// Register metrics
 	m := c.GetPrometheusMetricsCollection()
 	for _, metric := range m {
@@ -103,42 +112,44 @@ func main() {
 	c.StartSubscription(storageSync.FileDelete)
 
 	// Start servers
-	errCh := make(chan error)
-	// waitGroup for all main go routines
-	var wg sync.WaitGroup
+	// create exit channel that is used to wait for all servers goroutines to exit orederly and carry the errors
+	exitCh := make(chan error, 2)
 
 	// start serving metrics
 	go func() {
-		wg.Add(1)
-		defer wg.Done()
-
-		errCh <- metricsServer.ServePrometheusMetrics(ctx, ":9090", "", logger)
+		exitCh <- metricsServer.ServePrometheusMetrics(ctx, fmt.Sprintf("%s:%d", cfg.ServerHost, cfg.MetricsPort), cfg.MetricsNamespace, logger)
 	}()
-
 	// start serving status
 	go func() {
-		wg.Add(1)
-		defer wg.Done()
-
 		ss := statusServer.New(logger)
-		errCh <- ss.ListenAndServeHTTPs(ctx, "storageSync:4433", "", "/certs/public.crt", "/certs/private.key")
+		exitCh <- ss.ListenAndServeHTTPs(ctx, fmt.Sprintf("%s:%d", cfg.ServerHost, cfg.StatusPort), cfg.StatusNamespace, cfg.CertPath, cfg.KeyPath)
 	}()
 
 	// run cleanup when sigint or sigterm is received or error on starting server happened
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		wg.Add(1)
 		defer cancelContext()
-		defer wg.Done()
 
-		select {
-		case err := <-errCh:
-			logger.Error().Err(err).Msg("failed to start server")
-		case <-signalChan:
-			logger.Error().Msg("received interrupt")
+		for {
+			select {
+			case err := <-exitCh:
+				logger.Info().Msg("exiting application because of exiting server goroutine")
+				// pass error back to channel satisfy exit condition
+				exitCh <- err
+				return
+			case <-signalChan:
+				logger.Info().Msg("received interrupt")
+				return
+			}
 		}
 	}()
 
-	wg.Wait()
+	<-ctx.Done()
+	for i := 0; i < 2; i++ {
+		err := <-exitCh
+		if err != nil {
+			logger.Debug().Err(err).Msg("gouroutine exit message")
+		}
+	}
 }

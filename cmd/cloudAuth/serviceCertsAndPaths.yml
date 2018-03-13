@@ -1,0 +1,6 @@
+/certs/localAuthSync.pem:
+  - /auth/database
+/certs/storageSync.pem:
+  - /api/storage/sync/*
+/certs/batchStorageSync.pem:
+  - /api/storage/sync/*

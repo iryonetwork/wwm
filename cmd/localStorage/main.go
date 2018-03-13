@@ -10,12 +10,12 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
 
 	loads "github.com/go-openapi/loads"
 	"github.com/golang/mock/gomock"
+	flags "github.com/jessevdk/go-flags"
 	"github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats-streaming"
 	"github.com/prometheus/client_golang/prometheus"
@@ -42,6 +42,16 @@ func main() {
 		Str("service", "localStorage").
 		Logger()
 
+	// create context with cancel func
+	ctx, cancelContext := context.WithCancel(context.Background())
+	defer cancelContext()
+
+	// get config
+	cfg, err := GetConfig()
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to get config")
+	}
+
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to load swagger spec")
@@ -53,33 +63,38 @@ func main() {
 	keys := mock.NewMockKeyProvider(ctrl)
 	keys.EXPECT().Get(gomock.Any()).AnyTimes().Return("SECRETSECRETSECRETSECRETSECRETSE", nil)
 
+	// TODO: fetch from vault
+	s3secret := "localminio"
+
 	// initialize storage
-	cfg := &s3.Config{
-		Endpoint:     "localMinio:9000",
-		AccessKey:    "local",
-		AccessSecret: "localminio",
+	s3cfg := &s3.Config{
+		Endpoint:     cfg.S3Endpoint,
+		AccessKey:    cfg.S3AccessKey,
+		AccessSecret: s3secret,
 		Secure:       true,
-		Region:       "us-east-1",
+		Region:       cfg.S3Region,
 	}
-	s3, err := s3.New(cfg, keys, logger)
+	s3, err := s3.New(s3cfg, keys, logger)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	// initialize storageSync publisher
 	// create nats/nats-streaming connection
-	URLs := "tls://nats:secret@localNats:4242"
-	ClusterID := "localNats"
-	ClientID := "localStorage"
-	ClientCert := "/certs/localStoragePublisher.pem"
-	ClientKey := "/certs/localStoragePublisher-key.pem"
+	// TODO: get secret from vault
+	secret := "secret"
+	URLs := fmt.Sprintf("tls://%s:%s@%s", cfg.NatsUsername, secret, cfg.NatsAddr)
+	ClusterID := cfg.NatsClusterID
+	ClientID := cfg.NatsClientID
+	ClientCert := cfg.CertPath
+	ClientKey := cfg.KeyPath
 	var nc *nats.Conn
 	var sc publisher.StanConnection
 	var p storageSync.Publisher
 
 	// Connect to NATS
 	// retry connectng to nats if unsuccesful
-	err = utils.Retry(5, time.Duration(500*time.Millisecond), 3.0, logger.With().Str("connect", "nats").Logger(), func() error {
+	err = utils.Retry(cfg.NatsConnRetries, cfg.NatsConnWait, cfg.NatsConnWaitFactor, logger.With().Str("connect", "nats").Logger(), func() error {
 		var err error
 		nc, err = nats.Connect(URLs, nats.ClientCert(ClientCert, ClientKey))
 		return err
@@ -88,7 +103,7 @@ func main() {
 	// Connect to NATS-Streaming if NATS connection succesful
 	if err == nil {
 		// retry connecting to nats-straming if unsuccesful
-		err = utils.Retry(5, time.Duration(500*time.Millisecond), 3.0, logger.With().Str("connect", "nats-streaming").Logger(), func() error {
+		err = utils.Retry(cfg.NatsConnRetries, cfg.NatsConnWait, cfg.NatsConnWaitFactor, logger.With().Str("connect", "nats-streaming").Logger(), func() error {
 			var err error
 			sc, err = stan.Connect(ClusterID, ClientID, stan.NatsConn(nc))
 			return err
@@ -124,11 +139,11 @@ func main() {
 	api := operations.NewStorageAPI(swaggerSpec)
 	api.ServeError = utils.ServeError
 	server := restapi.NewServer(api)
-	server.TLSHost = "0.0.0.0"
-	server.TLSPort = 443
+	server.TLSHost = cfg.ServerHost
+	server.TLSPort = cfg.ServerPort
 	server.EnabledListeners = []string{"https"}
-	server.TLSCertificateKey = "/certs/localStorage-key.pem"
-	server.TLSCertificate = "/certs/localStorage.pem"
+	server.TLSCertificateKey = flags.Filename(cfg.KeyPath)
+	server.TLSCertificate = flags.Filename(cfg.CertPath)
 
 	storageHandlers := storage.NewHandlers(service, logger)
 
@@ -159,44 +174,37 @@ func main() {
 	server.SetHandler(apiHandler)
 
 	// Start servers
-	// create context with cancel func
-	ctx, cancelContext := context.WithCancel(context.Background())
-	// waitGroup for all main go routines
-	var wg sync.WaitGroup
-	// create error channel
-	errCh := make(chan error)
+	// create exit channel that is used to wait for all servers goroutines to exit orederly and carry the errors
+	exitCh := make(chan error, 3)
 
 	// start serving metrics
 	go func() {
-		wg.Add(1)
-		defer wg.Done()
-
-		errCh <- metricsServer.ServePrometheusMetrics(ctx, ":9090", "storage", logger)
+		exitCh <- metricsServer.ServePrometheusMetrics(ctx, fmt.Sprintf("%s:%d", cfg.ServerHost, cfg.MetricsPort), cfg.MetricsNamespace, logger)
 	}()
 	// start serving status
 	go func() {
-		wg.Add(1)
-		defer wg.Done()
-
 		ss := statusServer.New(logger)
-		errCh <- ss.ListenAndServeHTTPs(ctx, "localStorage:4433", "", "/certs/localStorage.pem", "/certs/localStorage-key.pem")
+		exitCh <- ss.ListenAndServeHTTPs(ctx, fmt.Sprintf("%s:%d", cfg.ServerHost, cfg.StatusPort), cfg.StatusNamespace, cfg.CertPath, cfg.KeyPath)
 	}()
 	// start serving API
 	go func() {
-		wg.Add(1)
-		defer wg.Done()
 		defer server.Shutdown()
 
-		localErrCh := make(chan error)
+		errCh := make(chan error)
 		go func() {
-			localErrCh <- server.Serve()
+			errCh <- server.Serve()
 		}()
 
-		select {
-		case err := <-localErrCh:
-			localErrCh <- err
-		case <-ctx.Done():
-			//do nothing except deferred cleanup
+		for {
+			select {
+			case err := <-errCh:
+				exitCh <- err
+				return
+			case <-ctx.Done():
+				exitCh <- fmt.Errorf("API server exiting because of cancelled context")
+				// do nothing, shutdown is deferred
+				return
+			}
 		}
 	}()
 
@@ -204,19 +212,29 @@ func main() {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		wg.Add(1)
 		defer cancelContext()
-		defer wg.Done()
 
-		select {
-		case err := <-errCh:
-			logger.Error().Err(err).Msg("failed to start server")
-		case <-signalChan:
-			logger.Error().Msg("received interrupt")
+		for {
+			select {
+			case err := <-exitCh:
+				logger.Info().Msg("exiting application because of exiting server goroutine")
+				// pass error back to channel satisfy exit condition
+				exitCh <- err
+				return
+			case <-signalChan:
+				logger.Info().Msg("received interrupt")
+				return
+			}
 		}
 	}()
 
-	wg.Wait()
+	<-ctx.Done()
+	for i := 0; i < 3; i++ {
+		err := <-exitCh
+		if err != nil {
+			logger.Debug().Err(err).Msg("gouroutine exit message")
+		}
+	}
 }
 
 type WildcardConsumer struct{}

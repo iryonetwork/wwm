@@ -2,12 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
-	"time"
 
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
@@ -20,15 +19,6 @@ import (
 )
 
 func main() {
-	addr := ":443"
-	metricsAddr := ":9090"
-	keyFile := "/certs/localStatusReporter-key.pem"
-	certFile := "/certs/localStatusReporter.pem"
-	defaultTimeout := time.Duration(time.Second)
-	countThreshold := 3
-	interval := time.Duration(3 * time.Second)
-	statusValidity := time.Duration(20 * time.Second)
-
 	// initialize logger
 	logger := zerolog.New(os.Stdout).With().
 		Timestamp().
@@ -36,42 +26,69 @@ func main() {
 		Logger()
 
 	// create context with cancel func
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx, cancelContext := context.WithCancel(context.Background())
+	defer cancelContext()
+
+	// get config
+	cfg, err := GetConfig()
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to get config")
+	}
+	logger.Print(cfg)
 
 	// initialize status reporter
 	r := statusReporter.New(logger)
 
-	// add URL Status Polling components
-	pollingCfg := &polling.Cfg{
-		Interval:       &interval,
-		CountThreshold: &countThreshold,
-		StatusValidity: &statusValidity,
+	// prepare default config for URL status polling components
+	defaultPollingCfg := polling.Cfg{
+		Interval:       &cfg.Interval,
+		CountThreshold: &cfg.CountThreshold,
+		StatusValidity: &cfg.StatusValidity,
 	}
 
-	g := polling.New(polling.NewExternalURL("https://www.google.com", defaultTimeout), pollingCfg, logger)
-	g.Start(ctx)
-	r.AddComponent(statusReporter.External, "google", g)
+	// add URL status polling components
+	for id, c := range cfg.Components.Local {
+		pollingCfg, timeout := c.getConfig(cfg.DefaultTimeout, &defaultPollingCfg)
 
-	n := polling.New(polling.NewExternalURL("http://nna-leb.gov.lb", defaultTimeout), pollingCfg, logger)
-	n.Start(ctx)
-	r.AddComponent(statusReporter.External, "Lebanese National News Agency", n)
+		var url polling.URLStatusEndpoint
+		switch c.URLType {
+		case polling.TypeInternalURL:
+			url = polling.NewInternalURL(c.URL, timeout)
+		default:
+			url = polling.NewExternalURL(c.URL, timeout)
+		}
+		p := polling.New(url, &pollingCfg, logger)
+		p.Start(ctx)
+		r.AddComponent(statusReporter.Local, id, p)
+	}
+	for id, c := range cfg.Components.Cloud {
+		pollingCfg, timeout := c.getConfig(cfg.DefaultTimeout, &defaultPollingCfg)
 
-	localStorage := polling.New(polling.NewInternalURL("https://localStorage:4433/status", defaultTimeout), pollingCfg, logger)
-	localStorage.Start(ctx)
-	r.AddComponent(statusReporter.Local, "storage", localStorage)
+		var url polling.URLStatusEndpoint
+		switch c.URLType {
+		case polling.TypeInternalURL:
+			url = polling.NewInternalURL(c.URL, timeout)
+		default:
+			url = polling.NewExternalURL(c.URL, timeout)
+		}
+		p := polling.New(url, &pollingCfg, logger)
+		p.Start(ctx)
+		r.AddComponent(statusReporter.Cloud, id, p)
+	}
+	for id, c := range cfg.Components.External {
+		pollingCfg, timeout := c.getConfig(cfg.DefaultTimeout, &defaultPollingCfg)
 
-	localAuth := polling.New(polling.NewInternalURL("https://localAuth:4433/status", defaultTimeout), pollingCfg, logger)
-	localAuth.Start(ctx)
-	r.AddComponent(statusReporter.Local, "auth", localAuth)
-
-	cloudStorage := polling.New(polling.NewInternalURL("https://cloudStorage:4433/status", defaultTimeout), pollingCfg, logger)
-	cloudStorage.Start(ctx)
-	r.AddComponent(statusReporter.Cloud, "storage", cloudStorage)
-
-	cloudAuth := polling.New(polling.NewInternalURL("https://cloudAuth:4433/status", defaultTimeout), pollingCfg, logger)
-	cloudAuth.Start(ctx)
-	r.AddComponent(statusReporter.Cloud, "auth", cloudAuth)
+		var url polling.URLStatusEndpoint
+		switch c.URLType {
+		case polling.TypeInternalURL:
+			url = polling.NewInternalURL(c.URL, timeout)
+		default:
+			url = polling.NewExternalURL(c.URL, timeout)
+		}
+		p := polling.New(url, &pollingCfg, logger)
+		p.Start(ctx)
+		r.AddComponent(statusReporter.External, id, p)
+	}
 
 	// initialize metrics middleware
 	m := api.NewMetrics("localStatusReporter", "")
@@ -83,41 +100,37 @@ func main() {
 	}).Handler(m.Middleware(log.APILogMiddleware(r.Handler("status"), logger)))
 
 	server := &http.Server{
-		Addr:    addr,
+		Addr:    fmt.Sprintf("%s:%d", cfg.ServerHost, cfg.ServerPort),
 		Handler: handler,
 	}
 
 	// Start servers
-	// create context with cancel func
-	ctx, cancelContext := context.WithCancel(context.Background())
-	// waitGroup for all main go routines
-	var wg sync.WaitGroup
-	// create error channel
-	errCh := make(chan error)
+	// create exit channel that is used to wait for all servers goroutines to exit orederly and carry the errors
+	exitCh := make(chan error, 2)
 
 	// start serving metrics
 	go func() {
-		wg.Add(1)
-		defer wg.Done()
-
-		errCh <- metricsServer.ServePrometheusMetrics(context.Background(), metricsAddr, "status", logger)
+		exitCh <- metricsServer.ServePrometheusMetrics(ctx, fmt.Sprintf("%s:%d", cfg.ServerHost, cfg.MetricsPort), cfg.MetricsNamespace, logger)
 	}()
 	go func() {
-		wg.Add(1)
 		defer server.Close()
-		defer wg.Done()
 
-		localErrCh := make(chan error)
+		errCh := make(chan error)
 		go func() {
-			logger.Info().Msgf("Starting status reporter server at %s", addr)
-			localErrCh <- server.ListenAndServeTLS(certFile, keyFile)
+			logger.Info().Msgf("Starting status reporter server at %s", server.Addr)
+			errCh <- server.ListenAndServeTLS(cfg.CertPath, cfg.KeyPath)
 		}()
 
-		select {
-		case err := <-localErrCh:
-			errCh <- err
-		case <-ctx.Done():
-			//do nothing except deferred cleanup
+		for {
+			select {
+			case err := <-errCh:
+				exitCh <- err
+				return
+			case <-ctx.Done():
+				exitCh <- fmt.Errorf("StatusReporter server exiting because of cancelled context")
+				//do nothing except deferred cleanup
+				return
+			}
 		}
 	}()
 
@@ -125,17 +138,27 @@ func main() {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		wg.Add(1)
 		defer cancelContext()
-		defer wg.Done()
 
-		select {
-		case err := <-errCh:
-			logger.Error().Err(err).Msg("failed to start server")
-		case <-signalChan:
-			logger.Error().Msg("received interrupt")
+		for {
+			select {
+			case err := <-exitCh:
+				logger.Info().Msg("exiting application because of exiting server goroutine")
+				// pass error back to channel satisfy exit condition
+				exitCh <- err
+				return
+			case <-signalChan:
+				logger.Info().Msg("received interrupt")
+				return
+			}
 		}
 	}()
 
-	wg.Wait()
+	<-ctx.Done()
+	for i := 0; i < 2; i++ {
+		err := <-exitCh
+		if err != nil {
+			logger.Debug().Err(err).Msg("gouroutine exit message")
+		}
+	}
 }

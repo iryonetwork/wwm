@@ -10,6 +10,15 @@ import (
 	"github.com/iryonetwork/wwm/status"
 )
 
+// type for URL
+type URLType string
+
+// URLType values
+const (
+	TypeInternalURL URLType = "Internal"
+	TypeExternalURL URLType = "External"
+)
+
 // ExternalURL is type for external service availability endpoint URL
 type ExternalURL struct {
 	url     string
