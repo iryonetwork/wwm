@@ -9,7 +9,7 @@ services:
     - --configfile=/etc/traefik.toml
     - --debug
     volumes:
-    - ./traefik.toml:/etc/traefik.toml
+    - ./services/traefik/traefik.toml:/etc/traefik.toml
     - ./bin/tls:/certs
     - /var/run/docker.sock:/var/run/docker.sock
     ports:
@@ -32,7 +32,7 @@ services:
     volumes:
     - ./.data/vault:/data
     - ./bin/tls:/certs
-    - ./vault.hcl:/vault/config/local.hcl
+    - ./services/vault/vault.hcl:/vault/config/local.hcl
 
   vaultui:
     image: djenriquez/vault-ui
@@ -138,7 +138,7 @@ services:
     command:
     - --stan_config=/etc/nats/config.conf
     volumes:
-    - ./localNats.conf:/etc/nats/config.conf:ro
+    - ./services/localNats/config.conf:/etc/nats/config.conf:ro
     - ./.data/localNats:/data
     - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
@@ -158,11 +158,11 @@ services:
   localPrometheus:
     image: prom/prometheus
     command:
-    - --config.file=/etc/prometheus.yml
+    - --config.file=/etc/prometheus/config.yml
     - --storage.tsdb.path=/data
     volumes:
-    - ./localPrometheus.yml:/etc/prometheus.yml:ro
-    - ./localPrometheusRules.yml:/etc/rules.yml:ro
+    - ./services/localPrometheus/config.yml:/etc/prometheus/config.yml:ro
+    - ./services/localPrometheus/rules.yml:/etc/prometheus/rules.yml:ro
     - ./.data/localPrometheus:/data
     - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
@@ -170,11 +170,11 @@ services:
   cloudPrometheus:
     image: prom/prometheus
     command:
-    - --config.file=/etc/prometheus.yml
+    - --config.file=/etc/prometheus/config.yml
     - --storage.tsdb.path=/data
     volumes:
-    - ./cloudPrometheus.yml:/etc/prometheus.yml:ro
-    - ./localPrometheusRules.yml:/etc/rules.yml:ro
+    - ./services/cloudPrometheus/config.yml:/etc/prometheus/config.yml:ro
+    - ./services/cloudPrometheus/rules.yml:/etc/prometheus/rules.yml:ro
     - ./.data/cloudPrometheus:/data
     - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
