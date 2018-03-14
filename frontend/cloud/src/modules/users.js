@@ -1,7 +1,7 @@
 import _ from "lodash"
 
 import api from "./api"
-import { open, close, COLOR_DANGER, COLOR_SUCCESS } from "./alert"
+import { open, close, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 
 const LOAD_USER = "user/LOAD_USER"
 const LOAD_USER_SUCCESS = "user/LOAD_USER_SUCCESS"

@@ -2,7 +2,7 @@ import { push } from "react-router-redux"
 import _ from "lodash"
 
 import api from "./api"
-import { open, COLOR_DANGER, COLOR_SUCCESS } from "./alert"
+import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 
 const LOAD_ROLES = "roles/LOAD_ROLES"
 const LOAD_ROLES_SUCCESS = "roles/LOAD_ROLES_SUCCESS"

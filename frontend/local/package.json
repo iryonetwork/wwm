@@ -1,5 +1,5 @@
 {
-    "name": "cloud",
+    "name": "local",
     "version": "0.1.0",
     "private": true,
     "dependencies": {
@@ -14,7 +14,7 @@
 
         "build-css": "node-sass-chokidar --include-path ./src --include-path ../node_modules src/ -o src/",
         "watch-css": "npm run build-css && node-sass-chokidar --include-path ./src --include-path ../node_modules src/ -o src/ --watch --recursive",
-        "start-js": "react-scripts start",
+        "start-js": "PORT=3001 react-scripts start",
         "start": "npm-run-all -p watch-shared-css watch-css start-js",
         "build-js": "react-scripts build",
         "build": "npm-run-all build-shared-css build-css build-js",

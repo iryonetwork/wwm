@@ -5,7 +5,7 @@ import { connect } from "react-redux"
 import map from "lodash/map"
 
 import { loadRoles, addRole, deleteRole } from "../../modules/roles"
-import { open, COLOR_DANGER } from "../../modules/alert"
+import { open, COLOR_DANGER } from "shared/modules/alert"
 import RoleDetail from "./detail"
 
 import "./style.css"

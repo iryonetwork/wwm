@@ -5,11 +5,11 @@ import { bindActionCreators } from "redux"
 
 import Home from "../home"
 import Rules from "../rules"
-import Alert from "../alert"
+import Alert from "shared/containers/alert"
 import Users from "../users"
 import UserDetail from "../users/detail"
 import Roles from "../roles"
-import { close } from "../../modules/alert"
+import { close } from "shared/modules/alert"
 
 class App extends React.Component {
     componentWillReceiveProps(nextProps) {

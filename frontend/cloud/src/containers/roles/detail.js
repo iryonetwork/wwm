@@ -7,7 +7,7 @@ import map from "lodash/map"
 import { loadUsers } from "../../modules/users"
 import { loadRules } from "../../modules/rules"
 import { addUserToRole } from "../../modules/roles"
-import { open, COLOR_DANGER } from "../../modules/alert"
+import { open, COLOR_DANGER } from "shared/modules/alert"
 import Rules from "../rules"
 import Users from "../users/list"
 

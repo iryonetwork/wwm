@@ -4,7 +4,7 @@ import { connect } from "react-redux"
 import { withRouter } from "react-router-dom"
 
 import { loadUser, saveUser } from "../../modules/users"
-import { open, close, COLOR_DANGER } from "../../modules/alert"
+import { open, close, COLOR_DANGER } from "shared/modules/alert"
 
 class UserDetail extends React.Component {
     constructor(props) {

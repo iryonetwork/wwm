@@ -33,7 +33,10 @@ make test
 make up
 
 # start cloud frontend
-cd frontend/cloud && yarn start
+cd frontend/cloud && yarn install && yarn run start
+
+# start local frontend
+cd frontend/local && yarn install && yarn run start
 ```
 
 ## Additional documentation
