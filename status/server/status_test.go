@@ -21,7 +21,7 @@ func TestStatus(t *testing.T) {
 		expected    *status.Response
 	}{
 		{
-			"status.OK: all services are ok",
+			"status.OK: all components are ok",
 			func(s1, s2, s3 *mock.MockComponent) []*gomock.Call {
 				return []*gomock.Call{
 					s1.EXPECT().Status().Return(&status.Response{Status: status.OK}),
@@ -39,7 +39,7 @@ func TestStatus(t *testing.T) {
 			},
 		},
 		{
-			"status.Warning: one service has warning status",
+			"status.Warning: one component has warning status",
 			func(s1, s2, s3 *mock.MockComponent) []*gomock.Call {
 				return []*gomock.Call{
 					s1.EXPECT().Status().Return(&status.Response{Status: status.OK}),
@@ -57,7 +57,7 @@ func TestStatus(t *testing.T) {
 			},
 		},
 		{
-			"status.Error: one service has error status",
+			"status.Error: one component has error status",
 			func(s1, s2, s3 *mock.MockComponent) []*gomock.Call {
 				return []*gomock.Call{
 					s1.EXPECT().Status().Return(&status.Response{Status: status.Error}),
