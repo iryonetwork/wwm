@@ -8,6 +8,7 @@ import (
 	"github.com/iryonetwork/wwm/config"
 )
 
+// Config represents configuration of storageSync
 type Config struct {
 	config.Config
 	CloudStorageHost   string        `env:"CLOUD_STORAGE_HOST" envDefault:"cloudStorage"`
@@ -21,6 +22,7 @@ type Config struct {
 	NatsConnWaitFactor float32       `env:"NATS_CONN_WAIT_FACTOR" envDefault:"3.0"`
 }
 
+// GetConfig parses environment variables and returns pointer to config and error
 func GetConfig() (*Config, error) {
 	common, err := config.New()
 	if err != nil {

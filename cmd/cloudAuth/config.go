@@ -19,12 +19,12 @@ type Config struct {
 }
 
 // Services is a wrapper struct for map of allowed services certs and paths
-// to make env parser to execute custom parser without "type not suppoered" config
+// to make env parser to execute custom parser without "type not suppoerted" error
 type Services struct {
 	Map map[string][]string
 }
 
-// GetConfig parses environment variables and returns pointer to config / error
+// GetConfig parses environment variables and returns pointer to config and error
 func GetConfig() (*Config, error) {
 	common, err := config.New()
 	if err != nil {

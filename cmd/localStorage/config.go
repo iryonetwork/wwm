@@ -8,6 +8,7 @@ import (
 	"github.com/iryonetwork/wwm/config"
 )
 
+// Config represents configuration of localStorage
 type Config struct {
 	config.Config
 	S3Endpoint         string        `env:"S3_ENDPOINT" envDefault:"localMinio:9000"`
@@ -22,6 +23,7 @@ type Config struct {
 	NatsConnWaitFactor float32       `env:"NATS_CONN_WAIT_FACTOR" envDefault:"3.0"`
 }
 
+// GetConfig parses environment variables and returns pointer to config and error
 func GetConfig() (*Config, error) {
 	common, err := config.New()
 	if err != nil {

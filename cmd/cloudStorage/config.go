@@ -6,6 +6,7 @@ import (
 	"github.com/iryonetwork/wwm/config"
 )
 
+// Config represents configuration of cloudStorage
 type Config struct {
 	config.Config
 	S3Endpoint  string `env:"S3_ENDPOINT" envDefault:"cloudMinio:9000"`
@@ -13,6 +14,7 @@ type Config struct {
 	S3Region    string `env:"S3_REGION" envDefault:"us-east-1"`
 }
 
+// GetConfig parses environment variables and returns pointer to config and error
 func GetConfig() (*Config, error) {
 	common, err := config.New()
 	if err != nil {

@@ -12,6 +12,7 @@ import (
 	"github.com/iryonetwork/wwm/service/statusReporter/polling"
 )
 
+// Config represents configuration of localStatusReporter
 type Config struct {
 	config.Config
 	DefaultTimeout time.Duration        `env:"DEFAULT_TIMEOUT" envDefault:"1s"`
@@ -21,12 +22,14 @@ type Config struct {
 	Components     ComponentsCollection `env:"COMPONENTS_FILEPATH" envDefault:"/components.yml"`
 }
 
+// ComponentsCollection represents collection of components that are checked by statusReporter
 type ComponentsCollection struct {
 	Local    map[string]Component `yaml:"Local"`
 	Cloud    map[string]Component `yaml:"Cloud"`
 	External map[string]Component `yaml:"External"`
 }
 
+// Component represent component that is checked by statusReporter
 type Component struct {
 	URLType        polling.URLType `yaml:"urlType"`
 	URL            string          `yaml:"url"`
@@ -36,6 +39,7 @@ type Component struct {
 	StatusValidity time.Duration   `yaml:"statusValidity"`
 }
 
+// GetConfig parses environment variables and returns pointer to config and error
 func GetConfig() (*Config, error) {
 	common, err := config.New()
 	if err != nil {

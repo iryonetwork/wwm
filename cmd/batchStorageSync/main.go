@@ -21,8 +21,8 @@ import (
 )
 
 const (
-	StorageBucket string = "batchStorageSync"
-	StorageKey    string = "lastSuccessfulRun"
+	storageBucket string = "batchStorageSync"
+	storageKey    string = "lastSuccessfulRun"
 )
 
 func main() {
@@ -60,7 +60,7 @@ func main() {
 	}
 
 	// read last succesful run
-	storedTimestamp := storage.Get(StorageBucket, StorageKey)
+	storedTimestamp := storage.Get(storageBucket, storageKey)
 	if storedTimestamp != nil {
 		timestamp, err := strfmt.ParseDateTime(string(storedTimestamp))
 		if err == nil {
@@ -121,7 +121,7 @@ Loop:
 			} else {
 				logger.Info().Msg("batch sync successfull")
 				// save lastSuccesfulRun
-				storage.Update(StorageBucket, StorageKey, []byte(startTime.String()))
+				storage.Update(storageBucket, storageKey, []byte(startTime.String()))
 			}
 			break Loop
 		case <-signalChan:
