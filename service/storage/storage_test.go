@@ -97,8 +97,8 @@ var (
 		Operation:   "w",
 	}
 	vital1 = &models.FileDescriptor{
-		Checksum:    "0WFNTCC01hbAmkorjbSqB9u7XNLZoyGHAIeQczbG11o=",
-		Size:        int64(267),
+		Checksum:    "80kgXMtD7DCdGCoylexuoMsd2DYQE82Sc3NJ3SLNc2g=",
+		Size:        int64(268),
 		Created:     strfmt.DateTime(time1),
 		ContentType: "application/x-collection+json",
 		Version:     "UUID",
@@ -108,8 +108,8 @@ var (
 		Labels:      []string{labelFilesCollection},
 	}
 	basic1 = &models.FileDescriptor{
-		Checksum:    "0WFNTCC01hbAmkorjbSqB9u7XNLZoyGHAIeQczbG11o=",
-		Size:        int64(267),
+		Checksum:    "80kgXMtD7DCdGCoylexuoMsd2DYQE82Sc3NJ3SLNc2g=",
+		Size:        int64(268),
 		Created:     strfmt.DateTime(time1),
 		ContentType: "application/x-collection+json",
 		Version:     "UUID",
@@ -119,8 +119,8 @@ var (
 		Labels:      []string{labelFilesCollection},
 	}
 	vital2 = &models.FileDescriptor{
-		Checksum:    "Et5UCjJ_OcfwVbiLbULmsFF_6ZT_WR8leEWb9L75VqA=",
-		Size:        int64(457),
+		Checksum:    "RrSXqFYwVFSV7rWgHTqsPPyaOusdFZpb4MMrk4agGws=",
+		Size:        int64(458),
 		Created:     strfmt.DateTime(time2),
 		ContentType: "application/x-collection+json",
 		Version:     "UUID",
@@ -130,8 +130,8 @@ var (
 		Labels:      []string{labelFilesCollection},
 	}
 	basic2 = &models.FileDescriptor{
-		Checksum:    "iDutjx8jUBuooMS9smzDOexPWy5BvV3YbPBHCb_dVT4=",
-		Size:        int64(210),
+		Checksum:    "VcOTvk_6K1PiuBPl4jZuWo8A5Y_xgpnWumdFC1cbphY=",
+		Size:        int64(211),
 		Created:     strfmt.DateTime(time2),
 		ContentType: "application/x-collection+json",
 		Version:     "UUID",
@@ -141,8 +141,8 @@ var (
 		Labels:      []string{labelFilesCollection},
 	}
 	basic3 = &models.FileDescriptor{
-		Checksum:    "T1PNoYwrqgwDVLtfmj7L5e0Sq02OEbqHPC8RFhICuUU=",
-		Size:        int64(2),
+		Checksum:    "N1F-Xz3GaBn2H1p7uKzhkhKCQV8QVR0t76XD6wmFtXA=",
+		Size:        int64(3),
 		Created:     strfmt.DateTime(time3),
 		ContentType: "application/x-collection+json",
 		Version:     "UUID",
@@ -422,8 +422,8 @@ func TestFileNew(t *testing.T) {
 					Labels:      []string{"vitalSign", "basicPatientInfo"},
 				}
 				vitalNo := &object.NewObjectInfo{
-					Checksum:    "0WFNTCC01hbAmkorjbSqB9u7XNLZoyGHAIeQczbG11o=",
-					Size:        int64(267),
+					Checksum:    "80kgXMtD7DCdGCoylexuoMsd2DYQE82Sc3NJ3SLNc2g=",
+					Size:        int64(268),
 					Created:     strfmt.DateTime(time1),
 					ContentType: "application/x-collection+json",
 					Version:     "UUID",
@@ -432,8 +432,8 @@ func TestFileNew(t *testing.T) {
 					Labels:      []string{labelFilesCollection},
 				}
 				basicNo := &object.NewObjectInfo{
-					Checksum:    "0WFNTCC01hbAmkorjbSqB9u7XNLZoyGHAIeQczbG11o=",
-					Size:        int64(267),
+					Checksum:    "80kgXMtD7DCdGCoylexuoMsd2DYQE82Sc3NJ3SLNc2g=",
+					Size:        int64(268),
 					Created:     strfmt.DateTime(time1),
 					ContentType: "application/x-collection+json",
 					Version:     "UUID",
@@ -472,8 +472,8 @@ func TestFileNew(t *testing.T) {
 					Labels:      []string{"vitalSign", "basicPatientInfo"},
 				}
 				vitalNo := &object.NewObjectInfo{
-					Checksum:    "0WFNTCC01hbAmkorjbSqB9u7XNLZoyGHAIeQczbG11o=",
-					Size:        int64(267),
+					Checksum:    "80kgXMtD7DCdGCoylexuoMsd2DYQE82Sc3NJ3SLNc2g=",
+					Size:        int64(268),
 					Created:     strfmt.DateTime(time1),
 					ContentType: "application/x-collection+json",
 					Version:     "UUID",
@@ -482,8 +482,8 @@ func TestFileNew(t *testing.T) {
 					Labels:      []string{labelFilesCollection},
 				}
 				basicNo := &object.NewObjectInfo{
-					Checksum:    "0WFNTCC01hbAmkorjbSqB9u7XNLZoyGHAIeQczbG11o=",
-					Size:        int64(267),
+					Checksum:    "80kgXMtD7DCdGCoylexuoMsd2DYQE82Sc3NJ3SLNc2g=",
+					Size:        int64(268),
 					Created:     strfmt.DateTime(time1),
 					ContentType: "application/x-collection+json",
 					Version:     "UUID",
@@ -601,8 +601,8 @@ func TestFileUpdate(t *testing.T) {
 				r1 := ioutil.NopCloser(bytes.NewReader([]byte(collectionFileV1)))
 				r2 := ioutil.NopCloser(bytes.NewReader([]byte(collectionFileV1)))
 				vitalNo := &object.NewObjectInfo{
-					Checksum:    "Et5UCjJ_OcfwVbiLbULmsFF_6ZT_WR8leEWb9L75VqA=",
-					Size:        int64(457),
+					Checksum:    "RrSXqFYwVFSV7rWgHTqsPPyaOusdFZpb4MMrk4agGws=",
+					Size:        int64(458),
 					Created:     strfmt.DateTime(time2),
 					ContentType: "application/x-collection+json",
 					Version:     "UUID",
@@ -611,8 +611,8 @@ func TestFileUpdate(t *testing.T) {
 					Labels:      []string{labelFilesCollection},
 				}
 				basicNo := &object.NewObjectInfo{
-					Checksum:    "iDutjx8jUBuooMS9smzDOexPWy5BvV3YbPBHCb_dVT4=",
-					Size:        int64(210),
+					Checksum:    "VcOTvk_6K1PiuBPl4jZuWo8A5Y_xgpnWumdFC1cbphY=",
+					Size:        int64(211),
 					Created:     strfmt.DateTime(time2),
 					ContentType: "application/x-collection+json",
 					Version:     "UUID",
@@ -724,8 +724,8 @@ func TestFileDelete(t *testing.T) {
 				}
 				r := ioutil.NopCloser(bytes.NewReader([]byte(collectionFileV2)))
 				basicNo := &object.NewObjectInfo{
-					Checksum:    "T1PNoYwrqgwDVLtfmj7L5e0Sq02OEbqHPC8RFhICuUU=",
-					Size:        int64(2),
+					Checksum:    "N1F-Xz3GaBn2H1p7uKzhkhKCQV8QVR0t76XD6wmFtXA=",
+					Size:        int64(3),
 					Created:     strfmt.DateTime(time3),
 					ContentType: "application/x-collection+json",
 					Version:     "UUID",

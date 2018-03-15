@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"sort"
 
 	"github.com/iryonetwork/wwm/gen/storage/models"
 )
@@ -34,18 +35,31 @@ func (c *filesCollection) Remove(fd *models.FileDescriptor) {
 }
 
 func (c *filesCollection) GetFile() (io.Reader, error) {
-	// transform map to slice and encode
+	// first, keys (filenames) are extracted and sorted alphabetically to ensure
+	// deterministic order in the resulting file as order ranging over maps
+	// is not in golang.
+	var filenames []string
+	for filename := range *c {
+		filenames = append(filenames, filename)
+	}
+	sort.Strings(filenames)
+
+	// transform map of file descriptors to slice for encoding
 	files := filesCollectionFile{}
-	for _, fd := range *c {
-		files = append(files, fd)
+	for _, filename := range filenames {
+		files = append(files, (*c)[filename])
 	}
 
-	b, err := json.Marshal(files)
+	var b []byte
+	buf := bytes.NewBuffer(b)
+	enc := json.NewEncoder(buf)
+
+	err := enc.Encode(files)
 	if err != nil {
 		return nil, err
 	}
 
-	return bytes.NewReader(b), nil
+	return buf, nil
 }
 
 func FilesCollection(r io.ReadCloser) (*filesCollection, error) {
