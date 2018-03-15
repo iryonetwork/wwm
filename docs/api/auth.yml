@@ -22,14 +22,14 @@ securityDefinitions:
 security:
   - token: []
 
-
-
 paths:
   /login:
     post:
       summary: Authenticates user and returns a token.
       tags:
         - auth
+        - local
+        - cloud
       produces:
         - text/plain
         - application/json; charset=utf-8
@@ -58,16 +58,18 @@ paths:
 
         401:
           $ref: '#/responses/401'
-          
+
         500:
           $ref: '#/responses/500'
 
 
   /validate:
     post:
-      summary: Checks if the user has access to perform specific actions on a specific resource.
+      summary: Checks if the user has access to perform specific actions on a specific resource within specific domain.
       tags:
         - auth
+        - local
+        - cloud
 
       parameters:
         - in: body
@@ -85,10 +87,10 @@ paths:
             type: array
             items:
               $ref: '#/definitions/ValidationResult'
-            
+
         400:
           $ref: '#/responses/400'
-          
+
         500:
           $ref: '#/responses/500'
 
@@ -98,6 +100,8 @@ paths:
       summary: Renew authentication token.
       tags:
         - auth
+        - local
+        - cloud
       produces:
         - text/plain
         - application/json; charset=utf-8
@@ -114,14 +118,12 @@ paths:
 
   /users:
     get:
-      summary: Gets a list of users
+      summary: Gets a list of users.
       tags:
+        - authData
         - users
-
-      parameters:
-        - in: query
-          name: search
-          type: string
+        - local
+        - cloud
 
       responses:
         200:
@@ -135,9 +137,11 @@ paths:
           $ref: '#/responses/500'
 
     post:
-      summary: Creates a new user
+      summary: Creates a new user.
       tags:
+        - authData
         - users
+        - cloud
 
       parameters:
         - in: body
@@ -158,12 +162,14 @@ paths:
         500:
           $ref: '#/responses/500'
 
-
   /users/{id}:
     get:
-      summary: Gets user by id
+      summary: Gets user by id.
       tags:
+        - authData
         - users
+        - local
+        - cloud
 
       parameters:
         - in: path
@@ -187,9 +193,11 @@ paths:
           $ref: '#/responses/500'
 
     put:
-      summary: Updates user
+      summary: Updates user.
       tags:
+        - authData
         - users
+        - cloud
 
       parameters:
         - in: path
@@ -216,9 +224,11 @@ paths:
           $ref: '#/responses/500'
 
     delete:
-      summary: Deletes user by id
+      summary: Deletes user by id.
       tags:
+        - authData
         - users
+        - cloud
 
       parameters:
         - in: path
@@ -239,16 +249,322 @@ paths:
         500:
           $ref: '#/responses/500'
 
-  /roles:
+  /users/{id}/roles:
     get:
-      summary: Gets a list of roles
+      summary: Gets IDs of roles that the user has been assigned (with optional domain filtering).
       tags:
+        - authData
+        - users
         - roles
+        - userRoles
+        - local
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - in: query
+          name: domainType
+          type: string
+        - in: query
+          name: domainID
+          type: string
+
+      responses:
+        200:
+          description: List of role IDs
+          schema:
+            type: array
+            items:
+              type: string
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /users/{id}/organizations:
+    get:
+      summary: Gets IDs of organizations at which the user has been assigned a role (with optional role ID filtering).
+      tags:
+        - authData
+        - users
+        - organizations
+        - userRoles
+        - local
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - in: query
+          name: roleID
+          type: string
+
+      responses:
+        200:
+          description: List of organization IDs
+          schema:
+            type: array
+            items:
+              type: string
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /users/{id}/clinics:
+    get:
+      summary: Gets IDs of clinics at which the user has been assigned a role (with optional role ID filtering).
+      tags:
+        - authData
+        - users
+        - clinics
+        - userRoles
+        - local
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - in: query
+          name: roleID
+          type: string
+
+      responses:
+        200:
+          description: List of clinic IDs
+          schema:
+            type: array
+            items:
+              type: string
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /users/{id}/locations:
+    get:
+      summary: Gets IDs of locations at which the user has been assigned a role (with optional role ID filtering); both locations of clinics and locations at which user has been assigned a role manually are returned.
+        - authData
+        - users
+        - locations
+        - userRoles
+        - local
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - in: query
+          name: roleID
+          type: string
+
+      responses:
+        200:
+          description: List of location IDs
+          schema:
+            type: array
+            items:
+              type: string
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /users/me:
+    get:
+      summary: Gets currently logged-in user.
+      tags:
+        - authData
+        - users
+        - local
+        - cloud
+
+      responses:
+        200:
+          description: User
+          schema:
+            $ref: '#/definitions/User'
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /users/me/roles:
+    get:
+      summary: Gets IDs of roles that currently logged-in user has been assigned (with optional domain filtering).
+      tags:
+        - authData
+        - users
+        - roles
+        - userRoles
+        - local
+        - cloud
 
       parameters:
         - in: query
-          name: search
+          name: domainType
           type: string
+        - in: query
+          name: domainID
+          type: string
+
+      responses:
+        200:
+          description: List of role IDs
+          schema:
+            type: array
+            items:
+              type: string
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /users/me/organizations:
+    get:
+      summary: Gets IDs of organizations at which currently logged-in user has been assigned a role (with optional role ID filtering).
+      tags:
+        - authData
+        - users
+        - organizations
+        - userRoles
+        - local
+        - cloud
+
+      parameters:
+        - in: query
+          name: roleID
+          type: string
+
+      responses:
+        200:
+          description: List of organization IDs
+          schema:
+            type: array
+            items:
+              type: string
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /users/me/clinics:
+    get:
+      summary: Gets IDs of clinics at which currently logged-in user has been assigned a role (with optional role ID filtering).
+      tags:
+        - authData
+        - users
+        - clinics
+        - userRoles
+        - local
+        - cloud
+
+      parameters:
+        - in: query
+          name: roleID
+          type: string
+
+      responses:
+        200:
+          description: List of clinic IDs
+          schema:
+            type: array
+            items:
+              type: string
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /users/me/locations:
+    get:
+      summary: Gets IDs of locations at which currently logged-in user has been assigned a role (with optional role ID filtering); both locations of clinics and locations at which user has been assigned a role manually are returned.
+        - authData
+        - users
+        - locations
+        - userRoles
+        - local
+        - cloud
+
+      parameters:
+        - in: query
+          name: roleID
+          type: string
+
+      responses:
+        200:
+          description: List of location IDs
+          schema:
+            type: array
+            items:
+              type: string
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /roles:
+    get:
+      summary: Gets a list of roles.
+      tags:
+        - authData
+        - roles
+        - local
+        - cloud
 
       responses:
         200:
@@ -262,9 +578,11 @@ paths:
           $ref: '#/responses/500'
 
     post:
-      summary: Creates a new role
+      summary: Creates a new role.
       tags:
+        - authData
         - roles
+        - cloud
 
       parameters:
         - in: body
@@ -287,9 +605,12 @@ paths:
 
   /roles/{id}:
     get:
-      summary: Gets role by id
+      summary: Gets role by id.
       tags:
+        - authData
         - roles
+        - local
+        - cloud
 
       parameters:
         - in: path
@@ -299,7 +620,7 @@ paths:
 
       responses:
         200:
-          description: User
+          description: Role
           schema:
             $ref: '#/definitions/Role'
 
@@ -313,9 +634,11 @@ paths:
           $ref: '#/responses/500'
 
     put:
-      summary: Updates role
+      summary: Updates role.
       tags:
+        - authData
         - roles
+        - cloud
 
       parameters:
         - in: path
@@ -344,7 +667,9 @@ paths:
     delete:
       summary: Deletes role by id
       tags:
+        - authData
         - roles
+        - cloud
 
       parameters:
         - in: path
@@ -365,16 +690,170 @@ paths:
         500:
           $ref: '#/responses/500'
 
-  /rules:
+  /roles/{id}/users:
     get:
-      summary: Gets a list of rules
+      summary: Gets list of user IDs that have been assigned the role (with optional domain filtering).
       tags:
-        - rules
+        - authData
+        - roles
+        - users
+        - userRoles
+        - local
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - in: query
+          name: domainType
+          type: string
+        - in: query
+          name: domainID
+          type: string
+
+      responses:
+        200:
+          description: List of user IDs
+          schema:
+            type: array
+            items:
+              type: string
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /userRoles:
+    get:
+      summary: Gets a list of user roles.
+      tags:
+        - authData
+        - userRoles
+        - local
+        - cloud
 
       parameters:
         - in: query
-          name: subject
+          name: userID
           type: string
+        - in: query
+          name: domainType
+          type: string
+        - in: query
+          name: domainID
+          type: string
+        - in: query
+          name: roleID
+          type: string
+
+      responses:
+        200:
+          description: List of user roles
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserRole'
+
+        500:
+          $ref: '#/responses/500'
+
+    post:
+      summary: Creates a new user role.
+      tags:
+        - authData
+        - userRoles
+        - cloud
+
+      parameters:
+        - in: body
+          name: userRole
+          required: true
+          schema:
+            $ref: '#/definitions/UserRole'
+
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/UserRole'
+
+        400:
+          $ref: '#/responses/400'
+
+        500:
+          $ref: '#/responses/500'
+
+  /userRoles/{id}:
+    get:
+      summary: Gets user role by id.
+      tags:
+        - authData
+        - userRoles
+        - local
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+
+      responses:
+        200:
+          description: User role
+          schema:
+            $ref: '#/definitions/UserRole'
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    delete:
+      summary: Deletes user role by id.
+      tags:
+        - authData
+        - userRoles
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+
+      responses:
+        204:
+          description: User role was deleted
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /rules:
+    get:
+      summary: Gets a list of rules.
+      tags:
+        - authData
+        - rules
+        - local
+        - cloud
 
       responses:
         200:
@@ -390,7 +869,9 @@ paths:
     post:
       summary: Creates a new rule
       tags:
+        - authData
         - rules
+        - cloud
 
       parameters:
         - in: body
@@ -413,9 +894,12 @@ paths:
 
   /rules/{id}:
     get:
-      summary: Gets rule by id
+      summary: Gets rule by id.
       tags:
+        - authData
         - rules
+        - local
+        - cloud
 
       parameters:
         - in: path
@@ -439,9 +923,11 @@ paths:
           $ref: '#/responses/500'
 
     put:
-      summary: Updates rule
+      summary: Updates rule.
       tags:
+        - authData
         - rules
+        - cloud
 
       parameters:
         - in: path
@@ -468,9 +954,11 @@ paths:
           $ref: '#/responses/500'
 
     delete:
-      summary: Deletes rule by id
+      summary: Deletes rule by id.
       tags:
+        - authData
         - rules
+        - cloud
 
       parameters:
         - in: path
@@ -491,11 +979,589 @@ paths:
         500:
           $ref: '#/responses/500'
 
+  /organizations:
+    get:
+      summary: Gets a list of organizations.
+      tags:
+        - authData
+        - organizations
+        - local
+        - cloud
+
+      responses:
+        200:
+          description: List of organizations
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Organization'
+
+        500:
+          $ref: '#/responses/500'
+
+    post:
+      summary: Creates a new organization.
+      tags:
+        - authData
+        - organizations
+        - cloud
+
+      parameters:
+        - in: body
+          name: organization
+          required: true
+          schema:
+            $ref: '#/definitions/Organization'
+
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Organization'
+
+        400:
+          $ref: '#/responses/400'
+
+        500:
+          $ref: '#/responses/500'
+
+  /organizations/{id}:
+    get:
+      summary: Gets organization by id.
+      tags:
+        - authData
+        - organizations
+        - local
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+
+      responses:
+        200:
+          description: Organization
+          schema:
+            $ref: '#/definitions/Organization'
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    put:
+      summary: Updates organization.
+      tags:
+        - authData
+        - organizations
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - in: body
+          name: organization
+          required: true
+          schema:
+            $ref: '#/definitions/Organization'
+
+      responses:
+        204:
+          description: Organization was updated
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    delete:
+      summary: Deletes organization by id.
+      tags:
+        - authData
+        - organizations
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+
+      responses:
+        204:
+          description: Organization was deleted
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /organizations/{id}/locations:
+    get:
+      summary: Gets list of IDs of locations that organization is associated with (via clinics).
+      tags:
+        - authData
+        - organizations
+        - locations
+        - local
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+
+      responses:
+        200:
+          description: List of location IDs
+          schema:
+            type: array
+            items:
+              type: string
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /organizations/{id}/users:
+    get:
+      summary: Gets list of IDs of users that have been assigned a role at the organization (with optional role ID filtering).
+      tags:
+        - authData
+        - organizations
+        - users
+        - userRoles
+        - local
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - in: query
+          name: roleID
+          type: string
+
+      responses:
+        200:
+          description: List of user IDs
+          schema:
+            type: array
+            items:
+              type: string
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /locations:
+    get:
+      summary: Gets a list of locations.
+      tags:
+        - authData
+        - locations
+        - local
+        - cloud
+
+      responses:
+        200:
+          description: List of locations
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Location'
+
+        500:
+          $ref: '#/responses/500'
+
+    post:
+      summary: Creates a new location
+      tags:
+        - authData
+        - locations
+        - cloud
+
+      parameters:
+        - in: body
+          name: location
+          required: true
+          schema:
+            $ref: '#/definitions/Location'
+
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Location'
+
+        400:
+          $ref: '#/responses/400'
+
+        500:
+          $ref: '#/responses/500'
+
+  /locations/{id}:
+    get:
+      summary: Gets location by id.
+      tags:
+        - authData
+        - locations
+        - local
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+
+      responses:
+        200:
+          description: Location
+          schema:
+            $ref: '#/definitions/Location'
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    put:
+      summary: Updates location.
+      tags:
+        - authData
+        - locations
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - in: body
+          name: location
+          required: true
+          schema:
+            $ref: '#/definitions/Location'
+
+      responses:
+        204:
+          description: Location was updated
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    delete:
+      summary: Deletes location by id.
+      tags:
+        - authData
+        - locations
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+
+      responses:
+        204:
+          description: Location was deleted
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /locations/{id}/organizations:
+    get:
+      summary: Gets list of IDs of organizations that are associated (via clinics) with the location.
+      tags:
+        - authData
+        - locations
+        - organizations
+        - local
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+
+      responses:
+        200:
+          description: List of organization IDs
+          schema:
+            type: array
+            items:
+              type: string
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /locations/{id}/users:
+    get:
+      summary: Gets list of IDs of users that have been assigned a role at the location (with optional role ID filtering); both users of clinics associated with the locations and users that have been assigned a role at the location manually are returned.
+      tags:
+        - authData
+        - locations
+        - users
+        - userRoles
+        - local
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - in: query
+          name: roleID
+          type: string
+
+      responses:
+        200:
+          description: List of user IDs
+          schema:
+            type: array
+            items:
+              type: string
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /clinics:
+    get:
+      summary: Gets a list of clinics.
+      tags:
+        - authData
+        - clinics
+        - local
+        - cloud
+
+      responses:
+        200:
+          description: List of clinics
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Clinic'
+
+        500:
+          $ref: '#/responses/500'
+
+    post:
+      summary: Creates a new clinic.
+      tags:
+        - authData
+        - clinics
+        - cloud
+
+      parameters:
+        - in: body
+          name: clinic
+          required: true
+          schema:
+            $ref: '#/definitions/Clinic'
+
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/Clinic'
+
+        400:
+          $ref: '#/responses/400'
+
+        500:
+          $ref: '#/responses/500'
+
+  /clinics/{id}:
+    get:
+      summary: Gets clinic by id.
+      tags:
+        - authData
+        - clinics
+        - local
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+
+      responses:
+        200:
+          description: Clinic
+          schema:
+            $ref: '#/definitions/Clinic'
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    put:
+      summary: Updates clinic.
+      tags:
+        - authData
+        - clinics
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - in: body
+          name: clinic
+          required: true
+          schema:
+            $ref: '#/definitions/Clinic'
+
+      responses:
+        204:
+          description: Clinic was updated
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    delete:
+      summary: Deletes clinic by id.
+      tags:
+        - authData
+        - clinics
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+
+      responses:
+        204:
+          description: Clinic was deleted
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /clinics/{id}/users:
+    get:
+      summary: Gets list of IDs of users that have been assigned a role at the clinic (with optional role ID filtering).
+      tags:
+        - authData
+        - clinics
+        - users
+        - userRoles
+        - local
+        - cloud
+
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: string
+        - in: query
+          name: roleID
+          type: string
+
+      responses:
+        200:
+          description: List of user IDs
+          schema:
+            type: array
+            items:
+              type: string
+
+        400:
+          $ref: '#/responses/400'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
   /database:
     get:
       summary: Get the whole database from cloud
       tags:
+        - authData
         - database
+        - cloud
+
       produces:
         - application/octet-stream
         - application/json; charset=utf-8
@@ -518,61 +1584,37 @@ paths:
         500:
           $ref: '#/responses/500'
 
-
-
 definitions:
   ValidationPair:
     type: object
+    description: Object defining request to validate access to performing specific actions on a specific resource within specific domain.
     required:
       - resource
       - actions
+      - domainType
+      - domainID
     properties:
       resource:
+        type: string
+      domainType:
+        type: string
+        enum: [global, organization, clinic, location, user]
+      domainID:
         type: string
       actions:
         type: integer
 
   ValidationResult:
     type: object
+    description: Result of validation request.
     properties:
       query:
         $ref: '#/definitions/ValidationPair'
       result:
         type: boolean
 
-  User:
-    type: object
-    required:
-      - username
-      - email
-    properties:
-      id:
-        type: string
-        readOnly: true
-      username:
-        type: string
-      email:
-        type: string
-      password:
-        type: string
-
-  Role:
-    type: object
-    required:
-      - name
-      - users
-    properties:
-      id:
-        type: string
-        readOnly: true
-      name:
-        type: string
-      users:
-        type: array
-        items:
-          type: string
-
   Rule:
+    description: Object defining rule subject's access to performing specific actions on specific domain.
     type: object
     required:
       - subject
@@ -591,6 +1633,207 @@ definitions:
       deny:
         type: boolean
 
+  Role:
+    description: Object defining user's property that rule's can refer to as subjects.
+    type: object
+    required:
+      - name
+    properties:
+      id:
+        type: string
+        readOnly: true
+      name:
+        type: string
+
+  UserRole:
+    description: Entity defining relationship between user, domain and role.
+    type: object
+    required:
+      - userID
+      - domainType
+      - domainID
+      - roleID
+    properties:
+      id:
+        type: string
+        readOnly: true
+      userID:
+        type: string
+      domainType:
+        type: string
+        enum: [global, organization, clinic, user]
+      domainID:
+        type: string
+      roleID:
+        type: string
+
+  User:
+    description: Entity defining user and user's metadata.
+    type: object
+    required:
+      - username
+      - email
+    properties:
+      id:
+        type: string
+        readOnly: true
+      username:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      personalData:
+        $ref: '#/definitions/PersonalData'
+
+  Location:
+    description: Entity defining location and location's metadata.
+    type: object
+    required:
+      - name
+    properties:
+      id:
+        type: string
+        readOnly: true
+      name:
+        type: string
+      country:
+        type: string
+      city:
+        type: string
+      manager:
+        $ref: '#/definitions/ContactData'
+      capacity:
+        type: integer
+      waterSupply:
+        type: boolean
+      electricity:
+        type: boolean
+      clinics:
+        type: array
+        readOnly: true
+        items:
+          type: string
+          description: Clinic ID.
+
+  Organization:
+    description: Entity defining organization and organization's metadata.
+    type: object
+    required:
+      - name
+    properties:
+      id:
+        type: string
+        readOnly: true
+      name:
+        type: string
+      address:
+        $ref: '#/definitions/Address'
+      legalStatus:
+        type: string
+        description: E.g. NGO.
+      serviceType:
+        type: string
+        description: E.g. general practice.
+      representative:
+        $ref: '#/definitions/ContactData'
+      primaryContact:
+        $ref: '#/definitions/ContactData'
+      clinics:
+        type: array
+        readOnly: true
+        items:
+          type: string
+          description: Clinic ID.
+
+  Clinic:
+    description: Entity defining clinic.
+    type: object
+    required:
+      - location
+      - organization
+      - name
+    properties:
+      id:
+        type: string
+        readOnly: true
+      name:
+        type: string
+      location:
+        type: string
+        description: Location ID.
+      organization:
+        type: string
+        description: Organization ID.
+
+  Address:
+    type: object
+    properties:
+      addressLine1:
+        type: string
+      addressLine2:
+        type: string
+      postCode:
+        type: string
+      city:
+        type: string
+      country:
+        type: string
+
+  PersonalData:
+    type: object
+    properties:
+      firstName:
+        type: string
+      middleName:
+        type: string
+      lastName:
+        type: string
+      dateOfBirth:
+        type: string
+        format: date
+      specialisation:
+        type: string
+        description: Medical specialistation, field valid for medical personel.
+      nationality:
+        type: string
+        description: Country name.
+      residency:
+        type: string
+        description: Country name.
+      passport:
+        type: object
+        properties:
+          number:
+            type: string
+          issuingCountry:
+            type: string
+            description: Country name.
+          expiryDate:
+            type: string
+            format: date
+      licenses:
+        type: array
+        items:
+          type: string
+          description: E.g. driving licence.
+      languages:
+        type: array
+        items:
+          type: string
+          description: Name of the language spoken by a given person.
+
+  ContactData:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Name of the person contact data refers to.
+      email:
+        type: string
+      phoneNumber:
+        type: string
+
   Error:
     type: object
     properties:
@@ -599,7 +1842,7 @@ definitions:
       message:
         type: string
 
-    
+
 
 responses:
   400:

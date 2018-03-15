@@ -1,9 +1,11 @@
 package auth
 
 import (
+	"github.com/go-openapi/swag"
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
 
+	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 	"github.com/iryonetwork/wwm/utils"
@@ -17,18 +19,31 @@ func (s *Storage) GetUsers() ([]*models.User, error) {
 	users := []*models.User{}
 
 	err := s.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(bucketUsers)
+		var err error
+		users, err = s.getUsersWithTx(tx)
 
-		return b.ForEach(func(_, data []byte) error {
-			user := &models.User{}
-			err := user.UnmarshalBinary(data)
-			if err != nil {
-				return err
-			}
+		return err
+	})
 
-			users = append(users, user)
-			return nil
-		})
+	return users, err
+}
+
+// getUsersWithTx gets users from the database within passed bolt transaction
+func (s *Storage) getUsersWithTx(tx *bolt.Tx) ([]*models.User, error) {
+	users := []*models.User{}
+
+	b := tx.Bucket(bucketUsers)
+
+	err := b.ForEach(func(_, data []byte) error {
+		user := &models.User{}
+
+		err := user.UnmarshalBinary(data)
+		if err != nil {
+			return err
+		}
+
+		users = append(users, user)
+		return nil
 	})
 
 	return users, err
@@ -39,43 +54,72 @@ func (s *Storage) GetUser(id string) (*models.User, error) {
 	s.dbSync.RLock()
 	defer s.dbSync.RUnlock()
 
+	var user *models.User
+	// look up the user
+	err := s.db.View(func(tx *bolt.Tx) error {
+		var err error
+		user, err = s.getUserWithTx(tx, id)
+		return err
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+// getUserWithTx gets user from the database within passed bolt transaction
+func (s *Storage) getUserWithTx(tx *bolt.Tx, id string) (*models.User, error) {
 	userUUID, err := uuid.FromString(id)
 	if err != nil {
 		return nil, utils.NewError(utils.ErrBadRequest, err.Error())
 	}
 	user := &models.User{}
 
-	// look up the user
-	err = s.db.View(func(tx *bolt.Tx) error {
-		// read user by id
-		data := tx.Bucket(bucketUsers).Get(userUUID.Bytes())
-		if data == nil {
-			return utils.NewError(utils.ErrNotFound, "Failed to find user by id = '%s'", id)
-		}
+	data := tx.Bucket(bucketUsers).Get(userUUID.Bytes())
+	if data == nil {
+		return nil, utils.NewError(utils.ErrNotFound, "Failed to find user by id = '%s'", id)
+	}
 
-		// decode the user
-		return user.UnmarshalBinary(data)
-	})
+	// decode the user
+	err = user.UnmarshalBinary(data)
 
-	return user, err
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
-// AddUser adds user to the database
+// AddUser generates new UUID, adds user to the database and updates related entities
 func (s *Storage) AddUser(user *models.User) (*models.User, error) {
 	s.dbSync.RLock()
 	defer s.dbSync.RUnlock()
 
-	err := s.db.Update(func(tx *bolt.Tx) error {
-		// check for existing user
-		if tx.Bucket(bucketUsernames).Get([]byte(*user.Username)) != nil {
-			return utils.NewError(utils.ErrBadRequest, "User with username %s already exists", *user.Username)
-		}
+	// generate ID
+	id, err := uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
+	user.ID = id.String()
 
-		id, err := uuid.NewV4()
+	return s.addUser(user)
+}
+
+func (s *Storage) addUser(user *models.User) (*models.User, error) {
+	var addedUser *models.User
+	err := s.db.Update(func(tx *bolt.Tx) error {
+		var err error
+
+		// get ID as UUID
+		id, err := uuid.FromString(user.ID)
 		if err != nil {
 			return err
 		}
-		user.ID = id.String()
+
+		// check if username is not already taken
+		if tx.Bucket(bucketUsernames).Get([]byte(*user.Username)) != nil {
+			return utils.NewError(utils.ErrBadRequest, "User with username %s already exists", *user.Username)
+		}
 
 		// hash the password
 		password, err := bcrypt.GenerateFromPassword([]byte(user.Password), 0)
@@ -84,71 +128,64 @@ func (s *Storage) AddUser(user *models.User) (*models.User, error) {
 		}
 		user.Password = string(password)
 
-		data, err := user.MarshalBinary()
-		if err != nil {
-			return err
-		}
-
 		// insert user
-		err = tx.Bucket(bucketUsers).Put(id.Bytes(), data)
+		addedUser, err = s.insertUserWithTx(tx, user)
 		if err != nil {
 			return err
 		}
 
 		// insert username
-		return tx.Bucket(bucketUsernames).Put([]byte(*user.Username), id.Bytes())
+		err = tx.Bucket(bucketUsernames).Put([]byte(*addedUser.Username), id.Bytes())
+
+		return nil
 	})
+
 	if err != nil {
 		return nil, err
 	}
 
-	// add every user to everyone role
-	_, err = s.AddUserToRole(user.ID, everyoneRole.ID)
+	// give every new user everyone role globally
+	_, err = s.AddUserRole(&models.UserRole{
+		UserID:     swag.String(user.ID),
+		RoleID:     swag.String(authCommon.EveryoneRole.ID),
+		DomainType: swag.String(authCommon.DomainTypeGlobal),
+		DomainID:   swag.String(authCommon.DomainIDWildcard),
+	})
+	if err != nil {
+		return addedUser, err
+	}
+	// give every new user author over own user domain
+	_, err = s.AddUserRole(&models.UserRole{
+		UserID:     swag.String(user.ID),
+		RoleID:     swag.String(authCommon.AuthorRole.ID),
+		DomainType: swag.String(authCommon.DomainTypeUser),
+		DomainID:   swag.String(user.ID),
+	})
+	if err != nil {
+		return addedUser, err
+	}
 
-	return user, err
+	return addedUser, nil
 }
 
-// UpdateUser updates the user
+// UpdateUser updates the user and related entities
 func (s *Storage) UpdateUser(user *models.User) (*models.User, error) {
 	s.dbSync.RLock()
 	defer s.dbSync.RUnlock()
 
+	var updatedUser *models.User
 	err := s.db.Update(func(tx *bolt.Tx) error {
-		// get buckets
-		bUsers := tx.Bucket(bucketUsers)
-		bUsernames := tx.Bucket(bucketUsernames)
+		var err error
 
-		// get current user to check if username changed
-		userUUID, err := uuid.FromString(user.ID)
-		if err != nil {
-			return utils.NewError(utils.ErrBadRequest, err.Error())
-		}
-
-		userData := bUsers.Get(userUUID.Bytes())
-		if userData == nil {
-			return utils.NewError(utils.ErrNotFound, "Failed to find user by id = '%s'", user.ID)
-		}
-
-		currentUser := &models.User{}
-		err = currentUser.UnmarshalBinary(userData)
+		// get currentUser
+		oldUser, err := s.getUserWithTx(tx, user.ID)
 		if err != nil {
 			return err
 		}
 
-		if *currentUser.Username != *user.Username {
-			err := bUsernames.Delete([]byte(*currentUser.Username))
-			if err != nil {
-				return err
-			}
-
-			err = bUsernames.Put([]byte(*user.Username), userUUID.Bytes())
-			if err != nil {
-				return err
-			}
-		}
-
+		// check if password is changing
 		if user.Password == "" {
-			user.Password = currentUser.Password
+			user.Password = oldUser.Password
 		} else {
 			// hash the password
 			password, err := bcrypt.GenerateFromPassword([]byte(user.Password), 0)
@@ -158,16 +195,68 @@ func (s *Storage) UpdateUser(user *models.User) (*models.User, error) {
 			user.Password = string(password)
 		}
 
-		data, err := user.MarshalBinary()
+		// insert updated user
+		updatedUser, err = s.insertUserWithTx(tx, user)
 		if err != nil {
 			return err
 		}
 
-		// update user
-		return bUsers.Put(userUUID.Bytes(), data)
+		// update username if needed
+		if *oldUser.Username != *updatedUser.Username {
+			bUsernames := tx.Bucket(bucketUsernames)
+
+			// check if new username is not already taken
+			if bUsernames.Get([]byte(*updatedUser.Username)) != nil {
+				return utils.NewError(utils.ErrBadRequest, "User with username %s already exists", updatedUser.Username)
+			}
+
+			// delete old user name
+			err := bUsernames.Delete([]byte(*oldUser.Username))
+			if err != nil {
+				return err
+			}
+
+			userUUID, err := uuid.FromString(updatedUser.ID)
+			if err != nil {
+				return err
+			}
+			// insert new username
+			err = bUsernames.Put([]byte(*updatedUser.Username), userUUID.Bytes())
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
 	})
 
-	return user, err
+	if err != nil {
+		return nil, err
+	}
+	return updatedUser, nil
+}
+
+// insertUserWithTx updates user to the database within passed bolt transaction (does not update related entities)
+func (s *Storage) insertUserWithTx(tx *bolt.Tx, user *models.User) (*models.User, error) {
+	// get ID as UUID
+	userUUID, err := uuid.FromString(user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := user.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+
+	// update user
+	err = tx.Bucket(bucketUsers).Put(userUUID.Bytes(), data)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 // RemoveUser removes user by id
@@ -175,20 +264,45 @@ func (s *Storage) RemoveUser(id string) error {
 	s.dbSync.RLock()
 	defer s.dbSync.RUnlock()
 
-	user, err := s.GetUser(id)
+	err := s.db.Update(func(tx *bolt.Tx) error {
+		// fetch user
+		user, err := s.getUserWithTx(tx, id)
+		if err != nil {
+			return err
+		}
+
+		// remove userRoles
+		err = s.removeUserRolesByUserIDWithTx(tx, id)
+		if err != nil {
+			return err
+		}
+		// remove userRoles on this user domain
+		err = s.removeUserRolesByDomainWithTx(tx, authCommon.DomainTypeUser, id)
+		if err != nil {
+			return err
+		}
+
+		// remove user
+		err = s.removeUserWithTx(tx, id)
+		if err != nil {
+			return err
+		}
+
+		// remove username
+		return tx.Bucket(bucketUsernames).Delete([]byte(*user.Username))
+	})
+
+	return err
+}
+
+// removeUserWithTx removes user from the database within passed bolt transaction (does not update related entities)
+func (s *Storage) removeUserWithTx(tx *bolt.Tx, id string) error {
+	userUUID, err := uuid.FromString(id)
 	if err != nil {
 		return err
 	}
 
-	userUUID, _ := uuid.FromString(id)
-
-	return s.db.Update(func(tx *bolt.Tx) error {
-		err := tx.Bucket(bucketUsers).Delete(userUUID.Bytes())
-		if err != nil {
-			return err
-		}
-		return tx.Bucket(bucketUsernames).Delete([]byte(*user.Username))
-	})
+	return tx.Bucket(bucketUsers).Delete(userUUID.Bytes())
 }
 
 // GetUserByUsername returns user by the username

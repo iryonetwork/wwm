@@ -16,20 +16,30 @@ func (s *Storage) GetRules() ([]*models.Rule, error) {
 	defer s.dbSync.RUnlock()
 
 	rules := []*models.Rule{}
-
 	err := s.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(bucketACLRules)
+		var err error
+		rules, err = s.getRulesWithTx(tx)
+		return err
+	})
 
-		return b.ForEach(func(_, data []byte) error {
-			rule := &models.Rule{}
-			err := rule.UnmarshalBinary(data)
-			if err != nil {
-				return err
-			}
+	return rules, err
+}
 
-			rules = append(rules, rule)
-			return nil
-		})
+// getRulesWithTx gets rules from the database within passed bolt transaction
+func (s *Storage) getRulesWithTx(tx *bolt.Tx) ([]*models.Rule, error) {
+	rules := []*models.Rule{}
+
+	b := tx.Bucket(bucketACLRules)
+
+	err := b.ForEach(func(_, data []byte) error {
+		rule := &models.Rule{}
+		err := rule.UnmarshalBinary(data)
+		if err != nil {
+			return err
+		}
+
+		rules = append(rules, rule)
+		return nil
 	})
 
 	return rules, err
@@ -40,23 +50,33 @@ func (s *Storage) GetRule(id string) (*models.Rule, error) {
 	s.dbSync.RLock()
 	defer s.dbSync.RUnlock()
 
+	rule := &models.Rule{}
+	// look up the rule
+	err := s.db.View(func(tx *bolt.Tx) error {
+		var err error
+		rule, err = s.getRuleWithTx(tx, id)
+		return err
+	})
+
+	return rule, err
+}
+
+// getRuleWithTx gets rule from the database within passed bolt transaction
+func (s *Storage) getRuleWithTx(tx *bolt.Tx, id string) (*models.Rule, error) {
 	ruleUUID, err := uuid.FromString(id)
 	if err != nil {
 		return nil, utils.NewError(utils.ErrBadRequest, err.Error())
 	}
 	rule := &models.Rule{}
 
-	// look up the rule
-	err = s.db.View(func(tx *bolt.Tx) error {
-		// read rule by id
-		data := tx.Bucket(bucketACLRules).Get(ruleUUID.Bytes())
-		if data == nil {
-			return utils.NewError(utils.ErrNotFound, "Failed to find rule by id = '%s'", id)
-		}
+	// read rule by id
+	data := tx.Bucket(bucketACLRules).Get(ruleUUID.Bytes())
+	if data == nil {
+		return nil, utils.NewError(utils.ErrNotFound, "Failed to find rule by id = '%s'", id)
+	}
 
-		// decode the rule
-		return rule.UnmarshalBinary(data)
-	})
+	// decode the rule
+	err = rule.UnmarshalBinary(data)
 
 	return rule, err
 }
@@ -81,11 +101,22 @@ func (s *Storage) checkSubject(subject string) error {
 	return nil
 }
 
-// AddRule adds rule to the database
+// AddRule generates new UUID,  adds rule to the database and updates related entities
 func (s *Storage) AddRule(rule *models.Rule) (*models.Rule, error) {
 	s.dbSync.RLock()
 	defer s.dbSync.RUnlock()
 
+	// generate ID
+	id, err := uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
+	rule.ID = id.String()
+
+	return s.addRule(rule)
+}
+
+func (s *Storage) addRule(rule *models.Rule) (*models.Rule, error) {
 	err := s.checkSubject(*rule.Subject)
 	if err != nil {
 		return nil, err
@@ -99,23 +130,15 @@ func (s *Storage) AddRule(rule *models.Rule) (*models.Rule, error) {
 		return nil, utils.NewError(utils.ErrBadRequest, "Rule with that parameters already exist")
 	}
 
+	var addedRule *models.Rule
 	err = s.db.Update(func(tx *bolt.Tx) error {
-		// generatu uuid
-		id, err := uuid.NewV4()
-		if err != nil {
-			return err
-		}
-		rule.ID = id.String()
-
-		data, err := rule.MarshalBinary()
-		if err != nil {
-			return err
-		}
-
+		var err error
 		// insert rule
-		return tx.Bucket(bucketACLRules).Put(id.Bytes(), data)
+		addedRule, err = s.insertRuleWithTx(tx, rule)
+		return err
 	})
 
+	// refresh policy
 	if err == nil && s.refreshRules {
 		go s.enforcer.LoadPolicy()
 	}
@@ -123,22 +146,17 @@ func (s *Storage) AddRule(rule *models.Rule) (*models.Rule, error) {
 	return rule, err
 }
 
-// UpdateRule updates the rule
+// UpdateRule updates the rule and related entities in the database
 func (s *Storage) UpdateRule(rule *models.Rule) (*models.Rule, error) {
 	s.dbSync.RLock()
 	defer s.dbSync.RUnlock()
 
+	var updatedRule *models.Rule
 	err := s.db.Update(func(tx *bolt.Tx) error {
-		// get buckets
-		bRules := tx.Bucket(bucketACLRules)
-
+		var err error
 		// check if rule exists
-		ruleUUID, err := uuid.FromString(rule.ID)
+		_, err = s.getRuleWithTx(tx, rule.ID)
 		if err != nil {
-			return utils.NewError(utils.ErrBadRequest, err.Error())
-		}
-
-		if bRules.Get(ruleUUID.Bytes()) == nil {
 			return utils.NewError(utils.ErrNotFound, "Failed to find rule by id = '%s'", rule.ID)
 		}
 
@@ -147,15 +165,11 @@ func (s *Storage) UpdateRule(rule *models.Rule) (*models.Rule, error) {
 			return err
 		}
 
-		data, err := rule.MarshalBinary()
-		if err != nil {
-			return err
-		}
-
-		// update rule
-		return bRules.Put(ruleUUID.Bytes(), data)
+		updatedRule, err = s.insertRuleWithTx(tx, rule)
+		return err
 	})
 
+	// refresh policy
 	if err == nil && s.refreshRules {
 		go s.enforcer.LoadPolicy()
 	}
@@ -163,20 +177,40 @@ func (s *Storage) UpdateRule(rule *models.Rule) (*models.Rule, error) {
 	return rule, err
 }
 
-// RemoveRule removes rule by id
+// insertRuleWithTx updates rule in the database within passed bolt transaction (does not update related entities)
+func (s *Storage) insertRuleWithTx(tx *bolt.Tx, rule *models.Rule) (*models.Rule, error) {
+	// get ID as UUID
+	ruleUUID, err := uuid.FromString(rule.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := rule.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+
+	// update rule
+	err = tx.Bucket(bucketACLRules).Put(ruleUUID.Bytes(), data)
+	if err != nil {
+		return nil, err
+	}
+
+	return rule, nil
+}
+
+// RemoveRule removes rule by id from the database and updates related entities
 func (s *Storage) RemoveRule(id string) error {
 	s.dbSync.RLock()
 	defer s.dbSync.RUnlock()
 
-	_, err := s.GetRule(id)
-	if err != nil {
-		return err
-	}
+	err := s.db.Update(func(tx *bolt.Tx) error {
+		_, err := s.getRuleWithTx(tx, id)
+		if err != nil {
+			return err
+		}
 
-	ruleUUID, _ := uuid.FromString(id)
-
-	err = s.db.Update(func(tx *bolt.Tx) error {
-		return tx.Bucket(bucketACLRules).Delete(ruleUUID.Bytes())
+		return s.removeRuleWithTx(tx, id)
 	})
 
 	if err == nil && s.refreshRules {
@@ -184,4 +218,11 @@ func (s *Storage) RemoveRule(id string) error {
 	}
 
 	return err
+}
+
+// removeRuleWithTx removes rule from the database within passed bolt transaction (does not update related entities)
+func (s *Storage) removeRuleWithTx(tx *bolt.Tx, id string) error {
+	ruleUUID, _ := uuid.FromString(id)
+
+	return tx.Bucket(bucketACLRules).Delete(ruleUUID.Bytes())
 }

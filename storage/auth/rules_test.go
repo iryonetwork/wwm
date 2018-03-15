@@ -10,20 +10,26 @@ import (
 	"github.com/iryonetwork/wwm/utils"
 )
 
-var (
-	testRule = &models.Rule{
+// method to ensure that rules used for tests are always fresh
+func getTestRules() (*models.Rule, *models.Rule) {
+	testRule := &models.Rule{
 		Action:   swag.Int64(1),
 		Resource: swag.String("/"),
 	}
-	testRule2 = &models.Rule{
+	testRule2 := &models.Rule{
 		Action:   swag.Int64(1),
 		Resource: swag.String("/auth/*"),
 	}
-)
+
+	return testRule, testRule2
+}
 
 func TestAddRule(t *testing.T) {
 	storage := newTestStorage(nil)
 	defer storage.Close()
+
+	testRule, _ := getTestRules()
+	_, testUser2 := getTestUsers()
 
 	// add user
 	storage.AddUser(testUser2)
@@ -58,14 +64,17 @@ func TestAddRule(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
-	if len(rules) != 6 {
-		t.Fatalf("Expected 6 rule; got %d", len(rules))
+	if len(rules) != 7 {
+		t.Fatalf("Expected 7 rules; got %d", len(rules))
 	}
 }
 
 func TestGetRule(t *testing.T) {
 	storage := newTestStorage(nil)
 	defer storage.Close()
+
+	testRule, _ := getTestRules()
+	_, testUser2 := getTestUsers()
 
 	// add user and rule
 	storage.AddUser(testUser2)
@@ -106,6 +115,10 @@ func TestGetRules(t *testing.T) {
 	storage := newTestStorage(nil)
 	defer storage.Close()
 
+	testRule, testRule2 := getTestRules()
+	_, testRole2 := getTestRoles()
+	_, testUser2 := getTestUsers()
+
 	// add user, role and rules
 	storage.AddUser(testUser2)
 	storage.AddRole(testRole2)
@@ -120,8 +133,8 @@ func TestGetRules(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
-	if len(rules) != 7 {
-		t.Fatalf("Expected 7 ruless; got %d", len(rules))
+	if len(rules) != 8 {
+		t.Fatalf("Expected 8 rules; got %d", len(rules))
 	}
 
 	rulesMap := map[string]*models.Rule{}
@@ -141,6 +154,10 @@ func TestGetRules(t *testing.T) {
 func TestUpdateRule(t *testing.T) {
 	storage := newTestStorage(nil)
 	defer storage.Close()
+
+	testRule, _ := getTestRules()
+	_, testRole2 := getTestRoles()
+	_, testUser2 := getTestUsers()
 
 	// add user, role and rule
 	storage.AddUser(testUser2)
@@ -174,6 +191,9 @@ func TestUpdateRule(t *testing.T) {
 func TestRemoveRule(t *testing.T) {
 	storage := newTestStorage(nil)
 	defer storage.Close()
+
+	testRule, _ := getTestRules()
+	_, testUser2 := getTestUsers()
 
 	// add user and rule
 	storage.AddUser(testUser2)

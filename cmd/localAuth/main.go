@@ -18,6 +18,7 @@ import (
 
 	"github.com/iryonetwork/wwm/gen/auth/restapi"
 	"github.com/iryonetwork/wwm/gen/auth/restapi/operations"
+	"github.com/iryonetwork/wwm/service/authDataManager"
 	"github.com/iryonetwork/wwm/service/authSync"
 	"github.com/iryonetwork/wwm/service/authenticator"
 	statusServer "github.com/iryonetwork/wwm/status/server"
@@ -82,16 +83,18 @@ func main() {
 		logger.Fatal().Err(err).Msg("Failed to initialize auth storage")
 	}
 
-	// initialize the service
-	auth, err := authenticator.New(storage, nil, logger)
+	// initialize the services
+	auth, err := authenticator.New(cfg.DomainType, cfg.DomainID, storage, nil, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to initialize authenticator service")
 	}
-
 	authSync, err := authSync.New(storage, cfg.AuthSyncCertPath, cfg.AuthSyncKeyPath, fmt.Sprintf("https://%s/%s/database", cfg.CloudAuthHost, cfg.CloudAuthPath), logger.With().Str("component", "service/authSync").Logger())
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to initialize authSync service")
 	}
+	authData := authDataManager.New(storage, logger.With().Str("component", "service/authDataManager").Logger())
+
+	// setup API
 	api := operations.NewCloudAuthAPI(swaggerSpec)
 	api.ServeError = utils.ServeError
 	server := restapi.NewServer(api)
@@ -103,14 +106,51 @@ func main() {
 	defer server.Shutdown()
 
 	authHandlers := authenticator.NewHandlers(auth)
+	authDataHandlers := authDataManager.NewHandlers(authData)
 
 	serverLogger := logger.WithLevel(zerolog.InfoLevel).Str("component", "server")
 	api.Logger = serverLogger.Msgf
 	api.TokenAuth = auth.GetPrincipalFromToken
 	api.APIAuthorizer = auth.Authorizer()
-	api.AuthGetRenewHandler = authHandlers.GetRenew()
-	api.AuthPostLoginHandler = authHandlers.PostLogin()
-	api.AuthPostValidateHandler = authHandlers.PostValidate()
+	api.GetRenewHandler = authHandlers.GetRenew()
+	api.PostLoginHandler = authHandlers.PostLogin()
+	api.PostValidateHandler = authHandlers.PostValidate()
+
+	api.GetUsersHandler = authDataHandlers.GetUsers()
+	api.GetUsersIDHandler = authDataHandlers.GetUsersID()
+	api.GetUsersIDRolesHandler = authDataHandlers.GetUsersIDRoles()
+	api.GetUsersIDOrganizationsHandler = authDataHandlers.GetUsersIDOrganizations()
+	api.GetUsersIDClinicsHandler = authDataHandlers.GetUsersIDClinics()
+	api.GetUsersIDLocationsHandler = authDataHandlers.GetUsersIDLocations()
+	api.GetUsersMeHandler = authDataHandlers.GetUsersMe()
+	api.GetUsersMeRolesHandler = authDataHandlers.GetUsersMeRoles()
+	api.GetUsersMeOrganizationsHandler = authDataHandlers.GetUsersMeOrganizations()
+	api.GetUsersMeClinicsHandler = authDataHandlers.GetUsersMeClinics()
+	api.GetUsersMeLocationsHandler = authDataHandlers.GetUsersMeLocations()
+
+	api.GetRolesHandler = authDataHandlers.GetRoles()
+	api.GetRolesIDHandler = authDataHandlers.GetRolesID()
+	api.GetRolesIDUsersHandler = authDataHandlers.GetRolesIDUsers()
+
+	api.GetRulesHandler = authDataHandlers.GetRules()
+	api.GetRulesIDHandler = authDataHandlers.GetRulesID()
+
+	api.GetClinicsHandler = authDataHandlers.GetClinics()
+	api.GetClinicsIDHandler = authDataHandlers.GetClinicsID()
+	api.GetClinicsIDUsersHandler = authDataHandlers.GetClinicsIDUsers()
+
+	api.GetOrganizationsHandler = authDataHandlers.GetOrganizations()
+	api.GetOrganizationsIDHandler = authDataHandlers.GetOrganizationsID()
+	api.GetOrganizationsIDLocationsHandler = authDataHandlers.GetOrganizationsIDLocations()
+	api.GetOrganizationsIDUsersHandler = authDataHandlers.GetOrganizationsIDUsers()
+
+	api.GetLocationsHandler = authDataHandlers.GetLocations()
+	api.GetLocationsIDHandler = authDataHandlers.GetLocationsID()
+	api.GetLocationsIDOrganizationsHandler = authDataHandlers.GetLocationsIDOrganizations()
+	api.GetLocationsIDUsersHandler = authDataHandlers.GetLocationsIDUsers()
+
+	api.GetUserRolesHandler = authDataHandlers.GetUserRoles()
+	api.GetUserRolesIDHandler = authDataHandlers.GetUserRolesID()
 
 	handler := cors.New(cors.Options{
 		AllowedMethods: []string{"GET", "POST"},

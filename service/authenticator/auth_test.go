@@ -14,14 +14,16 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/golang/mock/gomock"
 
+	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/iryonetwork/wwm/service/authenticator/mock"
 	"github.com/iryonetwork/wwm/storage/auth"
 )
 
 var (
-	sampleUser = &models.User{ID: "8853C7BC-599A-4F43-8080-6D22B777433E", Username: swag.String("username"), Password: "$2a$10$USp/p1VpbjFETLEbtMkVseGu02NgXpaLDP4eYpZiNV5j/nY/qPviW"}
-	aclRequest = &models.ValidationPair{Actions: swag.Int64(auth.Write), Resource: swag.String("/auth/login")}
+	testClinicID = "d826c3f7-e9cf-4000-8783-4e1b938c87b2"
+	sampleUser   = &models.User{ID: "8853C7BC-599A-4F43-8080-6D22B777433E", Username: swag.String("username"), Password: "$2a$10$USp/p1VpbjFETLEbtMkVseGu02NgXpaLDP4eYpZiNV5j/nY/qPviW"}
+	aclRequest   = &models.ValidationPair{Actions: swag.Int64(auth.Write), DomainType: swag.String(authCommon.DomainTypeClinic), DomainID: swag.String(testClinicID), Resource: swag.String("/auth/login")}
 )
 
 func TestLogin(t *testing.T) {
@@ -39,7 +41,7 @@ func TestLogin(t *testing.T) {
 		storage.EXPECT().FindACL(sampleUser.ID, gomock.Any()).Times(1).Return([]*models.ValidationResult{{Query: aclRequest, Result: false}}))
 
 	// initialize service
-	svc := &service{storage: storage}
+	svc := &service{domainType: authCommon.DomainTypeClinic, domainID: testClinicID, storage: storage}
 
 	// #1 call with a valid username and password
 	out, err := svc.Login(context.Background(), "username", "password")
@@ -91,7 +93,7 @@ func TestNew(t *testing.T) {
 		},
 	}
 
-	ss, err := New(storage, allowedServiceCertsAndPaths, zerolog.New(ioutil.Discard))
+	ss, err := New(authCommon.DomainTypeClinic, testClinicID, storage, allowedServiceCertsAndPaths, zerolog.New(ioutil.Discard))
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got %v", err)
 	}

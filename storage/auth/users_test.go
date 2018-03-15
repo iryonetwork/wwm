@@ -11,25 +11,30 @@ import (
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 
+	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/iryonetwork/wwm/utils"
 )
 
-var (
-	testUser = &models.User{
+type testStorage struct {
+	*Storage
+}
+
+// method to ensure that users used for tests are always fresh
+func getTestUsers() (*models.User, *models.User) {
+	testUser := &models.User{
 		Email:    swag.String("test@iryo.io"),
 		Username: swag.String("testuser"),
 		Password: "pass",
 	}
-	testUser2 = &models.User{
+
+	testUser2 := &models.User{
 		Email:    swag.String("test2@iryo.io"),
 		Username: swag.String("testuser2"),
 		Password: "password",
 	}
-)
 
-type testStorage struct {
-	*Storage
+	return testUser, testUser2
 }
 
 func newTestStorage(key []byte) *testStorage {
@@ -68,6 +73,7 @@ func TestAddUser(t *testing.T) {
 	storage := newTestStorage(nil)
 	defer storage.Close()
 
+	testUser, _ := getTestUsers()
 	// add user
 	user, err := storage.AddUser(testUser)
 	if user.ID == "" {
@@ -81,21 +87,6 @@ func TestAddUser(t *testing.T) {
 		t.Fatalf("Expected correct password hash; got error '%v'", err)
 	}
 
-	role, err := storage.GetRole(everyoneRole.ID)
-	if err != nil {
-		t.Fatalf("Expected error to be nil; got '%v'", err)
-	}
-	found := false
-	for _, id := range role.Users {
-		if id == user.ID {
-			found = true
-			break
-		}
-	}
-	if !found {
-		t.Fatalf("Expected the user to be added to 'everyone' role.")
-	}
-
 	// add same user again
 	_, err = storage.AddUser(testUser)
 	if err == nil {
@@ -107,7 +98,7 @@ func TestGetUser(t *testing.T) {
 	storage := newTestStorage(nil)
 	defer storage.Close()
 
-	// add user
+	testUser, _ := getTestUsers()
 	storage.AddUser(testUser)
 
 	// get user
@@ -144,7 +135,7 @@ func TestGetUserByUsername(t *testing.T) {
 	storage := newTestStorage(nil)
 	defer storage.Close()
 
-	// add user
+	testUser, _ := getTestUsers()
 	storage.AddUser(testUser)
 
 	// get user
@@ -171,6 +162,8 @@ func TestGetUsers(t *testing.T) {
 	storage := newTestStorage(nil)
 	defer storage.Close()
 
+	testUser, testUser2 := getTestUsers()
+
 	// add users
 	storage.AddUser(testUser)
 	storage.AddUser(testUser2)
@@ -180,8 +173,8 @@ func TestGetUsers(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
-	if len(users) != 4 {
-		t.Fatalf("Expected 4 users; got %d", len(users))
+	if len(users) != 2 {
+		t.Fatalf("Expected 2 users; got %d", len(users))
 	}
 
 	usersMap := map[string]*models.User{}
@@ -202,13 +195,14 @@ func TestUpdateUser(t *testing.T) {
 	storage := newTestStorage(nil)
 	defer storage.Close()
 
-	// add user
-	storage.AddUser(testUser)
+	testUser1, testUser2 := getTestUsers()
+	storage.AddUser(testUser1)
+	storage.AddUser(testUser2)
 
-	password := testUser.Password
+	password := testUser1.Password
 	updateUser := &models.User{
-		ID:       testUser.ID,
-		Username: testUser.Username,
+		ID:       testUser1.ID,
+		Username: testUser1.Username,
 		Email:    swag.String("new@iryo.io"),
 	}
 
@@ -247,12 +241,19 @@ func TestUpdateUser(t *testing.T) {
 		t.Fatalf("Expected to get user with id '%s'; got '%s'", user.ID, userByUsername.ID)
 	}
 
+	// cannot update user with username of other user
+	updateUser.Username = testUser2.Username
+	_, err = storage.UpdateUser(updateUser)
+	if err == nil {
+		t.Fatalf("Expected error; got nil")
+	}
+
 	users, err := storage.GetUsers()
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
-	if len(users) != 3 {
-		t.Fatalf("Expected length of user to be 3; got %d", len(users))
+	if len(users) != 2 {
+		t.Fatalf("Expected number of users to be 2; got %d", len(users))
 	}
 }
 
@@ -260,13 +261,49 @@ func TestRemoveUser(t *testing.T) {
 	storage := newTestStorage(nil)
 	defer storage.Close()
 
-	// add user
+	testUser, testUser2 := getTestUsers()
 	storage.AddUser(testUser)
+	storage.AddUser(testUser2)
+
+	// add user roles to test if they are removed with user
+	testRole, _ := getTestRoles()
+	storage.AddRole(testRole)
+	testUserRole1 := getTestUserRole(testUser.ID, testRole.ID, authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
+	storage.AddUserRole(testUserRole1)
+	testUserRole2 := getTestUserRole(testUser2.ID, testRole.ID, authCommon.DomainTypeUser, testUser.ID)
+	storage.AddUserRole(testUserRole2)
+	testUserRole3 := getTestUserRole(testUser2.ID, testRole.ID, authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
+	storage.AddUserRole(testUserRole3)
 
 	// remove user
 	err := storage.RemoveUser(testUser.ID)
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	// check if user roles were properly removed
+	userRoles, _ := storage.GetUserRoles()
+	if len(userRoles) != 3 {
+		if err == nil {
+			t.Fatalf("Expected 1 user role; got %d", len(userRoles))
+		}
+	}
+	userRoles, _ = storage.FindUserRoles(swag.String(testUser.ID), nil, nil, nil)
+	if len(userRoles) != 0 {
+		if err == nil {
+			t.Fatalf("Expected 0 user roles; got %d", len(userRoles))
+		}
+	}
+	userRoles, _ = storage.FindUserRoles(nil, nil, swag.String(authCommon.DomainTypeUser), swag.String(testUser.ID))
+	if len(userRoles) != 0 {
+		if err == nil {
+			t.Fatalf("Expected 0 user roles; got %d", len(userRoles))
+		}
+	}
+	userRoles, _ = storage.FindUserRoles(swag.String(testUser2.ID), nil, nil, nil)
+	if len(userRoles) != 3 {
+		if err == nil {
+			t.Fatalf("Expected 3 user role; got %d", len(userRoles))
+		}
 	}
 
 	// remove user again

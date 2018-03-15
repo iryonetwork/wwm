@@ -54,6 +54,8 @@ type Storage interface {
 }
 
 type service struct {
+	domainType   string
+	domainID     string
 	storage      Storage
 	syncServices map[string]syncService
 	logger       zerolog.Logger
@@ -67,8 +69,10 @@ func (a *service) Login(_ context.Context, username, password string) (string, e
 	}
 
 	permissions := a.storage.FindACL(user.ID, []*models.ValidationPair{{
-		Actions:  swag.Int64(auth.Write),
-		Resource: swag.String("/auth/login"),
+		Actions:    swag.Int64(auth.Write),
+		DomainType: swag.String(a.domainType),
+		DomainID:   swag.String(a.domainID),
+		Resource:   swag.String("/auth/login"),
 	}})
 
 	if !permissions[0].Result {
@@ -171,8 +175,10 @@ func (a *service) Authorizer() runtime.Authorizer {
 		}
 
 		result := a.storage.FindACL(*userID, []*models.ValidationPair{{
-			Actions:  &action,
-			Resource: swag.String("/api" + request.URL.EscapedPath()),
+			DomainType: &a.domainType,
+			DomainID:   &a.domainID,
+			Actions:    &action,
+			Resource:   swag.String("/api" + request.URL.EscapedPath()),
 		}})
 
 		if !result[0].Result {
@@ -198,7 +204,7 @@ type syncService struct {
 }
 
 // New returns a new instance of authenticator service
-func New(storage Storage, allowedServiceCertsAndPaths map[string][]string, logger zerolog.Logger) (Service, error) {
+func New(domainType, domainID string, storage Storage, allowedServiceCertsAndPaths map[string][]string, logger zerolog.Logger) (Service, error) {
 	logger = logger.With().Str("component", "service/authenticator").Logger()
 	logger.Debug().Msg("Initialize authenticator service")
 
@@ -239,6 +245,8 @@ func New(storage Storage, allowedServiceCertsAndPaths map[string][]string, logge
 	}
 
 	return &service{
+		domainType:   domainType,
+		domainID:     domainID,
 		storage:      storage,
 		syncServices: syncServices,
 		logger:       logger,

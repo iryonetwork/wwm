@@ -6,26 +6,28 @@ import (
 
 	"github.com/go-openapi/swag"
 
+	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/iryonetwork/wwm/utils"
 )
 
-var (
-	testRole = &models.Role{
+// method to ensure that roles used for tests are always fresh
+func getTestRoles() (*models.Role, *models.Role) {
+	testRole := &models.Role{
 		Name: swag.String("testrole"),
 	}
-	testRole2 = &models.Role{
+	testRole2 := &models.Role{
 		Name: swag.String("testrole2"),
 	}
-)
+
+	return testRole, testRole2
+}
 
 func TestAddRole(t *testing.T) {
 	storage := newTestStorage(nil)
 	defer storage.Close()
 
-	// add user
-	storage.AddUser(testUser2)
-	testRole.Users = []string{testUser2.ID}
+	testRole, _ := getTestRoles()
 
 	// add role
 	role, err := storage.AddRole(testRole)
@@ -35,22 +37,13 @@ func TestAddRole(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
-
-	// add role with invalid user id
-	testRole.Users = []string{"wrong user id"}
-	_, err = storage.AddRole(testRole)
-	if err == nil {
-		t.Fatalf("Expected error; got nil")
-	}
 }
 
 func TestGetRole(t *testing.T) {
 	storage := newTestStorage(nil)
 	defer storage.Close()
 
-	// add user and role
-	storage.AddUser(testUser2)
-	testRole.Users = []string{testUser2.ID}
+	testRole, _ := getTestRoles()
 	storage.AddRole(testRole)
 
 	// get role
@@ -87,9 +80,7 @@ func TestGetRoles(t *testing.T) {
 	storage := newTestStorage(nil)
 	defer storage.Close()
 
-	// add user and role
-	storage.AddUser(testUser2)
-	testRole.Users = []string{testUser2.ID}
+	testRole, testRole2 := getTestRoles()
 	storage.AddRole(testRole)
 	storage.AddRole(testRole2)
 
@@ -98,8 +89,8 @@ func TestGetRoles(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
-	if len(roles) != 4 {
-		t.Fatalf("Expected 4 roless; got %d", len(roles))
+	if len(roles) != 6 {
+		t.Fatalf("Expected 6 roles; got %d", len(roles))
 	}
 
 	rolesMap := map[string]*models.Role{}
@@ -120,16 +111,14 @@ func TestUpdateRole(t *testing.T) {
 	storage := newTestStorage(nil)
 	defer storage.Close()
 
-	// add user and role
-	storage.AddUser(testUser2)
-	testRole.Users = []string{testUser2.ID}
+	testRole, testRole2 := getTestRoles()
 	storage.AddRole(testRole)
+	storage.AddRole(testRole2)
 
 	// update role
 	updateRole := &models.Role{
-		ID:    testRole.ID,
-		Users: []string{},
-		Name:  swag.String("newname"),
+		ID:   testRole.ID,
+		Name: swag.String("newname"),
 	}
 	role, err := storage.UpdateRole(updateRole)
 	if err != nil {
@@ -145,15 +134,39 @@ func TestRemoveRole(t *testing.T) {
 	storage := newTestStorage(nil)
 	defer storage.Close()
 
-	// add user and role
-	storage.AddUser(testUser2)
-	testRole.Users = []string{testUser2.ID}
+	testRole, _ := getTestRoles()
 	storage.AddRole(testRole)
+
+	// add user roles to test if they are removed with role
+	testUser1, testUser2 := getTestUsers()
+	storage.AddUser(testUser1)
+	storage.AddUser(testUser2)
+	testOrganization, _ := getTestOrganizations()
+	storage.AddOrganization(testOrganization)
+	testUserRole1 := getTestUserRole(testUser1.ID, testRole.ID, authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
+	storage.AddUserRole(testUserRole1)
+	testUserRole2 := getTestUserRole(testUser1.ID, testRole.ID, authCommon.DomainTypeOrganization, testOrganization.ID)
+	storage.AddUserRole(testUserRole2)
+	testUserRole3 := getTestUserRole(testUser2.ID, testRole.ID, authCommon.DomainTypeUser, testUser1.ID)
+	storage.AddUserRole(testUserRole3)
 
 	// remove role
 	err := storage.RemoveRole(testRole.ID)
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	// check if user roles were removed
+	userRoles, _ := storage.GetUserRoles()
+	if len(userRoles) != 4 {
+		if err == nil {
+			t.Fatalf("Expected 4 user roles; got %d", len(userRoles))
+		}
+	}
+	userRoles, _ = storage.FindUserRoles(nil, swag.String(testRole.ID), nil, nil)
+	if len(userRoles) != 0 {
+		if err == nil {
+			t.Fatalf("Expected 0 user roles; got %d", len(userRoles))
+		}
 	}
 
 	// remove role again

@@ -15,7 +15,7 @@ import (
 )
 
 func TestGetPrincipalFromToken(t *testing.T) {
-	service := New("http://doesnt.matter", zerolog.New(os.Stdout))
+	service := New("doesnt.matter", "doesnt.matter", "http://doesnt.matter", zerolog.New(os.Stdout))
 
 	token1, _ := jwt.NewWithClaims(jwt.SigningMethodHS256, &jwt.StandardClaims{Subject: "abc"}).SignedString([]byte("key"))
 	token2, _ := jwt.NewWithClaims(jwt.SigningMethodHS256, &jwt.StandardClaims{Subject: ""}).SignedString([]byte("key"))
@@ -67,6 +67,8 @@ func TestGetPrincipalFromToken(t *testing.T) {
 
 func TestAuthorizer(t *testing.T) {
 	testData := []struct {
+		domainType    string
+		domainID      string
 		requestPath   string
 		requestMethod string
 		responseCode  int
@@ -74,6 +76,8 @@ func TestAuthorizer(t *testing.T) {
 		err           error
 	}{
 		{
+			domainType:    "domainType",
+			domainID:      "domainID",
 			requestPath:   "/storage",
 			requestMethod: http.MethodPost,
 			responseCode:  http.StatusOK,
@@ -81,6 +85,8 @@ func TestAuthorizer(t *testing.T) {
 			err:           nil,
 		},
 		{
+			domainType:    "domainType",
+			domainID:      "domainID",
 			requestPath:   "/storage",
 			requestMethod: http.MethodPost,
 			responseCode:  http.StatusOK,
@@ -88,6 +94,8 @@ func TestAuthorizer(t *testing.T) {
 			err:           fmt.Errorf(ErrUnauthorized),
 		},
 		{
+			domainType:    "domainType",
+			domainID:      "domainID",
 			requestPath:   "/storage",
 			requestMethod: http.MethodGet,
 			responseCode:  http.StatusInternalServerError,
@@ -95,6 +103,8 @@ func TestAuthorizer(t *testing.T) {
 			err:           fmt.Errorf("Server Error"),
 		},
 		{
+			domainType:    "domainType",
+			domainID:      "domainID",
 			requestPath:   "/storage/other",
 			requestMethod: http.MethodPut,
 			responseCode:  http.StatusInternalServerError,
@@ -102,6 +112,8 @@ func TestAuthorizer(t *testing.T) {
 			err:           fmt.Errorf(`invalid character '\n' in string literal`),
 		},
 		{
+			domainType:    "domainType",
+			domainID:      "domainID",
 			requestPath:   "/something/else",
 			requestMethod: http.MethodGet,
 			responseCode:  http.StatusOK,
@@ -109,6 +121,8 @@ func TestAuthorizer(t *testing.T) {
 			err:           fmt.Errorf(ErrUnauthorized),
 		},
 		{
+			domainType:    "global",
+			domainID:      "*",
 			requestPath:   "/something/else",
 			requestMethod: http.MethodGet,
 			responseCode:  http.StatusOK,
@@ -127,12 +141,20 @@ func TestAuthorizer(t *testing.T) {
 			pairs := []*models.ValidationPair{}
 			swag.ReadJSON(body, &pairs)
 
+			if *pairs[0].DomainType != test.domainType {
+				t.Errorf("#%d Authorize(domainType: %s, domainID: %s, method: %s, path: %s) domainType = %s; expected %s", i, test.domainType, test.domainID, test.requestMethod, test.requestPath, *pairs[0].DomainType, test.domainType)
+			}
+
+			if *pairs[0].DomainID != test.domainID {
+				t.Errorf("#%d Authorize(domainType: %s, domainID: %s, method: %s, path: %s) domainID = %s; expected %s", i, test.domainType, test.domainID, test.requestMethod, test.requestPath, *pairs[0].DomainID, test.domainID)
+			}
+
 			if *pairs[0].Actions != methodToAction(test.requestMethod) {
-				t.Errorf("#%d Authorize(method: %s, path: %s) action = %d; expected %d", i, test.requestMethod, test.requestPath, *pairs[0].Actions, methodToAction(test.requestMethod))
+				t.Errorf("#%d Authorize(domainType: %s, domainID: %s, method: %s, path: %s) action = %d; expected %d", i, test.domainType, test.domainID, test.requestMethod, test.requestPath, *pairs[0].Actions, methodToAction(test.requestMethod))
 			}
 
 			if *pairs[0].Resource != "/api"+test.requestPath {
-				t.Errorf("#%d Authorize(method: %s, path: %s) path = %s; expected /api%s", i, test.requestMethod, test.requestPath, *pairs[0].Resource, test.requestPath)
+				t.Errorf("#%d Authorize(domainType: %s, domainID: %s, method: %s, path: %s) path = %s; expected /api%s", i, test.domainType, test.domainID, test.requestMethod, test.requestPath, *pairs[0].Resource, test.requestPath)
 			}
 
 			w.Header().Set("Content-Type", "application/json")
@@ -153,7 +175,7 @@ func TestAuthorizer(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		authorizer := New(ts.URL, zerolog.New(os.Stdout)).Authorizer()
+		authorizer := New(test.domainType, test.domainID, ts.URL, zerolog.New(os.Stdout)).Authorizer()
 
 		req, _ := http.NewRequest(test.requestMethod, test.requestPath, nil)
 		req.Header.Add("Authorization", authToken)

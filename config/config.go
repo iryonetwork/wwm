@@ -6,6 +6,8 @@ import (
 
 // Config struct holds commonly used configuration options
 type Config struct {
+	DomainType       string `env:"DOMAIN_TYPE" envDefault:"global"`
+	DomainID         string `env:"DOMAIN_ID" envDefault:"*"`
 	ServerHost       string `env:"SERVER_HOST" envDefault:"0.0.0.0"`
 	ServerPort       int    `env:"SERVER_PORT" envDefault:"443"`
 	KeyPath          string `env:"KEY_PATH,required"`

@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 
 	"github.com/go-openapi/strfmt"
+	uuid "github.com/satori/go.uuid"
 )
 
 // UUIDToBytes converts string uuid to bytes
@@ -42,4 +43,13 @@ func UUIDToBytes(uuid strfmt.UUID) ([]byte, error) {
 	copy(out[10:], part)
 
 	return out, nil
+}
+
+func NormalizeUUIDString(id string) (string, error) {
+	uuid, err := uuid.FromString(id)
+	if err != nil {
+		return "", err
+	}
+
+	return uuid.String(), nil
 }

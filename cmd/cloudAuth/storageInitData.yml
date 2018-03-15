@@ -1,0 +1,46 @@
+# This file contains definition of data to be used to initialize DB in dev environment
+locations:
+  - id: f7e41e48-ec79-4c78-9db6-37c0c4f78326
+    name: Cloud
+  - id: 2d04b22e-1cc3-46b4-96dd-2bee5bad9ffa
+    name: Local
+organizations:
+  - id: a422f7f5-291b-4454-ae61-3d98c6091c3e
+    name: Local
+clinics:
+  - id: e4ebb41b-7c62-4db7-9e1c-f47058b96dd0
+    name: Local
+    location: 2d04b22e-1cc3-46b4-96dd-2bee5bad9ffa
+    organization: a422f7f5-291b-4454-ae61-3d98c6091c3e
+roles: []
+rules: []
+users:
+  - id: 45163e62-8fcc-436e-8b21-2db615284d1d
+    username: admin
+    password: admin
+    email: admin@iryo.io
+  - id: 7e3ac78a-c164-4167-a3c4-be90c438217f
+    username: user
+    password: user
+    email: user@iryo.io
+userroles:
+  - userid: 45163e62-8fcc-436e-8b21-2db615284d1d # admin
+    roleid: 338fae76-9859-4803-8441-c5c441319cfd # everyone role (hardcoded id)
+    domaintype: global
+    domainid: '*'
+  - userid: 45163e62-8fcc-436e-8b21-2db615284d1d # admin
+    roleid: 3720198b-74ed-40de-a45e-8756f22e67d2 # super admin role (hardcoded id)
+    domaintype: global
+    domainid: '*'
+  - userid: 7e3ac78a-c164-4167-a3c4-be90c438217f # user
+    roleid: 338fae76-9859-4803-8441-c5c441319cfd # everyone role (hardcoded id)
+    domaintype: global
+    domainid: '*'
+  - userid: 7e3ac78a-c164-4167-a3c4-be90c438217f # user
+    roleid: a422f7f5-291b-4454-ae61-3d98c6091c3e # member role (hardcoded id)
+    domaintype: organization
+    domainid: a422f7f5-291b-4454-ae61-3d98c6091c3e # "Local" organization
+  - userid: 7e3ac78a-c164-4167-a3c4-be90c438217f # user
+    roleid: a422f7f5-291b-4454-ae61-3d98c6091c3e # member role (hardcoded id)
+    domaintype: clinic
+    domainid: e4ebb41b-7c62-4db7-9e1c-f47058b96dd0 # "Local" clinic

@@ -33,13 +33,17 @@ type Service interface {
 }
 
 type authorizer struct {
+	domainType  string
+	domainID    string
 	validateURL string
 	logger      zerolog.Logger
 }
 
 // New returns new authorizer service
-func New(validateURL string, logger zerolog.Logger) Service {
+func New(domainType, domainID, validateURL string, logger zerolog.Logger) Service {
 	return &authorizer{
+		domainType:  domainType,
+		domainID:    domainID,
 		validateURL: validateURL,
 		logger:      logger.With().Str("component", "service/authorizer").Logger(),
 	}
@@ -70,8 +74,9 @@ func (a *authorizer) GetPrincipalFromToken(tokenString string) (*string, error) 
 // Actions
 const (
 	Read   = 1
-	Write  = 1 << 1
-	Delete = 1 << 2
+	Update = 1 << 1
+	Write  = 1 << 2
+	Delete = 1 << 3
 )
 
 // Errors
@@ -93,8 +98,10 @@ func (a *authorizer) Authorizer() runtime.Authorizer {
 		resource := "/api" + request.URL.EscapedPath()
 		pairs := []*models.ValidationPair{
 			{
-				Actions:  &action,
-				Resource: &resource,
+				DomainType: &a.domainType,
+				DomainID:   &a.domainID,
+				Actions:    &action,
+				Resource:   &resource,
 			},
 		}
 		logger.Debug().Str("resource", resource).Msg("Authorizing...")
@@ -182,8 +189,9 @@ func methodToAction(method string) int64 {
 	case http.MethodDelete:
 		return Delete
 	case http.MethodPost:
-	case http.MethodPut:
 		return Write
+	case http.MethodPut:
+		return Update
 	}
 
 	return Read

@@ -11,15 +11,18 @@ import (
 	casbinmodel "github.com/casbin/casbin/model"
 	"github.com/casbin/casbin/persist"
 	"github.com/gobwas/glob"
-	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/rs/zerolog"
+
+	authCommon "github.com/iryonetwork/wwm/auth"
+	"github.com/iryonetwork/wwm/gen/auth/models"
 )
 
 // Persmissions
 const (
 	Read   = 1
-	Write  = 1 << 1
-	Delete = 1 << 2
+	Update = 1 << 1
+	Write  = 1 << 2
+	Delete = 1 << 3
 )
 
 // NewAdapter returns new Adapter
@@ -46,7 +49,8 @@ func (a *Adapter) LoadPolicy(model casbinmodel.Model) error {
 	if err != nil {
 		return err
 	}
-	roles, err := a.s.GetRoles()
+
+	userRoles, err := a.s.GetUserRoles()
 	if err != nil {
 		return err
 	}
@@ -59,9 +63,72 @@ func (a *Adapter) LoadPolicy(model casbinmodel.Model) error {
 		persist.LoadPolicyLine(fmt.Sprintf("p, %s, %s, %d, %s", *rule.Subject, *rule.Resource, *rule.Action, eft), model)
 	}
 
-	for _, role := range roles {
-		for _, user := range role.Users {
-			persist.LoadPolicyLine(fmt.Sprintf("g, %s, %s", user, role.ID), model)
+	for _, userRole := range userRoles {
+		switch *userRole.DomainType {
+		case authCommon.DomainTypeOrganization:
+			// if it's wildcard role for organization domain type, iterate through all organization and load role for all of them
+			if *userRole.DomainID == authCommon.DomainIDWildcard {
+				organizations, err := a.s.GetOrganizations()
+				if err != nil {
+					return err
+				}
+				for _, organization := range organizations {
+					persist.LoadPolicyLine(fmt.Sprintf("g, %s, %s, %s", *userRole.UserID, *userRole.RoleID, fmt.Sprintf("%s.%s", authCommon.DomainTypeOrganization, organization.ID)), model)
+				}
+			} else {
+				persist.LoadPolicyLine(fmt.Sprintf("g, %s, %s, %s", *userRole.UserID, *userRole.RoleID, fmt.Sprintf("%s.%s", authCommon.DomainTypeOrganization, *userRole.DomainID)), model)
+			}
+		case authCommon.DomainTypeClinic:
+			// if it's wildcard role for clinic domain type, iterate through all clinics and load role for all of them and for corresponding location
+			if *userRole.DomainID == authCommon.DomainIDWildcard {
+				clinics, err := a.s.GetClinics()
+				if err != nil {
+					return err
+				}
+				for _, clinic := range clinics {
+					persist.LoadPolicyLine(fmt.Sprintf("g, %s, %s, %s", *userRole.UserID, *userRole.RoleID, fmt.Sprintf("%s.%s", authCommon.DomainTypeClinic, clinic.ID)), model)
+					// for clinic all user roles apply also for clinic's location
+					persist.LoadPolicyLine(fmt.Sprintf("g, %s, %s, %s", *userRole.UserID, *userRole.RoleID, fmt.Sprintf("%s.%s", authCommon.DomainTypeLocation, *clinic.Location)), model)
+				}
+			} else {
+				clinic, err := a.s.GetClinic(*userRole.DomainID)
+				if err != nil {
+					return err
+				}
+				persist.LoadPolicyLine(fmt.Sprintf("g, %s, %s, %s", *userRole.UserID, *userRole.RoleID, fmt.Sprintf("%s.%s", authCommon.DomainTypeClinic, clinic.ID)), model)
+				// for clinic all user roles apply also for clinic's location
+				persist.LoadPolicyLine(fmt.Sprintf("g, %s, %s, %s", *userRole.UserID, *userRole.RoleID, fmt.Sprintf("%s.%s", authCommon.DomainTypeLocation, *clinic.Location)), model)
+			}
+		case authCommon.DomainTypeLocation:
+			// if it's wildcard role for location domain type, iterate through all locations and load role for all of them
+			if *userRole.DomainID == authCommon.DomainIDWildcard {
+				locations, err := a.s.GetLocations()
+				if err != nil {
+					return err
+				}
+				for _, location := range locations {
+					persist.LoadPolicyLine(fmt.Sprintf("g, %s, %s, %s", *userRole.UserID, *userRole.RoleID, fmt.Sprintf("%s.%s", authCommon.DomainTypeLocation, location.ID)), model)
+				}
+			} else {
+				persist.LoadPolicyLine(fmt.Sprintf("g, %s, %s, %s", *userRole.UserID, *userRole.RoleID, fmt.Sprintf("%s.%s", authCommon.DomainTypeOrganization, *userRole.DomainID)), model)
+			}
+		case authCommon.DomainTypeUser:
+			// if it's wildcard role for user domain type, iterate through all users and load role for all of them
+			if *userRole.DomainID == authCommon.DomainIDWildcard {
+				users, err := a.s.GetUsers()
+				if err != nil {
+					return err
+				}
+				for _, user := range users {
+					persist.LoadPolicyLine(fmt.Sprintf("g, %s, %s, %s", *userRole.UserID, *userRole.RoleID, fmt.Sprintf("%s.%s", authCommon.DomainTypeUser, user.ID)), model)
+				}
+			} else {
+				persist.LoadPolicyLine(fmt.Sprintf("g, %s, %s, %s", *userRole.UserID, *userRole.RoleID, fmt.Sprintf("%s.%s", authCommon.DomainTypeUser, *userRole.DomainID)), model)
+			}
+		case authCommon.DomainTypeGlobal:
+			persist.LoadPolicyLine(fmt.Sprintf("g, %s, %s, %s", *userRole.UserID, *userRole.RoleID, "*"), model)
+		default:
+			persist.LoadPolicyLine(fmt.Sprintf("g, %s, %s, %s", *userRole.UserID, *userRole.RoleID, fmt.Sprintf("%s.%s", *userRole.DomainType, *userRole.DomainID)), model)
 		}
 	}
 
@@ -151,19 +218,20 @@ func (w *wildcardMatch) Match(args ...interface{}) (interface{}, error) {
 // NewEnforcer returns new casbin enforcer
 func NewEnforcer(storage *Storage) (*casbin.Enforcer, error) {
 	m := casbin.NewModel(`[request_definition]
-r = sub, obj, act
+r = sub, dom, obj, act
+[dom actual location]
 
 [policy_definition]
 p = sub, obj, act, eft
 
 [role_definition]
-g = _, _
+g = _, _, _
 
 [policy_effect]
 e = some(where (p.eft == allow)) && !some(where (p.eft == deny))
 
 [matchers]
-m = g(r.sub, p.sub) && (wildcardMatch(r.obj, p.obj) || selfMatch(r.obj, p.obj, r.sub)) && binaryMatch(r.act, p.act)`)
+m = (g(r.sub, p.sub, r.dom) ||  g(r.sub, p.sub, "*")) && (wildcardMatch(r.obj, p.obj) || selfMatch(r.obj, p.obj, r.sub)) && binaryMatch(r.act, p.act)`)
 
 	a := NewAdapter(storage)
 	e := casbin.NewEnforcer(m, a, false)
@@ -186,9 +254,15 @@ func (s *Storage) FindACL(subject string, actions []*models.ValidationPair) []*m
 	results := make([]*models.ValidationResult, len(actions), len(actions))
 
 	for i, validation := range actions {
+		var domain string
+		if *validation.DomainType == authCommon.DomainTypeGlobal {
+			domain = "*"
+		} else {
+			domain = fmt.Sprintf("%s.%s", *validation.DomainType, *validation.DomainID)
+		}
 		results[i] = &models.ValidationResult{
 			Query:  validation,
-			Result: s.enforcer.Enforce(subject, *validation.Resource, strconv.FormatInt(*validation.Actions, 10)),
+			Result: s.enforcer.Enforce(subject, domain, *validation.Resource, strconv.FormatInt(*validation.Actions, 10)),
 		}
 	}
 

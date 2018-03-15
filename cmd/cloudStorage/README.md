@@ -5,6 +5,8 @@ Cloud file storage service.
 ## Configuration environment variables
 Environment variable | Default value | Description
 ------------ | ------------- | -------------
+`DOMAIN_TYPE` | `global` | *Domain in which component is operating, normally it should be 'global' for all cloud components and 'clinic' for local components.*
+`DOMAIN_ID` | `*` |  *Domain in which component is operating, normally it should be '*' for all cloud components and clinic ID for local components.*
 `KEY_PATH` | *none*, ***required*** | *Path to service's private key (PEM-formatted file).*
 `CERT_PATH` | *none*, ***required*** | *Path to service's public key (PEM-formatted file).*
 `S3_ENDPOINT` | `cloudMinio:9000` | *S3 object storage endpoint.*

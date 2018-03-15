@@ -78,7 +78,7 @@ func main() {
 	service := storage.New(s3, keys, publisher.NewNullPublisher(ctx), logger)
 
 	// initialize authorizer
-	auth := authorizer.New(fmt.Sprintf("https://%s/%s/validate", cfg.AuthHost, cfg.AuthPath), logger.With().Str("component", "service/authorizer").Logger())
+	auth := authorizer.New(cfg.DomainType, cfg.DomainID, fmt.Sprintf("https://%s/%s/validate", cfg.AuthHost, cfg.AuthPath), logger.With().Str("component", "service/authorizer").Logger())
 
 	api := operations.NewStorageAPI(swaggerSpec)
 	api.ServeError = utils.ServeError
