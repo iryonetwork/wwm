@@ -1,0 +1,17 @@
+@import "../../styles/variables.scss";
+
+.status {
+    margin: 4px 0;
+
+    .light {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 4px;
+        margin-right: 8px;
+
+        &.success {
+            background: $success;
+        }
+    }
+}

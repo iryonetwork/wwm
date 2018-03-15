@@ -1,34 +1,57 @@
-.login {
+@import "../../styles/variables.scss";
+
+.login-container {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
     max-width: 330px;
-    padding: 15px;
-    margin: 40px auto;
-}
+    margin: 0 auto;
 
-.login .form-control {
-    position: relative;
-    box-sizing: border-box;
-    height: auto;
-    padding: 10px;
-    font-size: 16px;
-}
+    .login {
+        margin: auto;
+        width: 100%;
+    }
 
-.login .form-control:focus {
-    z-index: 2;
-}
+    .logo {
+        margin-top: 130px;
+        align-self: flex-start;
+        img {
+            width: 200px;
+        }
+    }
 
-.login input[type="text"] {
-    margin-bottom: -1px;
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
-}
+    .login .form-control:focus {
+        z-index: 2;
+    }
 
-.login input[type="password"] {
-    margin-bottom: 10px;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-}
+    .footer {
+        height: 150px;
+    }
 
-.login .alert {
-    margin-top: 10px;
-    position: relative;
+    .btn {
+        box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    .login .alert {
+        position: static;
+        margin: 0;
+        font-size: 9px;
+        color: $white;
+        text-transform: uppercase;
+        padding: 0px 8px;
+        background: $danger;
+        border-radius: 7px;
+        font-weight: bold;
+
+        transition: height 0.1s, margin 0.1s, padding 0.1s;
+        transition-timing-function: ease-in-out;
+
+        &.show {
+            height: auto;
+            padding: 3px 8px;
+            margin-bottom: 14px;
+        }
+    }
 }

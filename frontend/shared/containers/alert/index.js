@@ -8,9 +8,11 @@ const Alert = props => {
     return (
         <div className={`alert alert-${props.color} alert-dismissible fade ${props.open ? "show" : ""}`} role="alert">
             {props.code ? `${props.code}:` : ""} {props.message}
-            <button type="button" className="close" data-dismiss="alert" aria-label="Close" onClick={props.close}>
-                <span aria-hidden="true">&times;</span>
-            </button>
+            {props.disableClose ? null : (
+                <button type="button" className="close" data-dismiss="alert" aria-label="Close" onClick={props.close}>
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            )}
         </div>
     )
 }

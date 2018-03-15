@@ -1,0 +1,74 @@
+@import "shared/styles/variables.scss";
+
+.patients {
+    header {
+        display: flex;
+
+        h1 {
+            flex-grow: 1;
+            margin: 0;
+        }
+
+        button {
+            align-self: flex-end;
+        }
+    }
+
+    .search {
+        width: 100%;
+        margin: 35px 0;
+        padding: 8px 50px;
+        border: 0;
+        border-bottom: 1px solid $grey3;
+
+        transition: border-color 0.1s;
+        transition-timing-function: ease-in-out;
+
+        &:focus {
+            caret-color: $primary;
+            outline: none;
+            border-bottom-color: $primary;
+        }
+
+        &::placeholder {
+            color: $input-placeholder-color;
+        }
+    }
+
+    .table {
+        th,
+        td {
+            border-top: 0;
+            border-bottom: 1px solid $grey3;
+            vertical-align: middle;
+            padding: 20px 0;
+        }
+
+        tbody tr th {
+            min-width: 200px;
+        }
+
+        img {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            float: left;
+            margin-right: 10px;
+        }
+
+        .dob {
+            font-weight: normal;
+
+            .age {
+                display: inline-block;
+
+                &::before,
+                &::after {
+                    display: inline-block;
+                    margin: 0 4px;
+                    content: "\B7";
+                }
+            }
+        }
+    }
+}

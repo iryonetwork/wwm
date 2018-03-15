@@ -1,8 +1,39 @@
-@import "iryo-variables.scss";
 @import "fonts.scss";
-@import "bootstrap/scss/bootstrap.scss";
+@import "variables.scss";
+
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/grid";
+@import "bootstrap/scss/tables";
+@import "bootstrap/scss/forms";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/transitions";
+@import "bootstrap/scss/button-group";
+@import "bootstrap/scss/input-group";
+@import "bootstrap/scss/custom-forms";
+@import "bootstrap/scss/alert";
+@import "bootstrap/scss/close";
+@import "bootstrap/scss/utilities";
+@import "bootstrap/scss/print";
+
+//@import "bootstrap/scss/bootstrap.scss";
 
 @import "icons/style.css";
+
+html {
+    height: 100%;
+}
+
+body {
+    min-height: 100%;
+    display: flex;
+
+    #root {
+        display: flex;
+        flex-grow: 1;
+    }
+}
 
 h1,
 h2,
@@ -21,4 +52,14 @@ main.container {
     left: 0;
     right: 0;
     z-index: 1;
+}
+
+h1 {
+    font-size: 36px;
+    line-height: 40px;
+}
+
+.btn-wide {
+    padding-left: 40px;
+    padding-right: 40px;
 }

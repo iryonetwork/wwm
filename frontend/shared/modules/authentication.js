@@ -22,9 +22,11 @@ export default (state = initialState, action) => {
         switch (action.type) {
             case LOGIN:
                 draft.pending = true
+                draft.error = false
                 break
             case ERROR:
                 draft.pending = false
+                draft.error = true
                 break
             case LOGGEDIN:
                 draft.error = null

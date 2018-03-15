@@ -1,0 +1,68 @@
+$grey1: #f7f9fa;
+$grey3: #e4e4ed;
+$grey4: #c4c4cc;
+$grey5: #9b989c;
+$errorRed: #f5210a;
+$mainColor: #0296e6;
+$successGreen: #45d957;
+$warningOrange: #ff9500;
+$white: #ffffff;
+$grey2: #ebf1f5;
+$black: #000000;
+$cerulean: #0187cf;
+$ocean-blue: #0178b8;
+$ocean-blue-two: #0169a1;
+$tomato-red: #dc1d09;
+$rust-red: #c41a08;
+$rust-red-two: #ab1706;
+$medium-green-three: #30983d;
+$medium-green: #3dc24e;
+$pumpkin: #e68600;
+$medium-green-two: #37ad45;
+$umber: #b26800;
+$browny-orange: #cc7700;
+
+// bootstrap variables
+$gray-100: $grey1;
+$gray-200: $grey2;
+$gray-300: $grey3;
+$gray-400: $grey4;
+$gray-500: $grey5;
+
+$primary: $mainColor;
+$secondary: $grey2;
+$success: $successGreen;
+$danger: $errorRed;
+$warning: $warningOrange;
+
+$border-radius: 3px;
+
+$font-family-sans-serif: "Nunito Sans";
+$font-size-base: 14px;
+//$line-height-base: 1;
+
+// forms
+$input-btn-padding-y: 8px;
+$input-btn-padding-x: 10px;
+
+$input-btn-padding-y-sm: 3px;
+$input-btn-padding-x-sm: 6px;
+
+$input-btn-padding-y-lg: 7px;
+$input-btn-padding-x-lg: 15px;
+
+$btn-font-weight: bold;
+
+$input-color: $black;
+$input-border-color: $gray-300;
+$input-placeholder-color: $gray-500;
+$form-group-margin-bottom: 14px;
+
+$nav-link-padding-y: 8px;
+$nav-link-padding-x: 16px;
+
+$alert-padding-y: 12px;
+$alert-padding-x: 20px;
+
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";

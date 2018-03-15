@@ -7,6 +7,9 @@ import { Redirect } from "react-router-dom"
 import Alert from "../../containers/alert"
 import { setUsername, setPassword, login } from "../../modules/authentication"
 
+import Logo from "../logo"
+import Status from "../status"
+
 import "./style.css"
 
 const Login = props => {
@@ -14,23 +17,46 @@ const Login = props => {
         return <Redirect to={props.from} />
     }
     return (
-        <form className="login" onSubmit={props.handleSubmit}>
-            <h2>Please sign in</h2>
-            <label htmlFor="inputEmail" className="sr-only">
-                Email address
-            </label>
-            <input type="text" className="form-control" placeholder="Username" onChange={props.setUsername} value={props.username} required autoFocus />
-            <label htmlFor="inputPassword" className="sr-only">
-                Password
-            </label>
-            <input type="password" className="form-control" placeholder="Password" onChange={props.setPassword} value={props.password} required />
-
-            <button className="btn btn-lg btn-primary btn-block" type="submit">
-                Sign in
-            </button>
-
-            <Alert />
-        </form>
+        <div className="login-container">
+            <div className="logo">
+                <Logo style={{ width: "200px" }} />
+                <Status />
+            </div>
+            <form className="login" onSubmit={props.handleSubmit}>
+                <div className="form-group">
+                    <label htmlFor="inputEmail" className="sr-only">
+                        Email address
+                    </label>
+                    <input
+                        type="text"
+                        className={"form-control" + (props.error ? " is-invalid" : "")}
+                        placeholder="Username"
+                        onChange={props.setUsername}
+                        value={props.username}
+                        required
+                        autoFocus
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="inputPassword" className="sr-only">
+                        Password
+                    </label>
+                    <input
+                        type="password"
+                        className={"form-control" + (props.error ? " is-invalid" : "")}
+                        placeholder="Password"
+                        onChange={props.setPassword}
+                        value={props.password}
+                        required
+                    />
+                </div>
+                <Alert disableClose={true} />
+                <button className="btn btn-primary btn-block" type="submit">
+                    Sign in
+                </button>
+            </form>
+            <div className="footer" />
+        </div>
     )
 }
 
@@ -38,6 +64,7 @@ const mapStateToProps = state => ({
     username: get(state, "authentication.form.username", ""),
     password: get(state, "authentication.form.password", ""),
     pending: state.authentication.pending,
+    error: state.authentication.error,
     redirectToReferrer: state.authentication.redirectToReferrer,
     from: get(state, "router.location.state.from", { pathname: "/" })
 })

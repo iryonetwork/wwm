@@ -1,0 +1,48 @@
+@import "shared/styles/variables.scss";
+
+nav {
+    width: 230px;
+    display: flex !important;
+    flex-direction: column;
+    background-color: $grey1;
+    box-shadow: inset -1px 0 0 0 $grey2;
+    padding: 20px;
+
+    .logo {
+        margin-top: 50px;
+        margin-bottom: 130px;
+    }
+
+    .bottom {
+        margin-top: auto;
+    }
+
+    a.navigation {
+        color: $gray-500;
+        margin: 5px 0;
+
+        span {
+            display: inline-block;
+            width: 30px;
+            text-align: center;
+            font-size: 17px;
+            position: relative;
+            top: 2px;
+        }
+
+        &:hover,
+        &.active {
+            text-decoration: initial;
+            color: $black;
+        }
+    }
+}
+
+main {
+    flex-grow: 1;
+    padding: 20px;
+
+    & > .container {
+        margin-top: 50px;
+    }
+}
