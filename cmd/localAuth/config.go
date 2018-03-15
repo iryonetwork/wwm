@@ -12,8 +12,8 @@ type Config struct {
 	BoltDBFilepath   string `env:"BOLT_DB_FILEPATH" envDefault:"/data/localAuth.db"`
 	CloudAuthHost    string `env:"CLOUD_AUTH_HOST" envDefault:"cloudAuth"`
 	CloudAuthPath    string `env:"CLOUD_AUTH_PATH" envDefault:"auth"`
-	AuthSyncKeyPath  string `env:"AUTH_SYNC_KEY_PATH" envDefault:"/certs/localAuthSync-key.pem"`
-	AuthSyncCertPath string `env:"AUTH_SYNC_CERT_PATH" envDefault:"/certs/localAuthSync.pem"`
+	AuthSyncKeyPath  string `env:"AUTH_SYNC_KEY_PATH,required"`
+	AuthSyncCertPath string `env:"AUTH_SYNC_CERT_PATH,required"`
 }
 
 // GetConfig parses environment variables and returns pointer to config and error
