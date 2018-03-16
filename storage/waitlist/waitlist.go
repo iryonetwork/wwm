@@ -86,6 +86,9 @@ func (s *storage) UpdateList(list *models.List) (*models.List, error) {
 	}
 
 	err = s.db.Update(func(tx *bolt.Tx) error {
+		if tx.Bucket(bucketCurrent).Bucket(id.Bytes()) == nil {
+			return utils.NewError(utils.ErrNotFound, "waitlist not found")
+		}
 		return tx.Bucket(bucketListMetadata).Put(id.Bytes(), data)
 	})
 	if err != nil {
