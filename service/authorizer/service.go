@@ -97,6 +97,7 @@ func (a *authorizer) Authorizer() runtime.Authorizer {
 				Resource: &resource,
 			},
 		}
+		logger.Debug().Str("resource", resource).Msg("Authorizing...")
 
 		body, err := swag.WriteJSON(pairs)
 		if err != nil {
@@ -171,6 +172,7 @@ func (a *authorizer) Authorizer() runtime.Authorizer {
 			return err
 		}
 
+		logger.Error().Str("code", jsonError.Code).Str("errorMessage", jsonError.Message).Msg("Error authorizing")
 		return fmt.Errorf(jsonError.Message)
 	})
 }

@@ -85,13 +85,15 @@ func (a *service) Login(_ context.Context, username, password string) (string, e
 // Validate checks if the user has the capability to execute the specific
 // actions on a resource
 func (a *service) Validate(_ context.Context, userID *string, queries []*models.ValidationPair) ([]*models.ValidationResult, error) {
-	// skip db for services
 	if strings.HasPrefix(*userID, servicePrincipal) {
+		keyID := (*userID)[len(servicePrincipal):]
+		s, _ := a.syncServices[keyID]
+
 		results := make([]*models.ValidationResult, len(queries))
 		for i, query := range queries {
 			results[i] = &models.ValidationResult{
 				Query:  query,
-				Result: true,
+				Result: s.glob.Match(strings.TrimPrefix(*query.Resource, "/api")),
 			}
 		}
 		return results, nil
