@@ -2,8 +2,12 @@ package waitlist
 
 import (
 	"bytes"
+	"math/rand"
+	"sort"
 	"testing"
+	"time"
 
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	uuid "github.com/satori/go.uuid"
 
@@ -231,3 +235,103 @@ func TestDeleteItem(t *testing.T) {
 		return nil
 	})
 }
+
+var items []*models.Item
+
+func benchmarkListItems(i int, b *testing.B) {
+	id, storage := initWaitlist("test")
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	for j := 0; j < i; j++ {
+		item := &models.Item{
+			Complaint: "something",
+			Priority:  swag.Int64(int64(r.Intn(3) + 1)),
+		}
+
+		storage.AddItem(id, item)
+	}
+	b.ResetTimer()
+
+	var res []*models.Item
+	for n := 0; n < b.N; n++ {
+		res, _ = storage.ListItems(id)
+	}
+	items = res
+}
+
+type sorted []*models.Item
+
+func (a sorted) Len() int      { return len(a) }
+func (a sorted) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a sorted) Less(i, j int) bool {
+	if *(a[i].Priority) < *(a[j].Priority) {
+		return true
+	}
+	if *(a[i].Priority) > *(a[j].Priority) {
+		return false
+	}
+	return a[i].Added.String() < a[j].Added.String()
+}
+
+func benchmarkListItemsSort(i int, b *testing.B) {
+	id, storage := initWaitlist("test")
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	for j := 0; j < i; j++ {
+		item := &models.Item{
+			Complaint: "something",
+			Priority:  swag.Int64(int64(r.Intn(3) + 1)),
+		}
+
+		storage.db.Update(func(tx *bolt.Tx) error {
+			bCurrent := tx.Bucket(bucketCurrent).Bucket(id)
+
+			id, err := uuid.NewV4()
+			if err != nil {
+				return err
+			}
+			item.ID = id.String()
+			item.Added = strfmt.DateTime(time.Now())
+
+			data, err := item.MarshalBinary()
+			if err != nil {
+				return err
+			}
+
+			return bCurrent.Put(id.Bytes(), data)
+		})
+	}
+
+	b.ResetTimer()
+
+	var res []*models.Item
+	for n := 0; n < b.N; n++ {
+		itms := []*models.Item{}
+		storage.db.View(func(tx *bolt.Tx) error {
+			bCurrent := tx.Bucket(bucketCurrent).Bucket(id)
+
+			bCurrent.ForEach(func(_, v []byte) error {
+				var currentItem models.Item
+				currentItem.UnmarshalBinary(v)
+
+				itms = append(itms, &currentItem)
+				return nil
+			})
+
+			return nil
+		})
+
+		sort.Sort(sorted(itms))
+
+		res = itms
+	}
+	items = res
+}
+
+func BenchmarkListItems10(b *testing.B)  { benchmarkListItems(10, b) }
+func BenchmarkListItems20(b *testing.B)  { benchmarkListItems(20, b) }
+func BenchmarkListItems50(b *testing.B)  { benchmarkListItems(50, b) }
+func BenchmarkListItems100(b *testing.B) { benchmarkListItems(100, b) }
+
+func BenchmarkListItemsSort10(b *testing.B)  { benchmarkListItemsSort(10, b) }
+func BenchmarkListItemsSort20(b *testing.B)  { benchmarkListItemsSort(20, b) }
+func BenchmarkListItemsSort50(b *testing.B)  { benchmarkListItemsSort(50, b) }
+func BenchmarkListItemsSort100(b *testing.B) { benchmarkListItemsSort(100, b) }

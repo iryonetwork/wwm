@@ -3,8 +3,9 @@ package waitlist
 import (
 	"bytes"
 	"fmt"
+	"time"
 
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/strfmt"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/iryonetwork/wwm/gen/waitlist/models"
@@ -18,22 +19,18 @@ func (s *storage) Lists() ([]*models.List, error) {
 
 	err := s.db.View(func(tx *bolt.Tx) error {
 		return tx.Bucket(bucketCurrent).ForEach(func(waitlistID, _ []byte) error {
-			name := tx.Bucket(bucketListNames).Get(waitlistID)
-			if name == nil {
-				return fmt.Errorf("List name not found")
+			data := tx.Bucket(bucketListMetadata).Get(waitlistID)
+			if data == nil {
+				return fmt.Errorf("List metadata not found")
 			}
 
-			id, err := uuid.FromBytes(waitlistID)
+			var list models.List
+			err := list.UnmarshalBinary(data)
 			if err != nil {
 				return err
 			}
 
-			list := &models.List{
-				ID:   id.String(),
-				Name: swag.String(string(name)),
-			}
-
-			lists = append(lists, list)
+			lists = append(lists, &list)
 
 			return nil
 		})
@@ -55,13 +52,19 @@ func (s *storage) AddList(name string) (*models.List, error) {
 		return nil, err
 	}
 	list.ID = id.String()
+	list.Added = strfmt.DateTime(time.Now())
+
+	data, err := list.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
 
 	err = s.db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.Bucket(bucketCurrent).CreateBucket(id.Bytes())
 		if err != nil {
 			return err
 		}
-		return tx.Bucket(bucketListNames).Put(id.Bytes(), []byte(name))
+		return tx.Bucket(bucketListMetadata).Put(id.Bytes(), data)
 	})
 	if err != nil {
 		return nil, err
@@ -77,8 +80,13 @@ func (s *storage) UpdateList(list *models.List) (*models.List, error) {
 		return nil, utils.NewError(utils.ErrBadRequest, err.Error())
 	}
 
+	data, err := list.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+
 	err = s.db.Update(func(tx *bolt.Tx) error {
-		return tx.Bucket(bucketListNames).Put(id.Bytes(), []byte(*list.Name))
+		return tx.Bucket(bucketListMetadata).Put(id.Bytes(), data)
 	})
 	if err != nil {
 		return nil, err
@@ -93,6 +101,29 @@ func (s *storage) DeleteList(waitlistID []byte) error {
 		bCurrent := tx.Bucket(bucketCurrent).Bucket(waitlistID)
 		if bCurrent == nil {
 			return utils.NewError(utils.ErrNotFound, "waitlist not found")
+		}
+
+		// add Closed time to metadata
+		data := tx.Bucket(bucketListMetadata).Get(waitlistID)
+		if data == nil {
+			return fmt.Errorf("List metadata not found")
+		}
+
+		var list models.List
+		err := list.UnmarshalBinary(data)
+		if err != nil {
+			return err
+		}
+
+		list.Closed = strfmt.DateTime(time.Now())
+		data, err = list.MarshalBinary()
+		if err != nil {
+			return err
+		}
+
+		err = tx.Bucket(bucketListMetadata).Put(waitlistID, data)
+		if err != nil {
+			return err
 		}
 
 		bHistory, err := tx.Bucket(bucketHistory).CreateBucketIfNotExists(waitlistID)

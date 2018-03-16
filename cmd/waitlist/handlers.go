@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/go-openapi/runtime/middleware"
-	uuid "github.com/satori/go.uuid"
 
 	"github.com/iryonetwork/wwm/gen/waitlist/restapi/operations/item"
 	"github.com/iryonetwork/wwm/gen/waitlist/restapi/operations/waitlist"
@@ -38,7 +37,7 @@ func (h *handlers) WaitlistPost() waitlist.PostHandler {
 
 func (h *handlers) WaitlistPutListID() waitlist.PutListIDHandler {
 	return waitlist.PutListIDHandlerFunc(func(params waitlist.PutListIDParams, principal *string) middleware.Responder {
-		if params.ListID != params.List.ID {
+		if params.ListID.String() != params.List.ID {
 			return utils.NewError(utils.ErrBadRequest, "URL list ID and body list ID do not match")
 		}
 
@@ -53,12 +52,9 @@ func (h *handlers) WaitlistPutListID() waitlist.PutListIDHandler {
 
 func (h *handlers) WaitlistDeleteListID() waitlist.DeleteListIDHandler {
 	return waitlist.DeleteListIDHandlerFunc(func(params waitlist.DeleteListIDParams, principal *string) middleware.Responder {
-		id, err := uuid.FromString(params.ListID)
-		if err != nil {
-			return utils.NewError(utils.ErrBadRequest, err.Error())
-		}
+		listID, _ := utils.UUIDToBytes(params.ListID)
 
-		err = h.s.DeleteList(id.Bytes())
+		err := h.s.DeleteList(listID)
 		if err != nil {
 			return utils.NewErrorResponse(err)
 		}
@@ -69,12 +65,9 @@ func (h *handlers) WaitlistDeleteListID() waitlist.DeleteListIDHandler {
 
 func (h *handlers) ItemGetListID() item.GetListIDHandler {
 	return item.GetListIDHandlerFunc(func(params item.GetListIDParams, principal *string) middleware.Responder {
-		id, err := uuid.FromString(params.ListID)
-		if err != nil {
-			return utils.NewError(utils.ErrBadRequest, err.Error())
-		}
+		listID, _ := utils.UUIDToBytes(params.ListID)
 
-		items, err := h.s.ListItems(id.Bytes())
+		items, err := h.s.ListItems(listID)
 		if err != nil {
 			return utils.NewErrorResponse(err)
 		}
@@ -85,17 +78,10 @@ func (h *handlers) ItemGetListID() item.GetListIDHandler {
 
 func (h *handlers) ItemDeleteListIDItemID() item.DeleteListIDItemIDHandler {
 	return item.DeleteListIDItemIDHandlerFunc(func(params item.DeleteListIDItemIDParams, principal *string) middleware.Responder {
-		listID, err := uuid.FromString(params.ListID)
-		if err != nil {
-			return utils.NewError(utils.ErrBadRequest, err.Error())
-		}
+		listID, _ := utils.UUIDToBytes(params.ListID)
+		itemID, _ := utils.UUIDToBytes(params.ItemID)
 
-		itemID, err := uuid.FromString(params.ItemID)
-		if err != nil {
-			return utils.NewError(utils.ErrBadRequest, err.Error())
-		}
-
-		err = h.s.DeleteItem(listID.Bytes(), itemID.Bytes(), params.Reason)
+		err := h.s.DeleteItem(listID, itemID, params.Reason)
 		if err != nil {
 			return utils.NewErrorResponse(err)
 		}
@@ -106,12 +92,9 @@ func (h *handlers) ItemDeleteListIDItemID() item.DeleteListIDItemIDHandler {
 
 func (h *handlers) ItemPostListID() item.PostListIDHandler {
 	return item.PostListIDHandlerFunc(func(params item.PostListIDParams, principal *string) middleware.Responder {
-		listID, err := uuid.FromString(params.ListID)
-		if err != nil {
-			return utils.NewError(utils.ErrBadRequest, err.Error())
-		}
+		listID, _ := utils.UUIDToBytes(params.ListID)
 
-		newItem, err := h.s.AddItem(listID.Bytes(), params.Item)
+		newItem, err := h.s.AddItem(listID, params.Item)
 		if err != nil {
 			return utils.NewErrorResponse(err)
 		}
@@ -122,16 +105,12 @@ func (h *handlers) ItemPostListID() item.PostListIDHandler {
 
 func (h *handlers) ItemPutListIDItemID() item.PutListIDItemIDHandler {
 	return item.PutListIDItemIDHandlerFunc(func(params item.PutListIDItemIDParams, principal *string) middleware.Responder {
-		listID, err := uuid.FromString(params.ListID)
-		if err != nil {
-			return utils.NewError(utils.ErrBadRequest, err.Error())
-		}
-
-		if params.ItemID != params.Item.ID {
+		if params.ItemID.String() != params.Item.ID {
 			return utils.NewError(utils.ErrBadRequest, "URL item ID and body item ID do not match")
 		}
 
-		_, err = h.s.UpdateItem(listID.Bytes(), params.Item)
+		listID, _ := utils.UUIDToBytes(params.ListID)
+		_, err := h.s.UpdateItem(listID, params.Item)
 		if err != nil {
 			return utils.NewErrorResponse(err)
 		}

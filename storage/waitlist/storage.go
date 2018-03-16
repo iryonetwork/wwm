@@ -46,7 +46,7 @@ type storage struct {
 
 var bucketCurrent = []byte("current")
 var bucketHistory = []byte("history")
-var bucketListNames = []byte("listsNames")
+var bucketListMetadata = []byte("listsMetadata")
 var keyQueue = []byte("queue")
 
 const priorityLevels = 4
@@ -81,7 +81,7 @@ func New(path string, key []byte, logger zerolog.Logger) (Storage, error) {
 			return err
 		}
 
-		_, err = tx.CreateBucketIfNotExists(bucketListNames)
+		_, err = tx.CreateBucketIfNotExists(bucketListMetadata)
 		return err
 
 	})

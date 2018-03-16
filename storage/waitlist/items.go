@@ -58,16 +58,17 @@ func (s *storage) AddItem(waitlistID []byte, item *models.Item) (*models.Item, e
 	}
 
 	err := s.db.Update(func(tx *bolt.Tx) error {
+		bCurrent := tx.Bucket(bucketCurrent).Bucket(waitlistID)
+		if bCurrent == nil {
+			return utils.NewError(utils.ErrNotFound, "waitlist not found")
+		}
+
 		id, err := uuid.NewV4()
 		if err != nil {
 			return err
 		}
 		item.ID = id.String()
-
-		bCurrent, err := tx.Bucket(bucketCurrent).CreateBucketIfNotExists(waitlistID)
-		if err != nil {
-			return err
-		}
+		item.Added = strfmt.DateTime(time.Now())
 
 		data, err := item.MarshalBinary()
 		if err != nil {

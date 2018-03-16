@@ -56,6 +56,10 @@ func (err Error) WriteResponse(rw http.ResponseWriter, producer runtime.Producer
 		rw.WriteHeader(404)
 	default:
 		rw.WriteHeader(500)
+		err.e = authModels.Error{
+			Code:    ErrServerError,
+			Message: "Internal Server Error",
+		}
 	}
 
 	if err.e != nil {
