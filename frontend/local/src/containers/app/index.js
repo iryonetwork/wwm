@@ -3,13 +3,16 @@ import { Route, NavLink } from "react-router-dom"
 import { connect } from "react-redux"
 import { bindActionCreators } from "redux"
 
-import Alert from "shared/containers/alert"
 import { close } from "shared/modules/alert"
 import Logo from "shared/containers/logo"
 import Status from "shared/containers/status"
 
 import Patients from "../patients"
 import Waitlist from "../waitlist"
+
+import { ReactComponent as PatientsIcon } from "shared/icons/patients.svg"
+import { ReactComponent as WaitlistIcon } from "shared/icons/waiting-list.svg"
+import { ReactComponent as LogoutIcon } from "shared/icons/logout.svg"
 
 import "./style.css"
 
@@ -34,18 +37,18 @@ class App extends React.Component {
                     </div>
 
                     <NavLink exact className="navigation" to="/">
-                        <span className="icon_menu" />
+                        <PatientsIcon />
                         Patients
                     </NavLink>
 
                     <NavLink exact className="navigation" to="/waitlist">
-                        <span className="icon_adjust-vert" />
+                        <WaitlistIcon />
                         Waiting list
                     </NavLink>
 
                     <div className="bottom">
                         <a className="navigation" href="/" onClick={this.logout}>
-                            <span className="icon_compass_alt" />
+                            <LogoutIcon />
                             Logout
                         </a>
                     </div>

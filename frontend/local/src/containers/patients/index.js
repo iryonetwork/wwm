@@ -1,7 +1,6 @@
 import React from "react"
 
-import PersonPlaceholder from "shared/public/person.svg"
-
+import Patient from "shared/containers/patient"
 import "./style.css"
 
 export default () => (
@@ -20,15 +19,7 @@ export default () => (
                 {Array.from(Array(10), (v, i) => (
                     <tr key={i}>
                         <th scope="row">
-                            <img src={PersonPlaceholder} alt="" />
-                            <div>
-                                <div className="name">Graves, Alma</div>
-                                <div className="dob">
-                                    3 Jun 1994
-                                    <span className="age">24 y</span>
-                                    F
-                                </div>
-                            </div>
+                            <Patient />
                         </th>
                         <td>Syrian</td>
                         <td>Syrian ID P349294839</td>

@@ -1,0 +1,62 @@
+@import "shared/styles/variables.scss";
+
+.waitlist {
+    h1 {
+        padding: 0 20px;
+    }
+
+    h2 {
+        margin: 20px 0;
+    }
+
+    .part {
+        margin: 50px 0;
+        padding: 30px 20px;
+    }
+
+    .now,
+    .next {
+        .table {
+            td,
+            th {
+                border: 0;
+            }
+        }
+    }
+
+    .next {
+        border-radius: 6px;
+        background-color: $gray-100;
+        border: 1px solid $gray-200;
+    }
+}
+
+.vital_signs {
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+            color: $gray-300;
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 1px solid $gray-300;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 9px;
+            line-height: 19px;
+            vertical-align: middle;
+            margin: 0 5px;
+            box-shadow: 0 0 1px 0px $gray-300 inset, 0 0 1px 0px $gray-300;
+
+            &.active {
+                color: $black;
+                border-color: $black;
+                box-shadow: 0 0 1px 0px $black inset, 0 0 1px 0px $black;
+            }
+        }
+    }
+}

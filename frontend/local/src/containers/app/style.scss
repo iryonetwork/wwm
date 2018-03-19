@@ -4,9 +4,12 @@ nav {
     width: 230px;
     display: flex !important;
     flex-direction: column;
-    background-color: $grey1;
-    box-shadow: inset -1px 0 0 0 $grey2;
+    background-color: $gray-100;
+    border-right: 1px solid $gray-200;
     padding: 20px;
+    position: fixed;
+    top: 0;
+    bottom: 0;
 
     .logo {
         margin-top: 50px;
@@ -19,21 +22,29 @@ nav {
 
     a.navigation {
         color: $gray-500;
-        margin: 5px 0;
+        height: 30px;
+        line-height: 30px;
+        display: block;
 
-        span {
-            display: inline-block;
+        svg {
             width: 30px;
-            text-align: center;
-            font-size: 17px;
-            position: relative;
-            top: 2px;
+            float: left;
+
+            g,
+            path {
+                fill: $gray-500;
+            }
         }
 
         &:hover,
         &.active {
             text-decoration: initial;
             color: $black;
+
+            svg g,
+            svg path {
+                fill: $black;
+            }
         }
     }
 }
@@ -41,6 +52,7 @@ nav {
 main {
     flex-grow: 1;
     padding: 20px;
+    margin-left: 230px;
 
     & > .container {
         margin-top: 50px;
