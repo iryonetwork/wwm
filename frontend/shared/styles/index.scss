@@ -42,15 +42,9 @@ h3,
     color: #000;
 }
 
-main.container {
-    margin-top: 2rem;
-    position: relative;
-}
-
 .alert {
-    position: absolute;
-    left: 0;
-    right: 0;
+    position: relative;
+    top: -50px;
     z-index: 1;
 }
 
@@ -64,7 +58,7 @@ h1 {
     padding-right: 40px;
 }
 
-.table {
+.table.patients {
     margin: 0;
 
     th,
@@ -82,5 +76,64 @@ h1 {
     td:last-child {
         width: 1%;
         white-space: nowrap;
+    }
+}
+
+nav {
+    width: 230px;
+    display: flex !important;
+    flex-direction: column;
+    background-color: $gray-100;
+    border-right: 1px solid $gray-200;
+    padding: 20px;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+
+    .logo {
+        margin-top: 50px;
+        margin-bottom: 130px;
+    }
+
+    .bottom {
+        margin-top: auto;
+    }
+
+    a.navigation {
+        color: $gray-500;
+        height: 30px;
+        line-height: 30px;
+        display: block;
+
+        svg {
+            width: 30px;
+            float: left;
+
+            g,
+            path {
+                fill: $gray-500;
+            }
+        }
+
+        &:hover,
+        &.active {
+            text-decoration: initial;
+            color: $black;
+
+            svg g,
+            svg path {
+                fill: $black;
+            }
+        }
+    }
+}
+
+main {
+    flex-grow: 1;
+    padding: 20px;
+    margin-left: 230px;
+
+    & > .container {
+        margin-top: 50px;
     }
 }

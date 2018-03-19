@@ -10,6 +10,8 @@ import Users from "../users"
 import UserDetail from "../users/detail"
 import Roles from "../roles"
 import { close } from "shared/modules/alert"
+import Logo from "shared/containers/logo"
+import { ReactComponent as LogoutIcon } from "shared/icons/logout.svg"
 
 class App extends React.Component {
     componentWillReceiveProps(nextProps) {
@@ -24,65 +26,44 @@ class App extends React.Component {
 
     render() {
         return (
-            <div>
-                <header>
-                    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-                        <div className="container">
-                            <Link className="navbar-brand" to="/">
-                                Home
-                            </Link>
-                            <button
-                                className="navbar-toggler"
-                                type="button"
-                                data-toggle="collapse"
-                                data-target="#navbarText"
-                                aria-controls="navbarText"
-                                aria-expanded="false"
-                                aria-label="Toggle navigation"
-                            >
-                                <span className="navbar-toggler-icon" />
-                            </button>
+            <React.Fragment>
+                <nav>
+                    <div className="logo">
+                        <Link to="/">
+                            <Logo style={{ width: "100px" }} />
+                        </Link>
+                    </div>
 
-                            <div className="collapse navbar-collapse">
-                                <ul className="navbar-nav mr-auto">
-                                    <li className="nav-item">
-                                        <NavLink className="nav-link" to="/users">
-                                            Users
-                                        </NavLink>
-                                    </li>
-                                    <li className="nav-item">
-                                        <NavLink className="nav-link" to="/roles">
-                                            Roles
-                                        </NavLink>
-                                    </li>
-                                    <li className="nav-item">
-                                        <NavLink className="nav-link" to="/rules">
-                                            ACL
-                                        </NavLink>
-                                    </li>
-                                </ul>
+                    <NavLink className="navigation" to="/users">
+                        Users
+                    </NavLink>
 
-                                <ul className="navbar-nav">
-                                    <li className="nav-item">
-                                        <a href="/" className="nav-link" onClick={this.logout}>
-                                            Logout
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </nav>
-                </header>
+                    <NavLink className="navigation" to="/roles">
+                        Roles
+                    </NavLink>
 
-                <main className="container">
-                    <Alert />
-                    <Route exact path="/" component={Home} />
-                    <Route exact path="/users" component={Users} />
-                    <Route path="/users/:id" component={UserDetail} />
-                    <Route path="/roles" component={Roles} />
-                    <Route exact path="/rules" component={Rules} />
+                    <NavLink className="navigation" to="/rules">
+                        ACL
+                    </NavLink>
+
+                    <div className="bottom">
+                        <a className="navigation" href="/" onClick={this.logout}>
+                            <LogoutIcon />
+                            Logout
+                        </a>
+                    </div>
+                </nav>
+                <main>
+                    <div className="container">
+                        <Alert />
+                        <Route exact path="/" component={Home} />
+                        <Route exact path="/users" component={Users} />
+                        <Route path="/users/:id" component={UserDetail} />
+                        <Route path="/roles" component={Roles} />
+                        <Route exact path="/rules" component={Rules} />
+                    </div>
                 </main>
-            </div>
+            </React.Fragment>
         )
     }
 }

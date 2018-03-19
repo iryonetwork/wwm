@@ -14,8 +14,6 @@ import { ReactComponent as PatientsIcon } from "shared/icons/patients.svg"
 import { ReactComponent as WaitlistIcon } from "shared/icons/waiting-list.svg"
 import { ReactComponent as LogoutIcon } from "shared/icons/logout.svg"
 
-import "./style.css"
-
 class App extends React.Component {
     componentWillReceiveProps(nextProps) {
         if (nextProps.location.pathname !== this.props.location.pathname) {

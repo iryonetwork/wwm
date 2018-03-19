@@ -17,6 +17,7 @@ const initialState = {
 }
 
 export default (state = initialState, action) => {
+    let roles, users
     switch (action.type) {
         case LOAD_ROLES:
             return {
@@ -25,7 +26,7 @@ export default (state = initialState, action) => {
             }
 
         case LOAD_ROLES_SUCCESS:
-            let users = {}
+            users = {}
             _.forEach(action.roles, role => {
                 _.forEach(role.users, user => {
                     if (!users[user]) {
@@ -53,7 +54,7 @@ export default (state = initialState, action) => {
             }
 
         case UPDATE_ROLE_SUCCESS:
-            let roles = { ...state.roles }
+            roles = { ...state.roles }
             users = { ...state.users }
             if (_.indexOf(roles[action.role.id].users, action.userID) === -1) {
                 users[action.userID].push(action.role.id)

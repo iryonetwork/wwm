@@ -17,6 +17,7 @@ const initialState = {
 }
 
 export default (state = initialState, action) => {
+    let subjects, rules
     switch (action.type) {
         case LOAD_RULES:
             return {
@@ -25,7 +26,7 @@ export default (state = initialState, action) => {
             }
 
         case LOAD_RULES_SUCCESS:
-            let subjects = {}
+            subjects = {}
             _.forEach(action.rules, rule => {
                 if (!subjects[rule.subject]) {
                     subjects[rule.subject] = []
@@ -52,7 +53,7 @@ export default (state = initialState, action) => {
 
         case SAVE_RULE_SUCCESS:
             subjects = { ...state.subjects }
-            let rules = { ...state.rules }
+            rules = { ...state.rules }
             rules[action.rule.id] = action.rule
             rules[action.rule.id].edit = false
             rules[action.rule.id].saving = false

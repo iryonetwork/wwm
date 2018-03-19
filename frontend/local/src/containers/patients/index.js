@@ -14,7 +14,7 @@ export default () => (
 
         <input name="search" placeholder="Search" className="search" />
 
-        <table className="table">
+        <table className="table patients">
             <tbody>
                 {Array.from(Array(10), (v, i) => (
                     <tr key={i}>

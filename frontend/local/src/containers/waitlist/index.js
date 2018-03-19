@@ -11,7 +11,7 @@ export default () => (
         <div className="part now">
             <h2>Encounter</h2>
 
-            <table className="table">
+            <table className="table patients">
                 <tbody>
                     <tr>
                         <th scope="row">
@@ -29,7 +29,7 @@ export default () => (
         <div className="part next">
             <h2>Up Next</h2>
 
-            <table className="table">
+            <table className="table patients">
                 <tbody>
                     <tr>
                         <th scope="row">
@@ -47,7 +47,7 @@ export default () => (
         <div className="part">
             <h2>Waiting list</h2>
 
-            <table className="table">
+            <table className="table patients">
                 <tbody>
                     {Array.from(Array(5), (v, i) => (
                         <tr key={i}>
