@@ -18,7 +18,7 @@ type Config struct {
 	DefaultTimeout time.Duration        `env:"DEFAULT_TIMEOUT" envDefault:"1s"`
 	CountThreshold int                  `env:"COUNT_THRESHOLD" envDefault:"3"`
 	Interval       time.Duration        `env:"INTERVAL" envDefault:"3s"`
-	StatusValidity time.Duration        `env:"STSTUS_VALIDITY" envDefault:"20s"`
+	StatusValidity time.Duration        `env:"STATUS_VALIDITY" envDefault:"20s"`
 	Components     ComponentsCollection `env:"COMPONENTS_FILEPATH" envDefault:"/components.yml"`
 }
 

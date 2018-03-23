@@ -19,6 +19,7 @@ scrape_configs:
   static_configs:
   - targets:
     - localhost:9090
+
 - job_name: storage
   scrape_interval: 15s
   scrape_timeout: 10s
@@ -27,3 +28,12 @@ scrape_configs:
   static_configs:
   - targets:
     - cloudStorage:9090
+
+- job_name: discovery
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /metrics
+  scheme: http
+  static_configs:
+  - targets:
+    - cloudDiscovery:9090

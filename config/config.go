@@ -4,6 +4,7 @@ import (
 	"github.com/caarlos0/env"
 )
 
+// Config struct holds commonly used configuration options
 type Config struct {
 	ServerHost       string `env:"SERVER_HOST" envDefault:"0.0.0.0"`
 	ServerPort       int    `env:"SERVER_PORT" envDefault:"443"`
@@ -17,8 +18,10 @@ type Config struct {
 	StoragePath      string `env:"STORAGE_PATH" envDefault:"storage"`
 	AuthHost         string `env:"AUTH_HOST" envDefault:"localAuth"`
 	AuthPath         string `env:"AUTH_PATH" envDefault:"auth"`
+	VaultAddress     string `env:"VAULT_ADDRESS" envDefault:"https://vault:8200"`
 }
 
+// New returns new instance of Config
 func New() (*Config, error) {
 	cfg := &Config{}
 

@@ -131,6 +131,7 @@ func main() {
 		ss := statusServer.New(logger)
 		exitCh <- ss.ListenAndServeHTTPs(ctx, fmt.Sprintf("%s:%d", cfg.ServerHost, cfg.StatusPort), cfg.StatusNamespace, cfg.CertPath, cfg.KeyPath)
 	}()
+
 	// start serving API
 	go func() {
 		defer server.Shutdown()
@@ -177,7 +178,7 @@ func main() {
 	for i := 0; i < 2; i++ {
 		err := <-exitCh
 		if err != nil {
-			logger.Debug().Err(err).Msg("gouroutine exit message")
+			logger.Debug().Err(err).Msg("goroutine exit message")
 		}
 	}
 }

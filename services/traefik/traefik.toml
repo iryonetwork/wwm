@@ -120,6 +120,26 @@ address = ":8080"
     [backends.localStatusReporterMetrics.servers.server1]
     url = "http://localStatusReporterMetrics:9090"
 
+  [backends.localdiscovery]
+    [backends.localdiscovery.servers.server1]
+    url = "https://localDiscovery"
+
+  [backends.localdiscoveryMetrics]
+    [backends.localdiscoveryMetrics.servers.server1]
+    url = "https://localDiscovery:9090"
+
+  [backends.clouddiscovery]
+    [backends.clouddiscovery.servers.server1]
+    url = "https://cloudDiscovery"
+
+  [backends.clouddiscoveryMetrics]
+    [backends.clouddiscoveryMetrics.servers.server1]
+    url = "https://cloudDiscovery:9090"
+
+  [backends.pgweb]
+    [backends.pgweb.servers.server1]
+    url = "http://pgweb:8081"
+
 [frontends]
   [frontends.localauth]
   backend = "localauth"
@@ -190,3 +210,18 @@ address = ":8080"
   backend = "localStatusReporter"
     [frontends.localStatus.routes.route1]
     rule = "Host:iryo.local;PathPrefix:/status"
+
+  [frontends.localdiscovery]
+  backend = "localdiscovery"
+    [frontends.localdiscovery.routes.route1]
+    rule = "Host:iryo.local;PathPrefix:/discovery"
+
+  [frontends.clouddiscovery]
+  backend = "clouddiscovery"
+    [frontends.clouddiscovery.routes.route1]
+    rule = "Host:iryo.cloud;PathPrefix:/discovery"
+
+  [frontends.pgweb]
+  backend = "pgweb"
+    [frontends.pgweb.routes.route1]
+    rule = "Host:pgweb.iryo.local"

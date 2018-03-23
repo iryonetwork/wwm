@@ -5,7 +5,3 @@ listener "tcp" {
     tls_cert_file = "/certs/vault.pem"
     tls_key_file = "/certs/vault-key.pem"
 }
-
-backend "file" {
-    path = "/data"
-}

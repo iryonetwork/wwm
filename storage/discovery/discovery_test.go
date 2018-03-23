@@ -1,0 +1,939 @@
+package discovery
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"os"
+	"reflect"
+	"testing"
+	"time"
+
+	"github.com/jinzhu/gorm"
+
+	"github.com/go-openapi/strfmt"
+	"github.com/rs/zerolog"
+
+	"github.com/golang/mock/gomock"
+	"github.com/iryonetwork/wwm/gen/discovery/models"
+	"github.com/iryonetwork/wwm/storage/discovery/db"
+	"github.com/iryonetwork/wwm/storage/discovery/db/mock"
+)
+
+var (
+	uuid1      = strfmt.UUID("7F1572F5-503A-464C-BF67-A77DB49BB090")
+	uuid2      = strfmt.UUID("E2772B4B-EC6B-4509-9960-49F61DDDD08D")
+	noErrors   = false
+	withErrors = true
+	time1, _   = strfmt.ParseDateTime("2018-01-18T15:22:46.123Z")
+	card       = &models.Card{
+		PatientID: uuid1,
+		Connections: models.Connections{
+			&models.ConnectionsItems{
+				Key:   "K1",
+				Value: "V1",
+			},
+			&models.ConnectionsItems{
+				Key:   "K2",
+				Value: "V2",
+			},
+		},
+		Locations: models.Locations{uuid1},
+	}
+)
+
+func TestCreate(t *testing.T) {
+	testCases := []struct {
+		title         string
+		calls         func(*mock.MockDB)
+		expected      *models.Card
+		errorExpected bool
+		exactError    error
+	}{
+		{
+			"Successfull create",
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Create(&patient{
+						PatientID: uuid1.String(),
+					}).Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Create(&connection{
+						PatientID: uuid1.String(),
+						Key:       "K1",
+						Value:     "V1",
+					}).Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Create(&connection{
+						PatientID: uuid1.String(),
+						Key:       "K2",
+						Value:     "V2",
+					}).Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Create(&location{
+						PatientID:  uuid1.String(),
+						LocationID: uuid1.String(),
+					}).Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Commit().Return(db),
+					db.EXPECT().GetError().Return(nil))
+			},
+			&models.Card{
+				PatientID: uuid1,
+				Connections: models.Connections{
+					&models.ConnectionsItems{Key: "K1", Value: "V1"},
+					&models.ConnectionsItems{Key: "K2", Value: "V2"},
+				},
+				Locations: models.Locations{uuid1},
+			},
+			noErrors,
+			nil,
+		},
+		{
+			"Failed to create transaction",
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(fmt.Errorf("error")))
+			},
+			nil,
+			withErrors,
+			nil,
+		},
+		{
+			"Failed insert",
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Create(&patient{
+						PatientID: uuid1.String(),
+					}).Return(db),
+					db.EXPECT().GetError().Return(fmt.Errorf("error")),
+					db.EXPECT().Rollback().Return(db))
+			},
+			nil,
+			withErrors,
+			nil,
+		},
+		{
+			"Failed commit",
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Create(gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Create(gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Create(gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Create(gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Commit().Return(db),
+					db.EXPECT().GetError().Return(fmt.Errorf("Error")))
+			},
+			nil,
+			withErrors,
+			nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			// init storage
+			s, db, c := getTestStorage(t)
+			defer c()
+
+			// collect mocked calls
+			tc.calls(db)
+
+			// call the method
+			out, err := s.Create(models.Connections{
+				&models.ConnectionsItems{Key: "K1", Value: "V1"},
+				&models.ConnectionsItems{Key: "K2", Value: "V2"},
+			}, models.Locations{uuid1})
+
+			// check expected results
+			if !reflect.DeepEqual(out, tc.expected) {
+				t.Errorf("Expected\n%s\nto equal\n\t\t%s", toJSON(out), toJSON(tc.expected))
+			}
+
+			// assert error
+			if tc.errorExpected && err == nil {
+				t.Error("Expected error, got nil")
+			} else if !tc.errorExpected && err != nil {
+				t.Errorf("Expected error to be nil, got %v", err)
+			}
+
+			// assert actual error
+			if tc.exactError != nil && tc.exactError != err {
+				t.Errorf("Expected error to equal '%v'; got %v", tc.exactError, err)
+			}
+		})
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	testCases := []struct {
+		title         string
+		calls         func(*mock.MockDB)
+		expected      *models.Card
+		errorExpected bool
+		exactError    error
+	}{
+		{
+			"Successfull update",
+			func(db *mock.MockDB) {
+				p := &patient{
+					PatientID: uuid1.String(),
+					Connections: []connection{
+						connection{PatientID: uuid1.String(), Key: "K1", Value: "V1"},
+						connection{PatientID: uuid1.String(), Key: "K2", Value: "V2"},
+					},
+					Locations: []location{
+						location{PatientID: uuid1.String(), LocationID: uuid1.String()},
+					},
+				}
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// read existing data
+					db.EXPECT().Preload("Connections").Return(db),
+					db.EXPECT().Preload("Locations").Return(db),
+					db.EXPECT().First(&patient{PatientID: uuid1.String()}).SetArg(0, *p).Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// remove a connection
+					db.EXPECT().Delete(&connection{
+						PatientID: uuid1.String(),
+						Key:       "K1",
+					}).Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// replace existing connection
+					db.EXPECT().Save(&connection{
+						PatientID: uuid1.String(),
+						Key:       "K2",
+						Value:     "V2.2",
+					}).Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// add new connection
+					db.EXPECT().Create(&connection{
+						PatientID: uuid1.String(),
+						Key:       "K3",
+						Value:     "V3",
+					}).Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// remove a location
+					db.EXPECT().Delete(&location{
+						PatientID:  uuid1.String(),
+						LocationID: uuid1.String(),
+					}).Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// add a new location
+					db.EXPECT().Create(&location{
+						PatientID:  uuid1.String(),
+						LocationID: uuid2.String(),
+					}).Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// commit changes
+					db.EXPECT().Commit().Return(db),
+					db.EXPECT().GetError().Return(nil))
+			},
+			&models.Card{
+				PatientID: uuid1,
+				Connections: models.Connections{
+					&models.ConnectionsItems{Key: "K2", Value: "V2.2"},
+					&models.ConnectionsItems{Key: "K3", Value: "V3"},
+				},
+				Locations: models.Locations{uuid2},
+			},
+			noErrors,
+			nil,
+		},
+		{
+			"Patient not found",
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// read existing data
+					db.EXPECT().Preload("Connections").Return(db),
+					db.EXPECT().Preload("Locations").Return(db),
+					db.EXPECT().First(gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(gorm.ErrRecordNotFound),
+					db.EXPECT().Rollback())
+			},
+			nil,
+			withErrors,
+			ErrNotFound,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			// init storage
+			s, db, c := getTestStorage(t)
+			defer c()
+
+			// collect mocked calls
+			tc.calls(db)
+
+			// call the method
+			out, err := s.Update(uuid1, models.Connections{
+				&models.ConnectionsItems{Key: "K2", Value: "V2.2"},
+				&models.ConnectionsItems{Key: "K3", Value: "V3"},
+			}, models.Locations{uuid2})
+
+			// check expected results
+			if !reflect.DeepEqual(out, tc.expected) {
+				t.Errorf("Expected\n%s\nto equal\n\t\t%s", toJSON(out), toJSON(tc.expected))
+			}
+
+			// assert error
+			if tc.errorExpected && err == nil {
+				t.Error("Expected error, got nil")
+			} else if !tc.errorExpected && err != nil {
+				t.Errorf("Expected error to be nil, got %v", err)
+			}
+
+			// assert actual error
+			if tc.exactError != nil && tc.exactError != err {
+				t.Errorf("Expected error to equal '%v'; got %v", tc.exactError, err)
+			}
+		})
+	}
+}
+
+func TestGet(t *testing.T) {
+	testCases := []struct {
+		title         string
+		calls         func(*mock.MockDB)
+		expected      *models.Card
+		errorExpected bool
+		exactError    error
+	}{
+		{
+			"Successfull read",
+			func(db *mock.MockDB) {
+				p := &patient{
+					PatientID: uuid1.String(),
+					Connections: []connection{
+						connection{PatientID: uuid1.String(), Key: "K1", Value: "V1"},
+						connection{PatientID: uuid1.String(), Key: "K2", Value: "V2"},
+					},
+					Locations: []location{
+						location{PatientID: uuid1.String(), LocationID: uuid1.String()},
+					},
+				}
+				gomock.InOrder(
+					db.EXPECT().Preload("Connections").Return(db),
+					db.EXPECT().Preload("Locations").Return(db),
+					db.EXPECT().First(&patient{PatientID: uuid1.String()}).SetArg(0, *p).Return(db),
+					db.EXPECT().GetError().Return(nil),
+				)
+			},
+			&models.Card{
+				PatientID: uuid1,
+				Connections: models.Connections{
+					&models.ConnectionsItems{Key: "K1", Value: "V1"},
+					&models.ConnectionsItems{Key: "K2", Value: "V2"},
+				},
+				Locations: models.Locations{uuid1},
+			},
+			noErrors,
+			nil,
+		},
+		{
+			"Patient not found",
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// read existing data
+					db.EXPECT().Preload("Connections").Return(db),
+					db.EXPECT().Preload("Locations").Return(db),
+					db.EXPECT().First(gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(gorm.ErrRecordNotFound))
+			},
+			nil,
+			withErrors,
+			ErrNotFound,
+		},
+		{
+			"First read fails",
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// read existing data
+					db.EXPECT().Preload("Connections").Return(db),
+					db.EXPECT().Preload("Locations").Return(db),
+					db.EXPECT().First(gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(fmt.Errorf("Error")))
+			},
+			nil,
+			withErrors,
+			nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			// init storage
+			s, db, c := getTestStorage(t)
+			defer c()
+
+			// collect mocked calls
+			tc.calls(db)
+
+			// call the method
+			out, err := s.Get(uuid1)
+
+			// check expected results
+			if !reflect.DeepEqual(out, tc.expected) {
+				t.Errorf("Expected\n%s\nto equal\n\t\t%s", toJSON(out), toJSON(tc.expected))
+			}
+
+			// assert error
+			if tc.errorExpected && err == nil {
+				t.Error("Expected error, got nil")
+			} else if !tc.errorExpected && err != nil {
+				t.Errorf("Expected error to be nil, got %v", err)
+			}
+
+			// assert actual error
+			if tc.exactError != nil && tc.exactError != err {
+				t.Errorf("Expected error to equal '%v'; got %v", tc.exactError, err)
+			}
+		})
+	}
+}
+
+func TestDelete(t *testing.T) {
+	testCases := []struct {
+		title         string
+		calls         func(*mock.MockDB)
+		errorExpected bool
+		exactError    error
+	}{
+		{
+			"Successfull delete",
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// load patient
+					db.EXPECT().First(&patient{PatientID: uuid1.String()}).Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// delete rows
+					db.EXPECT().Delete(connection{}, "patient_id = ?", uuid1.String()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Delete(location{}, "patient_id = ?", uuid1.String()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Delete(patient{}, "patient_id = ?", uuid1.String()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// commit changes
+					db.EXPECT().Commit().Return(db),
+					db.EXPECT().GetError().Return(nil))
+			},
+			noErrors,
+			nil,
+		},
+		{
+			"Begin transaction fails",
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(fmt.Errorf("Error")))
+			},
+			withErrors,
+			nil,
+		},
+		{
+			"Patient not found",
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// load patient
+					db.EXPECT().First(gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(gorm.ErrRecordNotFound))
+			},
+			withErrors,
+			ErrNotFound,
+		},
+		{
+			"Connection delete fails",
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// load patient
+					db.EXPECT().First(gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// delete rows
+					db.EXPECT().Delete(connection{}, gomock.Any(), gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(fmt.Errorf("Error")),
+					db.EXPECT().Rollback())
+			},
+			withErrors,
+			nil,
+		},
+		{
+			"location delete fails",
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// load patient
+					db.EXPECT().First(gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// delete rows
+					db.EXPECT().Delete(connection{}, gomock.Any(), gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Delete(location{}, gomock.Any(), gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(fmt.Errorf("Error")),
+					db.EXPECT().Rollback())
+			},
+			withErrors,
+			nil,
+		},
+		{
+			"Patient delete fails",
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// load patient
+					db.EXPECT().First(gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// delete rows
+					db.EXPECT().Delete(connection{}, gomock.Any(), gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Delete(location{}, gomock.Any(), gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Delete(patient{}, gomock.Any(), gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(fmt.Errorf("Error")),
+					db.EXPECT().Rollback())
+			},
+			withErrors,
+			nil,
+		},
+		{
+			"Commit fails",
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// load patient
+					db.EXPECT().First(gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// delete rows
+					db.EXPECT().Delete(connection{}, gomock.Any(), gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Delete(location{}, gomock.Any(), gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+					db.EXPECT().Delete(patient{}, gomock.Any(), gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// commit changes
+					db.EXPECT().Commit().Return(db),
+					db.EXPECT().GetError().Return(fmt.Errorf("Error")))
+			},
+			withErrors,
+			nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			// init storage
+			s, db, c := getTestStorage(t)
+			defer c()
+
+			// collect mocked calls
+			tc.calls(db)
+
+			// call the method
+			err := s.Delete(uuid1)
+
+			// assert error
+			if tc.errorExpected && err == nil {
+				t.Error("Expected error, got nil")
+			} else if !tc.errorExpected && err != nil {
+				t.Errorf("Expected error to be nil, got %v", err)
+			}
+
+			// assert actual error
+			if tc.exactError != nil && tc.exactError != err {
+				t.Errorf("Expected error to equal '%v'; got %v", tc.exactError, err)
+			}
+		})
+	}
+}
+
+func TestLink(t *testing.T) {
+	testCases := []struct {
+		title         string
+		locationID    strfmt.UUID
+		calls         func(*mock.MockDB)
+		getCardRes    *models.Card
+		getCardError  error
+		expected      models.Locations
+		errorExpected bool
+		exactError    error
+	}{
+		{
+			"Successfull link",
+			uuid2,
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// create a link
+					db.EXPECT().Create(&location{
+						PatientID:  uuid1.String(),
+						LocationID: uuid2.String(),
+					}).Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// commit changes
+					db.EXPECT().Commit().Return(db),
+					db.EXPECT().GetError().Return(nil))
+			},
+			card,
+			nil,
+			models.Locations{uuid1, uuid2},
+			noErrors,
+			nil,
+		},
+		{
+			"Patient not found",
+			uuid2,
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// rollback changes
+					db.EXPECT().Rollback())
+			},
+			nil,
+			ErrNotFound,
+			nil,
+			withErrors,
+			ErrNotFound,
+		},
+		{
+			"Fetching patient fails",
+			uuid2,
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// rollback changes
+					db.EXPECT().Rollback())
+			},
+			nil,
+			fmt.Errorf("error"),
+			nil,
+			withErrors,
+			nil,
+		},
+		{
+			"Link already exists",
+			uuid1,
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// rollback changes
+					db.EXPECT().Rollback())
+			},
+			card,
+			nil,
+			models.Locations{uuid1},
+			noErrors,
+			nil,
+		},
+		{
+			"Commit fails",
+			uuid2,
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// create a link
+					db.EXPECT().Create(gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// commit changes
+					db.EXPECT().Commit().Return(db),
+					db.EXPECT().GetError().Return(fmt.Errorf("error")))
+			},
+			card,
+			nil,
+			nil,
+			withErrors,
+			nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			// init storage
+			s, mdb, c := getTestStorage(t)
+			defer c()
+
+			origGetCard := getCard
+			getCard = func(_ db.DB, _ strfmt.UUID) (*models.Card, error) {
+				return tc.getCardRes, tc.getCardError
+			}
+			defer func() {
+				getCard = origGetCard
+			}()
+
+			// collect mocked calls
+			tc.calls(mdb)
+
+			// call the method
+			out, err := s.Link(uuid1, tc.locationID)
+
+			// check expected results
+			if !reflect.DeepEqual(out, tc.expected) {
+				t.Errorf("Expected\n%s\nto equal\n\t\t%s", toJSON(out), toJSON(tc.expected))
+			}
+
+			// assert error
+			if tc.errorExpected && err == nil {
+				t.Error("Expected error, got nil")
+			} else if !tc.errorExpected && err != nil {
+				t.Errorf("Expected error to be nil, got %v", err)
+			}
+
+			// assert actual error
+			if tc.exactError != nil && tc.exactError != err {
+				t.Errorf("Expected error to equal '%v'; got %v", tc.exactError, err)
+			}
+		})
+	}
+}
+
+func TestUnlink(t *testing.T) {
+	testCases := []struct {
+		title         string
+		locationID    strfmt.UUID
+		calls         func(*mock.MockDB)
+		getCardRes    *models.Card
+		getCardError  error
+		errorExpected bool
+		exactError    error
+	}{
+		{
+			"Successfull unlink",
+			uuid1,
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// create a link
+					db.EXPECT().Delete(&location{
+						PatientID:  uuid1.String(),
+						LocationID: uuid1.String(),
+					}).Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// commit changes
+					db.EXPECT().Commit().Return(db),
+					db.EXPECT().GetError().Return(nil))
+			},
+			card,
+			nil,
+			noErrors,
+			nil,
+		},
+		{
+			"Patient not found",
+			uuid1,
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// rollback changes
+					db.EXPECT().Rollback())
+			},
+			nil,
+			ErrNotFound,
+			withErrors,
+			ErrNotFound,
+		},
+		{
+			"Fetching patient fails",
+			uuid1,
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// rollback changes
+					db.EXPECT().Rollback())
+			},
+			nil,
+			fmt.Errorf("error"),
+			withErrors,
+			nil,
+		},
+		{
+			"Link does not exist",
+			uuid2,
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// rollback changes
+					db.EXPECT().Rollback())
+			},
+			card,
+			nil,
+			withErrors,
+			ErrNotFound,
+		},
+		{
+			"Commit fails",
+			uuid1,
+			func(db *mock.MockDB) {
+				gomock.InOrder(
+					// start a transaction
+					db.EXPECT().Begin().Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// create a link
+					db.EXPECT().Delete(gomock.Any()).Return(db),
+					db.EXPECT().GetError().Return(nil),
+
+					// commit changes
+					db.EXPECT().Commit().Return(db),
+					db.EXPECT().GetError().Return(fmt.Errorf("error")))
+			},
+			card,
+			nil,
+			withErrors,
+			nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			// init storage
+			s, mdb, c := getTestStorage(t)
+			defer c()
+
+			origGetCard := getCard
+			getCard = func(_ db.DB, _ strfmt.UUID) (*models.Card, error) {
+				return tc.getCardRes, tc.getCardError
+			}
+			defer func() {
+				getCard = origGetCard
+			}()
+
+			// collect mocked calls
+			tc.calls(mdb)
+
+			// call the method
+			err := s.Unlink(uuid1, tc.locationID)
+
+			// assert error
+			if tc.errorExpected && err == nil {
+				t.Error("Expected error, got nil")
+			} else if !tc.errorExpected && err != nil {
+				t.Errorf("Expected error to be nil, got %v", err)
+			}
+
+			// assert actual error
+			if tc.exactError != nil && tc.exactError != err {
+				t.Errorf("Expected error to equal '%v'; got %v", tc.exactError, err)
+			}
+		})
+	}
+}
+
+func getTestStorage(t *testing.T) (*storage, *mock.MockDB, func()) {
+	// mock getNewUUID
+	origGetNewUUID := getNewUUID
+	getNewUUID = func() strfmt.UUID {
+		return uuid1
+	}
+
+	// mock getCurrentTime
+	origGetCurrentTime := getCurrentTime
+	getCurrentTime = func() time.Time {
+		return time.Time(time1)
+	}
+
+	// setup minio mock
+	dbCtrl := gomock.NewController(t)
+	db := mock.NewMockDB(dbCtrl)
+
+	s := &storage{
+		db:         db,
+		logger:     zerolog.New(os.Stdout),
+		locationID: uuid1.String(),
+	}
+
+	cleanup := func() {
+		getNewUUID = origGetNewUUID
+		getCurrentTime = origGetCurrentTime
+		dbCtrl.Finish()
+	}
+
+	return s, db, cleanup
+}
+
+func toJSON(in interface{}) string {
+	buf := bytes.NewBuffer(nil)
+	json.NewEncoder(buf).Encode(in)
+	return buf.String()
+}

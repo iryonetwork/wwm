@@ -1,0 +1,373 @@
+swagger: '2.0'
+
+info:
+  title: IRYO cloud discovery API
+  version: '1.0'
+
+host: iryo.local
+schemes:
+- https
+basePath: /discovery
+consumes:
+- application/json
+produces:
+- application/json; charset=utf-8
+
+securityDefinitions:
+  token:
+    type: apiKey
+    name: Authorization
+    in: header
+
+security:
+- token: []
+
+paths:
+  /:
+    get:
+      tags:
+      - discovery
+      - local
+      - cloud
+      summary: Queries patient cards for a matching connection
+      operationId: query
+
+      parameters:
+      - in: query
+        name: query
+        type: string
+      - in: query
+        name: onCloud
+        type: boolean
+
+      responses:
+        200:
+          description: Query result
+          schema:
+            $ref: '#/definitions/Cards'
+
+        400:
+          $ref: '#/responses/400'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    post:
+      tags:
+      - discovery
+      - local
+      - cloud
+      summary: Creates a new patient card
+      operationId: create
+
+      parameters:
+      - in: body
+        name: newCard
+        required: true
+        schema:
+          $ref: '#/definitions/NewCard'
+
+      responses:
+        201:
+          description: Connection created
+          schema:
+            $ref: '#/definitions/Card'
+
+        400:
+          $ref: '#/responses/400'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /{patientID}:
+    get:
+      tags:
+      - discovery
+      - local
+      - cloud
+      summary: Fetch a patient's card
+      operationId: fetch
+
+      parameters:
+      - in: path
+        name: patientID
+        type: string
+        format: uuid
+        required: true
+
+      responses:
+        200:
+          description: Patient's card
+          schema:
+            $ref: '#/definitions/Card'
+
+        400:
+          $ref: '#/responses/400'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    put:
+      tags:
+      - discovery
+      - local
+      - cloud
+      summary: Updates patient card
+      operationId: update
+
+      parameters:
+      - in: path
+        name: patientID
+        type: string
+        format: uuid
+        required: true
+
+      - in: body
+        name: card
+        required: true
+        schema:
+          $ref: '#/definitions/NewCard'
+
+      responses:
+        200:
+          description: Connection updated
+          schema:
+            $ref: '#/definitions/Card'
+
+        400:
+          $ref: '#/responses/400'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    delete:
+      tags:
+      - discovery
+      - local
+      - cloud
+      summary: Deletes patient's card
+      operationId: delete
+
+      parameters:
+      - in: path
+        name: patientID
+        type: string
+        format: uuid
+        required: true
+
+      responses:
+        204:
+          description: Patient deleted
+
+        400:
+          $ref: '#/responses/400'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /{patientID}/link/{locationID}:
+    post:
+      tags:
+      - discovery
+      - cloud
+      summary: Links a patient to a given patient
+      operationId: link
+
+      parameters:
+      - in: path
+        name: patientID
+        type: string
+        format: uuid
+        required: true
+
+      - in: path
+        name: locationID
+        type: string
+        format: uuid
+        required: true
+
+      responses:
+        201:
+          description: Link created
+          schema:
+            $ref: '#/definitions/Locations'
+
+        400:
+          $ref: '#/responses/400'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+    delete:
+      tags:
+      - discovery
+      - cloud
+      summary: Removes a link between a patient and a location
+      operationId: unlink
+
+      parameters:
+      - in: path
+        name: patientID
+        type: string
+        format: uuid
+        required: true
+
+      - in: path
+        name: locationID
+        type: string
+        format: uuid
+        required: true
+
+      responses:
+        204:
+          description: Link removed
+
+        400:
+          $ref: '#/responses/400'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+
+definitions:
+  Cards:
+    type: array
+    items:
+      $ref: '#/definitions/Card'
+
+  Card:
+    type: object
+    properties:
+      patientID:
+        type: string
+        format: uuid
+      connections:
+        $ref: '#/definitions/Connections'
+      locations:
+        $ref: '#/definitions/Locations'
+
+  NewCard:
+    type: object
+    properties:
+      connections:
+        $ref: '#/definitions/Connections'
+      locations:
+        $ref: '#/definitions/Locations'
+
+  Connections:
+    type: array
+    items:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+
+  Locations:
+    type: array
+    items:
+      type: string
+      format: uuid
+
+  # Locations:
+  #   type: array
+  #   items:
+  #     $ref: '#/definitions/Location'
+
+  Error:
+    type: object
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+
+
+responses:
+  400:
+    description: Request is badly formatted
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: bad_request
+        message: Request is badly formatted
+
+  401:
+    description: Unauthorized Access
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: unauthorized
+        message: Unauthorized Access
+
+  403:
+    description: Forbidden
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: forbidden
+        message: You do not have permissions to do this
+
+  404:
+    description: Required entity cannot be found
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: not_found
+        message: Required entity cannot be found
+
+  500:
+    description: Internal server error
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: internal_error
+        message: Internal server error
