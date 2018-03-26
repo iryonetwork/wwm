@@ -18,7 +18,7 @@ import (
 
 var (
 	// interval for status calls in tests
-	interval = time.Duration(5 * time.Millisecond)
+	interval = time.Duration(50 * time.Millisecond)
 )
 
 func TestStatus(t *testing.T) {
