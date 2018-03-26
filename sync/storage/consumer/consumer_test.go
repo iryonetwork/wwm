@@ -70,6 +70,9 @@ func TestStartSuccess(t *testing.T) {
 	if num != 2 {
 		t.Errorf("Expected number of subscriptions to be 2, got %d", num)
 	}
+
+	// wait to ensure all calls were made & ack delivered
+	<-time.After(time.Duration(50 * time.Millisecond))
 }
 
 func TestStartFailureInavlidType(t *testing.T) {
@@ -87,6 +90,9 @@ func TestStartFailureInavlidType(t *testing.T) {
 	if num != 0 {
 		t.Errorf("Expected number of subscriptions to be 0, got %d", num)
 	}
+
+	// wait to ensure all calls were made & ack delivered
+	<-time.After(time.Duration(50 * time.Millisecond))
 }
 
 func TestStartFailureConnectionClosed(t *testing.T) {
@@ -106,6 +112,9 @@ func TestStartFailureConnectionClosed(t *testing.T) {
 	if num != 0 {
 		t.Errorf("Expected number of subscriptions to be 0, got %d", num)
 	}
+
+	// wait to ensure all calls were made & ack delivered
+	<-time.After(time.Duration(50 * time.Millisecond))
 }
 
 func TestMessageHandling(t *testing.T) {
@@ -144,6 +153,9 @@ func TestMessageHandling(t *testing.T) {
 	case <-time.After(time.Duration(10 * time.Millisecond)):
 		t.Error("Handler was not called during specified time")
 	}
+
+	// wait to ensure all calls were made & ack delivered
+	<-time.After(time.Duration(50 * time.Millisecond))
 }
 
 func TestMessageHandlingOnlyOnce(t *testing.T) {
@@ -187,6 +199,8 @@ func TestMessageHandlingOnlyOnce(t *testing.T) {
 	case <-time.After(time.Duration(10 * time.Millisecond)):
 		t.Error("Handler was not called during specified time")
 	}
+
+	// wait to ensure all calls were made & ack delivered
 	<-time.After(time.Duration(50 * time.Millisecond))
 }
 
@@ -234,6 +248,8 @@ func TestMessageHandlingOnlyOnceSeparateConnections(t *testing.T) {
 	case <-time.After(time.Duration(10 * time.Millisecond)):
 		t.Error("Handler was not called during specified time")
 	}
+
+	// wait to ensure all calls were made & ack delivered
 	<-time.After(time.Duration(50 * time.Millisecond))
 }
 
@@ -287,6 +303,9 @@ func TestMessageHandlingNack(t *testing.T) {
 	case <-time.After(time.Duration(10 * time.Millisecond)):
 		t.Fatal("Handler (mock 'nack') was not called during specified time")
 	}
+
+	// wait to ensure all calls were made & ack delivered
+	<-time.After(time.Duration(50 * time.Millisecond))
 }
 
 func TestDurability(t *testing.T) {
@@ -359,6 +378,9 @@ func TestDurability(t *testing.T) {
 	case <-time.After(time.Duration(50 * time.Millisecond)):
 		t.Fatal("Handler was not called during specified time")
 	}
+
+	// wait to ensure all calls were made & ack delivered
+	<-time.After(time.Duration(50 * time.Millisecond))
 }
 
 func TestContextCancelled(t *testing.T) {
@@ -381,7 +403,8 @@ func TestContextCancelled(t *testing.T) {
 	}
 
 	cancel()
-	time.Sleep(time.Duration(50 * time.Millisecond))
+	// wait to ensure all calls were made & ack delivered
+	<-time.After(time.Duration(50 * time.Millisecond))
 
 	if c.GetNumberOfSubsriptions() != 0 {
 		t.Fatal("Close was not called on cancel context")
