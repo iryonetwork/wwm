@@ -1,13 +1,14 @@
 import React from "react"
+import { withRouter } from "react-router-dom"
 
 import Patient from "shared/containers/patient"
 import "./style.css"
 
-export default () => (
+export default withRouter(({ history }) => (
     <div className="patients">
         <header>
             <h1>Patients</h1>
-            <button className="btn btn-secondary btn-wide" type="submit">
+            <button onClick={() => history.push("/patients/new")} className="btn btn-secondary btn-wide" type="submit">
                 Add New Patient
             </button>
         </header>
@@ -32,4 +33,4 @@ export default () => (
             </tbody>
         </table>
     </div>
-)
+))
