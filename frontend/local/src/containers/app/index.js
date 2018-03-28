@@ -8,6 +8,7 @@ import Logo from "shared/containers/logo"
 import Status from "shared/containers/status"
 
 import Patients from "../patients"
+import NewPatient from "../patients/new"
 import Waitlist from "../waitlist"
 
 import { ReactComponent as PatientsIcon } from "shared/icons/patients.svg"
@@ -54,6 +55,7 @@ class App extends React.Component {
                 <main>
                     <div className="container">
                         <Route exact path="/" component={Patients} />
+                        <Route exact path="/patients/new" component={NewPatient} />
                         <Route exact path="/waitlist" component={Waitlist} />
                     </div>
                 </main>

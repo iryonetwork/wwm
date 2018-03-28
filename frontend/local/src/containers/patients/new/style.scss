@@ -1,0 +1,217 @@
+@import "shared/styles/variables.scss";
+
+.new-patient {
+    .modal-dialog {
+        max-width: 940px;
+
+        .modal-content {
+            padding: 70px 120px 30px;
+
+            .modal-header,
+            .modal-footer {
+                border: 0;
+            }
+
+            .modal-header {
+                display: block;
+
+                ol {
+                    margin: 70px 0 0;
+                    padding: 0;
+                    font-weight: bold;
+
+                    list-style-type: none;
+                    counter-reset: customlistcounter;
+
+                    li {
+                        display: inline-block;
+                        color: $gray-300;
+                        font-size: 24px;
+                        margin-right: 35px;
+                        counter-increment: customlistcounter;
+                        cursor: pointer;
+
+                        &:before {
+                            content: counter(customlistcounter) " ";
+                        }
+
+                        &.active {
+                            color: $black;
+                        }
+                    }
+                }
+            }
+
+            .modal-footer {
+                display: block;
+            }
+
+            .modal-body {
+                h3 {
+                    font-size: 18px;
+                    padding: 15px 0;
+                    border-bottom: 1px solid $gray-300;
+                    margin-bottom: 30px;
+                }
+
+                .image {
+                    width: 100px;
+                    height: 100px;
+                    display: inline-block;
+                    border-radius: 50px;
+                    background-color: $gray-100;
+                    border: 1px solid $gray-300;
+                    background-size: contain;
+                }
+                .btn-image {
+                    margin: 30px 10px;
+                }
+
+                .custom-file-input {
+                    position: absolute;
+                    top: 0;
+                    left: -100px;
+                    height: 100px;
+                    cursor: pointer;
+                }
+
+                .form-row {
+                    margin: 20px -10px;
+
+                    &.habits {
+                        .form-group {
+                            margin-bottom: 0;
+                        }
+
+                        .form-inline-container {
+                            padding-bottom: 20px;
+                            border-bottom: 1px solid $gray-300;
+                        }
+
+                        .label {
+                            width: 50%;
+                        }
+
+                        .form-check-inline {
+                            margin-right: 50px;
+                        }
+                    }
+                }
+
+                .search {
+                    margin-top: 0;
+                }
+
+                .familyMembers {
+                    .link {
+                        padding-bottom: 20px;
+                        border-bottom: 1px solid $gray-300;
+                    }
+                }
+            }
+        }
+    }
+
+    .form-row > .col,
+    .form-row > [class*="col-"] {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+
+    .form-inline-container {
+        line-height: 36px;
+
+        span {
+            display: inline-block;
+            margin-right: 30px;
+        }
+
+        .form-check-inline {
+            top: 1px;
+            margin-right: 20px;
+        }
+
+        .form-check-label {
+            top: 2px;
+        }
+    }
+
+    .remove {
+        position: absolute;
+        right: -80px;
+        color: $errorRed;
+        text-transform: uppercase;
+        font-size: 11px;
+        font-weight: bold;
+
+        svg {
+            margin-top: 10px;
+            position: relative;
+            top: 3px;
+            left: -5px;
+            width: 14px;
+            height: 14px;
+        }
+    }
+
+    .attributes {
+        .link {
+            margin: 5px 0;
+        }
+
+        &.open {
+            margin-top: 40px;
+
+            .link {
+                margin-top: -20px;
+                margin-bottom: 40px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid $gray-300;
+            }
+        }
+    }
+
+    label {
+        position: relative;
+        width: 100%;
+
+        .form-control {
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-control:placeholder-shown + * {
+            top: 0px;
+        }
+
+        select.form-control {
+            color: $gray-500;
+
+            + span {
+                top: 0;
+            }
+
+            &.selected {
+                color: $black;
+
+                + span {
+                    top: -20px;
+                }
+            }
+        }
+
+        span {
+            font-size: 11px;
+            color: $gray-500;
+            display: block;
+            position: absolute;
+            text-transform: uppercase;
+            top: -20px;
+            transition: top 0.1s ease-in-out;
+        }
+
+        .invalid-feedback {
+            position: absolute;
+        }
+    }
+}

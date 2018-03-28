@@ -16,6 +16,7 @@
 @import "bootstrap/scss/close";
 @import "bootstrap/scss/utilities";
 @import "bootstrap/scss/print";
+@import "bootstrap/scss/modal";
 
 //@import "bootstrap/scss/bootstrap.scss";
 
@@ -53,9 +54,18 @@ h1 {
     line-height: 40px;
 }
 
+.btn-primary {
+    box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.2);
+}
+
 .btn-wide {
     padding-left: 40px;
     padding-right: 40px;
+}
+
+.btn-xl-wide {
+    padding-left: 90px;
+    padding-right: 90px;
 }
 
 .table.patients {
