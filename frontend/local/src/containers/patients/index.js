@@ -1,5 +1,5 @@
 import React from "react"
-import { withRouter } from "react-router-dom"
+import { Link, withRouter } from "react-router-dom"
 
 import Patient from "shared/containers/patient"
 import "./style.css"
@@ -26,7 +26,7 @@ export default withRouter(({ history }) => (
                         <td>Syrian ID P349294839</td>
                         <td>Camp 15, Tent 06</td>
                         <td>
-                            <button className="btn btn-link">Add to Waiting List</button>
+                            <Link to="/waitlist/add/abc">Add to Waiting List</Link>
                         </td>
                     </tr>
                 ))}

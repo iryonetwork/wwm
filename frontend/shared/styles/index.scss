@@ -147,3 +147,50 @@ main {
         margin-top: 50px;
     }
 }
+
+.modal-dialog {
+    max-width: 940px;
+
+    .modal-content {
+        padding: 70px 120px 30px;
+
+        .modal-header,
+        .modal-footer {
+            border: 0;
+        }
+
+        .modal-header {
+            display: block;
+
+            ol {
+                margin: 70px 0 0;
+                padding: 0;
+                font-weight: bold;
+
+                list-style-type: none;
+                counter-reset: customlistcounter;
+
+                li {
+                    display: inline-block;
+                    color: $gray-300;
+                    font-size: 24px;
+                    margin-right: 35px;
+                    counter-increment: customlistcounter;
+                    cursor: pointer;
+
+                    &:before {
+                        content: counter(customlistcounter) " ";
+                    }
+
+                    &.active {
+                        color: $black;
+                    }
+                }
+            }
+        }
+
+        .modal-footer {
+            display: block;
+        }
+    }
+}
