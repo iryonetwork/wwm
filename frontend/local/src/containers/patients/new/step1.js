@@ -3,7 +3,7 @@ import { Field, FieldArray, reduxForm } from "redux-form"
 
 import validate from "./validate"
 import Footer from "./footer"
-import { renderInput, renderSelect } from "./renderField"
+import { renderInput, renderSelect } from "shared/forms/renderField"
 import { documentTypeOptions } from "./options"
 
 const genderOptions = [

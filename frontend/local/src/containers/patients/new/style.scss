@@ -1,113 +1,66 @@
 @import "shared/styles/variables.scss";
 
 .new-patient {
-    .modal-dialog {
-        max-width: 940px;
+    .modal-body {
+        h3 {
+            font-size: 18px;
+            padding: 15px 0;
+            border-bottom: 1px solid $gray-300;
+            margin-bottom: 30px;
+        }
 
-        .modal-content {
-            padding: 70px 120px 30px;
+        .image {
+            width: 100px;
+            height: 100px;
+            display: inline-block;
+            border-radius: 50px;
+            background-color: $gray-100;
+            border: 1px solid $gray-300;
+            background-size: contain;
+        }
+        .btn-image {
+            margin: 30px 10px;
+        }
 
-            .modal-header,
-            .modal-footer {
-                border: 0;
-            }
+        .custom-file-input {
+            position: absolute;
+            top: 0;
+            left: -100px;
+            height: 100px;
+            cursor: pointer;
+        }
 
-            .modal-header {
-                display: block;
+        .form-row {
+            margin: 20px -10px;
 
-                ol {
-                    margin: 70px 0 0;
-                    padding: 0;
-                    font-weight: bold;
-
-                    list-style-type: none;
-                    counter-reset: customlistcounter;
-
-                    li {
-                        display: inline-block;
-                        color: $gray-300;
-                        font-size: 24px;
-                        margin-right: 35px;
-                        counter-increment: customlistcounter;
-                        cursor: pointer;
-
-                        &:before {
-                            content: counter(customlistcounter) " ";
-                        }
-
-                        &.active {
-                            color: $black;
-                        }
-                    }
+            &.habits {
+                .form-group {
+                    margin-bottom: 0;
                 }
-            }
 
-            .modal-footer {
-                display: block;
-            }
-
-            .modal-body {
-                h3 {
-                    font-size: 18px;
-                    padding: 15px 0;
+                .form-inline-container {
+                    padding-bottom: 20px;
                     border-bottom: 1px solid $gray-300;
-                    margin-bottom: 30px;
                 }
 
-                .image {
-                    width: 100px;
-                    height: 100px;
-                    display: inline-block;
-                    border-radius: 50px;
-                    background-color: $gray-100;
-                    border: 1px solid $gray-300;
-                    background-size: contain;
-                }
-                .btn-image {
-                    margin: 30px 10px;
+                .label {
+                    width: 50%;
                 }
 
-                .custom-file-input {
-                    position: absolute;
-                    top: 0;
-                    left: -100px;
-                    height: 100px;
-                    cursor: pointer;
+                .form-check-inline {
+                    margin-right: 50px;
                 }
+            }
+        }
 
-                .form-row {
-                    margin: 20px -10px;
+        .search {
+            margin-top: 0;
+        }
 
-                    &.habits {
-                        .form-group {
-                            margin-bottom: 0;
-                        }
-
-                        .form-inline-container {
-                            padding-bottom: 20px;
-                            border-bottom: 1px solid $gray-300;
-                        }
-
-                        .label {
-                            width: 50%;
-                        }
-
-                        .form-check-inline {
-                            margin-right: 50px;
-                        }
-                    }
-                }
-
-                .search {
-                    margin-top: 0;
-                }
-
-                .familyMembers {
-                    .link {
-                        padding-bottom: 20px;
-                        border-bottom: 1px solid $gray-300;
-                    }
-                }
+        .familyMembers {
+            .link {
+                padding-bottom: 20px;
+                border-bottom: 1px solid $gray-300;
             }
         }
     }

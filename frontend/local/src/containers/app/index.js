@@ -10,6 +10,7 @@ import Status from "shared/containers/status"
 import Patients from "../patients"
 import NewPatient from "../patients/new"
 import Waitlist from "../waitlist"
+import AddToWaitlist from "../waitlist/add"
 
 import { ReactComponent as PatientsIcon } from "shared/icons/patients.svg"
 import { ReactComponent as WaitlistIcon } from "shared/icons/waiting-list.svg"
@@ -57,6 +58,7 @@ class App extends React.Component {
                         <Route exact path="/" component={Patients} />
                         <Route exact path="/patients/new" component={NewPatient} />
                         <Route exact path="/waitlist" component={Waitlist} />
+                        <Route path="/waitlist/add/:patientID" component={AddToWaitlist} />
                     </div>
                 </main>
             </React.Fragment>

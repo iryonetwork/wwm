@@ -4,7 +4,7 @@ import classnames from "classnames"
 
 import Footer from "./footer"
 import validate from "./validate"
-import { renderInput, renderRadio } from "./renderField"
+import { renderInput, renderRadio } from "shared/forms/renderField"
 import { yesNoOptions } from "./options"
 
 import { ReactComponent as RemoveIcon } from "shared/icons/negative.svg"

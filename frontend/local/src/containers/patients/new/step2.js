@@ -3,7 +3,7 @@ import { Field, FieldArray, reduxForm } from "redux-form"
 
 import Footer from "./footer"
 import validate from "./validate"
-import { renderInput, renderSelect, renderRadio } from "./renderField"
+import { renderInput, renderSelect, renderRadio } from "shared/forms/renderField"
 import { documentTypeOptions, yesNoOptions } from "./options"
 
 import { ReactComponent as RemoveIcon } from "shared/icons/negative.svg"
