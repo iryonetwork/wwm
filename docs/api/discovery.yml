@@ -270,6 +270,52 @@ paths:
         500:
           $ref: '#/responses/500'
 
+  /codes/{category}:
+    get:
+      tags:
+       - discovery
+       - local
+       - cloud
+       - codes
+      summary: Returns first 250 codes matching items inside the category. Items will be sorted by ID.
+      operationId: codesGet
+
+      parameters:
+       - in: path
+         name: category
+         type: string
+         required: true
+         description: Name of the category
+       - in: query
+         name: locale
+         type: string
+         description: Locale used for the results
+       - in: query
+         name: parentId
+         type: string
+         description: Parent ID to limit the scope of items
+       - in: query
+         name: query
+         type: string
+         description: Search string to limit the number of results
+
+      responses:
+        200:
+          description: List of codes matching the request parameters
+          schema:
+            $ref: '#/definitions/Codes'
+
+        400:
+          $ref: '#/responses/400'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
 
 definitions:
   Cards:
@@ -312,10 +358,33 @@ definitions:
       type: string
       format: uuid
 
-  # Locations:
-  #   type: array
-  #   items:
-  #     $ref: '#/definitions/Location'
+  Code:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Code's ID, unique inside the a specific category
+      category:
+        type: string
+        description: Category's name
+      parentId:
+        type: string
+        description: Optional link to parent code
+      title:
+        type: string
+        description: Localised title
+      locale:
+        type: string
+        description: Locale of the title property
+    required:
+      - id
+      - title
+      - category
+
+  Codes:
+    type: array
+    items:
+      $ref: '#/definitions/Code'
 
   Error:
     type: object

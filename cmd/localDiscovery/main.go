@@ -111,6 +111,7 @@ func main() {
 	api.FetchHandler = discoveryHandlers.Fetch()
 	api.LinkHandler = discoveryHandlers.ProxyLink()
 	api.UnlinkHandler = discoveryHandlers.ProxyUnlink()
+	api.CodesGetHandler = discoveryHandlers.CodesGet()
 
 	server := restapi.NewServer(api)
 	server.TLSHost = cfg.ServerHost

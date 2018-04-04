@@ -6,6 +6,7 @@ import (
 	"github.com/iryonetwork/wwm/gen/discovery/models"
 	"github.com/iryonetwork/wwm/gen/discovery/restapi/operations"
 	"github.com/iryonetwork/wwm/storage/discovery"
+	"github.com/iryonetwork/wwm/utils"
 	"github.com/rs/zerolog"
 )
 
@@ -20,6 +21,7 @@ type Handlers interface {
 	ProxyLink() operations.LinkHandler
 	Unlink() operations.UnlinkHandler
 	ProxyUnlink() operations.UnlinkHandler
+	CodesGet() operations.CodesGetHandler
 }
 
 type handlers struct {
@@ -198,6 +200,31 @@ func (h *handlers) ProxyUnlink() operations.UnlinkHandler {
 			})
 		}
 		return operations.NewUnlinkNoContent()
+	})
+}
+
+func (h *handlers) CodesGet() operations.CodesGetHandler {
+	return operations.CodesGetHandlerFunc(func(params operations.CodesGetParams, principal *string) middleware.Responder {
+		q := ""
+		parentID := ""
+		locale := ""
+
+		if params.Query != nil {
+			q = *params.Query
+		}
+		if params.ParentID != nil {
+			parentID = *params.ParentID
+		}
+		if params.Locale != nil {
+			locale = *params.Locale
+		}
+
+		res, err := h.service.CodesGet(params.Category, q, parentID, locale)
+		if err != nil {
+			return utils.NewErrorResponse(err)
+		}
+
+		return operations.NewCodesGetOK().WithPayload(res)
 	})
 }
 

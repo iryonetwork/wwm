@@ -23,3 +23,27 @@ CREATE TABLE locations (
 );
 
 ALTER TABLE locations OWNER TO clouddiscoveryservice;
+
+CREATE TABLE codes (
+    category_id VARCHAR(64) NOT NULL,
+    code_id VARCHAR(64) NOT NULL,
+    parent_id VARCHAR(64),
+    PRIMARY KEY (category_id, code_id)
+);
+
+CREATE INDEX codes_parent_idx ON codes (parent_id);
+
+ALTER TABLE codes OWNER TO clouddiscoveryservice;
+
+CREATE TABLE code_titles (
+    category_id VARCHAR(64) NOT NULL,
+    code_id VARCHAR(64) NOT NULL,
+    locale VARCHAR(64) NOT NULL,
+    title VARCHAR(255),
+    PRIMARY KEY (category_id, code_id, locale),
+    FOREIGN KEY (category_id, code_id) REFERENCES codes (category_id, code_id) ON DELETE CASCADE
+);
+
+CREATE INDEX code_titles_title_idx ON code_titles (title);
+
+ALTER TABLE code_titles OWNER TO clouddiscoveryservice;

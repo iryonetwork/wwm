@@ -13,6 +13,10 @@ insert into sym_channel
 (channel_id, processing_order, max_batch_size, enabled, description)
 values('discovery', 1, 100000, 1, 'patient and location data');
 
+insert into sym_channel
+(channel_id, processing_order, max_batch_size, enabled, description)
+values('codes', 2, 100000, 1, 'categorised codes');
+
 insert into sym_node_group (node_group_id) values ('cloud');
 insert into sym_node_group (node_group_id) values ('local');
 
@@ -30,6 +34,14 @@ values('locations','locations','discovery',current_timestamp,current_timestamp);
 insert into sym_trigger
 (trigger_id,source_table_name,channel_id,last_update_time,create_time)
 values('connections','connections','discovery',current_timestamp,current_timestamp);
+
+insert into sym_trigger
+(trigger_id,source_table_name,channel_id,last_update_time,create_time)
+values('codes','codes','codes',current_timestamp,current_timestamp);
+
+insert into sym_trigger
+(trigger_id,source_table_name,channel_id,last_update_time,create_time)
+values('code_titles','code_titles','codes',current_timestamp,current_timestamp);
 
 insert into sym_trigger
 (trigger_id,source_table_name,channel_id, sync_on_insert, sync_on_update, sync_on_delete,last_update_time,create_time)
@@ -79,6 +91,14 @@ values('locations','local_2_cloud', 200, current_timestamp, current_timestamp);
 insert into sym_trigger_router
 (trigger_id,router_id,initial_load_order,last_update_time,create_time)
 values('connections','local_2_cloud', 200, current_timestamp, current_timestamp);
+
+insert into sym_trigger_router
+(trigger_id,router_id,initial_load_order,last_update_time,create_time)
+values('codes','cloud_2_local', 300, current_timestamp, current_timestamp);
+
+insert into sym_trigger_router
+(trigger_id,router_id,initial_load_order,last_update_time,create_time)
+values('code_titles','cloud_2_local', 300, current_timestamp, current_timestamp);
 
 insert into sym_node (node_id,node_group_id,external_id,sync_enabled,sync_url,schema_version,symmetric_version,database_type,database_version,heartbeat_time,timezone_offset,batch_to_send_count,batch_in_error_count,created_at_node_id)
  values ('cloud-f7e41e48-ec79-4c78-9db6-37c0c4f78326','cloud','f7e41e48-ec79-4c78-9db6-37c0c4f78326',1,null,null,null,null,null,current_timestamp,null,0,0,'cloud-f7e41e48-ec79-4c78-9db6-37c0c4f78326');

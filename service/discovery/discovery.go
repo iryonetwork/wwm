@@ -48,6 +48,9 @@ type (
 		// ProxyUnlink calls Unlink on cloud instance
 		ProxyUnlink(patientID, locationID strfmt.UUID, authToken string) error
 
+		// CodesGet returns matching codes
+		CodesGet(category, query, parentID, locale string) (models.Codes, error)
+
 		// Delete removes patient's card
 		Delete(patientID strfmt.UUID) error
 	}
@@ -154,4 +157,8 @@ func (svc *service) ProxyUnlink(patientID, locationID strfmt.UUID, authToken str
 		return errors.Wrap(err, "failed to proxy Unlink call")
 	}
 	return nil
+}
+
+func (svc *service) CodesGet(category, query, parentID, locale string) (models.Codes, error) {
+	return svc.storage.CodesGet(category, query, parentID, locale)
 }

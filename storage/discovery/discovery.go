@@ -40,6 +40,9 @@ type (
 		// Unlink removes a connection between a patient and a location
 		Unlink(patientID, locationID strfmt.UUID) error
 
+		// CodesGet fetches matching codes
+		CodesGet(category, query, parentID, locale string) (models.Codes, error)
+
 		// Close closes the DB connection
 		Close() error
 	}
@@ -48,6 +51,7 @@ type (
 		ctx        context.Context
 		logger     zerolog.Logger
 		db         db.DB
+		gdb        *gorm.DB
 		locationID string
 	}
 
@@ -67,6 +71,20 @@ type (
 		PatientID  string `gorm:"primary_key"`
 		LocationID string `gorm:"primary_key"`
 	}
+
+	code struct {
+		CategoryID string `gorm:"primary_key"`
+		CodeID     string `gorm:"primary_key"`
+		ParentID   string
+		Titles     []codeTitle `gorm:"foreignkey:CategoryID,CodeID;association_foreignkey:CategoryID,CodeID"`
+	}
+
+	codeTitle struct {
+		CategoryID string `gorm:"primary_key"`
+		CodeID     string `gorm:"primary_key"`
+		Locale     string
+		Title      string
+	}
 )
 
 // ErrNotFound indicates the item was not found
@@ -79,6 +97,7 @@ func New(ctx context.Context, gdb *gorm.DB, locID string, logger zerolog.Logger)
 		locationID: locID,
 		logger:     logger.With().Str("component", "storage/discovery").Logger(),
 		db:         db.New(gdb),
+		gdb:        gdb,
 	}
 
 	return s, nil
@@ -314,6 +333,55 @@ func (s *storage) Unlink(patientID, locationID strfmt.UUID) error {
 
 	tx.Rollback()
 	return ErrNotFound
+}
+
+func (s *storage) CodesGet(category, query, parentID, locale string) (models.Codes, error) {
+	if locale == "" {
+		locale = "en"
+	}
+
+	// build the query
+
+	q := `SELECT ct.category_id, ct.code_id, ct.title, ct.locale, c.parent_id
+		  FROM codes AS c INNER JOIN code_titles AS ct ON ct.category_id = c.category_id AND ct.code_id = c.code_id
+		  WHERE c.category_id = ? AND ct.locale = ?`
+	fmt.Println(q)
+	values := []interface{}{category, locale}
+
+	if query != "" {
+		q += " AND ct.title ILIKE ?"
+		values = append(values, fmt.Sprintf("%%%s%%", query))
+	}
+
+	if parentID != "" {
+		q += " AND c.parent_id = ?"
+		values = append(values, parentID)
+	}
+
+	// add order by
+	q += " ORDER BY ct.code_id ASC"
+
+	rows, err := s.gdb.Raw(q, values...).Rows()
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to query codes")
+	}
+	defer rows.Close()
+
+	res := models.Codes{}
+	for rows.Next() {
+		var categoryID, codeID, title, locale, parentID string
+		rows.Scan(&categoryID, &codeID, &title, &locale, &parentID)
+
+		res = append(res, &models.Code{
+			Category: &categoryID,
+			ID:       &codeID,
+			ParentID: parentID,
+			Locale:   locale,
+			Title:    &title,
+		})
+	}
+
+	return res, nil
 }
 
 func (s *storage) Close() error {

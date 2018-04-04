@@ -18,6 +18,7 @@ import (
 	"github.com/iryonetwork/wwm/gen/discovery/models"
 	"github.com/iryonetwork/wwm/storage/discovery/db"
 	"github.com/iryonetwork/wwm/storage/discovery/db/mock"
+	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
 
 var (
@@ -900,6 +901,151 @@ func TestUnlink(t *testing.T) {
 	}
 }
 
+func TestGetCodes(t *testing.T) {
+	cat := "CAT"
+	id := "ID"
+	title := "TITLE"
+	code := &models.Code{
+		Category: &cat,
+		ID:       &id,
+		Locale:   "LOC",
+		Title:    &title,
+	}
+	codeWithParent := &models.Code{
+		Category: &cat,
+		ID:       &id,
+		Locale:   "LOC",
+		Title:    &title,
+		ParentID: "PARENT",
+	}
+
+	testCases := []struct {
+		title         string
+		category      string
+		query         string
+		locale        string
+		parentID      string
+		calls         func(sqlmock.Sqlmock)
+		expected      models.Codes
+		errorExpected bool
+		exactError    error
+	}{
+		{
+			"Basic call",
+			"CAT",
+			"",
+			"",
+			"",
+			func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT .+ FROM codes AS c INNER JOIN code_titles AS ct .+ "+
+					"c\\.category_id = \\$1 AND ct\\.locale = \\$2 ORDER BY").
+					WithArgs("CAT", "en").
+					WillReturnRows(sqlmock.NewRows([]string{"category_id", "code_id", "title", "locale", "parent_id"}).
+						AddRow("CAT", "ID", "TITLE", "LOC", nil))
+			},
+			models.Codes{code},
+			noErrors,
+			nil,
+		},
+		{
+			"Custom locale",
+			"CAT",
+			"",
+			"LOC",
+			"",
+			func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT .+ FROM codes AS c INNER JOIN code_titles AS ct .+ "+
+					"c\\.category_id = \\$1 AND ct\\.locale = \\$2 ORDER BY").
+					WithArgs("CAT", "LOC").
+					WillReturnRows(sqlmock.NewRows([]string{"category_id", "code_id", "title", "locale", "parent_id"}).
+						AddRow("CAT", "ID", "TITLE", "LOC", nil))
+			},
+			models.Codes{code},
+			noErrors,
+			nil,
+		},
+		{
+			"With query",
+			"CAT",
+			"QS",
+			"",
+			"",
+			func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT .+ FROM codes AS c INNER JOIN code_titles AS ct .+ "+
+					"c\\.category_id = \\$1 AND ct\\.locale = \\$2 AND ct\\.title ILIKE \\$3 ORDER BY").
+					WithArgs("CAT", "en", "%QS%").
+					WillReturnRows(sqlmock.NewRows([]string{"category_id", "code_id", "title", "locale", "parent_id"}).
+						AddRow("CAT", "ID", "TITLE", "LOC", nil))
+			},
+			models.Codes{code},
+			noErrors,
+			nil,
+		},
+		{
+			"With parent ID",
+			"CAT",
+			"",
+			"",
+			"PARENT",
+			func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT .+ FROM codes AS c INNER JOIN code_titles AS ct .+ "+
+					"c\\.category_id = \\$1 AND ct\\.locale = \\$2 AND c\\.parent_id = \\$3 ORDER BY").
+					WithArgs("CAT", "en", "PARENT").
+					WillReturnRows(sqlmock.NewRows([]string{"category_id", "code_id", "title", "locale", "parent_id"}).
+						AddRow("CAT", "ID", "TITLE", "LOC", "PARENT"))
+			},
+			models.Codes{codeWithParent},
+			noErrors,
+			nil,
+		},
+		{
+			"Failed query",
+			"CAT",
+			"",
+			"",
+			"PARENT",
+			func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT .+").
+					WillReturnError(fmt.Errorf("Error"))
+			},
+			nil,
+			withErrors,
+			nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			// init storage
+			s, mock, c := getTestDB(t)
+			defer c()
+
+			// collect mocked calls
+			tc.calls(mock)
+
+			// call the method
+			out, err := s.CodesGet(tc.category, tc.query, tc.parentID, tc.locale)
+
+			// check expected results
+			if !reflect.DeepEqual(out, tc.expected) {
+				t.Errorf("Expected\n%s\nto equal\n\t\t%s", toJSON(out), toJSON(tc.expected))
+			}
+
+			// assert error
+			if tc.errorExpected && err == nil {
+				t.Error("Expected error, got nil")
+			} else if !tc.errorExpected && err != nil {
+				t.Errorf("Expected error to be nil, got %v", err)
+			}
+
+			// assert actual error
+			if tc.exactError != nil && tc.exactError != err {
+				t.Errorf("Expected error to equal '%v'; got %v", tc.exactError, err)
+			}
+		})
+	}
+}
+
 func getTestStorage(t *testing.T) (*storage, *mock.MockDB, func()) {
 	// mock getNewUUID
 	origGetNewUUID := getNewUUID
@@ -930,6 +1076,41 @@ func getTestStorage(t *testing.T) (*storage, *mock.MockDB, func()) {
 	}
 
 	return s, db, cleanup
+}
+
+func getTestDB(t *testing.T) (*storage, sqlmock.Sqlmock, func()) {
+	// mock getNewUUID
+	origGetNewUUID := getNewUUID
+	getNewUUID = func() strfmt.UUID {
+		return uuid1
+	}
+
+	// mock getCurrentTime
+	origGetCurrentTime := getCurrentTime
+	getCurrentTime = func() time.Time {
+		return time.Time(time1)
+	}
+
+	// setup minio mock
+
+	db, mock, _ := sqlmock.New()
+	gdb, _ := gorm.Open("postgres", db)
+
+	s := &storage{
+		gdb:        gdb,
+		logger:     zerolog.New(os.Stdout),
+		locationID: uuid1.String(),
+	}
+
+	cleanup := func() {
+		getNewUUID = origGetNewUUID
+		getCurrentTime = origGetCurrentTime
+		if err := mock.ExpectationsWereMet(); err != nil {
+			t.Error(err)
+		}
+	}
+
+	return s, mock, cleanup
 }
 
 func toJSON(in interface{}) string {

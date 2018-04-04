@@ -3,6 +3,8 @@ package db
 //go:generate ../../../bin/mockgen.sh storage/discovery/db DB $GOFILE
 
 import (
+	"database/sql"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -18,9 +20,13 @@ type DB interface {
 	First(interface{}, ...interface{}) DB
 	GetError() error
 	GetErrors() []error
+	Model(interface{}) DB
 	Preload(string, ...interface{}) DB
+	Raw(string, ...interface{}) DB
 	RecordNotFound() bool
+	Related(interface{}, ...string) DB
 	Rollback() DB
+	Rows() (*sql.Rows, error)
 	Save(interface{}) DB
 	Set(string, interface{}) DB
 	Update(...interface{}) DB
@@ -71,16 +77,32 @@ func (d *db) GetErrors() []error {
 	return d.db.GetErrors()
 }
 
+func (d *db) Model(value interface{}) DB {
+	return &db{d.db.Model(value)}
+}
+
 func (d *db) Preload(column string, conditions ...interface{}) DB {
 	return &db{d.db.Preload(column, conditions...)}
+}
+
+func (d *db) Raw(sql string, values ...interface{}) DB {
+	return &db{d.db.Raw(sql, values...)}
 }
 
 func (d *db) RecordNotFound() bool {
 	return d.db.RecordNotFound()
 }
 
+func (d *db) Related(value interface{}, foreignKeys ...string) DB {
+	return &db{d.db.Related(value, foreignKeys...)}
+}
+
 func (d *db) Rollback() DB {
 	return &db{d.db.Rollback()}
+}
+
+func (d *db) Rows() (*sql.Rows, error) {
+	return d.db.Rows()
 }
 
 func (d *db) Set(name string, value interface{}) DB {
