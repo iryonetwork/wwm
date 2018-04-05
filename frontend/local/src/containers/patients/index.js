@@ -8,7 +8,7 @@ export default withRouter(({ history }) => (
     <div className="patients">
         <header>
             <h1>Patients</h1>
-            <button onClick={() => history.push("/patients/new")} className="btn btn-secondary btn-wide" type="submit">
+            <button onClick={() => history.push("/new-patient")} className="btn btn-secondary btn-wide" type="submit">
                 Add New Patient
             </button>
         </header>
@@ -26,7 +26,7 @@ export default withRouter(({ history }) => (
                         <td>Syrian ID P349294839</td>
                         <td>Camp 15, Tent 06</td>
                         <td>
-                            <Link to="/waitlist/add/abc">Add to Waiting List</Link>
+                            <Link to="/to-waitlist/patient-uuid">Add to Waiting List</Link>
                         </td>
                     </tr>
                 ))}

@@ -1,0 +1,185 @@
+@import "shared/styles/variables.scss";
+
+.waitlist-detail {
+    display: flex;
+
+    .sidebar {
+        width: 210px;
+        margin-right: 20px;
+
+        .patientCard {
+            margin-top: -15px;
+        }
+
+        h5 {
+            font-weight: normal;
+            text-transform: uppercase;
+            color: $grey5;
+            margin-bottom: 3px;
+            font-size: 11px;
+        }
+
+        .row {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .danger {
+            color: $danger;
+            background: url("~shared/icons/warning.svg") no-repeat;
+            padding-left: 30px;
+            padding-top: 2px;
+        }
+
+        .menu {
+            margin-top: 50px;
+
+            ul {
+                list-style: none;
+                padding: 0;
+                font-weight: normal;
+            }
+
+            li {
+                height: 40px;
+            }
+
+            a {
+                color: $grey5;
+                display: inline-block;
+
+                svg {
+                    opacity: 0.4;
+                    position: relative;
+                    top: 10px;
+                    left: -5px;
+                    margin-right: 5px;
+                }
+
+                &.active {
+                    color: $black;
+
+                    svg {
+                        opacity: 1;
+                    }
+                }
+            }
+        }
+    }
+
+    header {
+        padding-bottom: 30px;
+    }
+
+    .section {
+        padding: 50px 0 50px;
+        border-top: 1px solid $grey2;
+
+        header {
+            margin-bottom: 40px;
+
+            button {
+                margin-right: 0;
+            }
+        }
+
+        h2 {
+            font-size: 24px;
+            line-height: 40px;
+
+            svg {
+                position: absolute;
+                margin-left: -45px;
+                margin-top: -2px;
+            }
+        }
+
+        .card-group {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+
+            > div {
+                padding: 10px;
+            }
+        }
+
+        .card {
+            background: $grey1;
+            border: 1px solid $grey2;
+            border-radius: 3px;
+            padding: 12px 15px;
+            color: $black;
+
+            .card-header {
+                text-transform: uppercase;
+                font-size: 11px;
+                font-weight: bold;
+            }
+
+            .card-body {
+                font-weight: bold;
+                min-height: 57px;
+
+                p {
+                    margin: 0;
+                }
+
+                .big {
+                    font-size: 24px;
+                    margin-right: 5px;
+                }
+            }
+
+            .card-footer {
+                margin-top: 8px;
+                text-transform: uppercase;
+                color: $grey5;
+                font-size: 11px;
+            }
+        }
+    }
+
+    .lab {
+        width: 40%;
+
+        dd {
+            color: $grey5;
+            position: relative;
+            border-bottom: 1px solid $grey2;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+
+            &:last-child {
+                border-bottom: none;
+            }
+        }
+
+        svg {
+            position: absolute;
+            right: 0;
+            top: -10px;
+        }
+    }
+
+    .history {
+        .section {
+            display: flex;
+        }
+
+        .name {
+            font-size: 18px;
+            font-weight: bold;
+            width: 250px;
+        }
+
+        .values {
+            margin-top: 5px;
+        }
+
+        dd {
+            margin-bottom: 20px;
+        }
+    }
+}

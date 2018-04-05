@@ -17,6 +17,8 @@
 @import "bootstrap/scss/utilities";
 @import "bootstrap/scss/print";
 @import "bootstrap/scss/modal";
+@import "bootstrap/scss/dropdown";
+@import "bootstrap/scss/badge";
 
 //@import "bootstrap/scss/bootstrap.scss";
 
@@ -148,6 +150,25 @@ main {
     }
 }
 
+header {
+    display: flex;
+
+    h1,
+    h2 {
+        flex-grow: 1;
+        margin: 0;
+    }
+
+    button {
+        align-self: flex-end;
+    }
+}
+
+.modal.show {
+    display: block;
+    overflow-y: auto;
+}
+
 .modal-dialog {
     max-width: 940px;
 
@@ -193,4 +214,11 @@ main {
             display: block;
         }
     }
+}
+
+.badge-pill {
+    border-radius: 6px;
+    text-transform: uppercase;
+    font-size: 9px;
+    padding: 4px 6px 2px;
 }

@@ -1,19 +1,6 @@
 @import "shared/styles/variables.scss";
 
 .patients {
-    header {
-        display: flex;
-
-        h1 {
-            flex-grow: 1;
-            margin: 0;
-        }
-
-        button {
-            align-self: flex-end;
-        }
-    }
-
     .search {
         width: 100%;
         margin: 35px 0;

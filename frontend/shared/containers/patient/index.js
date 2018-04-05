@@ -1,11 +1,12 @@
 import React from "react"
+import classnames from "classnames"
 
 import PersonPlaceholder from "../../public/person.svg"
 
 import "./style.css"
 
-export default ({ style }) => (
-    <div className="patientCard">
+export default ({ style, big }) => (
+    <div className={classnames("patientCard", { big })}>
         <img src={PersonPlaceholder} alt="" />
         <div>
             <div className="name">Graves, Alma</div>

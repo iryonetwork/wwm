@@ -35,12 +35,20 @@ class NewPatientForm extends Component {
         }
     }
 
+    componentDidMount() {
+        document.body.style.overflow = "hidden"
+    }
+
+    componentWillUnmount() {
+        document.body.style.overflow = "auto"
+    }
+
     render() {
         const { onSubmit } = this.props
         const { page } = this.state
         return (
             <React.Fragment>
-                <div className="new-patient modal fade show" style={{ display: "block", overflowY: "scroll" }} tabIndex="-1" role="dialog">
+                <div className="new-patient modal fade show" tabIndex="-1" role="dialog">
                     <div className="modal-dialog" role="document">
                         <div className="modal-content">
                             <div className="modal-header">
