@@ -1,5 +1,5 @@
 import React from "react"
-import { Route, NavLink } from "react-router-dom"
+import { Route, NavLink, Redirect } from "react-router-dom"
 import { connect } from "react-redux"
 import { bindActionCreators } from "redux"
 
@@ -11,6 +11,7 @@ import Patients from "../patients"
 import NewPatient from "../patients/new"
 import Waitlist from "../waitlist"
 import AddToWaitlist from "../waitlist/add"
+import WaitlistDetail from "../patients/detail"
 
 import { ReactComponent as PatientsIcon } from "shared/icons/patients.svg"
 import { ReactComponent as WaitlistIcon } from "shared/icons/waiting-list.svg"
@@ -36,12 +37,12 @@ class App extends React.Component {
                         <Status />
                     </div>
 
-                    <NavLink exact className="navigation" to="/">
+                    <NavLink className="navigation" to="/patients">
                         <PatientsIcon />
                         Patients
                     </NavLink>
 
-                    <NavLink exact className="navigation" to="/waitlist">
+                    <NavLink className="navigation" to="/waitlist/abc">
                         <WaitlistIcon />
                         Waiting list
                     </NavLink>
@@ -55,11 +56,14 @@ class App extends React.Component {
                 </nav>
                 <main>
                     <div className="container">
-                        <Route exact path="/" component={Patients} />
-                        <Route exact path="/patients/new" component={NewPatient} />
-                        <Route exact path="/waitlist" component={Waitlist} />
-                        <Route path="/waitlist/add/:patientID" component={AddToWaitlist} />
+                        <Route exact path="/" render={() => <Redirect to="/patients" />} />
+                        <Route exact path="/patients" component={Patients} />
+                        <Route exact path="/new-patient" component={NewPatient} />
+                        <Route path="/to-waitlist/:patientID" component={AddToWaitlist} meta={{ modal: true }} />
+                        <Route exact path="/waitlist/:waitlistID" component={Waitlist} />
                     </div>
+                    <Route path="/waitlist/:waitlistID/:itemID" component={WaitlistDetail} />
+                    <Route path="/patients/:patientID" component={WaitlistDetail} />
                 </main>
             </React.Fragment>
         )

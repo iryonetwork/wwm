@@ -21,4 +21,20 @@
             }
         }
     }
+
+    &.big {
+        font-weight: bold;
+
+        img {
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            float: none;
+            margin-bottom: 10px;
+        }
+
+        .name {
+            font-size: 18px;
+        }
+    }
 }

@@ -29,9 +29,45 @@
         background-color: $gray-100;
         border: 1px solid $gray-200;
     }
+
+    .tools {
+        min-width: 50px;
+        .dropdown {
+            float: right;
+        }
+    }
+
+    .meatballs {
+        display: inline-block;
+        width: 20px;
+        height: 14px;
+        background: transparent url(~shared/icons/circle-inactive.svg) no-repeat;
+        background-size: 20px 20px;
+
+        &:before,
+        &:after {
+            width: 20px;
+            height: 14px;
+            display: block;
+            position: absolute;
+            content: "";
+            background: transparent url(~shared/icons/circle-inactive.svg) no-repeat;
+            background-size: 20px 20px;
+        }
+
+        &:before {
+            left: 4px;
+        }
+
+        &:after {
+            right: 4px;
+        }
+    }
 }
 
 .vital_signs {
+    text-align: right;
+
     ul {
         list-style: none;
         padding: 0;

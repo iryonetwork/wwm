@@ -1,4 +1,5 @@
 import React from "react"
+import { UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap"
 
 import Patient from "shared/containers/patient"
 
@@ -18,9 +19,8 @@ export default () => (
                             <Patient />
                         </th>
                         <td>Knee pain (both knees)</td>
-                        <td>
-                            <VitalSigns />
-                        </td>
+                        <VitalSigns />
+                        <Tools />
                     </tr>
                 </tbody>
             </table>
@@ -35,10 +35,14 @@ export default () => (
                         <th scope="row">
                             <Patient />
                         </th>
-                        <td>Knee pain (both knees)</td>
                         <td>
-                            <VitalSigns />
+                            Knee pain (both knees)
+                            <div>
+                                <span className="badge badge-pill badge-danger">Urgent</span>
+                            </div>
                         </td>
+                        <VitalSigns />
+                        <Tools />
                     </tr>
                 </tbody>
             </table>
@@ -54,10 +58,14 @@ export default () => (
                             <th scope="row">
                                 <Patient />
                             </th>
-                            <td>Knee pain (both knees)</td>
                             <td>
-                                <VitalSigns />
+                                Knee pain (both knees)
+                                <div>
+                                    <span className="badge badge-pill badge-danger">Urgent</span>
+                                </div>
                             </td>
+                            <VitalSigns />
+                            <Tools />
                         </tr>
                     ))}
                 </tbody>
@@ -66,15 +74,32 @@ export default () => (
     </div>
 )
 
+const Tools = () => (
+    <td className="tools">
+        <UncontrolledDropdown>
+            <DropdownToggle color="link">
+                <span className="meatballs" />
+            </DropdownToggle>
+            <DropdownMenu right>
+                <DropdownItem>Edit main complaint</DropdownItem>
+                <DropdownItem>Add vital signs</DropdownItem>
+                <DropdownItem>Remove from Waiting list</DropdownItem>
+            </DropdownMenu>
+        </UncontrolledDropdown>
+    </td>
+)
+
 const VitalSigns = () => (
-    <div className="vital_signs">
-        <ul>
-            <li className="active">H</li>
-            <li className="active">M</li>
-            <li className="active">T</li>
-            <li>HR</li>
-            <li>BP</li>
-            <li>OS</li>
-        </ul>
-    </div>
+    <td className="vital_signs">
+        <div>
+            <ul>
+                <li className="active">H</li>
+                <li className="active">M</li>
+                <li className="active">T</li>
+                <li>HR</li>
+                <li>BP</li>
+                <li>OS</li>
+            </ul>
+        </div>
+    </td>
 )

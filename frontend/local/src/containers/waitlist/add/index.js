@@ -23,11 +23,19 @@ class AddToWaitlist extends Component {
         this.state = {}
     }
 
+    componentDidMount() {
+        document.body.style.overflow = "hidden"
+    }
+
+    componentWillUnmount() {
+        document.body.style.overflow = "auto"
+    }
+
     render() {
         let { history } = this.props
         return (
             <React.Fragment>
-                <div className="add-to-waitlist modal fade show" style={{ display: "block", overflowY: "scroll" }} tabIndex="-1" role="dialog">
+                <div className="add-to-waitlist modal fade show" tabIndex="-1" role="dialog">
                     <div className="modal-dialog" role="document">
                         <div className="modal-content">
                             <div className="modal-header">
