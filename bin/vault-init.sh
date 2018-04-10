@@ -1,21 +1,20 @@
 #!/bin/bash
 
-VAULT_TOKEN=root
-VAULT_ADDR=https://vault.iryo.local:8200
+CMD_VAULT="docker-compose exec --env VAULT_TOKEN=root --env VAULT_SKIP_VERIFY=1 vault vault"
 
 # enable database secret engine
-vault secrets enable database
+$CMD_VAULT secrets enable database
 
 ## LOCAL DISCOVERY
 
 # enable secret management on localdiscovery database
-vault write database/config/localdiscovery \
+$CMD_VAULT write database/config/localdiscovery \
     plugin_name=postgresql-database-plugin \
     allowed_roles="localDiscoveryService" \
     connection_url="postgresql://root:root@postgres:5432/"
 
 # create a role for the localDiscovery service
-vault write database/roles/localDiscoveryService \
+$CMD_VAULT write database/roles/localDiscoveryService \
     db_name=localdiscovery \
     creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
         GRANT localdiscoveryservice TO \"{{name}}\";" \
@@ -23,21 +22,21 @@ vault write database/roles/localDiscoveryService \
     max_ttl="720h"
 
 # create localDiscoveryPolicy
-vault policy write localDiscoveryService ./services/vault/policies/localDiscoveryService.hcl
+$CMD_VAULT policy write localDiscoveryService /vault/config/policies/localDiscoveryService.hcl
 
 # create token for localDiscoveryService
-vault token create -id=LOCAL-DISCOVERY-TOKEN -policy=localDiscoveryService -ttl=720h
+$CMD_VAULT token create -id=LOCAL-DISCOVERY-TOKEN -policy=localDiscoveryService -ttl=720h
 
 ## CLOUD DISCOVERY
 
 # enable secret management on clouddiscovery database
-vault write database/config/clouddiscovery \
+$CMD_VAULT write database/config/clouddiscovery \
     plugin_name=postgresql-database-plugin \
     allowed_roles="cloudDiscoveryService" \
     connection_url="postgresql://root:root@postgres:5432/"
 
 # create a role for the cloudDiscovery service
-vault write database/roles/cloudDiscoveryService \
+$CMD_VAULT write database/roles/cloudDiscoveryService \
     db_name=clouddiscovery \
     creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; \
         GRANT clouddiscoveryservice TO \"{{name}}\";" \
@@ -45,10 +44,10 @@ vault write database/roles/cloudDiscoveryService \
     max_ttl="720h"
 
 # create cloudDiscoveryPolicy
-vault policy write cloudDiscoveryService ./services/vault/policies/cloudDiscoveryService.hcl
+$CMD_VAULT policy write cloudDiscoveryService /vault/config/policies/cloudDiscoveryService.hcl
 
 # create token for cloudDiscoveryService
-vault token create -id=CLOUD-DISCOVERY-TOKEN -policy=cloudDiscoveryService -ttl=720h
+$CMD_VAULT token create -id=CLOUD-DISCOVERY-TOKEN -policy=cloudDiscoveryService -ttl=720h
 
 # example of reading a token; will be done by the service using the API
 # vault read database/creds/localDiscoveryService

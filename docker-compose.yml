@@ -29,6 +29,7 @@ services:
     volumes:
     - ./bin/tls:/certs
     - ./services/vault/vault.hcl:/vault/config/local.hcl
+    - ./services/vault/policies:/vault/config/policies
 
   vaultui:
     image: djenriquez/vault-ui
