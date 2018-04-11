@@ -200,7 +200,7 @@ paths:
       tags:
       - discovery
       - cloud
-      summary: Links a patient to a given patient
+      summary: Links a patient to a given location
       operationId: link
 
       parameters:

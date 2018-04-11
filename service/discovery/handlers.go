@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/swag"
 	"github.com/iryonetwork/wwm/gen/discovery/models"
 	"github.com/iryonetwork/wwm/gen/discovery/restapi/operations"
 	"github.com/iryonetwork/wwm/storage/discovery"
@@ -33,10 +34,7 @@ type handlers struct {
 
 func (h *handlers) Query() operations.QueryHandler {
 	return operations.QueryHandlerFunc(func(params operations.QueryParams, principal *string) middleware.Responder {
-		q := ""
-		if params.Query != nil {
-			q = *params.Query
-		}
+		q := swag.StringValue(params.Query)
 
 		var (
 			res models.Cards

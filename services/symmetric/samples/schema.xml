@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!DOCTYPE database SYSTEM "http://db.apache.org/torque/dtd/database.dtd">
+<database name="clouddiscovery">
+    <table name="patients">
+        <column name="patient_id" type="VARCHAR" size="36" required="true" primaryKey="true" />
+    </table>
+
+    <table name="connections">
+        <column name="patient_id" type="VARCHAR" size="36" required="true" primaryKey="true" />
+        <column name="key" type="VARCHAR" size="64" required="true" primaryKey="true"  />
+        <column name="value" type="VARCHAR" size="128" required="true" />
+        <foreign-key name="fk_connection_item_id" foreignTable="patients">
+            <reference local="patient_id" foreign="patient_id" />
+        </foreign-key>
+    </table>
+
+    <table name="patient_locations">
+        <column name="patient_id" type="VARCHAR" size="36" required="true" primaryKey="true" />
+        <column name="location_id" type="VARCHAR" size="36" required="true" />
+        <foreign-key name="fk_location_item_id" foreignTable="patients">
+            <reference local="patient_id" foreign="patient_id" />
+        </foreign-key>
+    </table>
+
+    <table_data name="patients">
+        <row>
+            <field name="patient_id">2d04b22e-1cc3-46b4-96dd-2bee5bad9ffa</field>
+        </row>
+        <row>
+            <field name="patient_id">f7e41e48-ec79-4c78-9db6-37c0c4f78326</field>
+        </row>
+    </table_data>
+</database>
