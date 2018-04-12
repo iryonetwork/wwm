@@ -5,7 +5,6 @@ import { connect } from "react-redux"
 import _ from "lodash"
 
 import { loadUsers, deleteUser } from "../../modules/users"
-import { removeUserFromRole } from "../../modules/roles"
 
 class Users extends React.Component {
     componentDidMount() {
@@ -13,11 +12,25 @@ class Users extends React.Component {
     }
 
     removeUser = userID => e => {
-        if (this.props.roleID) {
-            this.props.removeUserFromRole(this.props.roleID, userID)
-        } else {
-            this.props.deleteUser(userID)
+        this.props.deleteUser(userID)
+    }
+
+    getName(user) {
+        if (user.personalData !== undefined) {
+            var name = ""
+            if (user.personalData.firstName !== undefined && user.personalData.firstName !== "") {
+                name += user.personalData.firstName
+            }
+            if (user.personalData.middleName !== undefined && user.personalData.middleName !== "") {
+                name = name + " " + user.personalData.middleName
+            }
+            if (user.personalData.lastName !== undefined && user.personalData.lastName !== "") {
+                name = name + " " + user.personalData.lastName
+            }
+            return name
         }
+
+        return "Unknown"
     }
 
     render() {
@@ -35,6 +48,7 @@ class Users extends React.Component {
                     <tr>
                         <th scope="col">#</th>
                         <th scope="col">Username</th>
+                        <th scope="col">Name</th>
                         <th scope="col">Email</th>
                         <th />
                     </tr>
@@ -46,6 +60,7 @@ class Users extends React.Component {
                             <td>
                                 <Link to={`/users/${user.id}`}>{user.username}</Link>
                             </td>
+                            <td>{this.getName(user)}</td>
                             <td>{user.email}</td>
                             <td className="text-right">
                                 <button onClick={this.removeUser(user.id)} className="btn btn-sm btn-light" type="button">
@@ -64,7 +79,6 @@ const mapStateToProps = (state, ownProps) => ({
     users:
         (ownProps.users ? (state.users.users ? _.fromPairs(_.map(ownProps.users, userID => [userID, state.users.users[userID]])) : {}) : state.users.users) ||
         {},
-    roleID: ownProps.role,
     loading: state.users.loading,
     forbidden: state.users.forbidden
 })
@@ -73,7 +87,6 @@ const mapDispatchToProps = dispatch =>
     bindActionCreators(
         {
             loadUsers,
-            removeUserFromRole,
             deleteUser
         },
         dispatch

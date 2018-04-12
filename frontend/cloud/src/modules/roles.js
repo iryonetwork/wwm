@@ -17,7 +17,7 @@ const initialState = {
 }
 
 export default (state = initialState, action) => {
-    let roles, users
+    let roles
     switch (action.type) {
         case LOAD_ROLES:
             return {
@@ -26,20 +26,10 @@ export default (state = initialState, action) => {
             }
 
         case LOAD_ROLES_SUCCESS:
-            users = {}
-            _.forEach(action.roles, role => {
-                _.forEach(role.users, user => {
-                    if (!users[user]) {
-                        users[user] = []
-                    }
-                    users[user].push(role.id)
-                })
-            })
             return {
                 ...state,
                 loading: false,
                 roles: _.keyBy(action.roles, "id"),
-                users: users
             }
 
         case LOAD_ROLES_FAIL:
@@ -55,18 +45,11 @@ export default (state = initialState, action) => {
 
         case UPDATE_ROLE_SUCCESS:
             roles = { ...state.roles }
-            users = { ...state.users }
-            if (_.indexOf(roles[action.role.id].users, action.userID) === -1) {
-                users[action.userID].push(action.role.id)
-            } else {
-                users[action.userID] = _.without(users[action.userID], action.role.id)
-            }
             roles[action.role.id] = action.role
 
             return {
                 loading: false,
-                roles,
-                users
+                roles
             }
 
         case CREATE_ROLE_SUCCESS:
@@ -78,17 +61,11 @@ export default (state = initialState, action) => {
             }
 
         case DELETE_ROLE_SUCCESS:
-            let checkUsers = state.roles[action.roleID].users
             roles = { ...state.roles }
-            users = { ...state.users }
             delete roles[action.roleID]
-            _.forEach(checkUsers, user => {
-                users[user] = _.without(users[user], action.roleID)
-            })
             return {
                 ...state,
                 roles,
-                users
             }
 
         default:
@@ -119,50 +96,10 @@ export const loadRoles = () => {
     }
 }
 
-export const removeUserFromRole = (roleID, userID) => {
-    return (dispatch, getState) => {
-        let role = getState().roles.roles[roleID]
-        role.users = _.without(role.users, userID)
-
-        return api(`/auth/roles/${roleID}`, "PUT", role)
-            .then(response => {
-                dispatch({
-                    type: UPDATE_ROLE_SUCCESS,
-                    role: role,
-                    userID: userID
-                })
-                dispatch(open("User removed from role", "", COLOR_SUCCESS, 5))
-            })
-            .catch(error => {
-                dispatch(open(error.message, error.code, COLOR_DANGER))
-            })
-    }
-}
-
-export const addUserToRole = (roleID, userID) => {
-    return (dispatch, getState) => {
-        let role = getState().roles.roles[roleID]
-        role.users.push(userID)
-
-        return api(`/auth/roles/${roleID}`, "PUT", role)
-            .then(response => {
-                dispatch({
-                    type: UPDATE_ROLE_SUCCESS,
-                    role: role,
-                    userID: userID
-                })
-                dispatch(open("Added user to role", "", COLOR_SUCCESS, 5))
-            })
-            .catch(error => {
-                dispatch(open(error.message, error.code, COLOR_DANGER))
-            })
-    }
-}
 
 export const addRole = name => {
     return dispatch => {
         let role = {
-            users: [],
             name
         }
 

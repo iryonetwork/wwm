@@ -6,6 +6,10 @@ import alert from "shared/modules/alert"
 import users from "./users"
 import roles from "./roles"
 import rules from "./rules"
+import userRoles from "./userRoles"
+import locations from "./locations"
+import organizations from "./organizations"
+import clinics from "./clinics"
 
 export default combineReducers({
     router: routerReducer,
@@ -13,5 +17,9 @@ export default combineReducers({
     alert,
     users,
     roles,
-    rules
+    rules,
+    userRoles,
+    locations,
+    organizations,
+    clinics
 })

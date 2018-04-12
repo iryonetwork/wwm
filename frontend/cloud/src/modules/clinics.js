@@ -3,19 +3,19 @@ import _ from "lodash"
 import api from "./api"
 import { open, close, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 
-const LOAD_USER = "user/LOAD_USER"
-const LOAD_USER_SUCCESS = "user/LOAD_USER_SUCCESS"
-const LOAD_USER_FAIL = "user/LOAD_USER_FAIL"
+const LOAD_CLINIC = "clinic/LOAD_CLINIC"
+const LOAD_CLINIC_SUCCESS = "clinic/LOAD_CLINIC_SUCCESS"
+const LOAD_CLINIC_FAIL = "clinic/LOAD_CLINIC_FAIL"
 
-const LOAD_USERS = "user/LOAD_USERS"
-const LOAD_USERS_SUCCESS = "user/LOAD_USERS_SUCCESS"
-const LOAD_USERS_FAIL = "user/LOAD_USERS_FAIL"
+const LOAD_CLINICS = "clinic/LOAD_CLINICS"
+const LOAD_CLINICS_SUCCESS = "clinic/LOAD_CLINICS_SUCCESS"
+const LOAD_CLINICS_FAIL = "clinic/LOAD_CLINICS_FAIL"
 
-const DELETE_USER_FAIL = "user/DELETE_USER_FAIL"
-const DELETE_USER_SUCCESS = "user/DELETE_USER_SUCCESS"
+const DELETE_CLINIC_FAIL = "clinic/DELETE_CLINIC_FAIL"
+const DELETE_CLINIC_SUCCESS = "clinic/DELETE_CLINIC_SUCCESS"
 
-const SAVE_USER_FAIL = "user/SAVE_USER_FAIL"
-const SAVE_USER_SUCCESS = "user/SAVE_USER_SUCCESS"
+const SAVE_CLINIC_FAIL = "clinic/SAVE_CLINIC_FAIL"
+const SAVE_CLINIC_SUCCESS = "clinic/SAVE_CLINIC_SUCCESS"
 
 const initialState = {
     loading: true
@@ -23,35 +23,35 @@ const initialState = {
 
 export default (state = initialState, action) => {
     switch (action.type) {
-        case LOAD_USER:
+        case LOAD_CLINIC:
             return {
                 ...state,
                 loading: true
             }
-        case LOAD_USER_SUCCESS:
+        case LOAD_CLINIC_SUCCESS:
             return {
                 ...state,
-                users: _.assign({}, state.users || {}, _.fromPairs([[action.user.id, action.user]])),
+                clinics: _.assign({}, state.clinics || {}, _.fromPairs([[action.clinic.id, action.clinic]])),
                 loading: false
             }
-        case LOAD_USER_FAIL:
+        case LOAD_CLINIC_FAIL:
             return {
                 ...state,
                 loading: false
             }
 
-        case LOAD_USERS:
+        case LOAD_CLINICS:
             return {
                 ...state,
                 loading: true
             }
-        case LOAD_USERS_SUCCESS:
+        case LOAD_CLINICS_SUCCESS:
             return {
                 ...state,
-                users: _.keyBy(action.users, "id"),
+                clinics: _.keyBy(action.clinics, "id"),
                 loading: false
             }
-        case LOAD_USERS_FAIL:
+        case LOAD_CLINICS_FAIL:
             let forbidden = false
             if (action.code === 403) {
                 forbidden = true
@@ -62,61 +62,60 @@ export default (state = initialState, action) => {
                 loading: false
             }
 
-        case DELETE_USER_SUCCESS:
+        case DELETE_CLINIC_SUCCESS:
             return {
                 ...state,
-                users: _.pickBy(state.users, user => user.id !== action.userID)
+                clinics: _.pickBy(state.clinics, clinic => clinic.id !== action.clinicID)
             }
 
-        case SAVE_USER_SUCCESS:
+        case SAVE_CLINIC_SUCCESS:
             return {
                 ...state,
-                users: _.assign({}, state.users, _.fromPairs([[action.user.id, action.user]]))
+                clinics: _.assign({}, state.clinics, _.fromPairs([[action.clinic.id, action.clinic]]))
             }
         default:
             return state
     }
 }
 
-export const loadUser = userID => {
+export const loadClinic = clinicID => {
     return dispatch => {
         dispatch({
-            type: LOAD_USER
+            type: LOAD_CLINIC
         })
 
-        return api(`/auth/users/${userID}`, "GET")
+        return api(`/auth/clinics/${clinicID}`, "GET")
             .then(response => {
                 dispatch({
-                    type: LOAD_USER_SUCCESS,
-                    user: response
+                    type: LOAD_CLINIC_SUCCESS,
+                    clinic: response
                 })
             })
             .catch(error => {
                 dispatch({
-                    type: LOAD_USER_FAIL
+                    type: LOAD_CLINIC_FAIL
                 })
                 dispatch(open(error.message, error.code, COLOR_DANGER))
             })
     }
 }
 
-export const loadUsers = () => {
+export const loadClinics = () => {
     return dispatch => {
         dispatch({
-            type: LOAD_USERS
+            type: LOAD_CLINICS
         })
-        console.log("loading users")
 
-        return api(`/auth/users`, "GET")
+        return api(`/auth/clinics`, "GET")
             .then(response => {
                 dispatch({
-                    type: LOAD_USERS_SUCCESS,
-                    users: response
+                    type: LOAD_CLINICS_SUCCESS,
+                    clinics: response
                 })
             })
             .catch(error => {
                 dispatch({
-                    type: LOAD_USERS_FAIL,
+                    type: LOAD_CLINICS_FAIL,
                     code: error.code
                 })
                 dispatch(open(error.message, error.code, COLOR_DANGER))
@@ -124,53 +123,53 @@ export const loadUsers = () => {
     }
 }
 
-export const deleteUser = userID => {
+export const deleteClinic = clinicID => {
     return dispatch => {
         dispatch(close())
 
-        return api(`/auth/users/${userID}`, "DELETE")
+        return api(`/auth/clinics/${clinicID}`, "DELETE")
             .then(response => {
                 dispatch({
-                    type: DELETE_USER_SUCCESS,
-                    userID: userID
+                    type: DELETE_CLINIC_SUCCESS,
+                    clinicID: clinicID
                 })
-                dispatch(open("Deleted user", "", COLOR_SUCCESS, 5))
+                dispatch(open("Deleted clinic", "", COLOR_SUCCESS, 5))
             })
             .catch(error => {
                 dispatch({
-                    type: DELETE_USER_FAIL,
-                    userID: userID
+                    type: DELETE_CLINIC_FAIL,
+                    clinicID: clinicID
                 })
                 dispatch(open(error.message, error.code, COLOR_DANGER))
             })
     }
 }
 
-export const saveUser = user => {
+export const saveClinic = clinic => {
     return dispatch => {
         dispatch(close())
-        let url = "/auth/users"
+        let url = "/auth/clinics"
         let method = "POST"
-        if (user.id) {
-            url += "/" + user.id
+        if (clinic.id) {
+            url += "/" + clinic.id
             method = "PUT"
         }
 
-        return api(url, method, user)
+        return api(url, method, clinic)
             .then(response => {
-                if (user.id) {
-                    response = user
+                if (clinic.id) {
+                    response = clinic
                 }
                 dispatch({
-                    type: SAVE_USER_SUCCESS,
-                    user: response
+                    type: SAVE_CLINIC_SUCCESS,
+                    clinic: response
                 })
-                dispatch(open("Saved user", "", COLOR_SUCCESS, 5))
+                dispatch(open("Saved clinic", "", COLOR_SUCCESS, 5))
             })
             .catch(error => {
                 dispatch({
-                    type: SAVE_USER_FAIL,
-                    user: user
+                    type: SAVE_CLINIC_FAIL,
+                    clinic: clinic
                 })
                 dispatch(open(error.message, error.code, COLOR_DANGER))
             })

@@ -3,15 +3,15 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
-        "react-scripts": "2.0.0-next.47d2d941",
+        "moment": "^2.22.0",
         "node-sass-chokidar": "^0.0.3",
-        "npm-run-all": "^4.1.2"
+        "npm-run-all": "^4.1.2",
+        "react-moment": "^0.7.0",
+        "react-scripts": "2.0.0-next.47d2d941"
     },
     "scripts": {
         "build-shared-css": "node-sass-chokidar --include-path ../shared/ --include-path ../node_modules ../shared/ -o ../shared/",
-        "watch-shared-css":
-            "npm run build-shared-css && node-sass-chokidar --include-path ../shared/ --include-path ../node_modules ../shared/ -o ../shared/ --watch --recursive",
-
+        "watch-shared-css": "npm run build-shared-css && node-sass-chokidar --include-path ../shared/ --include-path ../node_modules ../shared/ -o ../shared/ --watch --recursive",
         "build-css": "node-sass-chokidar --include-path ./src --include-path ../node_modules src/ -o src/",
         "watch-css": "npm run build-css && node-sass-chokidar --include-path ./src --include-path ../node_modules src/ -o src/ --watch --recursive",
         "start-js": "react-scripts start",
