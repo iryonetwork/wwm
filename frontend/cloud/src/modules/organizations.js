@@ -7,6 +7,14 @@ const LOAD_ORGANIZATION = "organization/LOAD_ORGANIZATION"
 const LOAD_ORGANIZATION_SUCCESS = "organization/LOAD_ORGANIZATION_SUCCESS"
 const LOAD_ORGANIZATION_FAIL = "organization/LOAD_ORGANIZATION_FAIL"
 
+const LOAD_ORGANIZATION_LOCATION_IDS = "organization/LOAD_ORGANIZATION_LOCATION_IDS"
+const LOAD_ORGANIZATION_LOCATION_IDS_SUCCESS = "organization/LOAD_ORGANIZATION_LOCATION_IDS_SUCCESS"
+const LOAD_ORGANIZATION_LOCATION_IDS_FAIL = "organization/LOAD_ORGANIZATION_LOCATION_IDS_FAIL"
+
+const LOAD_ORGANIZATION_USER_IDS = "organization/LOAD_ORGANIZATION_USER_IDS"
+const LOAD_ORGANIZATION_USER_IDS_SUCCESS = "organization/LOAD_ORGANIZATION_USER_IDS_SUCCESS"
+const LOAD_ORGANIZATION_USER_IDS_FAIL = "organization/LOAD_ORGANIZATION_USER_IDS_FAIL"
+
 const LOAD_ORGANIZATIONS = "organization/LOAD_ORGANIZATIONS"
 const LOAD_ORGANIZATIONS_SUCCESS = "organization/LOAD_ORGANIZATIONS_SUCCESS"
 const LOAD_ORGANIZATIONS_FAIL = "organization/LOAD_ORGANIZATIONS_FAIL"
@@ -16,6 +24,8 @@ const DELETE_ORGANIZATION_SUCCESS = "organization/DELETE_ORGANIZATION_SUCCESS"
 
 const SAVE_ORGANIZATION_FAIL = "organization/SAVE_ORGANIZATION_FAIL"
 const SAVE_ORGANIZATION_SUCCESS = "organization/SAVE_ORGANIZATION_SUCCESS"
+
+const ROLE_ID_ALL = "all"
 
 const initialState = {
     loading: true
@@ -35,6 +45,40 @@ export default (state = initialState, action) => {
                 loading: false
             }
         case LOAD_ORGANIZATION_FAIL:
+            return {
+                ...state,
+                loading: false
+            }
+
+        case LOAD_ORGANIZATION_LOCATION_IDS:
+            return {
+                ...state,
+                loading: true
+            }
+        case LOAD_ORGANIZATION_LOCATION_IDS_SUCCESS:
+            return {
+                ...state,
+                organizationsLocationIDs: _.assign({}, state.organizationsLocationIDs || {}, _fromPairs([[action.organizationID, action.locationIDs]])),
+                loading: false
+            }
+        case LOAD_ORGANIZATION_LOCATION_IDS_FAIL:
+            return {
+                ...state,
+                loading: false
+            }
+
+        case LOAD_ORGANIZATION_USER_IDS:
+            return {
+                ...state,
+                loading: true
+            }
+        case LOAD_ORGANIZATION_USER_IDS_SUCCESS:
+            return {
+                ...state,
+                organizationsUserIDs: _.assign({}, state.organizationsUserIDs || {}, _fromPairs([[action.organizationID, _.fromPairs([[action.roleID, action.userIDs]])]])),
+                loading: false
+            }
+        case LOAD_ORGANIZATION_USER_IDS_FAIL:
             return {
                 ...state,
                 loading: false
@@ -94,6 +138,58 @@ export const loadOrganization = organizationID => {
             .catch(error => {
                 dispatch({
                     type: LOAD_ORGANIZATION_FAIL
+                })
+                dispatch(open(error.message, error.code, COLOR_DANGER))
+            })
+    }
+}
+
+export const loadOrganizationLocationIDs = organizationID => {
+    return dispatch => {
+        dispatch({
+            type: LOAD_ORGANIZATION_LOCATION_IDS
+        })
+
+        return api(`/auth/organizations/${organizationID}/locations`, "GET")
+            .then(response => {
+                dispatch({
+                    type: LOAD_ORGANIZATION_LOCATION_IDS_SUCCESS,
+                    organizationID: organizationID,
+                    locationIDs: response
+                })
+            })
+            .catch(error => {
+                dispatch({
+                    type: LOAD_ORGANIZATION_LOCATION_IDS_FAIL
+                })
+                dispatch(open(error.message, error.code, COLOR_DANGER))
+            })
+    }
+}
+
+export const loadOrganizationUserIDs = (organizationID, roleID) => {
+    return dispatch => {
+        dispatch({
+            type: LOAD_ORGANIZATION_USER_IDS
+        })
+
+        var url = `/auth/organizations/${organizationID}/users`
+        if (roleID && roleID !== ROLE_ID_ALL) {
+            url += `?roleID=${roleID}`
+        }
+
+        return api(url, "GET")
+            .then(response => {
+                dispatch({
+                    type: LOAD_ORGANIZATION_USER_IDS_SUCCESS,
+                    organizationID: organizationID,
+                    roleID: roleID ? roleID : ROLE_ID_ALL,
+                    userIDs: response
+                })
+            })
+            .catch(error => {
+                dispatch({
+                    type: LOAD_ORGANIZATION_USER_IDS_FAIL
                 })
                 dispatch(open(error.message, error.code, COLOR_DANGER))
             })

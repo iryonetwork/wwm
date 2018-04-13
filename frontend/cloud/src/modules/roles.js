@@ -8,9 +8,16 @@ const LOAD_ROLES = "roles/LOAD_ROLES"
 const LOAD_ROLES_SUCCESS = "roles/LOAD_ROLES_SUCCESS"
 const LOAD_ROLES_FAIL = "roles/LOAD_ROLES_FAIL"
 
+const LOAD_ROLE_USER_IDS = "roles/LOAD_ROLE_USER_IDS"
+const LOAD_ROLE_USER_IDS_SUCCESS = "roles/LOAD_ROLE_USER_IDS_SUCCESS"
+const LOAD_ROLE_USER_IDS_FAIL = "roles/LOAD_ROLE_USER_IDS_FAIL"
+
 const UPDATE_ROLE_SUCCESS = "roles/UPDATE_ROLES_SUCCESS"
 const CREATE_ROLE_SUCCESS = "roles/CREATE_ROLE_SUCCESS"
 const DELETE_ROLE_SUCCESS = "roles/DELETE_ROLE_SUCCESS"
+
+const DOMAIN_TYPE_ALL = "all"
+const DOMAIN_ID_ALL = "all"
 
 const initialState = {
     loading: true
@@ -33,6 +40,30 @@ export default (state = initialState, action) => {
             }
 
         case LOAD_ROLES_FAIL:
+            let forbidden = false
+            if (action.code === 403) {
+                forbidden = true
+            }
+            return {
+                ...state,
+                forbidden,
+                loading: false
+            }
+
+        case LOAD_ROLE_USER_IDS:
+            return {
+                ...state,
+                loading: true
+            }
+
+        case LOAD_ROLE_USER_IDS_SUCCESS:
+            return {
+                ...state,
+                loading: false,
+                rolesUserIDs: _.assign({}, state.rolesUserIDs || {}, _fromPairs([[action.roleID, _.fromPairs([[action.domainType, _.fromPairs([[action.domainID, action.userIDs]])]])]])),
+            }
+
+        case LOAD_ROLE_USER_IDS_FAIL:
             let forbidden = false
             if (action.code === 403) {
                 forbidden = true
@@ -96,6 +127,38 @@ export const loadRoles = () => {
     }
 }
 
+export const loadRoleUserIDs = (roleID, domainType, domainID) => {
+    return dispatch => {
+        dispatch({
+            type: LOAD_ROLE_USER_IDS
+        })
+
+        var url = `/auth/roles/${roleID}/users`
+        if (domainType && domainType !== DOMAIN_TYPE_ALL) {
+            url += `?domainType=${domainType}`
+            if (domainID && domainID !== DOMAIN_ID_ALL) {
+                url += `&domainID=${domainID}`
+            }
+        }
+
+        return api(url, "GET")
+            .then(response => {
+                dispatch({
+                    type: LOAD_ROLE_USER_IDS_SUCCESS,
+                    roleID: roleID,
+                    domainType: domainType ? domainType : DOMAIN_TYPE_ALL,
+                    domainID: domainType ? (domainID ? domainID : DOMAIN_ID_ALL) : DOMAIN_ID_ALL,
+                    userIDs: response
+                })
+            })
+            .catch(error => {
+                dispatch({
+                    type: LOAD_ROLE_USER_IDS_FAIL
+                })
+                dispatch(open(error.message, error.code, COLOR_DANGER))
+            })
+    }
+}
 
 export const addRole = name => {
     return dispatch => {

@@ -7,6 +7,10 @@ const LOAD_CLINIC = "clinic/LOAD_CLINIC"
 const LOAD_CLINIC_SUCCESS = "clinic/LOAD_CLINIC_SUCCESS"
 const LOAD_CLINIC_FAIL = "clinic/LOAD_CLINIC_FAIL"
 
+const LOAD_CLINIC_USER_IDS = "clinic/LOAD_CLINIC_USER_IDS"
+const LOAD_CLINIC_USER_IDS_SUCCESS = "clinic/LOAD_CLINIC_USER_IDS_SUCCESS"
+const LOAD_CLINIC_USER_IDS_FAIL = "clinic/LOAD_CLINIC_USER_IDS_FAIL"
+
 const LOAD_CLINICS = "clinic/LOAD_CLINICS"
 const LOAD_CLINICS_SUCCESS = "clinic/LOAD_CLINICS_SUCCESS"
 const LOAD_CLINICS_FAIL = "clinic/LOAD_CLINICS_FAIL"
@@ -16,6 +20,8 @@ const DELETE_CLINIC_SUCCESS = "clinic/DELETE_CLINIC_SUCCESS"
 
 const SAVE_CLINIC_FAIL = "clinic/SAVE_CLINIC_FAIL"
 const SAVE_CLINIC_SUCCESS = "clinic/SAVE_CLINIC_SUCCESS"
+
+const ROLE_ID_ALL = "all"
 
 const initialState = {
     loading: true
@@ -35,6 +41,23 @@ export default (state = initialState, action) => {
                 loading: false
             }
         case LOAD_CLINIC_FAIL:
+            return {
+                ...state,
+                loading: false
+            }
+
+        case LOAD_CLINIC_USER_IDS:
+            return {
+                ...state,
+                loading: true
+            }
+        case LOAD_CLINIC_USER_IDS_SUCCESS:
+            return {
+                ...state,
+                clinicsUserIDs: _.assign({}, state.clinicsUserIDs || {}, _fromPairs([[action.clinicID, _.fromPairs([[action.roleID, action.userIDs]])]])),
+                loading: false
+            }
+        case LOAD_CLINIC_USER_IDS_FAIL:
             return {
                 ...state,
                 loading: false
@@ -94,6 +117,35 @@ export const loadClinic = clinicID => {
             .catch(error => {
                 dispatch({
                     type: LOAD_CLINIC_FAIL
+                })
+                dispatch(open(error.message, error.code, COLOR_DANGER))
+            })
+    }
+}
+
+export const loadClinicUserIDs = (clinicID, roleID) => {
+    return dispatch => {
+        dispatch({
+            type: LOAD_CLINIC_USER_IDS
+        })
+
+        var url = `/auth/clinics/${clinicID}/users`
+        if (roleID && roleID !== ROLE_ID_ALL) {
+            url += `?roleID=${roleID}`
+        }
+
+        return api(url, "GET")
+            .then(response => {
+                dispatch({
+                    type: LOAD_CLINIC_USER_IDS_SUCCESS,
+                    clinicID: clinicID,
+                    roleID: roleID ? roleID : ROLE_ID_ALL,
+                    userIDs: response
+                })
+            })
+            .catch(error => {
+                dispatch({
+                    type: LOAD_CLINIC_USER_IDS_FAIL
                 })
                 dispatch(open(error.message, error.code, COLOR_DANGER))
             })
