@@ -38,7 +38,7 @@ const renderRadio = ({ input, className, label, options, meta: { touched, error 
         <span className="label">{label}</span>
         {options.map((option, index) => (
             <div key={index} className="form-check form-check-inline">
-                <input className="form-check-input" type="radio" name={input.name} id={`${input.name}${index}`} value={option.value} />
+                <input {...input} className="form-check-input" type="radio" id={`${input.name}${index}`} value={option.value} />
                 <label className="form-check-label" htmlFor={`${input.name}${index}`}>
                     {option.label}
                 </label>
@@ -60,4 +60,37 @@ const renderTextarea = ({ input, optional, label, meta: { touched, error } }) =>
     </label>
 )
 
-export { renderInput, renderSelect, renderRadio, renderTextarea }
+const renderHabitFields = fields => (
+    <div className="habits">
+        <div className="form-row">
+            <div className="label">{fields.label}</div>
+            <div className="form-group col-sm-6">
+                <div className="form-check form-check-inline">
+                    <input {...fields[fields.names[0]].input} value={true} className="form-check-input" type="radio" id={fields.names[0] + "yes"} />
+                    <label className="form-check-label" htmlFor={fields.names[0] + "yes"}>
+                        Yes
+                    </label>
+                </div>
+                <div className="form-check form-check-inline">
+                    <input {...fields[fields.names[0]].input} value={false} className="form-check-input" type="radio" id={fields.names[0] + "no"} />
+                    <label className="form-check-label" htmlFor={fields.names[0] + "no"}>
+                        No
+                    </label>
+                </div>
+            </div>
+        </div>
+        {fields[fields.names[0]].input.value === (fields.commentWhen || "false") && (
+            <div className="row comment">
+                <div className="label" />
+                <div className="col-sm-4">
+                    <label>
+                        <input {...fields[fields.names[1]].input} className="form-control" placeholder="Comment (optional)" />
+                        <span>Comment</span>
+                    </label>
+                </div>
+            </div>
+        )}
+    </div>
+)
+
+export { renderInput, renderSelect, renderRadio, renderTextarea, renderHabitFields }
