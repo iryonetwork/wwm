@@ -2,32 +2,24 @@ import React from "react"
 import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
 import { withRouter } from "react-router-dom"
-import moment from "moment"
+import _ from "lodash"
 
 import { loadLocation, saveLocation } from "../../modules/locations"
-import { open, close, COLOR_DANGER } from "shared/modules/alert"
+import { CATEGORY_COUNTRIES, loadCodes } from "../../modules/codes"
+import { open, close } from "shared/modules/alert"
 
 class LocationDetail extends React.Component {
     constructor(props) {
         super(props)
-        if (props.location) {
-            this.state = {
-                name: props.location.name,
-                capacity: props.location.capacity ? props.location.capacity : "",
-                country: props.location.country ? props.location.country : "",
-                city: props.location.city ? props.location.city : "",
-                electricty: props.location.electricty ? props.location.electricty : false,
-                waterSupply: props.location.watterSupply ? props.location.watterSupply : false,
-            }
-        } else {
-            this.state = {
-                name: "",
-                capacity: "",
-                city: "",
-                country: "",
-                electricty: false,
-                waterSupply: false,
-            }
+        this.state = {
+            name: "",
+            capacity: "",
+            city: "",
+            country: "",
+            electricty: false,
+            waterSupply: false,
+            manager: {},
+            loading: true
         }
     }
 
@@ -35,29 +27,62 @@ class LocationDetail extends React.Component {
         if (!this.props.location && this.props.locationID !== "new") {
             this.props.loadLocation(this.props.locationID)
         }
+        if (!this.props.countries) {
+            this.props.loadCodes(CATEGORY_COUNTRIES)
+        }
+
+        this.determineState(this.props)
     }
 
-    componentWillReceiveProps(props) {
+    componentWillReceiveProps(nextProps) {
+        if (!nextProps.location && nextProps.locationID !== "new" && !this.props.locationLoading) {
+            this.props.loadLocation(this.props.locationID)
+        }
+        if (!nextProps.countries && !nextProps.codesLoading) {
+            this.props.loadCodes(CATEGORY_COUNTRIES)
+        }
+
+        this.determineState(nextProps)
+    }
+
+    determineState(props) {
+        let loading = (!props.location && props.locationID !== "new") || props.locationLoading
+        this.setState({loading: loading})
+
         if (props.location) {
+            let manager = _.clone(props.location.manager)
+
             this.setState({ name: props.location.name })
             this.setState({ capacity: props.location.capacity ? props.location.capacity : "" })
             this.setState({ country: props.location.country ? props.location.country : "" })
             this.setState({ city: props.location.city ? props.location.city : "" })
             this.setState({ electricty: props.location.electricty ? props.location.electricty : false })
             this.setState({ waterSupply: props.location.watterSupply ? props.location.watterSupply : false })
+            this.setState({ manager: manager ? manager : {} })
         }
     }
 
     updateInput = e => {
         const target = e.target;
         const value = target.type === 'checkbox' ? target.checked : target.value;
-        const id = target.id;
+
+        let id
+        let toAssign
+        let splitID = target.id.split(".")
+
+        if (splitID.length === 2) {
+            id = splitID[0]
+            toAssign = this.state[id]
+            toAssign[splitID[1]] = value
+        } else {
+            id = target.id
+            toAssign = value
+        }
 
         this.setState({
-          [id]: value
+          [id]: toAssign
         });
     }
-
 
     updateCapacity = e => {
         var parsed = parseInt(e.target.value)
@@ -70,7 +95,7 @@ class LocationDetail extends React.Component {
         e.preventDefault()
         this.props.close()
 
-        let location = this.props.location
+        let location = this.props.location ? this.props.location : {}
 
         location.name = this.state.name
         location.capacity = parseInt(this.state.capacity)
@@ -78,15 +103,19 @@ class LocationDetail extends React.Component {
         location.city = this.state.city
         location.electricty = this.state.electricty
         location.waterSupply = this.state.waterSupply
+        location.manager = _.clone(this.state.manager)
 
         this.props.saveLocation(location)
-        this.forceUpdate()
+            .then(response => {
+                if (!location.id && response.id) {
+                    this.props.history.push(`/locations/${response.id}`)
+                }
+            })
     }
 
     render() {
         let props = this.props
-        console.log(props)
-        if (!props.location && props.locationID !== "new") {
+        if (this.state.loading) {
             return <div>Loading...</div>
         }
         return (
@@ -105,7 +134,14 @@ class LocationDetail extends React.Component {
                     </div>
                     <div className="form-group">
                         <label htmlFor="country">Country</label>
-                        <input className="form-control" id="country" value={this.state.country} onChange={this.updateInput} placeholder="e.g. Lebanon" />
+                        <select className="form-control form-control-sm" id="country" value={this.state.country} onChange={this.updateInput}>
+                            <option value="">Select country</option>
+                            {_.map(props.countries, country => (
+                                <option key={country.code_id} value={country.code_id}>
+                                    {country.title}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <div className="form-group">
                         <label htmlFor="city">City</label>
@@ -119,9 +155,26 @@ class LocationDetail extends React.Component {
                         <label htmlFor="waterSupply">Water supply</label>
                         <input type="checkbox" className="form-control" id="waterSupply" checked={this.state.waterSupply} onChange={this.updateInput} />
                     </div>
-                    <button type="submit" className="btn btn-sm btn-outline-secondary">
-                        Save
-                    </button>
+                    <div className="form-group">
+                        <h3>Manager</h3>
+                        <div className="form-group">
+                            <label htmlFor="firstName">Name</label>
+                            <input className="form-control" id="manager.name" value={this.state.manager.name} onChange={this.updateInput} placeholder="Full name" />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="email">Email address</label>
+                            <input type="email" className="form-control" id="manager.email" value={this.state.manager.email} onChange={this.updateInput} placeholder="user@email.com"/>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="specialisation">Phone number</label>
+                            <input type="tel" className="form-control" id="manager.phoneNumber" value={this.state.manager.phoneNumber} onChange={this.updateInput} placeholder="+38640..." />
+                        </div>
+                    </div>
+                    <div className="form-group">
+                        <button type="submit" className="btn btn-outline-primary col">
+                            Save location
+                        </button>
+                    </div>
                 </form>
             </div>
         )
@@ -131,13 +184,15 @@ class LocationDetail extends React.Component {
 const mapStateToProps = (state, ownProps) => {
     let id = ownProps.locationID
     if (!id) {
-        id = ownProps.match.params.id
+        id = ownProps.match.params.locationID
     }
 
     return {
-        location: state.locations.locations ? state.locations.locations[id] : undefined,
-        loading: state.locations.loading,
         locationID: id,
+        location: state.locations.locations ? state.locations.locations[id] : undefined,
+        locationLoading: state.locations.loading,
+        countries: state.codes.codes[CATEGORY_COUNTRIES],
+        codesLoading: state.codes.loading,
     }
 }
 
@@ -146,6 +201,7 @@ const mapDispatchToProps = dispatch =>
         {
             loadLocation,
             saveLocation,
+            loadCodes,
             open,
             close
         },

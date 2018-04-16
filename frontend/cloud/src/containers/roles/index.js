@@ -3,6 +3,7 @@ import { Route, Link } from "react-router-dom"
 import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
 import map from "lodash/map"
+import _ from "lodash"
 
 import { loadRoles, addRole, deleteRole } from "../../modules/roles"
 import { open, COLOR_DANGER } from "shared/modules/alert"
@@ -14,16 +15,40 @@ class Roles extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            roleName: ""
+            roleName: "",
+            loading: true
         }
     }
+
     componentDidMount() {
-        this.props.loadRoles()
+        if (!this.props.roles) {
+            this.props.loadRoles()
+        }
+        this.determineState(this.props)
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (!nextProps.roles && !nextProps.rolesLoading) {
+            this.props.loadRoles()
+        }
+
+        this.determineState(nextProps)
+    }
+
+    determineState(props) {
+        let loading = !props.roles || props.rolesLoading
+
+        this.setState({loading: loading})
     }
 
     addRole = () => e => {
         if (this.state.roleName) {
             this.props.addRole(this.state.roleName)
+                .then(response => {
+                    if (response.id) {
+                        this.props.history.push(`/roles/${response.id}`)
+                    }
+                })
         } else {
             this.props.open("You must enter role name", "", COLOR_DANGER)
         }
@@ -35,6 +60,9 @@ class Roles extends React.Component {
 
     deleteRole = id => e => {
         this.props.deleteRole(id)
+            .then(response => {
+                this.props.history.push(`/roles`)
+            })
     }
 
     render() {
@@ -42,7 +70,7 @@ class Roles extends React.Component {
         if (props.forbidden) {
             return null
         }
-        if (props.loading) {
+        if (this.state.loading) {
             return <div>Loading...</div>
         }
         let i = 0
@@ -95,7 +123,7 @@ class Roles extends React.Component {
                     </div>
 
                     <div className="col">
-                        <Route path="/roles/:id" component={RoleDetail} />
+                        <Route path="/roles/:roleID" component={RoleDetail} />
                     </div>
                 </div>
             </div>
@@ -105,8 +133,8 @@ class Roles extends React.Component {
 
 const mapStateToProps = (state, ownProps) => {
     return {
-        roles: state.roles.roles || {},
-        loading: state.roles.loading,
+        roles: ownProps.roles ? (state.roles.allLoaded ? _.fromPairs(_.map(ownProps.roles, roleID => [roleID, state.roles.roles[roleID]])) : undefined) : (state.roles.allLoaded ? state.roles.roles : undefined),
+        rolesLoading: state.roles.loading,
         withDetail: !ownProps.match.isExact,
         path: ownProps.location.pathname,
         forbidden: state.roles.forbidden

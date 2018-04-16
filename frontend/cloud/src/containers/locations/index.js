@@ -8,6 +8,11 @@ const LocationsIndex = props => (
     <div>
         <h1>Locations</h1>
         <Locations />
+        {props.forbidden ? null : (
+            <Link to="/locations/new" className="btn btn-sm btn-outline-secondary">
+                Add new location
+            </Link>
+        )}
     </div>
 )
 

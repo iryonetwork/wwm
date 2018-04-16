@@ -9,7 +9,7 @@ const UsersIndex = props => (
         <h1>Users</h1>
         <Users />
         {props.forbidden ? null : (
-            <Link to="/users/new" className="btn btn-sm btn-outline-secondary">
+            <Link to="/users/new" className="btn btn-sm btn-outline-primary col">
                 Add new user
             </Link>
         )}

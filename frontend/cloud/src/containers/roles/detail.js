@@ -10,15 +10,36 @@ import Rules from "../rules"
 class DetailRole extends React.Component {
     constructor(props) {
         super(props)
+        this.state = { loading: true }
 
-        this.state = {}
     }
+
     componentDidMount() {
-        this.props.loadRules()
+        if (!this.props.rules) {
+            this.props.loadRules()
+        }
+
+        this.determineState(this.props)
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (!nextProps.rules && !nextProps.rulesLoading) {
+            this.props.loadRules()
+        }
+
+        this.determineState(nextProps)
+    }
+
+    determineState(props) {
+        let loading = !props.rules || props.rulesLoading
+        this.setState({loading: loading})
     }
 
     render() {
         let props = this.props
+        if (this.state.loading) {
+            return <div>Loading...</div>
+        }
         return (
             <div>
                 <Rules rules={props.rules} subject={props.roleID} />
@@ -28,10 +49,15 @@ class DetailRole extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => {
+    let id = ownProps.roleID
+    if (!id) {
+        id = ownProps.match.params.roleID
+    }
     return {
-        role: state.roles.roles[ownProps.match.params.id],
-        rules: state.rules.subjects ? state.rules.subjects[ownProps.match.params.id] || [] : [],
-        roleID: ownProps.match.params.id
+        roleID: ownProps.match.params.id,
+        rules: state.rules.subjects ? (state.rules.subjects[id] ? state.rules.subjects[id] : {}) : undefined,
+        rulesLoading: state.rules.loading,
+        forbidden: state.roles.forbidden || state.rules.forbidden
     }
 }
 

@@ -5,32 +5,36 @@ import { connect } from "react-redux"
 import _ from "lodash"
 
 import { loadUsers, deleteUser } from "../../modules/users"
+import { getName } from "../../utils/user"
 
 class Users extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = { loading: true }
+    }
+
     componentDidMount() {
-        this.props.loadUsers()
+        if (!this.props.users) {
+            this.props.loadUsers()
+        }
+        this.determineState(this.props)
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (!nextProps.users && !nextProps.usersLoading) {
+            this.props.loadUsers()
+        }
+
+        this.determineState(nextProps)
+    }
+
+    determineState(props) {
+        let loading = !props.users || props.usersLoading
+        this.setState({loading: loading})
     }
 
     removeUser = userID => e => {
         this.props.deleteUser(userID)
-    }
-
-    getName(user) {
-        if (user.personalData !== undefined) {
-            var name = ""
-            if (user.personalData.firstName !== undefined && user.personalData.firstName !== "") {
-                name += user.personalData.firstName
-            }
-            if (user.personalData.middleName !== undefined && user.personalData.middleName !== "") {
-                name = name + " " + user.personalData.middleName
-            }
-            if (user.personalData.lastName !== undefined && user.personalData.lastName !== "") {
-                name = name + " " + user.personalData.lastName
-            }
-            return name
-        }
-
-        return "Unknown"
     }
 
     render() {
@@ -38,7 +42,7 @@ class Users extends React.Component {
         if (props.forbidden) {
             return null
         }
-        if (props.loading) {
+        if (this.state.loading) {
             return <div>Loading...</div>
         }
         let i = 0
@@ -60,7 +64,7 @@ class Users extends React.Component {
                             <td>
                                 <Link to={`/users/${user.id}`}>{user.username}</Link>
                             </td>
-                            <td>{this.getName(user)}</td>
+                            <td>{getName(user)}</td>
                             <td>{user.email}</td>
                             <td className="text-right">
                                 <button onClick={this.removeUser(user.id)} className="btn btn-sm btn-light" type="button">
@@ -76,10 +80,8 @@ class Users extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => ({
-    users:
-        (ownProps.users ? (state.users.users ? _.fromPairs(_.map(ownProps.users, userID => [userID, state.users.users[userID]])) : {}) : state.users.users) ||
-        {},
-    loading: state.users.loading,
+    users: ownProps.users ? (state.users.allLoaded ? _.fromPairs(_.map(ownProps.users, userID => [userID, state.users.users[userID]])) : undefined) : (state.users.allLoaded ? state.users.users : undefined),
+    usersLoading: state.users.loading,
     forbidden: state.users.forbidden
 })
 

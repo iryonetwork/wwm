@@ -13,7 +13,9 @@ const SAVE_RULE_FAIL = "rules/SAVE_RULE_FAIL"
 const DELETE_RULE_SUCCESS = "rules/DELETE_RULE_SUCCESS"
 
 const initialState = {
-    loading: true
+    loading: false,
+    allLoaded: false,
+    forbidden: false
 }
 
 export default (state = initialState, action) => {
@@ -36,6 +38,7 @@ export default (state = initialState, action) => {
 
             return {
                 loading: false,
+                allLoaded: true,
                 rules: _.keyBy(action.rules, "id"),
                 subjects
             }
@@ -149,6 +152,8 @@ export const saveRule = rule => {
                     rule: response
                 })
                 dispatch(open("Saved ACL rule", "", COLOR_SUCCESS, 5))
+
+                return response
             })
             .catch(error => {
                 dispatch({

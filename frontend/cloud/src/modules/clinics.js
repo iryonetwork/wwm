@@ -1,15 +1,15 @@
 import _ from "lodash"
+import store from "../store"
 
 import api from "./api"
+import { loadDomainUserRoles, deleteUserRoleNoAlert, clearUserRoles } from "./userRoles"
+import { clearLocations } from "./locations"
+import { clearOrganizations } from "./organizations"
 import { open, close, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 
 const LOAD_CLINIC = "clinic/LOAD_CLINIC"
 const LOAD_CLINIC_SUCCESS = "clinic/LOAD_CLINIC_SUCCESS"
 const LOAD_CLINIC_FAIL = "clinic/LOAD_CLINIC_FAIL"
-
-const LOAD_CLINIC_USER_IDS = "clinic/LOAD_CLINIC_USER_IDS"
-const LOAD_CLINIC_USER_IDS_SUCCESS = "clinic/LOAD_CLINIC_USER_IDS_SUCCESS"
-const LOAD_CLINIC_USER_IDS_FAIL = "clinic/LOAD_CLINIC_USER_IDS_FAIL"
 
 const LOAD_CLINICS = "clinic/LOAD_CLINICS"
 const LOAD_CLINICS_SUCCESS = "clinic/LOAD_CLINICS_SUCCESS"
@@ -21,13 +21,16 @@ const DELETE_CLINIC_SUCCESS = "clinic/DELETE_CLINIC_SUCCESS"
 const SAVE_CLINIC_FAIL = "clinic/SAVE_CLINIC_FAIL"
 const SAVE_CLINIC_SUCCESS = "clinic/SAVE_CLINIC_SUCCESS"
 
-const ROLE_ID_ALL = "all"
+const CLEAR_CLINICS_STATE = "clinic/CLEAR_CLINICS_STATE"
 
 const initialState = {
-    loading: true
+    loading: false,
+    allLoaded: false,
+    forbidden: false
 }
 
 export default (state = initialState, action) => {
+    console.log(action)
     switch (action.type) {
         case LOAD_CLINIC:
             return {
@@ -46,23 +49,6 @@ export default (state = initialState, action) => {
                 loading: false
             }
 
-        case LOAD_CLINIC_USER_IDS:
-            return {
-                ...state,
-                loading: true
-            }
-        case LOAD_CLINIC_USER_IDS_SUCCESS:
-            return {
-                ...state,
-                clinicsUserIDs: _.assign({}, state.clinicsUserIDs || {}, _fromPairs([[action.clinicID, _.fromPairs([[action.roleID, action.userIDs]])]])),
-                loading: false
-            }
-        case LOAD_CLINIC_USER_IDS_FAIL:
-            return {
-                ...state,
-                loading: false
-            }
-
         case LOAD_CLINICS:
             return {
                 ...state,
@@ -72,6 +58,7 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 clinics: _.keyBy(action.clinics, "id"),
+                allLoaded: true,
                 loading: false
             }
         case LOAD_CLINICS_FAIL:
@@ -96,6 +83,14 @@ export default (state = initialState, action) => {
                 ...state,
                 clinics: _.assign({}, state.clinics, _.fromPairs([[action.clinic.id, action.clinic]]))
             }
+
+        case CLEAR_CLINICS_STATE:
+            return {
+                loading: false,
+                clinics: undefined,
+                allLoaded: false
+            }
+
         default:
             return state
     }
@@ -117,35 +112,6 @@ export const loadClinic = clinicID => {
             .catch(error => {
                 dispatch({
                     type: LOAD_CLINIC_FAIL
-                })
-                dispatch(open(error.message, error.code, COLOR_DANGER))
-            })
-    }
-}
-
-export const loadClinicUserIDs = (clinicID, roleID) => {
-    return dispatch => {
-        dispatch({
-            type: LOAD_CLINIC_USER_IDS
-        })
-
-        var url = `/auth/clinics/${clinicID}/users`
-        if (roleID && roleID !== ROLE_ID_ALL) {
-            url += `?roleID=${roleID}`
-        }
-
-        return api(url, "GET")
-            .then(response => {
-                dispatch({
-                    type: LOAD_CLINIC_USER_IDS_SUCCESS,
-                    clinicID: clinicID,
-                    roleID: roleID ? roleID : ROLE_ID_ALL,
-                    userIDs: response
-                })
-            })
-            .catch(error => {
-                dispatch({
-                    type: LOAD_CLINIC_USER_IDS_FAIL
                 })
                 dispatch(open(error.message, error.code, COLOR_DANGER))
             })
@@ -181,6 +147,9 @@ export const deleteClinic = clinicID => {
 
         return api(`/auth/clinics/${clinicID}`, "DELETE")
             .then(response => {
+                dispatch(clearOrganizations())
+                dispatch(clearUserRoles())
+                dispatch(clearLocations())
                 dispatch({
                     type: DELETE_CLINIC_SUCCESS,
                     clinicID: clinicID
@@ -197,9 +166,11 @@ export const deleteClinic = clinicID => {
     }
 }
 
+
 export const saveClinic = clinic => {
     return dispatch => {
         dispatch(close())
+
         let url = "/auth/clinics"
         let method = "POST"
         if (clinic.id) {
@@ -209,6 +180,7 @@ export const saveClinic = clinic => {
 
         return api(url, method, clinic)
             .then(response => {
+                dispatch(clearOrganizations())
                 if (clinic.id) {
                     response = clinic
                 }
@@ -217,6 +189,8 @@ export const saveClinic = clinic => {
                     clinic: response
                 })
                 dispatch(open("Saved clinic", "", COLOR_SUCCESS, 5))
+
+                return response
             })
             .catch(error => {
                 dispatch({
@@ -225,5 +199,47 @@ export const saveClinic = clinic => {
                 })
                 dispatch(open(error.message, error.code, COLOR_DANGER))
             })
+    }
+}
+
+export const deleteUserFromClinic = (clinicID, userID) => {
+    return dispatch => {
+        dispatch(close())
+
+        // check for user roles to delete in store
+        let userRolesToDelete = undefined
+        let clinicUserRoles = (store.getState().userRoles.domainUserRoles && store.getState().userRoles.domainUserRoles["clinic"] && store.getState().userRoles.domainUserRoles["clinic"][clinicID]) ? store.getState().userRoles.domainUserRoles["clinic"][clinicID] : undefined
+        if (clinicUserRoles === undefined) {
+            let userUserRoles = (store.getState().userRoles.userUserRoles && store.getState().userRoles.userUserRoles[userID]) ? store.getState().userRoles.userUserRoles[userID] : undefined
+            if (userUserRoles !== undefined) {
+                userRolesToDelete = _.pickBy(userUserRoles, userRole => (userRole.domainType === "clinic" && userRole.domainID === clinicID)) || {}
+            }
+        } else {
+            userRolesToDelete = _.pickBy(clinicUserRoles, userRole => (userRole.userID === userID)) || {}
+        }
+
+        // no user roles to delete in store, fetch
+        if (userRolesToDelete === undefined) {
+            return dispatch(loadDomainUserRoles("clinic", clinicID))
+                .then(() => {
+                    return dispatch(deleteUserFromClinic(clinicID, userID))
+                })
+        }
+
+        _.forEach(userRolesToDelete, userRole => {
+            dispatch(deleteUserRoleNoAlert(userRole.id))
+        })
+
+        return Promise.resolve()
+    }
+}
+
+export const clearClinics = () => {
+    return dispatch => {
+        dispatch({
+            type: CLEAR_CLINICS_STATE
+        })
+
+        return Promise.resolve()
     }
 }

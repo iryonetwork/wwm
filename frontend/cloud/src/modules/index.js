@@ -10,6 +10,7 @@ import userRoles from "./userRoles"
 import locations from "./locations"
 import organizations from "./organizations"
 import clinics from "./clinics"
+import codes from "./codes"
 
 export default combineReducers({
     router: routerReducer,
@@ -21,5 +22,6 @@ export default combineReducers({
     userRoles,
     locations,
     organizations,
-    clinics
+    clinics,
+    codes
 })

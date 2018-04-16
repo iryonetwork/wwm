@@ -7,10 +7,10 @@ import (
 	"github.com/go-openapi/swag"
 	uuid "github.com/satori/go.uuid"
 
+	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 	"github.com/iryonetwork/wwm/utils"
-	authCommon "github.com/iryonetwork/wwm/auth"
 )
 
 // GetUserRoles returns all userRoles
@@ -442,13 +442,21 @@ func (s *Storage) addUserRole(userRole *models.UserRole) (*models.UserRole, erro
 		// check if domain exists
 		switch *userRole.DomainType {
 		case authCommon.DomainTypeClinic:
-			_, err = s.getClinicWithTx(tx, *userRole.DomainID)
+			if *userRole.DomainID != authCommon.DomainIDWildcard {
+				_, err = s.getClinicWithTx(tx, *userRole.DomainID)
+			}
 		case authCommon.DomainTypeOrganization:
-			_, err = s.getOrganizationWithTx(tx, *userRole.DomainID)
+			if *userRole.DomainID != authCommon.DomainIDWildcard {
+				_, err = s.getOrganizationWithTx(tx, *userRole.DomainID)
+			}
 		case authCommon.DomainTypeLocation:
-			_, err = s.getLocationWithTx(tx, *userRole.DomainID)
+			if *userRole.DomainID != authCommon.DomainIDWildcard {
+				_, err = s.getLocationWithTx(tx, *userRole.DomainID)
+			}
 		case authCommon.DomainTypeUser:
-			_, err = s.getUserWithTx(tx, *userRole.DomainID)
+			if *userRole.DomainID != authCommon.DomainIDWildcard {
+				_, err = s.getUserWithTx(tx, *userRole.DomainID)
+			}
 		case authCommon.DomainTypeGlobal:
 			// do nothing
 		default:

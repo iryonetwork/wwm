@@ -1,22 +1,115 @@
 import React from "react"
-import { Link } from "react-router-dom"
+import { Route, Link, withRouter } from "react-router-dom"
 import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
 import _ from "lodash"
 
 import { loadLocations } from "../../modules/locations"
 import { loadOrganizations } from "../../modules/organizations"
-import { loadClinics, deleteClinic } from "../../modules/clinics"
+import { saveClinic, loadClinics, deleteClinic } from "../../modules/clinics"
+import UsersList from "./usersList"
 
 class Clinics extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = { loading: true }
+    }
+
     componentDidMount() {
-        this.props.loadClinics()
+        if (!this.props.clinics) {
+            this.props.loadClinics()
+        }
         if (!this.props.locations) {
             this.props.loadLocations()
         }
         if (!this.props.organizations) {
             this.props.loadOrganizations()
         }
+
+        this.determineState(this.props)
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (!nextProps.clinics && !nextProps.clinicsLoading) {
+            this.props.loadClinics()
+        }
+        if (!nextProps.locations && !nextProps.locationsLoading) {
+            this.props.loadLocations()
+        }
+        if (!nextProps.organizations && !nextProps.organizationsLoading) {
+            this.props.loadOrganizations()
+        }
+
+        this.determineState(nextProps)
+    }
+
+    determineState(props) {
+        let loading = !props.clinics || props.clinicsLoading || !props.locations || props.locationsLoading || !props.organizations || props.organizationsLoading
+
+        let selectedClinicID = props.clinicID
+        if (!selectedClinicID) {
+            selectedClinicID = props.match.params.clinicID
+        }
+        this.setState({
+            loading: loading,
+            clinics: _.values(props.clinics),
+            selectedClinicID: selectedClinicID ? selectedClinicID : undefined
+        })
+    }
+
+    newClinic = () => e => {
+        if (this.state.clinics) {
+            let clinics = [...this.state.clinics, { id: "", edit: true, canSave: false, name: "", organization: "", location: "" }]
+            this.setState({
+                clinics: clinics,
+                edit: true
+            })
+        }
+    }
+
+    editClinicName = index => e => {
+        let clinics = [...this.state.clinics]
+        clinics[index].name = e.target.value
+        clinics[index].canSave = (clinics[index].name.length !== 0) && (clinics[index].organization.length !== 0) && (clinics[index].location.length !== 0)
+        this.setState({ clinics: clinics })
+    }
+
+    editOrganizationID = index => e => {
+        let clinics = [...this.state.clinics]
+        clinics[index].organization = e.target.value
+        clinics[index].canSave = (clinics[index].name.length !== 0) && (clinics[index].organization.length !== 0) && (clinics[index].location.length !== 0)
+        this.setState({ clinics: clinics })
+    }
+
+    editLocationID = index => e => {
+        let clinics = [...this.state.clinics]
+        clinics[index].location = e.target.value
+        clinics[index].canSave = (clinics[index].name.length !== 0) && (clinics[index].organization.length !== 0) && (clinics[index].location.length !== 0)
+        this.setState({ clinics: clinics })
+    }
+
+    saveClinic = index => e => {
+        let clinics = [...this.state.clinics]
+
+        clinics[index].edit = false
+        clinics[index].saving = true
+
+        this.props.saveClinic(clinics[index])
+            .then(response => {
+                if (response.id) {
+                    this.setState({ edit: false })
+                    this.props.history.push(`/clinics/${response.id}`)
+                }
+            })
+    }
+
+    cancelNewClinic = index => e => {
+        let clinics = [...this.state.clinics]
+        clinics.splice(index, 1)
+        this.setState({
+            clinics: clinics,
+            edit: false
+        })
     }
 
     removeClinic = clinicID => e => {
@@ -28,52 +121,117 @@ class Clinics extends React.Component {
         if (props.forbidden) {
             return null
         }
-        if (props.loading) {
+        if (this.state.loading) {
             return <div>Loading...</div>
         }
-        let i = 0
         return (
-            <table className="table table-hover">
-                <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Organization</th>
-                        <th scope="col">Location</th>
-                        <th />
-                    </tr>
-                </thead>
-                <tbody>
-                    {_.map(_.filter(props.clinics, clinic => clinic), clinic => (
-                        <tr key={clinic.id}>
-                            <th scope="row">{++i}</th>
-                            <td><Link to={`/clinics/${clinic.id}`}>{clinic.name}</Link></td>
-                            <td>
-                                <Link to={`/organizations/${clinic.organization}`}>{props.organizations[clinic.organization].name}</Link>
-                            </td>
-                            <td>
-                                <Link to={`/locations/${clinic.location}`}>{props.locations[clinic.location].name}</Link>
-                            </td>
-                            <td className="text-right">
-                                <button onClick={this.removeClinic(clinic.id)} className="btn btn-sm btn-light" type="button">
-                                    <span className="icon_trash" />
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+            <div id="clinics">
+                <div className="row">
+                    <table className="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Organization</th>
+                                <th scope="col">Location</th>
+                                <th />
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {_.map(this.state.clinics, (clinic, i) => (
+                                <tr key={clinic.id || i} className={((this.state.edit && clinic.edit) || (!this.state.edit && this.state.selectedClinicID === clinic.id)) ? "table-active" : ""}>
+                                    <th scope="row">{i+1}</th>
+                                    <td>
+                                    {clinic.edit ? (
+                                        <input
+                                            value={clinic.name}
+                                            onChange={this.editClinicName(i)}
+                                            type="text"
+                                            className="form-control form-control-sm"
+                                            placeholder="Clinic name"
+                                            aria-label="Clinic name"
+                                        />
+                                    ) : (
+                                        <Link to={`/clinics/${clinic.id}`}>{clinic.name}</Link>
+                                    )}
+                                    </td>
+                                    <td>
+                                    {clinic.edit ? (
+                                        <select className="form-control form-control-sm" value={clinic.organization} onChange={this.editOrganizationID(i)}>
+                                            <option value="">Select organization</option>
+                                            {_.map(props.organizations, organization => (
+                                                <option key={organization.id} value={organization.id}>
+                                                    {organization.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <Link to={`/organizations/${clinic.organization}`}>{props.organizations[clinic.organization].name}</Link>
+                                    )}
+                                    </td>
+                                    <td>
+                                    {clinic.edit ? (
+                                        <select className="form-control form-control-sm" value={clinic.location} onChange={this.editLocationID(i)}>
+                                            <option value="">Select location</option>
+                                            {_.map(props.locations, location => (
+                                                <option key={location.id} value={location.id}>
+                                                    {location.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <Link to={`/locations/${clinic.location}`}>{props.locations[clinic.location].name}</Link>
+                                    )}
+                                    </td>
+                                    <td className="text-right">
+                                    {clinic.edit ? (
+                                        <div className="btn-group" role="group">
+                                            <button className="btn btn-sm btn-light" disabled={clinic.saving} type="button" onClick={this.cancelNewClinic(i)}>
+                                                <span className="icon_close" />
+                                            </button>
+                                            <button className="btn btn-sm btn-light" disabled={clinic.saving || !clinic.canSave} type="button" onClick={this.saveClinic(i)}>
+                                                <span className="icon_floppy" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="btn-group" role="group">
+                                            <button onClick={this.removeClinic(clinic.id)} className="btn btn-sm btn-light" type="button">
+                                                <span className="icon_trash" />
+                                            </button>
+                                        </div>
+                                    )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    <button type="button" className="btn btn-sm btn-outline-primary col" disabled={this.state.edit ? true : null} onClick={this.newClinic()}>
+                        Add clinic
+                    </button>
+                </div>
+                <div>
+                    {this.state.edit ? (
+                        ""
+                    ) : (
+                        <div className="m-4">
+                            <Route exact path="/clinics/:clinicID" component={UsersList} />
+                            <Route exact path="/clinics/:clinicID/users/:userID" component={UsersList} />
+                        </div>
+                    )}
+                </div>
+            </div>
         )
     }
 }
 
 const mapStateToProps = (state, ownProps) => ({
-    clinics:
-        (ownProps.clinics ? (state.clinics.clinics ? _.fromPairs(_.map(ownProps.clinics, clinicID => [clinicID, state.clinics.clinics[clinicID]])) : {}) : state.clinics.clinics) ||
-        {},
-    organizations: state.organizations.organizations,
-    locations: state.locations.locations,
-    loading: state.locations.loading || state.organizations.loading || state.clinics.loading
+    clinics: ownProps.clinics ? (state.clinics.allLoaded ? _.fromPairs(_.map(ownProps.clinics, clinicID => [clinicID, state.clinics.clinics[clinicID]])) : undefined) : (state.clinics.allLoaded ? state.clinics.clinics : undefined),
+    clinicsLoading: state.clinics.loading,
+    organizations: state.organizations.allLoaded ? state.organizations.organizations : undefined,
+    organizationsLoading: state.organizations.loading,
+    locations: state.locations.allLoaded ? state.locations.locations: undefined,
+    locationsLoading: state.locations.loading,
+    forbidden: state.locations.forbidden || state.clinics.forbidden || state.organizations.forbidden
 })
 
 const mapDispatchToProps = dispatch =>
@@ -82,9 +240,10 @@ const mapDispatchToProps = dispatch =>
             loadOrganizations,
             loadLocations,
             loadClinics,
+            saveClinic,
             deleteClinic
         },
         dispatch
     )
 
-export default connect(mapStateToProps, mapDispatchToProps)(Clinics)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Clinics))

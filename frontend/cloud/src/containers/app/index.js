@@ -44,10 +44,6 @@ class App extends React.Component {
                         Users
                     </NavLink>
 
-                    <NavLink className="navigation" to="/roles">
-                        Roles
-                    </NavLink>
-
                     <NavLink className="navigation" to="/locations">
                         Locations
                     </NavLink>
@@ -60,12 +56,16 @@ class App extends React.Component {
                         Clinics
                     </NavLink>
 
-                    <NavLink className="navigation" to="/userRoles">
-                        User roles
+                    <NavLink className="navigation" to="/roles">
+                        Roles
                     </NavLink>
 
                     <NavLink className="navigation" to="/rules">
                         ACL
+                    </NavLink>
+
+                    <NavLink className="navigation" to="/userRoles">
+                        User roles
                     </NavLink>
 
                     <div className="bottom">
@@ -80,13 +80,18 @@ class App extends React.Component {
                         <Alert />
                         <Route exact path="/" component={Home} />
                         <Route exact path="/users" component={Users} />
-                        <Route path="/users/:id" component={UserDetail} />
+                        <Route exact path="/users/:userID" component={UserDetail} />
+                        <Route exact path="/users/:userID/organizations/:organizationID" component={UserDetail} />
+                        <Route exact path="/users/:userID/clinics/:clinicID" component={UserDetail} />
                         <Route path="/roles" component={Roles} />
                         <Route exact path="/locations" component={Locations} />
-                        <Route path="/locations/:id" component={LocationDetail} />
+                        <Route path="/locations/:locationID" component={LocationDetail} />
                         <Route exact path="/organizations" component={Organizations} />
-                        <Route path="/organizations/:id" component={OrganizationDetail} />
+                        <Route exact path="/organizations/:organizationID" component={OrganizationDetail} />
+                        <Route exact path="/organizations/:organizationID/users/:userID" component={OrganizationDetail} />
                         <Route exact path="/clinics" component={Clinics} />
+                        <Route exact path="/clinics/:clinicID" component={Clinics} />
+                        <Route exact path="/clinics/:clinicID/users/:userID" component={Clinics} />
                         <Route path="/userRoles" component={UserRoles} />
                         <Route exact path="/rules" component={Rules} />
                     </div>

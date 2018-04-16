@@ -7,8 +7,30 @@ import _ from "lodash"
 import { loadOrganizations, deleteOrganization } from "../../modules/organizations"
 
 class Organizations extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = { loading: true }
+    }
+
     componentDidMount() {
-        this.props.loadOrganizations()
+        if (!this.props.organizations) {
+            this.props.loadOrganizations()
+        }
+        this.determineState(this.props)
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (!nextProps.organizations && !nextProps.organizationsLoading) {
+            this.props.loadOrganizations()
+        }
+
+        this.determineState(nextProps)
+    }
+
+    determineState(props) {
+        let loading = !props.organizations || props.organizationsLoading
+
+        this.setState({loading: loading})
     }
 
     removeOrganization = organizationID => e => {
@@ -20,7 +42,7 @@ class Organizations extends React.Component {
         if (props.forbidden) {
             return null
         }
-        if (props.loading) {
+        if (this.state.loading) {
             return <div>Loading...</div>
         }
         let i = 0
@@ -58,10 +80,9 @@ class Organizations extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => ({
-    organizations:
-        (ownProps.organizations ? (state.organizations.organizations ? _.fromPairs(_.map(ownProps.organizations, organizationID => [organizationID, state.organizations.organizations[organizationID]])) : {}) : state.organizations.organizations) ||
-        {},
-    loading: state.organizations.loading
+    organizations:ownProps.organizations ? (state.organizations.allLoaded ? _.fromPairs(_.map(ownProps.organizations, organizationID => [organizationID, state.organizations.organizations[organizationID]])) : undefined) : (state.organizations.allLoaded ? state.organizations.organizations : undefined),
+    organizationsLoading: state.organizations.loading,
+    forbidden: state.organizations.forbidden
 })
 
 const mapDispatchToProps = dispatch =>

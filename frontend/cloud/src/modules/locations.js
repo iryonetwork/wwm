@@ -1,6 +1,8 @@
 import _ from "lodash"
 
 import api from "./api"
+import { clearUserRoles } from "./userRoles"
+import { clearClinics } from "./clinics"
 import { open, close, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 
 const LOAD_LOCATION = "location/LOAD_LOCATION"
@@ -10,10 +12,6 @@ const LOAD_LOCATION_FAIL = "location/LOAD_LOCATION_FAIL"
 const LOAD_LOCATION_ORGANIZATION_IDS = "location/LOAD_LOCATION_ORGANIZATION_IDS"
 const LOAD_LOCATION_ORGANIZATION_IDS_SUCCESS = "location/LOAD_LOCATION_ORGANIZATION_IDS_SUCCESS"
 const LOAD_LOCATION_ORGANIZATION_IDS_FAIL = "location/LOAD_LOCATION_ORGANIZATION_IDS_FAIL"
-
-const LOAD_LOCATION_USER_IDS = "location/LOAD_LOCATION_USER_IDS"
-const LOAD_LOCATION_USER_IDS_SUCCESS = "location/LOAD_LOCATION_USER_IDS_SUCCESS"
-const LOAD_LOCATION_USER_IDS_FAIL = "location/LOAD_LOCATION_USER_IDS_FAIL"
 
 const LOAD_LOCATIONS = "location/LOAD_LOCATIONS"
 const LOAD_LOCATIONS_SUCCESS = "location/LOAD_LOCATIONS_SUCCESS"
@@ -25,10 +23,12 @@ const DELETE_LOCATION_SUCCESS = "location/DELETE_LOCATION_SUCCESS"
 const SAVE_LOCATION_FAIL = "location/SAVE_LOCATION_FAIL"
 const SAVE_LOCATION_SUCCESS = "location/SAVE_LOCATION_SUCCESS"
 
-const ROLE_ID_ALL = "all"
+const CLEAR_LOCATIONS_STATE = "location/CLEAR_LOCATIONS_STATE"
 
 const initialState = {
-    loading: true
+    loading: false,
+    allLoaded: false,
+    forbidden: false
 }
 
 export default (state = initialState, action) => {
@@ -58,27 +58,10 @@ export default (state = initialState, action) => {
         case LOAD_LOCATION_ORGANIZATION_IDS_SUCCESS:
             return {
                 ...state,
-                locationsOrganizationIDs: _.assign({}, state.locationsOrganizationIDs || {}, _fromPairs([[action.locationID, action.organizationIDs]])),
+                locationsOrganizationIDs: _.assign({}, state.locationsOrganizationIDs || {}, _.fromPairs([[action.locationID, action.organizationIDs]])),
                 loading: false
             }
         case LOAD_LOCATION_ORGANIZATION_IDS_FAIL:
-            return {
-                ...state,
-                loading: false
-            }
-
-        case LOAD_LOCATION_USER_IDS:
-            return {
-                ...state,
-                loading: true
-            }
-        case LOAD_LOCATION_USER_IDS_SUCCESS:
-            return {
-                ...state,
-                locationsUserIDs: _.assign({}, state.locationsUserIDs || {}, _fromPairs([[action.locationID, _.fromPairs([[action.roleID, action.userIDs]])]])),
-                loading: false
-            }
-        case LOAD_LOCATION_USER_IDS_FAIL:
             return {
                 ...state,
                 loading: false
@@ -93,6 +76,7 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 locations: _.keyBy(action.locations, "id"),
+                allLoaded: true,
                 loading: false
             }
         case LOAD_LOCATIONS_FAIL:
@@ -117,6 +101,14 @@ export default (state = initialState, action) => {
                 ...state,
                 locations: _.assign({}, state.locations, _.fromPairs([[action.location.id, action.location]]))
             }
+
+        case CLEAR_LOCATIONS_STATE:
+            return {
+                locations: undefined,
+                allLoaded: false,
+                loading: false
+            }
+
         default:
             return state
     }
@@ -167,35 +159,6 @@ export const loadLocationOrganizationIDs = locationID => {
     }
 }
 
-export const loadLocationUserIDs = (locationID, roleID) => {
-    return dispatch => {
-        dispatch({
-            type: LOAD_LOCATION_USER_IDS
-        })
-
-        var url = `/auth/locations/${locationID}/users`
-        if (roleID && roleID !== ROLE_ID_ALL) {
-            url += `?roleID=${roleID}`
-        }
-
-        return api(url, "GET")
-            .then(response => {
-                dispatch({
-                    type: LOAD_LOCATION_USER_IDS_SUCCESS,
-                    locationID: locationID,
-                    roleID: roleID ? roleID : ROLE_ID_ALL,
-                    userIDs: response
-                })
-            })
-            .catch(error => {
-                dispatch({
-                    type: LOAD_LOCATION_USER_IDS_FAIL
-                })
-                dispatch(open(error.message, error.code, COLOR_DANGER))
-            })
-    }
-}
-
 export const loadLocations = () => {
     return dispatch => {
         dispatch({
@@ -225,6 +188,8 @@ export const deleteLocation = locationID => {
 
         return api(`/auth/locations/${locationID}`, "DELETE")
             .then(response => {
+                dispatch(clearUserRoles())
+                dispatch(clearClinics())
                 dispatch({
                     type: DELETE_LOCATION_SUCCESS,
                     locationID: locationID
@@ -244,6 +209,7 @@ export const deleteLocation = locationID => {
 export const saveLocation = location => {
     return dispatch => {
         dispatch(close())
+
         let url = "/auth/locations"
         let method = "POST"
         if (location.id) {
@@ -261,6 +227,8 @@ export const saveLocation = location => {
                     location: response
                 })
                 dispatch(open("Saved location", "", COLOR_SUCCESS, 5))
+
+                return response
             })
             .catch(error => {
                 dispatch({
@@ -269,5 +237,13 @@ export const saveLocation = location => {
                 })
                 dispatch(open(error.message, error.code, COLOR_DANGER))
             })
+    }
+}
+
+export const clearLocations = () => {
+    return dispatch => {
+        dispatch({ type: CLEAR_LOCATIONS_STATE })
+
+        return Promise.resolve()
     }
 }

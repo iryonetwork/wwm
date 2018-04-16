@@ -15,7 +15,8 @@ const Delete = 4
 class Rules extends React.Component {
     constructor(props) {
         super(props)
-        this.state = {}
+        this.state = { loading: true }
+
     }
 
     componentDidMount() {
@@ -28,24 +29,27 @@ class Rules extends React.Component {
         if (!this.props.roles) {
             this.props.loadRoles()
         }
-        this.componentWillReceiveProps(this.props)
-    }
-
-    subjectName(subjectID) {
-        if (this.props.users && this.props.users[subjectID]) {
-            return this.props.users[subjectID].username
-        }
-        if (this.props.roles && this.props.roles[subjectID]) {
-            return this.props.roles[subjectID].name
-        }
-        return subjectID
+        this.determineState(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.rules) {
-            let rules = nextProps.rules
+        if (!nextProps.users && this.props.users) {
+            this.props.loadUsers()
+        }
+        if (!nextProps.allRules && this.props.allRules) {
+            this.props.loadRules()
+        }
+        if (!nextProps.roles && this.props.roles) {
+            this.props.loadRoles()
+        }
+        this.determineState(nextProps)
+    }
+
+    determineState(props) {
+        if (props.rules) {
+            let rules = props.rules
             if (_.isArray(rules)) {
-                rules = _.fromPairs(_.map(rules, ruleID => [ruleID, nextProps.allRules[ruleID]]))
+                rules = _.fromPairs(_.map(rules, ruleID => [ruleID, props.allRules[ruleID]]))
             }
 
             let newRules = []
@@ -66,6 +70,16 @@ class Rules extends React.Component {
 
             this.setState({ rules: rules.concat(newRules) })
         }
+    }
+
+    subjectName(subjectID) {
+        if (this.props.users && this.props.users[subjectID]) {
+            return this.props.users[subjectID].username
+        }
+        if (this.props.roles && this.props.roles[subjectID]) {
+            return this.props.roles[subjectID].name
+        }
+        return subjectID
     }
 
     editRule = index => e => {

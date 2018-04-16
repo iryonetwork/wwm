@@ -5,10 +5,40 @@ import { connect } from "react-redux"
 import _ from "lodash"
 
 import { loadLocations, deleteLocation } from "../../modules/locations"
+import { CATEGORY_COUNTRIES, loadCodes } from "../../modules/codes"
 
 class Locations extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = { loading: true }
+    }
+
     componentDidMount() {
-        this.props.loadLocations()
+        if (!this.props.locations) {
+            this.props.loadLocations()
+        }
+        if (!this.props.countries) {
+            this.props.loadCodes(CATEGORY_COUNTRIES)
+        }
+
+
+        this.determineState(this.props)
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (!nextProps.locations && !nextProps.locationsLoading) {
+            this.props.loadLocations()
+        }
+        if (!nextProps.countries && !nextProps.codesLoading) {
+            this.props.loadCodes(CATEGORY_COUNTRIES)
+        }
+
+        this.determineState(nextProps)
+    }
+
+    determineState(props) {
+        let loading = !props.locations || props.locationsLoading
+        this.setState({loading: loading})
     }
 
     removeLocation = locationID => e => {
@@ -20,7 +50,7 @@ class Locations extends React.Component {
         if (props.forbidden) {
             return null
         }
-        if (props.loading) {
+        if (this.state.loading) {
             return <div>Loading...</div>
         }
         let i = 0
@@ -42,7 +72,7 @@ class Locations extends React.Component {
                             <th scope="row">{++i}</th>
                             <td><Link to={`/locations/${location.id}`}>{location.name}</Link></td>
                             <td>{location.city}</td>
-                            <td>{location.country}</td>
+                            <td>{props.countries[location.country] ? props.countries[location.country].title : location.country}</td>
                             <td>{location.clinics.length}</td>
                             <td className="text-right">
                                 <button onClick={this.removeLocation(location.id)} className="btn btn-sm btn-light" type="button">
@@ -58,17 +88,18 @@ class Locations extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => ({
-    locations:
-        (ownProps.locations ? (state.locations.locations ? _.fromPairs(_.map(ownProps.locations, locationID => [locationID, state.locations.locations[locationID]])) : {}) : state.locations.locations) ||
-        {},
-    loading: state.locations.loading
+    locations: ownProps.locations ? (state.locations.allLoaded ? _.fromPairs(_.map(ownProps.locations, locationID => [locationID, state.locations.locations[locationID]])) : undefined) : (state.locations.allLoaded ? state.locations.locations : undefined),
+    locationsLoading: state.locations.loading,
+    countries: state.codes.codes[CATEGORY_COUNTRIES],
+    codesLoading: state.codes.loading,
 })
 
 const mapDispatchToProps = dispatch =>
     bindActionCreators(
         {
             loadLocations,
-            deleteLocation
+            deleteLocation,
+            loadCodes,
         },
         dispatch
     )
