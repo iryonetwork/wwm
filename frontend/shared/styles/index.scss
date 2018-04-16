@@ -222,3 +222,146 @@ header {
     font-size: 9px;
     padding: 4px 6px 2px;
 }
+
+.habits {
+    .label {
+        @include make-col-ready();
+
+        @include media-breakpoint-up(sm) {
+            @include make-col(6);
+        }
+    }
+
+    .form-row {
+        margin: 20px -10px;
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-check-inline {
+            margin-right: 50px;
+        }
+    }
+
+    .comment {
+        .col-sm-4 {
+            padding: 0 8px;
+            margin-top: 20px;
+        }
+    }
+}
+
+.search {
+    margin-top: 0;
+}
+
+.familyMembers {
+    .link {
+        padding-bottom: 20px;
+        border-bottom: 1px solid $gray-300;
+    }
+}
+
+.form-row > .col,
+.form-row > [class*="col-"] {
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+.form-inline-container {
+    line-height: 36px;
+
+    span {
+        display: inline-block;
+        margin-right: 30px;
+    }
+
+    .form-check-inline {
+        top: 1px;
+        margin-right: 20px;
+    }
+
+    .form-check-label {
+        top: 2px;
+    }
+}
+
+.remove {
+    position: absolute;
+    right: -80px;
+    color: $errorRed;
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: bold;
+
+    svg {
+        margin-top: 10px;
+        position: relative;
+        top: 3px;
+        left: -5px;
+        width: 14px;
+        height: 14px;
+    }
+}
+
+.attributes {
+    .link {
+        margin: 5px 0;
+    }
+
+    &.open {
+        margin-top: 40px;
+
+        .link {
+            margin-top: -20px;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid $gray-300;
+        }
+    }
+}
+
+label {
+    position: relative;
+    width: 100%;
+
+    .form-control {
+        position: relative;
+        z-index: 1;
+    }
+
+    .form-control:placeholder-shown + * {
+        top: 0px;
+    }
+
+    select.form-control {
+        color: $gray-500;
+
+        + span {
+            top: 0;
+        }
+
+        &.selected {
+            color: $black;
+
+            + span {
+                top: -20px;
+            }
+        }
+    }
+
+    span {
+        font-size: 11px;
+        color: $gray-500;
+        display: block;
+        position: absolute;
+        text-transform: uppercase;
+        top: -20px;
+        transition: top 0.1s ease-in-out;
+    }
+
+    .invalid-feedback {
+        position: absolute;
+    }
+}

@@ -1,4 +1,8 @@
 @import "shared/styles/variables.scss";
+@import "bootstrap/scss/mixins/breakpoints";
+@import "bootstrap/scss/mixins/grid";
+@import "bootstrap/scss/mixins/grid-framework";
+@import "bootstrap/scss/grid";
 
 .waitlist-detail {
     display: flex;
@@ -180,6 +184,80 @@
 
         dd {
             margin-bottom: 20px;
+        }
+    }
+
+    .edit-history {
+        position: relative;
+
+        .remove {
+            right: 0;
+        }
+
+        .section {
+            .form-row {
+                border-top: 1px solid $grey2;
+
+                &:first-child {
+                    border-top: none;
+                }
+
+                &.habits {
+                    border-top: 1px solid $grey2;
+                    padding-top: 30px;
+                    margin-bottom: 30px;
+                }
+            }
+
+            &.blood-type {
+                .form-row {
+                    margin-top: 40px;
+                    margin-bottom: 0;
+                    border-top: none;
+
+                    .form-group {
+                        margin-bottom: 0;
+                    }
+                }
+
+                .warning {
+                    color: $danger;
+                    margin: 10px 0 0;
+                    font-weight: bold;
+                }
+            }
+        }
+
+        .attributes.open {
+            margin-top: 0;
+
+            .form-row {
+                padding: 40px 0 10px;
+                margin-top: 0;
+                margin-bottom: 0;
+            }
+
+            .link {
+                border-bottom: none;
+                margin: 0;
+                padding: 0;
+            }
+        }
+
+        .habits {
+            margin-top: 40px;
+            padding: 20px 0 0;
+            border-top: 1px solid $grey2;
+
+            .label {
+                @include media-breakpoint-up(sm) {
+                    @include make-col(4);
+                }
+            }
+
+            .comment {
+                margin-top: 20px;
+            }
         }
     }
 }
