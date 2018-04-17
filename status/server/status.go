@@ -8,7 +8,6 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/iryonetwork/wwm/log"
 	"github.com/iryonetwork/wwm/metrics/api"
 	"github.com/iryonetwork/wwm/status"
 )
@@ -73,7 +72,7 @@ func (s *statusServer) ListenAndServeHTTPs(ctx context.Context, addr string, nam
 	mux.Handle(path, s)
 	s.server = &http.Server{
 		Addr:    addr,
-		Handler: m.Middleware(log.APILogMiddleware(mux, s.logger)),
+		Handler: m.Middleware(mux),
 	}
 
 	go func() {

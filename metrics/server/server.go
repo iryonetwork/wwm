@@ -8,7 +8,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 
-	"github.com/iryonetwork/wwm/log"
 	"github.com/iryonetwork/wwm/metrics/api"
 )
 
@@ -28,7 +27,7 @@ func ServePrometheusMetrics(ctx context.Context, addr string, namespace string, 
 	mux.Handle(path, prometheus.Handler())
 	s := &http.Server{
 		Addr:    addr,
-		Handler: m.Middleware(log.APILogMiddleware(mux, logger)),
+		Handler: m.Middleware(mux),
 	}
 
 	go func() {
