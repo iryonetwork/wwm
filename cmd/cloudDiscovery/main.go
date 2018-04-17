@@ -14,6 +14,7 @@ import (
 	"github.com/iryonetwork/wwm/gen/discovery/restapi/operations"
 	APIMetrics "github.com/iryonetwork/wwm/metrics/api"
 	metricsServer "github.com/iryonetwork/wwm/metrics/server"
+	"github.com/iryonetwork/wwm/service/authorizer"
 	discoveryService "github.com/iryonetwork/wwm/service/discovery"
 	statusServer "github.com/iryonetwork/wwm/status/server"
 	discoveryStorage "github.com/iryonetwork/wwm/storage/discovery"
@@ -89,11 +90,14 @@ func main() {
 
 	discoveryHandlers := discoveryService.NewHandlers(service, logger)
 
+	auth := authorizer.New(fmt.Sprintf("https://%s/%s/validate", cfg.AuthHost, cfg.AuthPath), logger)
+
 	api := operations.NewDiscoveryAPI(swaggerSpec)
 	api.ServeError = utils.ServeError
-	api.Logger = logger.Info().Str("component", "server").Msgf
-	api.TokenAuth = discoveryHandlers.GetUserIDFromToken
-	api.APIAuthorizer = discoveryHandlers.Authorizer()
+	api.TokenAuth = auth.GetPrincipalFromToken
+	api.APIAuthorizer = auth.Authorizer()
+	api.Logger = logger.Info().Str("component", "api").Msgf
+
 	api.QueryHandler = discoveryHandlers.Query()
 	api.CreateHandler = discoveryHandlers.Create()
 	api.UpdateHandler = discoveryHandlers.Update()

@@ -267,6 +267,7 @@ services:
     - VAULT_DB_ROLE=cloudDiscoveryService
     - KEY_PATH=/certs/cloudDiscovery-key.pem
     - CERT_PATH=/certs/cloudDiscovery.pem
+    - AUTH_HOST=cloudAuth
     # - DEBUG=1
 
   pgweb:

@@ -1,9 +1,6 @@
 package discovery
 
 import (
-	"net/http"
-
-	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/iryonetwork/wwm/gen/discovery/models"
@@ -23,8 +20,6 @@ type Handlers interface {
 	ProxyLink() operations.LinkHandler
 	Unlink() operations.UnlinkHandler
 	ProxyUnlink() operations.UnlinkHandler
-	Authorizer() runtime.Authorizer
-	GetUserIDFromToken(token string) (*string, error)
 }
 
 type handlers struct {
@@ -204,18 +199,6 @@ func (h *handlers) ProxyUnlink() operations.UnlinkHandler {
 		}
 		return operations.NewUnlinkNoContent()
 	})
-}
-
-func (h *handlers) Authorizer() runtime.Authorizer {
-	return runtime.AuthorizerFunc(func(r *http.Request, principal interface{}) error {
-		// @TODO
-		return nil
-	})
-}
-
-func (h *handlers) GetUserIDFromToken(token string) (*string, error) {
-	userID := "USER"
-	return &userID, nil
 }
 
 // NewHandlers returns a new instance of authenticator handlers
