@@ -1,0 +1,8 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Issuer
+metadata:
+  name: ca-cloudissuer
+  namespace: cloud
+spec:
+  ca:
+    secretName: ca-key-pair

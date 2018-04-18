@@ -1,0 +1,14 @@
+:80
+
+root /iryo
+
+rewrite / {
+    if {file} not_match .*.js$
+    if {file} not_match .*.js.map$
+    if {file} not_match .*.css$
+    if {file} not_match .*.png$
+    if {file} not_match .*.jpg$
+    if {file} not_match .*.html$
+    to {path} /index.html
+}
+

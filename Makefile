@@ -1,7 +1,12 @@
-BASIC_SERVICES = traefik postgres cloudSymmetric pgweb localMinio cloudMinio localNats natsStreamingExporter localPrometheusPushGateway localPrometheus cloudPrometheus cloudAuth localAuth localStorage cloudStorage localNats storageSync waitlist localStatusReporter cloudStatusReporter cloudDiscovery localDiscovery localSymmetric
+lc = $(subst A,a,$(subst B,b,$(subst C,c,$(subst D,d,$(subst E,e,$(subst F,f,$(subst G,g,$(subst H,h,$(subst I,i,$(subst J,j,$(subst K,k,$(subst L,l,$(subst M,m,$(subst N,n,$(subst O,o,$(subst P,p,$(subst Q,q,$(subst R,r,$(subst S,s,$(subst T,t,$(subst U,u,$(subst V,v,$(subst W,w,$(subst X,x,$(subst Y,y,$(subst Z,z,$1))))))))))))))))))))))))))
+BASIC_SERVICES = traefik postgres cloudSymmetric pgweb vault localMinio cloudMinio localNats natsStreamingExporter localPrometheusPushGateway localPrometheus cloudPrometheus cloudAuth localAuth localStorage cloudStorage localNats storageSync waitlist localStatusReporter cloudDiscovery localDiscovery localSymmetric
 BIN_CMD ?=
+DOCKER_TAG ?= $(shell git rev-parse --short HEAD)
+DOCKER_REGISTRY ?= localhost:5000/
+COMMANDS ?= $(filter-out README.md,$(patsubst cmd/%,%,$(wildcard cmd/*)))
 
 .PHONY: up run stop build
+.PRECIOUS: .bin/%
 
 ifeq ($(CI),)
 ALL: vendorSync generate yarnInstall certs rebuildDocker
@@ -54,9 +59,40 @@ endif
 logs: ## shows docker compose logs
 	docker-compose logs -f --tail=0 $*
 
+buildFrontend/%:
+	yarn --cwd frontend/$* install
+	yarn --cwd frontend/$* build
+	cp -r frontend/$*/build .bin/$*Frontend
+
+package: $(addprefix package/,$(COMMANDS)) localFrontend cloudFrontend
+
+package/localFrontend: buildFrontend/local
+package/localFrontend: DOCKERFILE = frontend/Dockerfile
+package/localFrontend: INCLUDE_FILES = frontend/Caddyfile
+package/cloudFrontend: buildFrontend/cloud
+package/cloudFrontend: DOCKERFILE = frontend/Dockerfile
+package/cloudFrontend: INCLUDE_FILES = frontend/Caddyfile
+
+package/%: DOCKERFILE = Dockerfile.package
+package/%: .bin/%
+	echo packaging $*
+	rm -fr .bin/$*-data
+	mkdir -p .bin/$*-data
+	cp -r .bin/$* .bin/$*-data/
+
+	cp $(DOCKERFILE) .bin/Dockerfile
+	$(if $(INCLUDE_FILES), cp -r $(INCLUDE_FILES) .bin/$*-data/,)
+
+	docker build --build-arg BIN=$* --tag iryo/$(call lc,$*) .bin
+
+publish: $(addprefix publish/,$(COMMANDS) localFrontend cloudFrontend)
+
+publish/%: package/%
+	docker tag iryo/$(call lc,$*) $(DOCKER_REGISTRY)iryo/$(call lc,$*):$(DOCKER_TAG)
+	docker push $(DOCKER_REGISTRY)iryo/$(call lc,$*):$(DOCKER_TAG)
+
 generate: clearGenerate ## run generate on all projects
 	go generate -v ./...
-
 
 generate/%: ## runs generate for a specific project
 	go generate ./$*

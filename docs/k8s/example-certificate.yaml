@@ -1,0 +1,14 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: iryo-test
+  namespace: cloud
+spec:
+  secretName: ca-iryo-test
+  issuerRef:
+    name: ca-cloudissuer
+    kind: Issuer
+  commonName: iryo.test
+  dnsNames:
+  - iryo.test
+  - www.iryo.test

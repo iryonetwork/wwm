@@ -1,0 +1,5 @@
+FROM iryo/alpine
+
+ARG BIN
+WORKDIR /iryo
+COPY $BIN-data/ /iryo
