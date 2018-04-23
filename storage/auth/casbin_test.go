@@ -451,7 +451,7 @@ func TestRules(t *testing.T) {
 		results := storage.FindACL(test.userID, test.validations)
 
 		for i, res := range results {
-			if res.Result != test.results[i] {
+			if *res.Result != test.results[i] {
 				fmt.Println(test.userID)
 				printJson(test.validations[i])
 				t.Fatalf("Test %d; validation %d: Expected validation '%v' to be %t; got %t", testIndex, i, test.validations[i], test.results[i], res.Result)

@@ -33,12 +33,12 @@ func TestLogin(t *testing.T) {
 	storage := mock.NewMockStorage(ctrl)
 	gomock.InOrder(
 		storage.EXPECT().GetUserByUsername("username").Times(1).Return(sampleUser, nil),
-		storage.EXPECT().FindACL(sampleUser.ID, gomock.Any()).Times(1).Return([]*models.ValidationResult{{Query: aclRequest, Result: true}}),
+		storage.EXPECT().FindACL(sampleUser.ID, gomock.Any()).Times(1).Return([]*models.ValidationResult{{Query: aclRequest, Result: swag.Bool(true)}}),
 		storage.EXPECT().GetUserByUsername("username").Times(1).Return(sampleUser, nil),
-		storage.EXPECT().FindACL(sampleUser.ID, gomock.Any()).Times(1).Return([]*models.ValidationResult{{Query: aclRequest, Result: true}}),
+		storage.EXPECT().FindACL(sampleUser.ID, gomock.Any()).Times(1).Return([]*models.ValidationResult{{Query: aclRequest, Result: swag.Bool(true)}}),
 		storage.EXPECT().GetUserByUsername("missing").Times(1).Return(nil, fmt.Errorf("Not found")),
 		storage.EXPECT().GetUserByUsername("username").Times(1).Return(sampleUser, nil),
-		storage.EXPECT().FindACL(sampleUser.ID, gomock.Any()).Times(1).Return([]*models.ValidationResult{{Query: aclRequest, Result: false}}))
+		storage.EXPECT().FindACL(sampleUser.ID, gomock.Any()).Times(1).Return([]*models.ValidationResult{{Query: aclRequest, Result: swag.Bool(false)}}))
 
 	// initialize service
 	svc := &service{domainType: authCommon.DomainTypeClinic, domainID: testClinicID, storage: storage}

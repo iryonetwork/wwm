@@ -163,7 +163,7 @@ func (a *authorizer) Authorizer() runtime.Authorizer {
 				return err
 			}
 
-			if !validationResponse[0].Result {
+			if validationResponse[0].Result == nil || !*validationResponse[0].Result {
 				logger.Debug().Msg(ErrUnauthorized)
 				return fmt.Errorf(ErrUnauthorized)
 			}

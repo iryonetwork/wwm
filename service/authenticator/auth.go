@@ -75,7 +75,7 @@ func (a *service) Login(_ context.Context, username, password string) (string, e
 		Resource:   swag.String("/auth/login"),
 	}})
 
-	if !permissions[0].Result {
+	if !*permissions[0].Result {
 		return "", utils.NewError(utils.ErrForbidden, "You do not have permission to log in")
 	}
 
@@ -97,7 +97,7 @@ func (a *service) Validate(_ context.Context, userID *string, queries []*models.
 		for i, query := range queries {
 			results[i] = &models.ValidationResult{
 				Query:  query,
-				Result: s.glob.Match(strings.TrimPrefix(*query.Resource, "/api")),
+				Result: swag.Bool(s.glob.Match(strings.TrimPrefix(*query.Resource, "/api"))),
 			}
 		}
 		return results, nil
@@ -181,7 +181,7 @@ func (a *service) Authorizer() runtime.Authorizer {
 			Resource:   swag.String("/api" + request.URL.EscapedPath()),
 		}})
 
-		if !result[0].Result {
+		if !*result[0].Result {
 			return utils.NewError(utils.ErrForbidden, "You do not have permissions for this resource")
 		}
 

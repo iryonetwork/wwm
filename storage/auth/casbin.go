@@ -10,6 +10,7 @@ import (
 	"github.com/casbin/casbin"
 	casbinmodel "github.com/casbin/casbin/model"
 	"github.com/casbin/casbin/persist"
+	"github.com/go-openapi/swag"
 	"github.com/gobwas/glob"
 	"github.com/rs/zerolog"
 
@@ -60,6 +61,7 @@ func (a *Adapter) LoadPolicy(model casbinmodel.Model) error {
 		if rule.Deny {
 			eft = "deny"
 		}
+
 		persist.LoadPolicyLine(fmt.Sprintf("p, %s, %s, %d, %s", *rule.Subject, *rule.Resource, *rule.Action, eft), model)
 	}
 
@@ -260,9 +262,10 @@ func (s *Storage) FindACL(subject string, actions []*models.ValidationPair) []*m
 		} else {
 			domain = fmt.Sprintf("%s.%s", *validation.DomainType, *validation.DomainID)
 		}
+
 		results[i] = &models.ValidationResult{
 			Query:  validation,
-			Result: s.enforcer.Enforce(subject, domain, *validation.Resource, strconv.FormatInt(*validation.Actions, 10)),
+			Result: swag.Bool(s.enforcer.Enforce(subject, domain, *validation.Resource, strconv.FormatInt(*validation.Actions, 10))),
 		}
 	}
 

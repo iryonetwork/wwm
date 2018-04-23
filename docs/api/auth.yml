@@ -1606,6 +1606,9 @@ definitions:
 
   ValidationResult:
     type: object
+    required:
+      - query
+      - result
     description: Result of validation request.
     properties:
       query:

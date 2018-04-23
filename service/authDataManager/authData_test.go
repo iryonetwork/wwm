@@ -6,17 +6,16 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"sort"
 	"testing"
 
 	"github.com/go-openapi/swag"
 	"github.com/golang/mock/gomock"
 	"github.com/rs/zerolog"
-	//uuid "github.com/satori/go.uuid"
 
 	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/iryonetwork/wwm/service/authDataManager/mock"
-	//"github.com/iryonetwork/wwm/utils"
 )
 
 var (
@@ -178,6 +177,10 @@ func TestUserRoleIDs(t *testing.T) {
 			out, err := svc.UserRoleIDs(context.TODO(), test.userID, test.domainType, test.domainID)
 
 			// check expected results
+			if test.expected != nil {
+				sort.Strings(out)
+				sort.Strings(test.expected)
+			}
 			if !reflect.DeepEqual(out, test.expected) {
 				fmt.Println("Expected")
 				printJson(test.expected)
@@ -287,6 +290,10 @@ func TestUserOrganizationIDs(t *testing.T) {
 			out, err := svc.UserOrganizationIDs(context.TODO(), test.userID, test.roleID)
 
 			// check expected results
+			if test.expected != nil {
+				sort.Strings(out)
+				sort.Strings(test.expected)
+			}
 			if !reflect.DeepEqual(out, test.expected) {
 				fmt.Println("Expected")
 				printJson(test.expected)
@@ -396,6 +403,10 @@ func TestUserClinicIDs(t *testing.T) {
 			out, err := svc.UserClinicIDs(context.TODO(), test.userID, test.roleID)
 
 			// check expected results
+			if test.expected != nil {
+				sort.Strings(out)
+				sort.Strings(test.expected)
+			}
 			if !reflect.DeepEqual(out, test.expected) {
 				fmt.Println("Expected")
 				printJson(test.expected)
@@ -575,6 +586,10 @@ func TestUserLocationIDs(t *testing.T) {
 			out, err := svc.UserLocationIDs(context.TODO(), test.userID, test.roleID)
 
 			// check expected results
+			if test.expected != nil {
+				sort.Strings(out)
+				sort.Strings(test.expected)
+			}
 			if !reflect.DeepEqual(out, test.expected) {
 				fmt.Println("Expected")
 				printJson(test.expected)
@@ -689,6 +704,10 @@ func TestRoleUserIDs(t *testing.T) {
 			out, err := svc.RoleUserIDs(context.TODO(), test.roleID, test.domainType, test.domainID)
 
 			// check expected results
+			if test.expected != nil {
+				sort.Strings(out)
+				sort.Strings(test.expected)
+			}
 			if !reflect.DeepEqual(out, test.expected) {
 				fmt.Println("Expected")
 				printJson(test.expected)
@@ -860,6 +879,10 @@ func TestLocationUserIDs(t *testing.T) {
 			out, err := svc.LocationUserIDs(context.TODO(), test.locationID, test.roleID)
 
 			// check expected results
+			if test.expected != nil {
+				sort.Strings(out)
+				sort.Strings(test.expected)
+			}
 			if !reflect.DeepEqual(out, test.expected) {
 				fmt.Println("Expected")
 				printJson(test.expected)
@@ -966,6 +989,10 @@ func TestDomainUserIDs(t *testing.T) {
 			out, err := svc.DomainUserIDs(context.TODO(), test.domainType, test.domainID, test.roleID)
 
 			// check expected results
+			if test.expected != nil {
+				sort.Strings(out)
+				sort.Strings(test.expected)
+			}
 			if !reflect.DeepEqual(out, test.expected) {
 				fmt.Println("Expected")
 				printJson(test.expected)

@@ -64,8 +64,8 @@ func TestAddRule(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
-	if len(rules) != 7 {
-		t.Fatalf("Expected 7 rules; got %d", len(rules))
+	if len(rules) != 9 {
+		t.Fatalf("Expected 9 rules; got %d", len(rules))
 	}
 }
 
@@ -133,8 +133,8 @@ func TestGetRules(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
-	if len(rules) != 8 {
-		t.Fatalf("Expected 8 rules; got %d", len(rules))
+	if len(rules) != 10 {
+		t.Fatalf("Expected 10 rules; got %d", len(rules))
 	}
 
 	rulesMap := map[string]*models.Rule{}

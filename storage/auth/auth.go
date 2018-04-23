@@ -242,6 +242,18 @@ func (s *Storage) initializeRolesAndRules() error {
 		Resource: swag.String("*"),
 	})
 
+	s.AddRule(&models.Rule{
+		Subject:  &authCommon.SuperadminRole.ID,
+		Action:   swag.Int64(Read),
+		Resource: swag.String("/frontend/dashboard*"),
+	})
+
+	s.AddRule(&models.Rule{
+		Subject:  &authCommon.EveryoneRole.ID,
+		Action:   swag.Int64(Read),
+		Resource: swag.String("/frontend/dashboard/{self}"),
+	})
+
 	return nil
 }
 
