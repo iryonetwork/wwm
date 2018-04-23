@@ -40,6 +40,10 @@ address = ":8080"
     [backends.cloudauthStatus.servers.server1]
     url = "http://cloudAuth:4433"
 
+  [backends.cloudauthMetrics]
+    [backends.cloudauthMetrics.servers.server1]
+    url = "http://cloudAuth:9090"
+
   [backends.localstorage]
     [backends.localstorage.servers.server1]
     url = "https://localStorage"
@@ -48,13 +52,13 @@ address = ":8080"
     [backends.localstorageMetrics.servers.server1]
     url = "http://localStorage:9090"
 
-  [backends.waitlist]
-    [backends.waitlist.servers.server1]
-    url = "https://waitlist"
-
   [backends.localstorageStatus]
     [backends.localstorageStatus.servers.server1]
     url = "https://localStorage:4433"
+
+  [backends.waitlist]
+    [backends.waitlist.servers.server1]
+    url = "https://waitlist"
 
   [backends.localMinio]
     [backends.localMinio.servers.server1]

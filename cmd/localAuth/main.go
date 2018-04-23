@@ -11,19 +11,21 @@ import (
 	"time"
 
 	loads "github.com/go-openapi/loads"
-	"github.com/jasonlvhit/gocron"
-	flags "github.com/jessevdk/go-flags"
-	"github.com/rs/cors"
-	"github.com/rs/zerolog"
-
 	"github.com/iryonetwork/wwm/gen/auth/restapi"
 	"github.com/iryonetwork/wwm/gen/auth/restapi/operations"
+	logMW "github.com/iryonetwork/wwm/log"
+	APIMetrics "github.com/iryonetwork/wwm/metrics/api"
+	metricsServer "github.com/iryonetwork/wwm/metrics/server"
 	"github.com/iryonetwork/wwm/service/authDataManager"
 	"github.com/iryonetwork/wwm/service/authSync"
 	"github.com/iryonetwork/wwm/service/authenticator"
 	statusServer "github.com/iryonetwork/wwm/status/server"
 	"github.com/iryonetwork/wwm/storage/auth"
 	"github.com/iryonetwork/wwm/utils"
+	"github.com/jasonlvhit/gocron"
+	flags "github.com/jessevdk/go-flags"
+	"github.com/rs/cors"
+	"github.com/rs/zerolog"
 )
 
 func main() {
@@ -152,11 +154,30 @@ func main() {
 	api.GetUserRolesHandler = authDataHandlers.GetUserRoles()
 	api.GetUserRolesIDHandler = authDataHandlers.GetUserRolesID()
 
-	handler := cors.New(cors.Options{
-		AllowedMethods: []string{"GET", "POST"},
-		AllowedHeaders: []string{"Authorization", "Content-Type"},
-	}).Handler(api.Serve(nil))
+	// initialize metrics middleware
+	m := APIMetrics.NewMetrics("api", "").
+		WithURLSanitize(utils.WhitelistURLSanitize([]string{
+			"login",
+			"validate",
+			"renew",
+			"users",
+			"roles",
+			"clinics",
+			"locations",
+			"organizations",
+			"userRoles",
+			"rules",
+			"database",
+		}))
 
+	// set handler with middlewares
+	handler := cors.New(cors.Options{
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders: []string{"Authorization", "Content-Type"},
+		Debug:          true,
+	}).Handler(api.Serve(nil))
+	handler = logMW.APILogMiddleware(handler, logger)
+	handler = m.Middleware(handler)
 	server.SetHandler(handler)
 
 	gocron.Every(5).Minutes().Do(authSync.Sync)
@@ -164,8 +185,11 @@ func main() {
 
 	// Start servers
 	// create exit channel that is used to wait for all servers goroutines to exit orederly and carry the errors
-	exitCh := make(chan error, 2)
-
+	exitCh := make(chan error, 3)
+	// start serving metrics
+	go func() {
+		exitCh <- metricsServer.ServePrometheusMetrics(ctx, fmt.Sprintf("%s:%d", cfg.ServerHost, cfg.MetricsPort), cfg.MetricsNamespace, logger)
+	}()
 	// start serving status
 	go func() {
 		ss := statusServer.New(logger)
@@ -215,7 +239,7 @@ func main() {
 	}()
 
 	<-ctx.Done()
-	for i := 0; i < 2; i++ {
+	for i := 0; i < 3; i++ {
 		err := <-exitCh
 		if err != nil {
 			logger.Debug().Err(err).Msg("goroutine exit message")
