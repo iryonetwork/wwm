@@ -7,6 +7,7 @@ import _ from "lodash"
 import { loadUsers } from "../../modules/users"
 import { loadRules, saveRule, deleteRule } from "../../modules/rules"
 import { loadRoles } from "../../modules/roles"
+import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 
 const Read = 1
 const Write = 2
@@ -29,6 +30,13 @@ class Rules extends React.Component {
         if (!this.props.roles) {
             this.props.loadRoles()
         }
+        if (this.props.canSee === undefined || this.props.canEdit === undefined) {
+            this.props.loadUserRights()
+        }
+        if (this.props.canSee === false) {
+            this.props.history.push(`/`)
+        }
+
         this.determineState(this.props)
     }
 
@@ -42,10 +50,20 @@ class Rules extends React.Component {
         if (!nextProps.roles && this.props.roles) {
             this.props.loadRoles()
         }
+        if ((nextProps.canSee === undefined || nextProps.canEdit === undefined) && !nextProps.validationsLoading) {
+            this.props.loadUserRights()
+        }
+        if (nextProps.canSee === false) {
+            this.props.history.push(`/`)
+        }
+
         this.determineState(nextProps)
     }
 
     determineState(props) {
+        let loading = !props.roles || props.rolesLoading || !props.rules || props.rulesLoading || !props.users || props.usersLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
+        this.setState({loading: loading})
+
         if (props.rules) {
             let rules = props.rules
             if (_.isArray(rules)) {
@@ -154,9 +172,13 @@ class Rules extends React.Component {
 
     render() {
         let props = this.props
-        if (props.forbidden) {
+        if (this.state.loading) {
+            return <div>Loading...</div>
+        }
+        if (!props.canSee || props.forbidden) {
             return null
         }
+
         return (
             <div>
                 {props.embedded ? <h3>ACL</h3> : <h1>ACL</h1>}
@@ -187,7 +209,7 @@ class Rules extends React.Component {
                                       <th scope="row">{i + 1}</th>
                                       {!props.embedded ? (
                                           <td>
-                                              {rule.edit ? (
+                                              {(props.canEdit && rule.edit) ? (
                                                   <select className="form-control form-control-sm" value={rule.subject} onChange={this.editSubject(i)}>
                                                       <option>Select subject</option>
                                                       <optgroup label="Roles">
@@ -213,7 +235,7 @@ class Rules extends React.Component {
                                       ) : null}
 
                                       <td>
-                                          {rule.edit ? (
+                                          {(props.canEdit && rule.edit) ? (
                                               <input
                                                   type="text"
                                                   className="form-control form-control-sm"
@@ -226,7 +248,7 @@ class Rules extends React.Component {
                                       </td>
 
                                       <td>
-                                          {rule.edit ? (
+                                          {(props.canEdit && rule.edit) ? (
                                               <select className="form-control form-control-sm" value={rule.deny || false} onChange={this.editDeny(i)}>
                                                   <option value={false}>Allow</option>
                                                   <option value={true}>Deny</option>
@@ -241,7 +263,7 @@ class Rules extends React.Component {
                                       <td className="text-center">
                                           <input
                                               type="checkbox"
-                                              disabled={!rule.edit}
+                                              disabled={!props.canEdit || !rule.edit}
                                               onChange={this.editAction(i, Read)}
                                               checked={(rule.action & Read) === Read}
                                           />
@@ -249,7 +271,7 @@ class Rules extends React.Component {
                                       <td className="text-center">
                                           <input
                                               type="checkbox"
-                                              disabled={!rule.edit}
+                                              disabled={!props.canEdit || !rule.edit}
                                               onChange={this.editAction(i, Write)}
                                               checked={(rule.action & Write) === Write}
                                           />
@@ -257,40 +279,44 @@ class Rules extends React.Component {
                                       <td className="text-center">
                                           <input
                                               type="checkbox"
-                                              disabled={!rule.edit}
+                                              disabled={!props.canEdit || !rule.edit}
                                               onChange={this.editAction(i, Delete)}
                                               checked={(rule.action & Delete) === Delete}
                                           />
                                       </td>
                                       <td className="text-right">
-                                          {rule.edit ? (
-                                              <div className="btn-group" role="group">
-                                                  <button className="btn btn-sm btn-light" disabled={rule.saving} type="button" onClick={this.editRule(i)}>
-                                                      <span className="icon_close" />
-                                                  </button>
-                                                  <button className="btn btn-sm btn-light" disabled={rule.saving} type="button" onClick={this.saveRule(i)}>
-                                                      <span className="icon_floppy" />
-                                                  </button>
-                                              </div>
-                                          ) : (
-                                              <div className="btn-group" role="group">
-                                                  <button className="btn btn-sm btn-light" type="button" onClick={this.editRule(i)}>
-                                                      <span className="icon_pencil-edit" />
-                                                  </button>
-                                                  <button className="btn btn-sm btn-light" type="button" onClick={this.deleteRule(rule.id)}>
-                                                      <span className="icon_trash" />
-                                                  </button>
-                                              </div>
-                                          )}
+                                          {props.canEdit ? (
+                                              rule.edit ? (
+                                                  <div className="btn-group" role="group">
+                                                      <button className="btn btn-sm btn-light" disabled={rule.saving} type="button" onClick={this.editRule(i)}>
+                                                          <span className="icon_close" />
+                                                      </button>
+                                                      <button className="btn btn-sm btn-light" disabled={rule.saving} type="button" onClick={this.saveRule(i)}>
+                                                          <span className="icon_floppy" />
+                                                      </button>
+                                                  </div>
+                                              ) : (
+                                                  <div className="btn-group" role="group">
+                                                      <button className="btn btn-sm btn-light" type="button" onClick={this.editRule(i)}>
+                                                          <span className="icon_pencil-edit" />
+                                                      </button>
+                                                      <button className="btn btn-sm btn-light" type="button" onClick={this.deleteRule(rule.id)}>
+                                                          <span className="icon_trash" />
+                                                      </button>
+                                                  </div>
+                                              )
+                                          ) : (null)}
                                       </td>
                                   </tr>
                               ))
                             : null}
                     </tbody>
                 </table>
-                <button type="button" className="btn btn-sm btn-outline-secondary float-right" onClick={this.newRule()}>
-                    Add new ACL rule
-                </button>
+                {props.canEdit ? (
+                    <button type="button" className="btn btn-sm btn-outline-secondary float-right" onClick={this.newRule()}>
+                        Add new ACL rule
+                    </button>
+                ) : (null)}
             </div>
         )
     }
@@ -299,11 +325,17 @@ class Rules extends React.Component {
 const mapStateToProps = (state, ownProps) => {
     return {
         users: state.users.users,
+        usersLoading: state.users.loading,
         roles: state.roles.roles,
+        rolesLoading: state.roles.loading,
         rules: ownProps.rules ? ownProps.rules : state.rules.rules,
+        rulesLoading: state.rules.loading,
         embedded: ownProps.rules ? true : false,
         allRules: state.rules.rules,
         subjectID: ownProps.subject,
+        canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+        canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+        validationsLoading: state.validations.loading,
         forbidden: state.rules.forbidden
     }
 }
@@ -315,7 +347,8 @@ const mapDispatchToProps = dispatch =>
             loadRoles,
             loadRules,
             saveRule,
-            deleteRule
+            deleteRule,
+            loadUserRights,
         },
         dispatch
     )

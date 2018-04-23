@@ -7,6 +7,7 @@ import _ from "lodash"
 
 import { loadUser, saveUser } from "../../modules/users"
 import { CATEGORY_COUNTRIES, CATEGORY_LANGUAGES, CATEGORY_LICENSES, loadCodes } from "../../modules/codes"
+import { SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { open, close, COLOR_DANGER } from "shared/modules/alert"
 import OrganizationsList from "./organizationsList"
 import ClinicsList from "./clinicsList"
@@ -38,6 +39,9 @@ class UserDetail extends React.Component {
         if (!this.props.licenses) {
             this.props.loadCodes(CATEGORY_LICENSES)
         }
+        if (this.props.canSee === undefined || this.props.canEdit === undefined) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(this.props)
     }
@@ -55,12 +59,15 @@ class UserDetail extends React.Component {
         if (!nextProps.licenses && !nextProps.codesLoading) {
             this.props.loadCodes(CATEGORY_LICENSES)
         }
+        if ((nextProps.canSee === undefined || nextProps.canEdit === undefined) && !nextProps.validationsLoading) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(nextProps)
     }
 
     determineState(props) {
-        let loading = (!props.user && props.userID !== "new") || props.usersLoading
+        let loading = (!props.user && props.userID !== "new") || props.usersLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
         this.setState({ loading: loading })
 
         if (props.user) {
@@ -330,6 +337,10 @@ class UserDetail extends React.Component {
         if (this.state.loading) {
             return <div>Loading...</div>
         }
+        if (!props.canSee || props.forbidden) {
+            return null
+        }
+
         return (
             <div>
                 {props.home ? (
@@ -345,42 +356,42 @@ class UserDetail extends React.Component {
                     {props.user ? null : (
                         <div className="form-group">
                             <label htmlFor="username">Username</label>
-                            <input className="form-control" id="username" value={this.state.username} onChange={this.updateUsername} placeholder="username"/>
+                            <input className="form-control" id="username" value={this.state.username} onChange={this.updateUsername} disabled={!props.canEdit} placeholder="username"/>
                         </div>
                     )}
                     <div className="form-group">
                         <label htmlFor="password">{props.user ? "Enter new password" : "Enter password"}</label>
-                        <input type="password" className="form-control" id="paswword" value={this.state.password} onChange={this.updatePassword} placeholder={props.user ? "●●●●●" : "password"}/>
+                        <input type="password" className="form-control" id="paswword" value={this.state.password} onChange={this.updatePassword} disabled={!props.canEdit} placeholder={props.user ? "●●●●●" : "password"}/>
                     </div>
                     <div className="form-group">
                         <label htmlFor="password2">{props.user ? "Enter new password again" : "Enter password again"}</label>
-                        <input type="password" className="form-control" id="paswword2" value={this.state.password2} onChange={this.updatePassword2} placeholder={props.user ? "●●●●●" : "password"}/>
+                        <input type="password" className="form-control" id="paswword2" value={this.state.password2} onChange={this.updatePassword2} disabled={!props.canEdit} placeholder={props.user ? "●●●●●" : "password"}/>
                     </div>
                     <div className="form-group">
                         <label htmlFor="email">Email address</label>
-                        <input type="email" className="form-control" id="email" value={this.state.email} onChange={this.updateEmail} placeholder="user@email.com"/>
+                        <input type="email" className="form-control" id="email" value={this.state.email} onChange={this.updateEmail} disabled={!props.canEdit} placeholder="user@email.com"/>
                     </div>
                     <div className="form-group">
                         <h3>Personal data</h3>
                         <div className="form-group">
                             <label htmlFor="firstName">First name</label>
-                            <input className="form-control" id="firstName" value={this.state.personalData.firstName} onChange={this.updatePersonalData} placeholder="First name" />
+                            <input className="form-control" id="firstName" value={this.state.personalData.firstName} onChange={this.updatePersonalData} disabled={!props.canEdit} placeholder="First name" />
                         </div>
                         <div className="form-group">
                             <label htmlFor="middleName">Middle name</label>
-                            <input className="form-control" id="middleName" value={this.state.personalData.middleName} onChange={this.updatePersonalData} placeholder="Middle name" />
+                            <input className="form-control" id="middleName" value={this.state.personalData.middleName} onChange={this.updatePersonalData} disabled={!props.canEdit} placeholder="Middle name" />
                         </div>
                         <div className="form-group">
                             <label htmlFor="lastName">Last name</label>
-                            <input className="form-control" id="lastName" value={this.state.personalData.lastName} onChange={this.updatePersonalData} placeholder="Last name" />
+                            <input className="form-control" id="lastName" value={this.state.personalData.lastName} onChange={this.updatePersonalData} disabled={!props.canEdit} placeholder="Last name" />
                         </div>
                         <div className="form-group">
                             <label htmlFor="dateOfBirth">Date of birth</label>
-                             <input className="form-control" id="dateOfBirth" ref="dateOfBirth" value={this.state.personalData.dateOfBirth} onChange={this.updateDateOfBirth} placeholder="DD/MM/YYYY" />
+                             <input className="form-control" id="dateOfBirth" ref="dateOfBirth" value={this.state.personalData.dateOfBirth} onChange={this.updateDateOfBirth} disabled={!props.canEdit} placeholder="DD/MM/YYYY" />
                         </div>
                         <div className="form-group">
                             <label htmlFor="specialisation">Specialisation</label>
-                            <input className="form-control" id="specialisation" value={this.state.personalData.specialisation} onChange={this.updatePersonalData} placeholder="Medical worker specialisation" />
+                            <input className="form-control" id="specialisation" value={this.state.personalData.specialisation} onChange={this.updatePersonalData} disabled={!props.canEdit} placeholder="Medical worker specialisation" />
                         </div>
                         <div className="form-group">
                             <h4>Languages</h4>
@@ -390,7 +401,7 @@ class UserDetail extends React.Component {
                                         <tr key={i}>
                                             <td>
                                                 {language.edit ? (
-                                                    <select className="form-control form-control-sm" id="residency" value={language.code_id} onChange={this.updateLanguage(i)}>
+                                                    <select className="form-control form-control-sm" id="residency" value={language.code_id} onChange={this.updateLanguage(i)} disabled={!props.canEdit}>
                                                         <option value="">Select language</option>
                                                         {_.map(_.difference(_.map(props.languages, language => language.code_id), _.without(_.map(this.state.personalData.languages, language => language.code_id), language.code_id)), languageCodeID => (
                                                             <option key={languageCodeID} value={languageCodeID}>
@@ -403,21 +414,25 @@ class UserDetail extends React.Component {
                                                 )}
                                             </td>
                                             <td className="text-right">
-                                                <button onClick={this.removeLanguage(i)} className="btn btn-sm btn-light" type="button">
-                                                    {language.edit ? (
-                                                        <span className="icon_close" />
-                                                    ) : (
-                                                        <span className="icon_trash" />
-                                                    )}
-                                                </button>
+                                                {props.canEdit ? (
+                                                    <button onClick={this.removeLanguage(i)} className="btn btn-sm btn-light" type="button">
+                                                        {language.edit ? (
+                                                            <span className="icon_close" />
+                                                        ) : (
+                                                            <span className="icon_trash" />
+                                                        )}
+                                                    </button>
+                                                ) : (null)}
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
-                            <button type="button" className="btn btn-sm btn-outline-secondary col" onClick={this.newLanguage()}>
-                                Add language
-                            </button>
+                            {props.canEdit ? (
+                                <button type="button" className="btn btn-sm btn-outline-primary col" onClick={this.newLanguage()}>
+                                    Add language
+                                </button>
+                            ) : (null)}
                         </div>
                         <div className="form-group">
                             <h4>Licenses</h4>
@@ -427,7 +442,7 @@ class UserDetail extends React.Component {
                                         <tr key={i}>
                                             <td>
                                                 {license.edit ? (
-                                                    <select className="form-control form-control-sm" id="residency" value={license.code_id} onChange={this.updateLicense(i)}>
+                                                    <select className="form-control form-control-sm" id="residency" value={license.code_id} onChange={this.updateLicense(i)} disabled={!props.canEdit}>
                                                         <option value="">Select license</option>
                                                         {_.map(_.difference(_.map(props.licenses, license => license.code_id), _.without(_.map(this.state.personalData.licenses, license => license.code_id), license.code_id)), licenseCodeID => (
                                                             <option key={licenseCodeID} value={licenseCodeID}>
@@ -440,25 +455,29 @@ class UserDetail extends React.Component {
                                                 )}
                                             </td>
                                             <td className="text-right">
-                                                <button onClick={this.removeLicense(i)} className="btn btn-sm btn-light" type="button">
-                                                    {license.edit ? (
-                                                        <span className="icon_close" />
-                                                    ) : (
-                                                        <span className="icon_trash" />
-                                                    )}
-                                                </button>
+                                                {props.canEdit ? (
+                                                    <button onClick={this.removeLicense(i)} className="btn btn-sm btn-light" type="button">
+                                                        {license.edit ? (
+                                                            <span className="icon_close" />
+                                                        ) : (
+                                                            <span className="icon_trash" />
+                                                        )}
+                                                    </button>
+                                                ) : (null)}
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
-                            <button type="button" className="btn btn-sm btn-outline-secondary col" onClick={this.newLicense()}>
-                                Add license
-                            </button>
+                            {props.canEdit ? (
+                                <button type="button" className="btn btn-sm btn-outline-primary col" onClick={this.newLicense()}>
+                                    Add license
+                                </button>
+                            ) : (null)}
                         </div>
                         <div className="form-group">
                             <label htmlFor="nationality">Nationality</label>
-                            <select className="form-control form-control-sm" id="nationality" value={this.state.personalData.nationality} onChange={this.updatePersonalData}>
+                            <select className="form-control form-control-sm" id="nationality" value={this.state.personalData.nationality} onChange={this.updatePersonalData} disabled={!props.canEdit}>
                                 <option value="">Select country</option>
                                 {_.map(props.countries, country => (
                                     <option key={country.code_id} value={country.code_id}>
@@ -469,7 +488,7 @@ class UserDetail extends React.Component {
                         </div>
                         <div className="form-group">
                             <label htmlFor="residency">Residency</label>
-                            <select className="form-control form-control-sm" id="residency" value={this.state.personalData.residency} onChange={this.updatePersonalData}>
+                            <select className="form-control form-control-sm" id="residency" value={this.state.personalData.residency} onChange={this.updatePersonalData} disabled={!props.canEdit}>
                                 <option value="">Select country</option>
                                 {_.map(props.countries, country => (
                                     <option key={country.code_id} value={country.code_id}>
@@ -482,11 +501,11 @@ class UserDetail extends React.Component {
                             <h4>Passport</h4>
                             <div className="form-group">
                                 <label htmlFor="number">Number</label>
-                                <input className="form-control" id="number" value={this.state.personalData.passport ? this.state.personalData.passport.number : undefined} onChange={this.updatePassportData} placeholder="Passport number" />
+                                <input className="form-control" id="number" value={this.state.personalData.passport ? this.state.personalData.passport.number : undefined} onChange={this.updatePassportData} placeholder="Passport number" disabled={!props.canEdit} />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="issuingCountry">Issuing country</label>
-                                <select className="form-control form-control-sm" id="issuingCountry" value={this.state.personalData.passport ? this.state.personalData.passport.issuingCountry : undefined} onChange={this.updatePassportData}>
+                                <select className="form-control form-control-sm" id="issuingCountry" value={this.state.personalData.passport ? this.state.personalData.passport.issuingCountry : undefined} onChange={this.updatePassportData} disabled={!props.canEdit}>
                                     <option value="">Select country</option>
                                     {_.map(props.countries, country => (
                                         <option key={country.code_id} value={country.title}>
@@ -497,29 +516,28 @@ class UserDetail extends React.Component {
                             </div>
                             <div className="form-group">
                                 <label htmlFor="expiryDate">Expiry date</label>
-                                 <input className="form-control" id="expiryDate" ref="expiryDate" value={this.state.personalData.passport ? this.state.personalData.passport.expiryDate : undefined} onChange={this.updatePassportExpiryDate} placeholder="DD/MM/YYYY" />
+                                 <input className="form-control" id="expiryDate" ref="expiryDate" value={this.state.personalData.passport ? this.state.personalData.passport.expiryDate : undefined} onChange={this.updatePassportExpiryDate} placeholder="DD/MM/YYYY" disabled={!props.canEdit} />
                             </div>
                         </div>
                     </div>
-                    <div className="form-group">
-                        <button type="submit" className="btn btn-outline-primary col">
-                            Save user
-                        </button>
-                    </div>
+                    {props.canEdit ? (
+                        <div className="form-group">
+                            <button type="submit" className="btn btn-outline-primary col">
+                                Save
+                            </button>
+                        </div>
+                    ) : (null)}
                 </form>
                 </div>
                 {props.user ? (
                     <div className="m-4">
                         <div className="m-4">
-                            <h2>User's organizations</h2>
                             <OrganizationsList userID={props.userID} />
                         </div>
                         <div className="m-4">
-                            <h2>User's clinics</h2>
                             <ClinicsList userID={props.userID} />
                         </div>
                         <div className="m-4">
-                            <h2>User's wildcard roles</h2>
                             <WildcardUserRolesList userID={props.userID} />
                         </div>
                     </div>
@@ -543,7 +561,11 @@ const mapStateToProps = (state, ownProps) => {
         languages: state.codes.codes[CATEGORY_LANGUAGES],
         licenses: state.codes.codes[CATEGORY_LICENSES],
         codesLoading: state.codes.loading,
-        isHome: ownProps.home
+        isHome: ownProps.home,
+        canSee: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
+        canEdit: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
+        validationsLoading: state.validations.loading,
+        forbidden: state.users.forbidden,
     }
 }
 
@@ -553,8 +575,9 @@ const mapDispatchToProps = dispatch =>
             loadUser,
             saveUser,
             loadCodes,
+            loadUserRights,
             open,
-            close
+            close,
         },
         dispatch
     )

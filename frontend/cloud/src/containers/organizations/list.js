@@ -5,6 +5,7 @@ import { connect } from "react-redux"
 import _ from "lodash"
 
 import { loadOrganizations, deleteOrganization } from "../../modules/organizations"
+import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 
 class Organizations extends React.Component {
     constructor(props) {
@@ -16,6 +17,10 @@ class Organizations extends React.Component {
         if (!this.props.organizations) {
             this.props.loadOrganizations()
         }
+        if (this.props.canSee === undefined || this.props.canEdit === undefined) {
+            this.props.loadUserRights()
+        }
+
         this.determineState(this.props)
     }
 
@@ -23,12 +28,15 @@ class Organizations extends React.Component {
         if (!nextProps.organizations && !nextProps.organizationsLoading) {
             this.props.loadOrganizations()
         }
+        if ((nextProps.canSee === undefined || nextProps.canEdit === undefined) && !nextProps.validationsLoading) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(nextProps)
     }
 
     determineState(props) {
-        let loading = !props.organizations || props.organizationsLoading
+        let loading = !props.organizations || props.organizationsLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
 
         this.setState({loading: loading})
     }
@@ -39,12 +47,13 @@ class Organizations extends React.Component {
 
     render() {
         let props = this.props
-        if (props.forbidden) {
-            return null
-        }
         if (this.state.loading) {
             return <div>Loading...</div>
         }
+        if (!props.canSee || props.forbidden) {
+            return null
+        }
+
         let i = 0
         return (
             <table className="table table-hover">
@@ -67,9 +76,11 @@ class Organizations extends React.Component {
                             <td>{organization.serviceType}</td>
                             <td>{organization.clinics.length}</td>
                             <td className="text-right">
-                                <button onClick={this.removeOrganization(organization.id)} className="btn btn-sm btn-light" type="button">
-                                    <span className="icon_trash" />
-                                </button>
+                                {props.canEdit ? (
+                                    <button onClick={this.removeOrganization(organization.id)} className="btn btn-sm btn-light" type="button">
+                                        <span className="icon_trash" />
+                                    </button>
+                                ) : (null)}
                             </td>
                         </tr>
                     ))}
@@ -82,14 +93,18 @@ class Organizations extends React.Component {
 const mapStateToProps = (state, ownProps) => ({
     organizations:ownProps.organizations ? (state.organizations.allLoaded ? _.fromPairs(_.map(ownProps.organizations, organizationID => [organizationID, state.organizations.organizations[organizationID]])) : undefined) : (state.organizations.allLoaded ? state.organizations.organizations : undefined),
     organizationsLoading: state.organizations.loading,
-    forbidden: state.organizations.forbidden
+    canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+    canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+    validationsLoading: state.validations.loading,
+    forbidden: state.organizations.forbidden,
 })
 
 const mapDispatchToProps = dispatch =>
     bindActionCreators(
         {
             loadOrganizations,
-            deleteOrganization
+            deleteOrganization,
+            loadUserRights,
         },
         dispatch
     )

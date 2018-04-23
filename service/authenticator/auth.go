@@ -89,6 +89,13 @@ func (a *service) Login(_ context.Context, username, password string) (string, e
 // Validate checks if the user has the capability to execute the specific
 // actions on a resource
 func (a *service) Validate(_ context.Context, userID *string, queries []*models.ValidationPair) ([]*models.ValidationResult, error) {
+	// validate queries
+	for _, query := range queries {
+		if query.Actions == nil || query.Resource == nil || query.DomainType == nil || query.DomainID == nil {
+			return nil, utils.NewError(utils.ErrBadRequest, "Missing validation query parameters")
+		}
+	}
+
 	if strings.HasPrefix(*userID, servicePrincipal) {
 		keyID := (*userID)[len(servicePrincipal):]
 		s, _ := a.syncServices[keyID]

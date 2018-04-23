@@ -8,6 +8,7 @@ import { loadRoles } from "../../modules/roles"
 import { makeGetUserOrganizationUserRoles } from "../../selectors/userRolesSelectors"
 import { deleteUserFromOrganization } from "../../modules/organizations"
 import { loadDomainUserRoles, saveUserRole, deleteUserRole } from "../../modules/userRoles"
+import { ADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { open } from "shared/modules/alert"
 
 class UserDetail extends React.Component {
@@ -23,6 +24,9 @@ class UserDetail extends React.Component {
         if (!this.props.userRoles) {
             this.props.loadDomainUserRoles(this.props.userID)
         }
+        if (this.props.canSee === undefined || this.props.canEdit === undefined) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(this.props)
     }
@@ -34,12 +38,15 @@ class UserDetail extends React.Component {
         if (!nextProps.userRoles & !nextProps.userRolesLoading) {
             this.props.loadUserUserRoles(this.props.userID)
         }
+        if ((nextProps.canSee === undefined || nextProps.canEdit === undefined) && !nextProps.validationsLoading) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(nextProps)
     }
 
     determineState(props) {
-        let loading = !props.roles || props.rolesLoading || !props.userRoles || props.userRolesLoading || !props.organizationUserRoles
+        let loading = !props.roles || props.rolesLoading || !props.userRoles || props.userRolesLoading || !props.organizationUserRoles || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
 
         this.setState({
             loading: loading,
@@ -87,12 +94,13 @@ class UserDetail extends React.Component {
 
     render() {
         let props = this.props
-        if (props.forbidden) {
-            return null
-        }
         if (this.state.loading) {
             return <div>Loading...</div>
         }
+        if (!props.canSee || props.forbidden) {
+            return null
+        }
+
         return (
             <div>
                 <table className="table table-hover">
@@ -108,7 +116,7 @@ class UserDetail extends React.Component {
                             <tr key={userRole.id || (i+1)}>
                                 <th scope="row">{i+1}</th>
                                 <td>
-                                  {userRole.edit ? (
+                                  {(props.canEdit && userRole.edit) ? (
                                       <select className="form-control form-control-sm" value={userRole.roleID} onChange={this.editRoleID(i)}>
                                           <option value="">Select role</option>
                                           {_.map(_.difference(_.map(_.values(props.roles), role => role.id), _.map(_.values(props.organizationUserRoles), userRole => userRole.roleID)),  roleID => (
@@ -122,30 +130,34 @@ class UserDetail extends React.Component {
                                   )}
                                 </td>
                                 <td className="text-right">
-                                  {userRole.edit ? (
-                                      <div className="btn-group" role="group">
-                                          <button className="btn btn-sm btn-light" disabled={userRole.saving} type="button" onClick={this.cancelNewUserRole(i)}>
-                                              <span className="icon_close" />
-                                          </button>
-                                          <button className="btn btn-sm btn-light" disabled={userRole.saving || !userRole.canSave} type="button" onClick={this.saveUserRole(i)}>
-                                              <span className="icon_floppy" />
-                                          </button>
-                                      </div>
-                                  ) : (
-                                      <div className="btn-group" role="group">
-                                          <button className="btn btn-sm btn-light" type="button" onClick={this.deleteUserRole(userRole.id)}>
-                                              <span className="icon_trash" />
-                                          </button>
-                                      </div>
-                                  )}
+                                    {props.canEdit ? (
+                                        userRole.edit ? (
+                                            <div className="btn-group" role="group">
+                                                <button className="btn btn-sm btn-light" disabled={userRole.saving} type="button" onClick={this.cancelNewUserRole(i)}>
+                                                    <span className="icon_close" />
+                                                </button>
+                                                <button className="btn btn-sm btn-light" disabled={userRole.saving || !userRole.canSave} type="button" onClick={this.saveUserRole(i)}>
+                                                    <span className="icon_floppy" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="btn-group" role="group">
+                                                <button className="btn btn-sm btn-light" type="button" onClick={this.deleteUserRole(userRole.id)}>
+                                                    <span className="icon_trash" />
+                                                </button>
+                                            </div>
+                                        )
+                                    ) : (null)}
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
-                <button type="button" className="btn btn-sm btn-outline-primary col" disabled={(this.state.userRoles.length !== 0 && this.state.userRoles[this.state.userRoles.length - 1].edit) ? true : null} onClick={this.newUserRole()}>
-                    Add new role at the organization
-                </button>
+                {props.canEdit ? (
+                    <button type="button" className="btn btn-sm btn-outline-primary col" disabled={(this.state.userRoles.length !== 0 && this.state.userRoles[this.state.userRoles.length - 1].edit) ? true : null} onClick={this.newUserRole()}>
+                        Add new role at the organization
+                    </button>
+                ) : (null)}
             </div>
         )
     }
@@ -171,7 +183,10 @@ const makeMapStateToProps = () => {
             userRoles: (state.userRoles.domainUserRoles && state.userRoles.domainUserRoles["organization"] && state.userRoles.domainUserRoles["organization"][organizationID]) ? state.userRoles.domainUserRoles["organization"] : undefined,
             userRolesLoading: state.userRoles.loading,
             organizationUserRoles: getUserOrganizationUserRoles(state, {userID: userID, organizationID: organizationID}),
-            forbidden: state.userRoles.forbidden || state.roles.forbidden
+            canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+            canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+            validationsLoading: state.validations.loading,
+            forbidden: state.users.forbidden || state.userRoles.forbidden || state.roles.forbidden,
         }
     }
     return mapStateToProps
@@ -185,6 +200,7 @@ const mapDispatchToProps = dispatch =>
             deleteUserFromOrganization,
             saveUserRole,
             deleteUserRole,
+            loadUserRights,
             open
         },
         dispatch

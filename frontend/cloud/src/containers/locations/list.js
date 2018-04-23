@@ -6,6 +6,7 @@ import _ from "lodash"
 
 import { loadLocations, deleteLocation } from "../../modules/locations"
 import { CATEGORY_COUNTRIES, loadCodes } from "../../modules/codes"
+import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 
 class Locations extends React.Component {
     constructor(props) {
@@ -20,7 +21,9 @@ class Locations extends React.Component {
         if (!this.props.countries) {
             this.props.loadCodes(CATEGORY_COUNTRIES)
         }
-
+        if (this.props.canSee === undefined || this.props.canEdit === undefined) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(this.props)
     }
@@ -32,12 +35,15 @@ class Locations extends React.Component {
         if (!nextProps.countries && !nextProps.codesLoading) {
             this.props.loadCodes(CATEGORY_COUNTRIES)
         }
+        if ((nextProps.canSee === undefined || nextProps.canEdit === undefined) && !nextProps.validationsLoading) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(nextProps)
     }
 
     determineState(props) {
-        let loading = !props.locations || props.locationsLoading
+        let loading = !props.locations || props.locationsLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
         this.setState({loading: loading})
     }
 
@@ -47,12 +53,13 @@ class Locations extends React.Component {
 
     render() {
         let props = this.props
-        if (props.forbidden) {
-            return null
-        }
         if (this.state.loading) {
             return <div>Loading...</div>
         }
+        if (!props.canSee || props.forbidden) {
+            return null
+        }
+
         let i = 0
         return (
             <table className="table table-hover">
@@ -75,9 +82,11 @@ class Locations extends React.Component {
                             <td>{props.countries[location.country] ? props.countries[location.country].title : location.country}</td>
                             <td>{location.clinics.length}</td>
                             <td className="text-right">
-                                <button onClick={this.removeLocation(location.id)} className="btn btn-sm btn-light" type="button">
-                                    <span className="icon_trash" />
-                                </button>
+                                {props.canEdit ? (
+                                    <button onClick={this.removeLocation(location.id)} className="btn btn-sm btn-light" type="button">
+                                        <span className="icon_trash" />
+                                    </button>
+                                ) : (null)}
                             </td>
                         </tr>
                     ))}
@@ -92,6 +101,10 @@ const mapStateToProps = (state, ownProps) => ({
     locationsLoading: state.locations.loading,
     countries: state.codes.codes[CATEGORY_COUNTRIES],
     codesLoading: state.codes.loading,
+    canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+    canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+    validationsLoading: state.validations.loading,
+    forbidden: state.locations.forbidden,
 })
 
 const mapDispatchToProps = dispatch =>
@@ -100,6 +113,7 @@ const mapDispatchToProps = dispatch =>
             loadLocations,
             deleteLocation,
             loadCodes,
+            loadUserRights,
         },
         dispatch
     )

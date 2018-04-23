@@ -8,6 +8,7 @@ import { loadUsers } from "../../modules/users"
 import { loadRoles } from "../../modules/roles"
 import { loadOrganization, deleteUserFromOrganization } from "../../modules/organizations"
 import { saveUserRoleCustomMsg, loadDomainUserRoles } from "../../modules/userRoles"
+import { ADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { makeGetOrganizationUserIDs } from "../../selectors/userRolesSelectors"
 import { getName } from "../../utils/user"
 import UserDetail from "./userDetail"
@@ -31,7 +32,9 @@ class UsersList extends React.Component {
         if (!this.props.userRoles) {
             this.props.loadDomainUserRoles("organization", this.props.organizationID)
         }
-
+        if (this.props.canSee === undefined || this.props.canEdit === undefined) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(this.props)
     }
@@ -49,12 +52,15 @@ class UsersList extends React.Component {
         if (!nextProps.userRoles && !nextProps.userRolesLoading) {
             this.props.loadDomainUserRoles("organization", this.props.organizationID)
         }
+        if ((nextProps.canSee === undefined || nextProps.canEdit === undefined) && !nextProps.validationsLoading) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(nextProps)
     }
 
     determineState(props) {
-        let loading = !props.users || props.usersLoading || !props.roles || props.rolesLoading || !props.userRoles || props.userRolesLoading || !props.organization || props.organizationsLoading
+        let loading = !props.users || props.usersLoading || !props.roles || props.rolesLoading || !props.userRoles || props.userRolesLoading || !props.organization || props.organizationsLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
         this.setState({ loading: loading })
 
         if (!loading) {
@@ -107,14 +113,16 @@ class UsersList extends React.Component {
 
     render() {
         let props = this.props
-        if (props.forbidden) {
-            return null
-        }
         if (this.state.loading) {
             return <div>Loading...</div>
         }
+        if (!props.canSee || props.forbidden) {
+            return null
+        }
+
         return (
             <div id="users">
+                <h2>Users</h2>
                 <div className="row">
                     <div className={this.state.selectedUserID ? "col-8" : "col-12"}>
                         <table className="table table-hover">
@@ -130,7 +138,7 @@ class UsersList extends React.Component {
                             </thead>
                             <tbody>
                                 {_.map(this.state.organizationUsers, (user, i) => {
-                                    return user.edit ? (
+                                    return (props.canEdit && user.edit) ? (
                                         <tr key={i}>
                                             <th scope="row">{i+1}</th>
                                             <td colSpan="2">
@@ -190,9 +198,11 @@ class UsersList extends React.Component {
                                 })}
                             </tbody>
                         </table>
-                        <button type="button" className="btn btn-sm btn-outline-primary col" disabled={(this.state.organizationUsers.length !== 0 && this.state.organizationUsers[this.state.organizationUsers.length - 1].edit) ? true : null} onClick={this.newUser()}>
-                            Add user
-                        </button>
+                        {props.canEdit ? (
+                            <button type="button" className="btn btn-sm btn-outline-primary col" disabled={(this.state.organizationUsers.length !== 0 && this.state.organizationUsers[this.state.organizationUsers.length - 1].edit) ? true : null} onClick={this.newUser()}>
+                                Add user
+                            </button>
+                        ) : (null)}
                     </div>
                     <div className="col">
                         <Route path="/organizations/:organizationID/users/:userID" component={UserDetail} />
@@ -228,7 +238,10 @@ const makeMapStateToProps = () => {
             roles: state.roles.allLoaded ? state.roles.roles : undefined,
             rolesLoading: state.roles.loading,
             organizationUserIDs: getOrganizationUserIDs(state, {organizationID: organizationID}),
-            forbidden: state.organizations.forbidde || state.users.forbidden
+            canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+            canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+            validationsLoading: state.validations.loading,
+            forbidden: state.organizations.forbidde || state.users.forbidden || state.userRoles.forbidden || state.roles.forbidden,
         }
     }
     return mapStateToProps
@@ -242,7 +255,8 @@ const mapDispatchToProps = dispatch =>
             loadOrganization,
             loadDomainUserRoles,
             saveUserRoleCustomMsg,
-            deleteUserFromOrganization
+            deleteUserFromOrganization,
+            loadUserRights,
         },
         dispatch
     )

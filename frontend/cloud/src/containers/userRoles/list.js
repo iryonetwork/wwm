@@ -10,6 +10,7 @@ import { loadLocations } from "../../modules/locations"
 import { loadOrganizations } from "../../modules/organizations"
 import { loadClinics } from "../../modules/clinics"
 import { loadAllUserRoles, saveUserRole, deleteUserRole } from "../../modules/userRoles"
+import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { getName } from "../../utils/user"
 
 class UserRoles extends React.Component {
@@ -38,6 +39,9 @@ class UserRoles extends React.Component {
         if (!this.props.userRoles) {
           this.props.loadAllUserRoles()
         }
+        if (this.props.canSee === undefined || this.props.canEdit === undefined) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(this.props)
     }
@@ -61,12 +65,15 @@ class UserRoles extends React.Component {
         if (!nextProps.userRoles && !nextProps.userRolesLoading) {
           this.props.loadAllUserRoles()
         }
+        if ((nextProps.canSee === undefined || nextProps.canEdit === undefined) && !nextProps.validationsLoading) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(nextProps)
     }
 
     determineState(props) {
-        let loading = !props.userRoles || props.userRolesLoading || !props.users || props.usersLoading || !props.roles || props.rolesLoading || !props.clinics || props.clinicsLoading || !props.locations || props.locationsLoading || !props.organizations || props.organizationsLoading
+        let loading = !props.userRoles || props.userRolesLoading || !props.users || props.usersLoading || !props.roles || props.rolesLoading || !props.clinics || props.clinicsLoading || !props.locations || props.locationsLoading || !props.organizations || props.organizationsLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
 
         this.setState({
           loading: loading,
@@ -226,12 +233,13 @@ class UserRoles extends React.Component {
 
     render() {
         let props = this.props
-        if (props.forbidden) {
-            return null
-        }
         if (this.state.loading) {
             return <div>Loading...</div>
         }
+        if (!props.canSee || props.forbidden) {
+            return null
+        }
+
         return (
             <div>
             <table className="table table-hover">
@@ -250,7 +258,7 @@ class UserRoles extends React.Component {
                         <tr key={userRole.id || i}>
                             <th scope="row">{i+1}</th>
                             <td>
-                              {userRole.edit ? (
+                              {(props.canEdit && userRole.edit) ? (
                                   <select className="form-control form-control-sm" value={userRole.userID} onChange={this.editUserID(i)}>
                                       <option>Select user</option>
                                       {_.map(props.users, user => (
@@ -264,7 +272,7 @@ class UserRoles extends React.Component {
                               )}
                             </td>
                             <td>
-                              {userRole.edit ? (
+                              {(props.canEdit && userRole.edit) ? (
                                   <select className="form-control form-control-sm" value={userRole.roleID} onChange={this.editRoleID(i)}>
                                       <option>Select role</option>
                                       {_.map(props.roles, role => (
@@ -278,7 +286,7 @@ class UserRoles extends React.Component {
                               )}
                             </td>
                             <td>
-                              {userRole.edit ? (
+                              {(props.canEdit && userRole.edit) ? (
                                   <select className="form-control form-control-sm" value={userRole.domainType} onChange={this.editDomainType(i)}>
                                       <option>Select domain type</option>
                                       <option key="global" value="global">global</option>
@@ -292,37 +300,41 @@ class UserRoles extends React.Component {
                               )}
                             </td>
                             <td>
-                                {userRole.edit ? (
+                                {(props.canEdit && userRole.edit) ? (
                                   this.getDomainSelect(i, userRole.domainType)
                                 ) : (
                                   this.getDomainName(userRole.domainType, userRole.domainID)
                                 )}
                             </td>
                             <td className="text-right">
-                              {userRole.edit ? (
-                                  <div className="btn-group" role="group">
-                                      <button className="btn btn-sm btn-light" disabled={userRole.saving} type="button" onClick={this.cancelNewUserRole(i)}>
-                                          <span className="icon_close" />
-                                      </button>
-                                      <button className="btn btn-sm btn-light" disabled={userRole.saving || !userRole.canSave} type="button" onClick={this.saveUserRole(i)}>
-                                          <span className="icon_floppy" />
-                                      </button>
-                                  </div>
-                              ) : (
-                                  <div className="btn-group" role="group">
-                                      <button className="btn btn-sm btn-light" type="button" onClick={this.deleteUserRole(userRole.id)}>
-                                          <span className="icon_trash" />
-                                      </button>
-                                  </div>
-                              )}
+                                {props.canEdit ? (
+                                    userRole.edit ? (
+                                        <div className="btn-group" role="group">
+                                            <button className="btn btn-sm btn-light" disabled={userRole.saving} type="button" onClick={this.cancelNewUserRole(i)}>
+                                                <span className="icon_close" />
+                                            </button>
+                                            <button className="btn btn-sm btn-light" disabled={userRole.saving || !userRole.canSave} type="button" onClick={this.saveUserRole(i)}>
+                                                <span className="icon_floppy" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="btn-group" role="group">
+                                            <button className="btn btn-sm btn-light" type="button" onClick={this.deleteUserRole(userRole.id)}>
+                                                <span className="icon_trash" />
+                                            </button>
+                                        </div>
+                                    )
+                                ) : (null)}
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
-            <button type="button" className="btn btn-sm btn-outline-primary col" onClick={this.newUserRole()}>
-                Add new user role
-            </button>
+            {props.canEdit ? (
+                <button type="button" className="btn btn-sm btn-outline-primary col" onClick={this.newUserRole()}>
+                    Add new user role
+                </button>
+            ) : (null)}
             </div>
         )
     }
@@ -341,7 +353,10 @@ const mapStateToProps = (state, ownProps) => ({
     organizationsLoading: state.organizations.loading,
     clinics: state.clinics.allLoaded ? state.clinics.clinics : undefined,
     clinicsLoading: state.clinics.loading,
-    forbidden: state.userRoles.forbidden
+    canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+    canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+    validationsLoading: state.validations.loading,
+    forbidden: state.userRoles.forbidden || state.users.forbidden || state.roles.forbidden || state.locations.forbidden || state.organizations.forbidden || state.clinics.forbidden,
 })
 
 const mapDispatchToProps = dispatch =>
@@ -354,7 +369,8 @@ const mapDispatchToProps = dispatch =>
             loadClinics,
             loadAllUserRoles,
             saveUserRole,
-            deleteUserRole
+            deleteUserRole,
+            loadUserRights,
         },
         dispatch
     )

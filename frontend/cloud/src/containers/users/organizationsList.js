@@ -8,6 +8,7 @@ import { loadRoles } from "../../modules/roles"
 import { loadOrganizations, clearOrganizations, deleteUserFromOrganization } from "../../modules/organizations"
 import { makeGetUserOrganizationIDs } from "../../selectors/userRolesSelectors"
 import { loadUserUserRoles, saveUserRoleCustomMsg, deleteUserRole } from "../../modules/userRoles"
+import { ADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import OrganizationDetail from "./organizationDetail"
 
 class OrganizationsList extends React.Component {
@@ -26,6 +27,9 @@ class OrganizationsList extends React.Component {
         if (!this.props.userRoles) {
             this.props.loadUserUserRoles(this.props.userID)
         }
+        if (this.props.canSee === undefined || this.props.canEdit === undefined) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(this.props)
     }
@@ -40,12 +44,15 @@ class OrganizationsList extends React.Component {
         if (!nextProps.userRoles && !nextProps.userRolesLoading) {
             this.props.loadUserUserRoles(this.props.userID)
         }
+        if ((nextProps.canSee === undefined || nextProps.canEdit === undefined) && !nextProps.validationsLoading) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(nextProps)
     }
 
     determineState(props) {
-        let loading = !props.userRoles || props.userRolesLoading || !props.roles || props.rolesLoading || !props.organizations || props.organizationsLoading || !props.userOrganizationIDs
+        let loading = !props.userRoles || props.userRolesLoading || !props.roles || props.rolesLoading || !props.organizations || props.organizationsLoading || !props.userOrganizationIDs || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
 
         this.setState({
             loading: loading,
@@ -109,14 +116,16 @@ class OrganizationsList extends React.Component {
 
     render() {
         let props = this.props
-        if (props.forbidden) {
-            return null
-        }
         if (this.state.loading) {
             return <div>Loading...</div>
         }
+        if (!props.canSee || props.forbidden) {
+            return null
+        }
+
         return (
             <div id="organizations">
+                <h2>Organizations</h2>
                 <div className="row">
                     <div className={this.state.selectedOrganizationID ? "col-4" : "col-12"}>
                         <table className="table table-hover">
@@ -133,7 +142,7 @@ class OrganizationsList extends React.Component {
                                     <tr key={userOrganization.id || i} className={(this.state.selectedOrganizationID === userOrganization.id) ? "table-active" : ""}>
                                         <th scope="row">{i+1}</th>
                                         <td>
-                                        {userOrganization.edit ? (
+                                        {(props.canEdit && userOrganization.edit) ?(
                                             <select className="form-control form-control-sm" value={userOrganization.id} onChange={this.editOrganizationID(i)}>
                                                 <option value="">Select organization</option>
                                                 {_.map(_.difference(_.map(_.values(props.organizations), organization => organization.id), _.without(_.map(this.state.userOrganizations, organization => organization.id), userOrganization.id)), organizationID => (
@@ -151,7 +160,7 @@ class OrganizationsList extends React.Component {
                                           )}
                                         </td>
                                         <td>
-                                        {userOrganization.edit ? (
+                                        {(props.canEdit && userOrganization.edit) ?(
                                             <select className="form-control form-control-sm" value={userOrganization.roleID} onChange={this.editRoleID(i)}>
                                                 <option value="">Select role</option>
                                                 {_.map(props.roles, role => (
@@ -160,33 +169,37 @@ class OrganizationsList extends React.Component {
                                                     </option>
                                                 ))}
                                             </select>
-                                        ) : ("")}
+                                        ) : (null)}
                                         </td>
                                         <td className="text-right">
-                                          {userOrganization.edit ? (
-                                              <div className="btn-group" role="group">
-                                                  <button className="btn btn-sm btn-light" disabled={userOrganization.saving} type="button" onClick={this.cancelNewUserOrganization(i)}>
-                                                      <span className="icon_close" />
-                                                  </button>
-                                                  <button className="btn btn-sm btn-light" disabled={userOrganization.saving || !userOrganization.canSave} type="button" onClick={this.saveUserOrganization(i)}>
-                                                      <span className="icon_floppy" />
-                                                  </button>
-                                              </div>
-                                          ) : (
-                                              <div className="btn-group" role="group">
-                                                  <button className="btn btn-sm btn-light" type="button" onClick={this.removeUserOrganization(userOrganization.id)}>
-                                                      <span className="icon_trash" />
-                                                  </button>
-                                              </div>
-                                          )}
+                                            {props.canEdit ? (
+                                                userOrganization.edit ? (
+                                                    <div className="btn-group" role="group">
+                                                        <button className="btn btn-sm btn-light" disabled={userOrganization.saving} type="button" onClick={this.cancelNewUserOrganization(i)}>
+                                                            <span className="icon_close" />
+                                                        </button>
+                                                        <button className="btn btn-sm btn-light" disabled={userOrganization.saving || !userOrganization.canSave} type="button" onClick={this.saveUserOrganization(i)}>
+                                                            <span className="icon_floppy" />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="btn-group" role="group">
+                                                        <button className="btn btn-sm btn-light" type="button" onClick={this.removeUserOrganization(userOrganization.id)}>
+                                                            <span className="icon_trash" />
+                                                        </button>
+                                                    </div>
+                                                )
+                                            ) : (null)}
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
-                        <button type="button" className="btn btn-sm btn-outline-primary col" disabled={(this.state.userOrganizations.length !== 0 && this.state.userOrganizations[this.state.userOrganizations.length - 1].edit) ? true : null} onClick={this.newUserOrganization()}>
-                            Add user to organization
-                        </button>
+                        {props.canEdit ? (
+                            <button type="button" className="btn btn-sm btn-outline-primary col" disabled={(this.state.userOrganizations.length !== 0 && this.state.userOrganizations[this.state.userOrganizations.length - 1].edit) ? true : null} onClick={this.newUserOrganization()}>
+                                Add current user to organization
+                            </button>
+                        ) : (null)}
                     </div>
                     <div className="col">
                         <Route path="/users/:userID/organizations/:organizationID" component={OrganizationDetail} />
@@ -219,6 +232,9 @@ const makeMapStateToProps = () => {
             userRoles: state.userRoles.userUserRoles ? (state.userRoles.userUserRoles[userID] ? state.userRoles.userUserRoles[userID] : undefined) : undefined,
             userRolesLoading: state.userRoles.loading,
             userOrganizationIDs: getUserOrganizationIDs(state, {userID: userID}),
+            canSee: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
+            canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+            validationsLoading: state.validations.loading,
             forbidden: state.userRoles.forbidden || state.users.forbidden || state.organizations.forbidden
         }
     }
@@ -234,7 +250,8 @@ const mapDispatchToProps = dispatch =>
             loadUserUserRoles,
             saveUserRoleCustomMsg,
             deleteUserFromOrganization,
-            deleteUserRole
+            deleteUserRole,
+            loadUserRights,
         },
         dispatch
     )

@@ -5,6 +5,7 @@ import { withRouter } from "react-router-dom"
 import _ from "lodash"
 
 import { loadLocation, saveLocation } from "../../modules/locations"
+import { ADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { CATEGORY_COUNTRIES, loadCodes } from "../../modules/codes"
 import { open, close } from "shared/modules/alert"
 
@@ -30,6 +31,9 @@ class LocationDetail extends React.Component {
         if (!this.props.countries) {
             this.props.loadCodes(CATEGORY_COUNTRIES)
         }
+        if (this.props.canSee === undefined || this.props.canEdit === undefined) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(this.props)
     }
@@ -41,12 +45,15 @@ class LocationDetail extends React.Component {
         if (!nextProps.countries && !nextProps.codesLoading) {
             this.props.loadCodes(CATEGORY_COUNTRIES)
         }
+        if ((nextProps.canSee === undefined || nextProps.canEdit === undefined) && !nextProps.validationsLoading) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(nextProps)
     }
 
     determineState(props) {
-        let loading = (!props.location && props.locationID !== "new") || props.locationLoading
+        let loading = (!props.location && props.locationID !== "new") || props.locationLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
         this.setState({loading: loading})
 
         if (props.location) {
@@ -118,6 +125,10 @@ class LocationDetail extends React.Component {
         if (this.state.loading) {
             return <div>Loading...</div>
         }
+        if (!props.canSee || props.forbidden) {
+            return null
+        }
+
         return (
             <div>
                 <h1>Locations</h1>
@@ -126,15 +137,15 @@ class LocationDetail extends React.Component {
                 <form onSubmit={this.submit}>
                     <div className="form-group">
                         <label htmlFor="name">Name</label>
-                        <input className="form-control" id="name" value={this.state.name} onChange={this.updateInput} placeholder="Location name" />
+                        <input className="form-control" id="name" value={this.state.name} onChange={this.updateInput} disabled={!props.canEdit} placeholder="Location name" />
                     </div>
                     <div className="form-group">
                         <label htmlFor="capacity">Capacity</label>
-                        <input className="form-control" id="capacity" value={this.state.capacity} onChange={this.updateCapacity} placeholder="e.g. 1000" />
+                        <input className="form-control" id="capacity" value={this.state.capacity} onChange={this.updateCapacity} disabled={!props.canEdit} placeholder="e.g. 1000" />
                     </div>
                     <div className="form-group">
                         <label htmlFor="country">Country</label>
-                        <select className="form-control form-control-sm" id="country" value={this.state.country} onChange={this.updateInput}>
+                        <select className="form-control form-control-sm" id="country" value={this.state.country} onChange={this.updateInput} disabled={!props.canEdit}>
                             <option value="">Select country</option>
                             {_.map(props.countries, country => (
                                 <option key={country.code_id} value={country.code_id}>
@@ -145,35 +156,37 @@ class LocationDetail extends React.Component {
                     </div>
                     <div className="form-group">
                         <label htmlFor="city">City</label>
-                         <input className="form-control" id="city" value={this.state.city} onChange={this.updateInput} placeholder="e.g. Beirut" />
+                        <input className="form-control" id="city" value={this.state.city} onChange={this.updateInput} disabled={!props.canEdit} placeholder="e.g. Beirut" />
                     </div>
                     <div className="form-group">
                         <label htmlFor="electricty">Electricity</label>
-                        <input type="checkbox" className="form-control" id="electricty" checked={this.state.electricty} onChange={this.updateInput} />
+                        <input type="checkbox" className="form-control" id="electricty" checked={this.state.electricty} onChange={this.updateInput} disabled={!props.canEdit} />
                     </div>
                     <div className="form-group">
                         <label htmlFor="waterSupply">Water supply</label>
-                        <input type="checkbox" className="form-control" id="waterSupply" checked={this.state.waterSupply} onChange={this.updateInput} />
+                        <input type="checkbox" className="form-control" id="waterSupply" checked={this.state.waterSupply} onChange={this.updateInput} disabled={!props.canEdit} />
                     </div>
                     <div className="form-group">
                         <h3>Manager</h3>
                         <div className="form-group">
                             <label htmlFor="firstName">Name</label>
-                            <input className="form-control" id="manager.name" value={this.state.manager.name} onChange={this.updateInput} placeholder="Full name" />
+                            <input className="form-control" id="manager.name" value={this.state.manager.name} onChange={this.updateInput} disabled={!props.canEdit} placeholder="Full name" />
                         </div>
                         <div className="form-group">
                             <label htmlFor="email">Email address</label>
-                            <input type="email" className="form-control" id="manager.email" value={this.state.manager.email} onChange={this.updateInput} placeholder="user@email.com"/>
+                            <input type="email" className="form-control" id="manager.email" value={this.state.manager.email} onChange={this.updateInput} disabled={!props.canEdit} placeholder="user@email.com"/>
                         </div>
                         <div className="form-group">
                             <label htmlFor="specialisation">Phone number</label>
-                            <input type="tel" className="form-control" id="manager.phoneNumber" value={this.state.manager.phoneNumber} onChange={this.updateInput} placeholder="+38640..." />
+                            <input type="tel" className="form-control" id="manager.phoneNumber" value={this.state.manager.phoneNumber} onChange={this.updateInput} disabled={!props.canEdit} placeholder="+38640..." />
                         </div>
                     </div>
                     <div className="form-group">
-                        <button type="submit" className="btn btn-outline-primary col">
-                            Save location
-                        </button>
+                        {props.canEdit ? (
+                            <button type="submit" className="btn btn-outline-primary col">
+                                Save
+                            </button>
+                        ) : (null)}
                     </div>
                 </form>
             </div>
@@ -193,6 +206,10 @@ const mapStateToProps = (state, ownProps) => {
         locationLoading: state.locations.loading,
         countries: state.codes.codes[CATEGORY_COUNTRIES],
         codesLoading: state.codes.loading,
+        canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+        canSee: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
+        validationsLoading: state.validations.loading,
+        forbidden: state.locations.forbidden,
     }
 }
 
@@ -202,6 +219,7 @@ const mapDispatchToProps = dispatch =>
             loadLocation,
             saveLocation,
             loadCodes,
+            loadUserRights,
             open,
             close
         },

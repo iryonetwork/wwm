@@ -15,14 +15,25 @@ import LocationDetail from "../locations/detail"
 import Organizations from "../organizations"
 import OrganizationDetail from "../organizations/detail"
 import Clinics from "../clinics"
+import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { close } from "shared/modules/alert"
 import Logo from "shared/containers/logo"
 import { ReactComponent as LogoutIcon } from "shared/icons/logout.svg"
+import { ReactComponent as MoreIcon } from "shared/icons/more.svg"
 
 class App extends React.Component {
+    componentDidMount() {
+        if (this.props.isAdmin === undefined) {
+            this.props.loadUserRights()
+        }
+    }
+
     componentWillReceiveProps(nextProps) {
         if (nextProps.location.pathname !== this.props.location.pathname) {
             this.props.close()
+        }
+        if (nextProps.isAdmin === undefined && !nextProps.validationsLoading) {
+            this.props.loadUserRights()
         }
     }
 
@@ -40,35 +51,43 @@ class App extends React.Component {
                         </Link>
                     </div>
 
-                    <NavLink className="navigation" to="/users">
-                        Users
-                    </NavLink>
+                    { this.props.isAdmin ? (
+                        <div>
+                            <NavLink className="navigation" to="/users">
+                                Users
+                            </NavLink>
 
-                    <NavLink className="navigation" to="/locations">
-                        Locations
-                    </NavLink>
+                            <NavLink className="navigation" to="/locations">
+                                Locations
+                            </NavLink>
 
-                    <NavLink className="navigation" to="/organizations">
-                        Organizations
-                    </NavLink>
+                            <NavLink className="navigation" to="/organizations">
+                                Organizations
+                            </NavLink>
 
-                    <NavLink className="navigation" to="/clinics">
-                        Clinics
-                    </NavLink>
+                            <NavLink className="navigation" to="/clinics">
+                                Clinics
+                            </NavLink>
 
-                    <NavLink className="navigation" to="/roles">
-                        Roles
-                    </NavLink>
+                            <NavLink className="navigation" to="/roles">
+                                Roles
+                            </NavLink>
 
-                    <NavLink className="navigation" to="/rules">
-                        ACL
-                    </NavLink>
+                            <NavLink className="navigation" to="/rules">
+                                ACL
+                            </NavLink>
 
-                    <NavLink className="navigation" to="/userRoles">
-                        User roles
-                    </NavLink>
+                            <NavLink className="navigation" to="/userRoles">
+                                User roles
+                            </NavLink>
+                        </div>
+                    ) : (null)}
 
                     <div className="bottom">
+                        <NavLink className="navigation" to="/me">
+                            <MoreIcon />
+                            My profile
+                        </NavLink>
                         <a className="navigation" href="/" onClick={this.logout}>
                             <LogoutIcon />
                             Logout
@@ -79,6 +98,7 @@ class App extends React.Component {
                     <div className="container">
                         <Alert />
                         <Route exact path="/" component={Home} />
+                        <Route exact path="/me" component={Home} />
                         <Route exact path="/users" component={Users} />
                         <Route exact path="/users/:userID" component={UserDetail} />
                         <Route exact path="/users/:userID/organizations/:organizationID" component={UserDetail} />
@@ -101,11 +121,16 @@ class App extends React.Component {
     }
 }
 
-const mapStateToProps = state => ({})
-
+const mapStateToProps = state => {
+    return {
+        isAdmin: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+        validationsLoading: state.validations.loading
+    }
+}
 const mapDispatchToProps = dispatch =>
     bindActionCreators(
         {
+            loadUserRights,
             close
         },
         dispatch

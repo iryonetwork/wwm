@@ -7,6 +7,7 @@ import _ from "lodash"
 import { loadOrganization } from "../../modules/organizations"
 import { loadClinics, saveClinic, deleteClinic } from "../../modules/clinics"
 import { loadLocations } from "../../modules/locations"
+import { ADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 
 class ClinicsList extends React.Component {
     constructor(props) {
@@ -24,7 +25,9 @@ class ClinicsList extends React.Component {
         if (!this.props.clinics) {
             this.props.loadClinics()
         }
-
+        if (this.props.canSee === undefined || this.props.canEdit === undefined) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(this.props)
     }
@@ -39,12 +42,15 @@ class ClinicsList extends React.Component {
         if (!nextProps.clinics && !nextProps.clinicsLoading) {
             this.props.loadClinics()
         }
+        if ((nextProps.canSee === undefined || nextProps.canEdit === undefined) && !nextProps.validationsLoading) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(nextProps)
     }
 
     determineState(props) {
-        let loading = !props.clinics || props.clinicsLoading || !props.organization || props.organizationsLoading || !props.locations || props.locationsLoading
+        let loading = !props.clinics || props.clinicsLoading || !props.organization || props.organizationsLoading || !props.locations || props.locationsLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
         this.setState({ loading: loading })
 
         if (!loading) {
@@ -101,14 +107,16 @@ class ClinicsList extends React.Component {
 
     render() {
         let props = this.props
-        if (props.forbidden) {
-            return null
-        }
         if (this.state.loading) {
             return <div>Loading...</div>
         }
+        if (!props.canSee || props.forbidden) {
+            return null
+        }
+
         return (
             <div id="clinics">
+                <h2>Clinics</h2>
                 <div className="row">
                     <div className="col-12">
                         <table className="table table-hover">
@@ -125,21 +133,23 @@ class ClinicsList extends React.Component {
                                     <tr key={clinic.id || i}>
                                         <th scope="row">{i+1}</th>
                                         <td>
-                                        {clinic.edit ? (
-                                            <input
-                                                value={clinic.name}
-                                                onChange={this.editClinicName(i)}
-                                                type="text"
-                                                className="form-control form-control-sm"
-                                                placeholder="Clinic name"
-                                                aria-label="Clinic name"
-                                            />
-                                        ) : (
-                                            <Link to={`/clinics/${clinic.id}`}>{clinic.name}</Link>
-                                        )}
+                                        {props.canEdit ? (
+                                            clinic.edit ? (
+                                                <input
+                                                    value={clinic.name}
+                                                    onChange={this.editClinicName(i)}
+                                                    type="text"
+                                                    className="form-control form-control-sm"
+                                                    placeholder="Clinic name"
+                                                    aria-label="Clinic name"
+                                                />
+                                            ) : (
+                                                <Link to={`/clinics/${clinic.id}`}>{clinic.name}</Link>
+                                            )
+                                        ) : (clinic.name)}
                                         </td>
                                         <td>
-                                        {clinic.edit ? (
+                                        {(props.canEdit && clinic.edit) ? (
                                             <select className="form-control form-control-sm" value={clinic.location} onChange={this.editLocationID(i)}>
                                                 <option value="">Select location</option>
                                                 {_.map(props.locations, location => (
@@ -153,30 +163,34 @@ class ClinicsList extends React.Component {
                                         )}
                                         </td>
                                         <td className="text-right">
-                                        {clinic.edit ? (
-                                            <div className="btn-group" role="group">
-                                                <button className="btn btn-sm btn-light" disabled={clinic.saving} type="button" onClick={this.cancelNewClinic(i)}>
-                                                    <span className="icon_close" />
-                                                </button>
-                                                <button className="btn btn-sm btn-light" disabled={clinic.saving || !clinic.canSave} type="button" onClick={this.saveClinic(i)}>
-                                                    <span className="icon_floppy" />
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div className="btn-group" role="group">
-                                                <button onClick={this.removeClinic(clinic.id)} className="btn btn-sm btn-light" type="button">
-                                                    <span className="icon_trash" />
-                                                </button>
-                                            </div>
-                                        )}
+                                        {props.canEdit ? (
+                                            clinic.edit ? (
+                                                <div className="btn-group" role="group">
+                                                    <button className="btn btn-sm btn-light" disabled={clinic.saving} type="button" onClick={this.cancelNewClinic(i)}>
+                                                        <span className="icon_close" />
+                                                    </button>
+                                                    <button className="btn btn-sm btn-light" disabled={clinic.saving || !clinic.canSave} type="button" onClick={this.saveClinic(i)}>
+                                                        <span className="icon_floppy" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="btn-group" role="group">
+                                                    <button onClick={this.removeClinic(clinic.id)} className="btn btn-sm btn-light" type="button">
+                                                        <span className="icon_trash" />
+                                                    </button>
+                                                </div>
+                                            )
+                                        ) : (null)}
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
-                        <button type="button" className="btn btn-sm btn-outline-primary col" disabled={this.state.edit ? true: null} onClick={this.newClinic()}>
-                            Add clinic
-                        </button>
+                        {props.canEdit ? (
+                            <button type="button" className="btn btn-sm btn-outline-primary col" disabled={this.state.edit ? true: null} onClick={this.newClinic()}>
+                                Add clinic
+                            </button>
+                        ) : (null)}
                     </div>
                 </div>
             </div>
@@ -199,7 +213,10 @@ const makeMapStateToProps = () => {
             clinicsLoading: state.clinics.loading,
             locations: state.locations.allLoaded ? state.locations.locations : undefined,
             locationsLoading: state.locations.loading,
-            forbidden: state.organizations.forbidden || state.locations.forbidden || state.clinics.forbidden
+            canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+            canSee: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
+            validationsLoading: state.validations.loading,
+            forbidden: state.organizations.forbidden || state.locations.forbidden || state.clinics.forbidden,
         }
     }
     return mapStateToProps
@@ -213,6 +230,7 @@ const mapDispatchToProps = dispatch =>
             saveClinic,
             deleteClinic,
             loadLocations,
+            loadUserRights,
         },
         dispatch
     )

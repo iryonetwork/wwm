@@ -221,7 +221,7 @@ func (s *Storage) initializeRolesAndRules() error {
 	s.AddRule(&models.Rule{
 		Subject:  &authCommon.EveryoneRole.ID,
 		Action:   swag.Int64(Read),
-		Resource: swag.String("/api/auth/renew"),
+		Resource: swag.String("/api/auth/*"),
 	})
 
 	s.AddRule(&models.Rule{

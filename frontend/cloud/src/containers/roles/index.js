@@ -6,6 +6,7 @@ import map from "lodash/map"
 import _ from "lodash"
 
 import { loadRoles, addRole, deleteRole } from "../../modules/roles"
+import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { open, COLOR_DANGER } from "shared/modules/alert"
 import RoleDetail from "./detail"
 
@@ -24,6 +25,10 @@ class Roles extends React.Component {
         if (!this.props.roles) {
             this.props.loadRoles()
         }
+        if (this.props.canSee === undefined || this.props.canEdit === undefined) {
+            this.props.loadUserRights()
+        }
+
         this.determineState(this.props)
     }
 
@@ -31,12 +36,18 @@ class Roles extends React.Component {
         if (!nextProps.roles && !nextProps.rolesLoading) {
             this.props.loadRoles()
         }
+        if ((nextProps.canSee === undefined || nextProps.canEdit === undefined) && !nextProps.validationsLoading) {
+            this.props.loadUserRights()
+        }
+        if (nextProps.canSee === false) {
+            this.props.history.push(`/`)
+        }
 
         this.determineState(nextProps)
     }
 
     determineState(props) {
-        let loading = !props.roles || props.rolesLoading
+        let loading = !props.roles || props.rolesLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
 
         this.setState({loading: loading})
     }
@@ -67,12 +78,13 @@ class Roles extends React.Component {
 
     render() {
         let props = this.props
-        if (props.forbidden) {
-            return null
-        }
         if (this.state.loading) {
             return <div>Loading...</div>
         }
+        if (!props.canSee || props.forbidden) {
+            return null
+        }
+
         let i = 0
         return (
             <div id="roles">
@@ -97,29 +109,33 @@ class Roles extends React.Component {
                                             <Link to={`/roles/${role.id}`}>{role.name}</Link>
                                         </td>
                                         <td className="text-right">
-                                            <button onClick={this.deleteRole(role.id)} className="btn btn-sm btn-light" type="button">
-                                                <span className="icon_trash" />
-                                            </button>
+                                            {props.canEdit ? (
+                                                <button onClick={this.deleteRole(role.id)} className="btn btn-sm btn-light" type="button">
+                                                    <span className="icon_trash" />
+                                                </button>
+                                            ) : (null)}
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
-                        <div className="input-group mb-3">
-                            <input
-                                value={this.state.roleName}
-                                onChange={this.updateRoleName()}
-                                type="text"
-                                className="form-control form-control-sm"
-                                placeholder="Role name"
-                                aria-label="Role name"
-                            />
-                            <div className="input-group-append">
-                                <button onClick={this.addRole()} className="btn btn-sm btn-outline-secondary" type="button">
-                                    Add role
-                                </button>
+                        {props.canEdit ? (
+                            <div className="input-group mb-3">
+                                <input
+                                    value={this.state.roleName}
+                                    onChange={this.updateRoleName()}
+                                    type="text"
+                                    className="form-control form-control-sm"
+                                    placeholder="Role name"
+                                    aria-label="Role name"
+                                />
+                                <div className="input-group-append">
+                                    <button onClick={this.addRole()} className="btn btn-sm btn-outline-secondary" type="button">
+                                        Add role
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        ) : (null)}
                     </div>
 
                     <div className="col">
@@ -137,7 +153,10 @@ const mapStateToProps = (state, ownProps) => {
         rolesLoading: state.roles.loading,
         withDetail: !ownProps.match.isExact,
         path: ownProps.location.pathname,
-        forbidden: state.roles.forbidden
+        canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+        canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+        validationsLoading: state.validations.loading,
+        forbidden: state.roles.forbidden,
     }
 }
 
@@ -147,6 +166,7 @@ const mapDispatchToProps = dispatch =>
             loadRoles,
             addRole,
             deleteRole,
+            loadUserRights,
             open
         },
         dispatch

@@ -8,6 +8,7 @@ import { loadUsers } from "../../modules/users"
 import { loadRoles } from "../../modules/roles"
 import { deleteUserFromClinic } from "../../modules/clinics"
 import { saveUserRoleCustomMsg, loadDomainUserRoles } from "../../modules/userRoles"
+import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { makeGetClinicUserIDs, makeGetOrganizationUserIDs } from "../../selectors/userRolesSelectors"
 import { getName } from "../../utils/user"
 import UserDetail from "./userDetail"
@@ -34,7 +35,9 @@ class UsersList extends React.Component {
         if (this.props.organizationID && !this.props.clinicsOrganizationUserRoles) {
             this.props.loadDomainUserRoles("organization", this.props.organizationID)
         }
-
+        if (this.props.canSee === undefined || this.props.canEdit === undefined) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(this.props)
     }
@@ -57,12 +60,15 @@ class UsersList extends React.Component {
                 this.props.loadDomainUserRoles("organization", this.props.organizationID)
             }
         }
+        if ((nextProps.canSee === undefined || nextProps.canEdit === undefined) && !nextProps.validationsLoading) {
+            this.props.loadUserRights()
+        }
 
         this.determineState(nextProps)
     }
 
     determineState(props) {
-        let loading = !props.users || props.usersLoading || !props.roles || props.rolesLoading || !props.userRoles || props.userRolesLoading
+        let loading = !props.users || props.usersLoading || !props.roles || props.rolesLoading || !props.userRoles || props.userRolesLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
         this.setState({ loading: loading })
         if (!loading) {
             this.setState({
@@ -114,12 +120,13 @@ class UsersList extends React.Component {
 
     render() {
         let props = this.props
-        if (props.forbidden) {
-            return null
-        }
         if (this.state.loading) {
             return <div>Loading...</div>
         }
+        if (!props.canSee || props.forbidden) {
+            return null
+        }
+
         return (
             <div id="users">
                 <h2>Users of clinic <em>{props.clinic.name}</em></h2>
@@ -138,7 +145,7 @@ class UsersList extends React.Component {
                             </thead>
                             <tbody>
                                 {_.map(this.state.clinicUsers, (user, i) => {
-                                    return user.edit ? (
+                                    return (props.canEdit && user.edit) ? (
                                         <tr key={i}>
                                             <th scope="row">{i+1}</th>
                                             <td colSpan="3">
@@ -187,20 +194,24 @@ class UsersList extends React.Component {
                                             <td>{user.email}</td>
                                             <td></td>
                                             <td className="text-right">
+                                            {props.canEdit ? (
                                                 <div className="btn-group" role="group">
                                                     <button onClick={this.removeUser(user.id)} className="btn btn-sm btn-light" type="button">
                                                         <span className="icon_trash" />
                                                     </button>
                                                 </div>
+                                            ) : (null)}
                                             </td>
                                         </tr>
                                     )
                                 })}
                             </tbody>
                         </table>
-                        <button type="button" className="btn btn-sm btn-outline-primary col" disabled={(this.state.clinicUsers.length !== 0 && this.state.clinicUsers[this.state.clinicUsers.length - 1].edit) ? true : null} onClick={this.newUser()}>
-                            Add user
-                        </button>
+                        {props.canEdit ? (
+                            <button type="button" className="btn btn-sm btn-outline-primary col" disabled={(this.state.clinicUsers.length !== 0 && this.state.clinicUsers[this.state.clinicUsers.length - 1].edit) ? true : null} onClick={this.newUser()}>
+                                Add user
+                            </button>
+                        ) : (null)}
                     </div>
                     <div className="col">
                         <Route path="/clinics/:clinicID/users/:userID" component={UserDetail} />
@@ -243,6 +254,9 @@ const makeMapStateToProps = () => {
             rolesLoading: state.roles.loading,
             clinicUserIDs: getClinicUserIDs(state, {clinicID: clinicID}),
             allowedClinicUserIDs: getOrganizationUserIDs(state, {organizationID: organizationID}),
+            canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+            canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+            validationsLoading: state.validations.loading,
             forbidden: state.clinics.forbidden || state.users.forbidden || state.userRoles.forbidden || state.roles.forbidden
         }
     }
@@ -256,7 +270,8 @@ const mapDispatchToProps = dispatch =>
             loadRoles,
             loadDomainUserRoles,
             saveUserRoleCustomMsg,
-            deleteUserFromClinic
+            deleteUserFromClinic,
+            loadUserRights,
         },
         dispatch
     )
