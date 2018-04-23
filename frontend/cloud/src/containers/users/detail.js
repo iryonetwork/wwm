@@ -71,15 +71,15 @@ class UserDetail extends React.Component {
         this.setState({ loading: loading })
 
         if (props.user) {
-            let personalData = _.clone(props.user.personalData)
-            if (props.user.personalData.passport) {
-                personalData.passport = _.clone(props.user.personalData.passport)
+            let personalData = _.clone(props.user.personalData) || {}
+            if (personalData.passport) {
+                personalData.passport = _.clone(props.user.personalData.passport) || {}
             }
-            if (props.user.personalData.languages) {
-                personalData.languages = _.clone(props.user.personalData.languages)
+            if (personalData.languages) {
+                personalData.languages = _.clone(props.user.personalData.languages) || []
             }
-            if (props.user.personalData.licenses) {
-                personalData.licenses = _.clone(props.user.personalData.licenses)
+            if (personalData.licenses) {
+                personalData.licenses = _.clone(props.user.personalData.licenses) || []
             }
 
             // format dates
