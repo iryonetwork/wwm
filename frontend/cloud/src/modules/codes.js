@@ -19,7 +19,6 @@ export const CATEGORY_LANGUAGES = "languages"
 export const CATEGORY_LICENSES = "licenses"
 
 export default (state = initialState, action) => {
-    console.log(action)
     switch (action.type) {
         case LOAD_CODES:
             return {
@@ -54,58 +53,22 @@ export const loadCodes = category => {
         })
 
         let locale = store.getState().locale || "en"
-        let codes = []
 
-        // mocked codes response
-        switch (category) {
-            case CATEGORY_LANGUAGES:
-                codes = [
-                    {category: "languages", id: "AR", locale: "en", title: "Arabic"},
-                    {category: "languages", id: "EN", locale: "en", title: "English"},
-                    {category: "languages", id: "DE", locale: "en", title: "German"},
-                    {category: "languages", id: "FR", locale: "en", title: "French"},
-                    {category: "languages", id: "PL", locale: "en", title: "Polish"},
-                    {category: "languages", id: "SI", locale: "en", title: "Slovenian"},
-                ]
+        let url = "/discovery/codes/" + category + "?locale=" + locale
+        return api(url, "GET")
+            .then(response => {
                 dispatch({
                     type: LOAD_CODES_SUCCESS,
                     category: category,
-                    codes: codes
+                    codes: response
                 })
-                break
-            case CATEGORY_LICENSES:
-                codes = [
-                    {category: "licenses", id: "DL-A", locale: "en", title: "Driving license cat. A"},
-                    {category: "licenses", id: "DL-A1", locale: "en", title: "Driving license cat. A1"},
-                    {category: "licenses", id: "DL-B", locale: "en", title: "Driving license cat. B"},
-                    {category: "licenses", id: "DL-C", locale: "en", title: "Driving license cat. C"},
-                    {category: "licenses", id: "DL-C1", locale: "en", title: "Driving license cat. C1"},
-                    {category: "licenses", id: "PL-P", locale: "en", title: "Private pilot license"},
-                    {category: "licenses", id: "PL-C", locale: "en", title: "Commercial pilot license"},
-                ]
+            })
+            .catch(error => {
                 dispatch({
-                    type: LOAD_CODES_SUCCESS,
-                    category: category,
-                    codes: codes
+                    type: LOAD_CODES_FAIL,
+                    code: error.code
                 })
-                break
-            default:
-                let url = "/discovery/codes/" + category + "?locale=" + locale
-                return api(url, "GET")
-                    .then(response => {
-                        dispatch({
-                            type: LOAD_CODES_SUCCESS,
-                            category: category,
-                            codes: response
-                        })
-                    })
-                    .catch(error => {
-                        dispatch({
-                            type: LOAD_CODES_FAIL,
-                            code: error.code
-                        })
-                        dispatch(open(error.message, error.code, COLOR_DANGER))
-                    })
-        }
+                dispatch(open(error.message, error.code, COLOR_DANGER))
+            })
     }
 }
