@@ -7,8 +7,8 @@
         "vault.docker.local"
     ],
     "key": {
-        "algo": "ecdsa",
-        "size": 256
+        "algo": "rsa",
+        "size": 4096
     },
     "names": [
         {

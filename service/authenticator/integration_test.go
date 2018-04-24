@@ -75,7 +75,7 @@ func TestSyncAuthentication(t *testing.T) {
 			}
 
 			// create the token
-			token, _ := jwt.NewWithClaims(jwt.SigningMethodES256, claims).SignedString(pk)
+			token, _ := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(pk)
 
 			request, err := http.NewRequest(http.MethodGet, test.url, nil)
 			request.Header.Add("Authorization", token)

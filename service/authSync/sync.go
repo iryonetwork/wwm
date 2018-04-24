@@ -1,7 +1,7 @@
 package authSync
 
 import (
-	"crypto/ecdsa"
+	"crypto/rsa"
 	"crypto/tls"
 	"encoding/base64"
 	"fmt"
@@ -19,7 +19,7 @@ import (
 
 type authSync struct {
 	storage Storage
-	pk      *ecdsa.PrivateKey
+	pk      *rsa.PrivateKey
 	url     string
 	logger  zerolog.Logger
 }
@@ -104,7 +104,7 @@ func (a *authSync) createToken() (string, error) {
 	}
 
 	// create the token
-	return jwt.NewWithClaims(jwt.SigningMethodES256, claims).SignedString(a.pk)
+	return jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(a.pk)
 }
 
 // New returns new service
@@ -115,9 +115,9 @@ func New(storage Storage, certFile, keyFile, url string, logger zerolog.Logger) 
 		return nil, err
 	}
 
-	pk, ok := cert.PrivateKey.(*ecdsa.PrivateKey)
+	pk, ok := cert.PrivateKey.(*rsa.PrivateKey)
 	if !ok {
-		return nil, fmt.Errorf("Certificate doesn't contain ECDSA key")
+		return nil, fmt.Errorf("Certificate doesn't contain RSA key")
 	}
 
 	return &authSync{

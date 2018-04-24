@@ -131,7 +131,7 @@ func (a *service) GetPrincipalFromToken(tokenString string) (*string, error) {
 			return private.Public(), nil
 		}
 
-		return nil, fmt.Errorf("Singning key not found")
+		return nil, fmt.Errorf("Signing key not found")
 	})
 
 	if err != nil {

@@ -12,8 +12,8 @@
         "prometheus.iryo.cloud"
     ],
     "key": {
-        "algo": "ecdsa",
-        "size": 256
+        "algo": "rsa",
+        "size": 4096
     },
     "names": [
         {

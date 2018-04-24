@@ -2,8 +2,8 @@
   "CN": "waitlist",
   "hosts": ["127.0.0.1", "waitlist", "waitlist.iryo.local"],
   "key": {
-    "algo": "ecdsa",
-    "size": 256
+    "algo": "rsa",
+    "size": 4096
   },
   "names": [
     {

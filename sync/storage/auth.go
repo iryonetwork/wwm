@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"crypto/ecdsa"
+	"crypto/rsa"
 	"crypto/tls"
 	"fmt"
 	"time"
@@ -16,7 +16,7 @@ import (
 )
 
 type storageRequestAuthenticator struct {
-	pk     *ecdsa.PrivateKey
+	pk     *rsa.PrivateKey
 	url    string
 	logger zerolog.Logger
 }
@@ -47,9 +47,9 @@ func NewRequestAuthenticator(certFile, keyFile string, logger zerolog.Logger) (r
 		return nil, err
 	}
 
-	pk, ok := cert.PrivateKey.(*ecdsa.PrivateKey)
+	pk, ok := cert.PrivateKey.(*rsa.PrivateKey)
 	if !ok {
-		return nil, fmt.Errorf("Certificate doesn't contain ECDSA key")
+		return nil, fmt.Errorf("Certificate doesn't contain rsa key")
 	}
 
 	return &storageRequestAuthenticator{
@@ -74,5 +74,5 @@ func (a *storageRequestAuthenticator) createToken() (string, error) {
 	}
 
 	// create the token
-	return jwt.NewWithClaims(jwt.SigningMethodES256, claims).SignedString(a.pk)
+	return jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(a.pk)
 }
