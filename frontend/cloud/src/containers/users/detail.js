@@ -91,11 +91,11 @@ class UserDetail extends React.Component {
             }
             // format languages
             if (personalData && personalData.languages) {
-                personalData.languages = _.map(personalData.languages, languageCodeID => {return {"code_id": languageCodeID}})
+                personalData.languages = _.map(personalData.languages, languageCodeID => {return {"id": languageCodeID}})
             }
             // format licenses
             if (personalData && personalData.licenses) {
-                personalData.licenses = _.map(personalData.licenses, licenseCodeID => {return {"code_id": licenseCodeID}})
+                personalData.licenses = _.map(personalData.licenses, licenseCodeID => {return {"id": licenseCodeID}})
             }
 
             this.setState({ email: props.user.email })
@@ -209,9 +209,9 @@ class UserDetail extends React.Component {
    newLanguage = () => e => {
         let personalData = this.state.personalData
         if (personalData.languages) {
-            personalData.languages = [...personalData.languages, { code_id: undefined, edit: true }]
+            personalData.languages = [...personalData.languages, { id: undefined, edit: true }]
         } else {
-            personalData.languages = [{ code_id: undefined, edit: true }]
+            personalData.languages = [{ id: undefined, edit: true }]
         }
         this.setState({ personalData: personalData })
     }
@@ -219,7 +219,7 @@ class UserDetail extends React.Component {
     updateLanguage = index => e => {
         let personalData = this.state.personalData
         if (personalData.languages) {
-            personalData.languages[index].code_id = e.target.value
+            personalData.languages[index].id = e.target.value
         }
         this.setState({ personalData: personalData})
     }
@@ -235,9 +235,9 @@ class UserDetail extends React.Component {
    newLicense = () => e => {
         let personalData = this.state.personalData
         if (personalData.licenses) {
-            personalData.licenses = [...personalData.licenses, { code_id: undefined, edit: true }]
+            personalData.licenses = [...personalData.licenses, { id: undefined, edit: true }]
         } else {
-            personalData.licenses = [{ code_id: undefined, edit: true }]
+            personalData.licenses = [{ id: undefined, edit: true }]
         }
         this.setState({ personalData: personalData })
     }
@@ -245,7 +245,7 @@ class UserDetail extends React.Component {
     updateLicense = index => e => {
         let personalData = this.state.personalData
         if (personalData.licenses) {
-            personalData.licenses[index].code_id = e.target.value
+            personalData.licenses[index].id = e.target.value
         }
         this.setState({ personalData: personalData})
     }
@@ -316,12 +316,12 @@ class UserDetail extends React.Component {
 
         // format languages
         if (user.personalData.languages && user.personalData.languages.length !== 0) {
-            user.personalData.languages = _.map(_.pickBy(user.personalData.languages, language => (language.code_id && language.code_id !== "")), language => language.code_id)
+            user.personalData.languages = _.map(_.pickBy(user.personalData.languages, language => (language.id && language.id !== "")), language => language.id)
         }
 
         // format licenses
         if (user.personalData.licenses && user.personalData.licenses.length !== 0) {
-            user.personalData.licenses = _.map(_.pickBy(user.personalData.licenses, license => (license.code_id && license.code_id !== "")), license => license.code_id)
+            user.personalData.licenses = _.map(_.pickBy(user.personalData.licenses, license => (license.id && license.id !== "")), license => license.id)
         }
 
         this.props.saveUser(user)
@@ -399,21 +399,21 @@ class UserDetail extends React.Component {
                                 <tbody>
                                     {_.map(this.state.personalData.languages ? this.state.personalData.languages : [], (language, i) => (
                                         <tr key={i}>
-                                            <td>
+                                            <td class="col-6">
                                                 {language.edit ? (
-                                                    <select className="form-control form-control-sm" id="residency" value={language.code_id} onChange={this.updateLanguage(i)} disabled={!props.canEdit}>
+                                                    <select className="form-control form-control-sm" id="residency" value={language.id} onChange={this.updateLanguage(i)} disabled={!props.canEdit}>
                                                         <option value="">Select language</option>
-                                                        {_.map(_.difference(_.map(props.languages, language => language.code_id), _.without(_.map(this.state.personalData.languages, language => language.code_id), language.code_id)), languageCodeID => (
+                                                        {_.map(_.difference(_.map(props.languages, language => language.id), _.without(_.map(this.state.personalData.languages, language => language.id), language.id)), languageCodeID => (
                                                             <option key={languageCodeID} value={languageCodeID}>
                                                                 {props.languages[languageCodeID].title}
                                                             </option>
                                                         ))}
                                                     </select>
                                                 ) : (
-                                                    props.languages[language.code_id] ? props.languages[language.code_id].title : language.code_id
+                                                    props.languages[language.id] ? props.languages[language.id].title : language.id
                                                 )}
                                             </td>
-                                            <td className="text-right">
+                                            <td className="text-right col-1">
                                                 {props.canEdit ? (
                                                     <button onClick={this.removeLanguage(i)} className="btn btn-sm btn-light" type="button">
                                                         {language.edit ? (
@@ -440,21 +440,21 @@ class UserDetail extends React.Component {
                                 <tbody>
                                     {_.map(this.state.personalData.licenses ? this.state.personalData.licenses : [], (license, i) => (
                                         <tr key={i}>
-                                            <td>
+                                            <td class="col-6">
                                                 {license.edit ? (
-                                                    <select className="form-control form-control-sm" id="residency" value={license.code_id} onChange={this.updateLicense(i)} disabled={!props.canEdit}>
+                                                    <select className="form-control form-control-sm" id="residency" value={license.id} onChange={this.updateLicense(i)} disabled={!props.canEdit}>
                                                         <option value="">Select license</option>
-                                                        {_.map(_.difference(_.map(props.licenses, license => license.code_id), _.without(_.map(this.state.personalData.licenses, license => license.code_id), license.code_id)), licenseCodeID => (
+                                                        {_.map(_.difference(_.map(props.licenses, license => license.id), _.without(_.map(this.state.personalData.licenses, license => license.id), license.id)), licenseCodeID => (
                                                             <option key={licenseCodeID} value={licenseCodeID}>
                                                                 {props.licenses[licenseCodeID].title}
                                                             </option>
                                                         ))}
                                                     </select>
                                                 ) : (
-                                                    props.licenses[license.code_id] ? props.licenses[license.code_id].title : license.code.id
+                                                    props.licenses[license.id] ? props.licenses[license.id].title : license.code.id
                                                 )}
                                             </td>
-                                            <td className="text-right">
+                                            <td className="text-right col-1">
                                                 {props.canEdit ? (
                                                     <button onClick={this.removeLicense(i)} className="btn btn-sm btn-light" type="button">
                                                         {license.edit ? (
@@ -480,7 +480,7 @@ class UserDetail extends React.Component {
                             <select className="form-control form-control-sm" id="nationality" value={this.state.personalData.nationality} onChange={this.updatePersonalData} disabled={!props.canEdit}>
                                 <option value="">Select country</option>
                                 {_.map(props.countries, country => (
-                                    <option key={country.code_id} value={country.code_id}>
+                                    <option key={country.id} value={country.id}>
                                         {country.title}
                                     </option>
                                 ))}
@@ -491,7 +491,7 @@ class UserDetail extends React.Component {
                             <select className="form-control form-control-sm" id="residency" value={this.state.personalData.residency} onChange={this.updatePersonalData} disabled={!props.canEdit}>
                                 <option value="">Select country</option>
                                 {_.map(props.countries, country => (
-                                    <option key={country.code_id} value={country.code_id}>
+                                    <option key={country.id} value={country.id}>
                                         {country.title}
                                     </option>
                                 ))}
@@ -508,7 +508,7 @@ class UserDetail extends React.Component {
                                 <select className="form-control form-control-sm" id="issuingCountry" value={this.state.personalData.passport ? this.state.personalData.passport.issuingCountry : undefined} onChange={this.updatePassportData} disabled={!props.canEdit}>
                                     <option value="">Select country</option>
                                     {_.map(props.countries, country => (
-                                        <option key={country.code_id} value={country.title}>
+                                        <option key={country.id} value={country.id}>
                                             {country.title}
                                         </option>
                                     ))}
