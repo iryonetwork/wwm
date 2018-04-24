@@ -8,7 +8,7 @@ import { loadRoles } from "../../modules/roles"
 import { makeGetUserOrganizationUserRoles } from "../../selectors/userRolesSelectors"
 import { deleteUserFromOrganization } from "../../modules/organizations"
 import { loadDomainUserRoles, saveUserRole, deleteUserRole } from "../../modules/userRoles"
-import { ADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
+import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { open } from "shared/modules/alert"
 
 class UserDetail extends React.Component {

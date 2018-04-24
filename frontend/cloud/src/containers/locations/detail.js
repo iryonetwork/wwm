@@ -53,8 +53,8 @@ class LocationDetail extends React.Component {
     }
 
     determineState(props) {
-        let loading = (!props.location && props.locationID !== "new") || props.locationLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
-        this.setState({loading: loading})
+        let loading = (!props.location && props.locationID !== "new") || props.locationLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading || !props.countries || props.codesLoading
+        this.setState({ loading: loading })
 
         if (props.location) {
             let manager = _.clone(props.location.manager)
@@ -148,7 +148,7 @@ class LocationDetail extends React.Component {
                         <select className="form-control form-control-sm" id="country" value={this.state.country} onChange={this.updateInput} disabled={!props.canEdit}>
                             <option value="">Select country</option>
                             {_.map(props.countries, country => (
-                                <option key={country.code_id} value={country.code_id}>
+                                <option key={country.id} value={country.id}>
                                     {country.title}
                                 </option>
                             ))}

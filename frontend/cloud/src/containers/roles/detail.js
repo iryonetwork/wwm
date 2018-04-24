@@ -79,6 +79,7 @@ const mapDispatchToProps = dispatch =>
     bindActionCreators(
         {
             loadRules,
+            loadUserRights,
             open
         },
         dispatch

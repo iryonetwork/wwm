@@ -2,7 +2,7 @@ import _ from "lodash"
 import store from '../store'
 
 import api from "./api"
-import { open, close, COLOR_DANGER } from "shared/modules/alert"
+import { open, COLOR_DANGER } from "shared/modules/alert"
 
 const LOAD_CODES = "rules/LOAD_CODES"
 const LOAD_CODES_SUCCESS = "rules/LOAD_CODES_SUCCESS"

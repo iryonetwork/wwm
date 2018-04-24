@@ -5,6 +5,7 @@ import { withRouter } from "react-router-dom"
 import _ from "lodash"
 
 import { loadOrganization, saveOrganization } from "../../modules/organizations"
+import { CATEGORY_COUNTRIES, loadCodes } from "../../modules/codes"
 import { ADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { open, close } from "shared/modules/alert"
 import ClinicsList from "./clinicsList"
@@ -28,6 +29,9 @@ class OrganizationDetail extends React.Component {
         if (!this.props.organization && this.props.organizationID !== "new") {
             this.props.loadOrganization(this.props.organizationID)
         }
+        if (!this.props.countries) {
+            this.props.loadCodes(CATEGORY_COUNTRIES)
+        }
         if (this.props.canSee === undefined || this.props.canEdit === undefined) {
             this.props.loadUserRights()
         }
@@ -42,6 +46,9 @@ class OrganizationDetail extends React.Component {
         if (!nextProps.organization && nextProps.organizationID !== "new" && !this.props.organizationsLoading) {
             this.props.loadOrganization(nextProps.organizationID)
         }
+        if (!nextProps.countries && !nextProps.codesLoading) {
+            this.props.loadCodes(CATEGORY_COUNTRIES)
+        }
         if ((nextProps.canSee === undefined || nextProps.canEdit === undefined) && !nextProps.validationsLoading) {
             this.props.loadUserRights()
         }
@@ -53,10 +60,11 @@ class OrganizationDetail extends React.Component {
     }
 
     determineState(props) {
-        let loading = (!props.organization && props.organizationID !== "new") || props.organizationsLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
-        this.setState({loading: loading})
+        let loading = (!props.organization && props.organizationID !== "new") || props.organizationsLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading || !props.countries || props.codesLoading
+        this.setState({ loading: loading })
 
         if (props.organization) {
+            let address = _.clone(props.organization.address)
             let representative = _.clone(props.organization.representative)
             let primaryContact = _.clone(props.organization.primaryContact)
 
@@ -64,6 +72,7 @@ class OrganizationDetail extends React.Component {
             this.setState({ name: props.organization.name })
             this.setState({ legalStatus: props.organization.legalStatus ? props.organization.legalStatus : "" })
             this.setState({ serviceType: props.organization.serviceType ? props.organization.serviceType : "" })
+            this.setState({ address: address ? address : {} })
             this.setState({ representative: representative ? representative : {} })
             this.setState({ primaryContact: primaryContact ? primaryContact : {} })
         }
@@ -100,6 +109,7 @@ class OrganizationDetail extends React.Component {
         organization.name = this.state.name
         organization.legalStatus = this.state.legalStatus
         organization.serviceType = this.state.serviceType
+        organization.address = _.clone(this.state.address)
         organization.representative = _.clone(this.state.representative)
         organization.primaryContact = _.clone(this.state.primaryContact)
 
@@ -140,32 +150,62 @@ class OrganizationDetail extends React.Component {
                             <input className="form-control" id="serviceType" value={this.state.serviceType} onChange={this.updateInput} disabled={!props.canEdit} placeholder="e.g. Basic care" />
                         </div>
                         <div className="form-group">
+                            <h3>Address</h3>
+                            <div className="form-group">
+                                <label htmlFor="address.addressLine1">Address line 1</label>
+                                <input className="form-control" id="address.addressLine1" value={this.state.address.addressLine1} onChange={this.updateInput} disabled={!props.canEdit} placeholder="e.g. Street" />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="address.addressLine2">Address line 2</label>
+                                <input className="form-control" id="address.addressLine2" value={this.state.address.addressLine2} onChange={this.updateInput} disabled={!props.canEdit} placeholder="e.g. Building information"/>
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="address.city">City</label>
+                                <input className="form-control" id="address.city" value={this.state.address.city} onChange={this.updateInput} disabled={!props.canEdit} placeholder="City" />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="address.postCode">Post code</label>
+                                <input type="tel" className="form-control" id="address.postCode" value={this.state.address.postCode} onChange={this.updateInput} disabled={!props.canEdit} placeholder="Postcode" />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="address.country">Country</label>
+                                <select className="form-control form-control-sm" id="address.country" value={this.state.address.country} onChange={this.updatePersonalData} disabled={!props.canEdit}>
+                                    <option value="">Select country</option>
+                                    {_.map(props.countries, country => (
+                                        <option key={country.id} value={country.id}>
+                                            {country.title}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="form-group">
                             <h3>Representative</h3>
                             <div className="form-group">
-                                <label htmlFor="firstName">Name</label>
+                                <label htmlFor="representative.name">Name</label>
                                 <input className="form-control" id="representative.name" value={this.state.representative.name} onChange={this.updateInput} disabled={!props.canEdit} placeholder="Full name" />
                             </div>
                             <div className="form-group">
-                                <label htmlFor="email">Email address</label>
+                                <label htmlFor="representative.email">Email address</label>
                                 <input type="email" className="form-control" id="representative.email" value={this.state.representative.email} onChange={this.updateInput} disabled={!props.canEdit} placeholder="user@email.com"/>
                             </div>
                             <div className="form-group">
-                                <label htmlFor="specialisation">Phone number</label>
+                                <label htmlFor="representative.phoneNumber">Phone number</label>
                                 <input type="tel" className="form-control" id="representative.phoneNumber" value={this.state.representative.phoneNumber} onChange={this.updateInput} disabled={!props.canEdit} placeholder="+38640..." />
                             </div>
                         </div>
                         <div className="form-group">
                             <h3>Primary contact</h3>
                             <div className="form-group">
-                                <label htmlFor="firstName">Name</label>
+                                <label htmlFor="primaryContact.name">Name</label>
                                 <input className="form-control" id="primaryContact.name" value={this.state.primaryContact.name} onChange={this.updateInput} disabled={!props.canEdit} placeholder="Full name" />
                             </div>
                             <div className="form-group">
-                                <label htmlFor="email">Email address</label>
+                                <label htmlFor="primaryContact.email">Email address</label>
                                 <input type="email" className="form-control" id="primaryContact.email" value={this.state.primaryContact.email} onChange={this.updateInput} disabled={!props.canEdit} placeholder="user@email.com"/>
                             </div>
                             <div className="form-group">
-                                <label htmlFor="specialisation">Phone number</label>
+                                <label htmlFor="primaryContact.phoneNumber">Phone number</label>
                                 <input type="tel" className="form-control" id="primaryContact.phoneNumber" value={this.state.primaryContact.phoneNumber} onChange={this.updateInput} disabled={!props.canEdit} placeholder="+38640..." />
                             </div>
                         </div>
@@ -203,6 +243,8 @@ const mapStateToProps = (state, ownProps) => {
         organizationID: id,
         organization: state.organizations.organizations ? state.organizations.organizations[id] : undefined,
         organizationsLoading: state.organizations.loading,
+        countries: state.codes.codes[CATEGORY_COUNTRIES],
+        codesLoading: state.codes.loading,
         canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
         canSee: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
         validationsLoading: state.validations.loading,
@@ -215,9 +257,10 @@ const mapDispatchToProps = dispatch =>
         {
             loadOrganization,
             saveOrganization,
+            loadCodes,
             loadUserRights,
             open,
-            close
+            close,
         },
         dispatch
     )

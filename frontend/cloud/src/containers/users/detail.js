@@ -67,7 +67,7 @@ class UserDetail extends React.Component {
     }
 
     determineState(props) {
-        let loading = (!props.user && props.userID !== "new") || props.usersLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
+        let loading = (!props.user && props.userID !== "new") || props.usersLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading || !props.countries || !props.languages || !props.licenses || props.codesLoading
         this.setState({ loading: loading })
 
         if (props.user) {
