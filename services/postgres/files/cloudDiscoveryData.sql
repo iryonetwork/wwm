@@ -267,7 +267,12 @@ INSERT INTO codes (category_id, code_id) VALUES
     ('languages', 'per'),
     ('languages', 'urd'),
     ('languages', 'slv'),
-    ('languages', 'spa');
+    ('languages', 'spa'),
+
+    ('licenses', 'dl-a'),
+    ('licenses', 'dl-b'),
+    ('licenses', 'dl-c'),
+    ('licenses', 'dl-d');
 
 INSERT INTO code_titles (category_id, code_id, locale, title) VALUES
     ('countries', 'AF', 'en', 'Afghanistan'),
@@ -525,4 +530,9 @@ INSERT INTO code_titles (category_id, code_id, locale, title) VALUES
     ('languages', 'per', 'en', 'Persian'),
     ('languages', 'urd', 'en', 'Urdu'),
     ('languages', 'slv', 'en', 'Slovenian'),
-    ('languages', 'spa', 'en', 'Spanish');
+    ('languages', 'spa', 'en', 'Spanish'),
+
+    ('licenses', 'dl-a', 'en', 'Category A driving license'),
+    ('licenses', 'dl-b', 'en', 'Category B driving license'),
+    ('licenses', 'dl-c', 'en', 'Category C driving license'),
+    ('licenses', 'dl-d', 'en', 'Category D driving license');
