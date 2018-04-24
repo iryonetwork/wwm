@@ -96,7 +96,7 @@ func main() {
 
 	discoveryHandlers := discoveryService.NewHandlers(service, logger)
 
-	auth := authorizer.New(fmt.Sprintf("https://%s/%s/validate", cfg.AuthHost, cfg.AuthPath), logger)
+	auth := authorizer.New(cfg.DomainType, cfg.DomainID, fmt.Sprintf("https://%s/%s/validate", cfg.AuthHost, cfg.AuthPath), logger)
 
 	api := operations.NewDiscoveryAPI(swaggerSpec)
 	api.ServeError = utils.ServeError

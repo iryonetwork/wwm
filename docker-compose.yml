@@ -242,6 +242,7 @@ services:
       dockerfile: ./services/postgres/Dockerfile
     volumes:
     - ./services/postgres:/docker-entrypoint-initdb.d
+    - ./bin/tls:/certs:ro
     ports:
     - 5432:5432
     environment:
@@ -258,6 +259,8 @@ services:
     - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
     environment:
+    - DOMAIN_TYPE=clinic
+    - DOMAIN_ID=e4ebb41b-7c62-4db7-9e1c-f47058b96dd0
     - VAULT_TOKEN=LOCAL-DISCOVERY-TOKEN
     - VAULT_DB_ROLE=localDiscoveryService
     - KEY_PATH=/certs/localDiscovery-key.pem
@@ -274,6 +277,8 @@ services:
     - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
     environment:
+    - DOMAIN_TYPE=global
+    - DOMAIN_ID=*
     - VAULT_TOKEN=CLOUD-DISCOVERY-TOKEN
     - VAULT_DB_ROLE=cloudDiscoveryService
     - KEY_PATH=/certs/cloudDiscovery-key.pem

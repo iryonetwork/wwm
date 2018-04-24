@@ -90,7 +90,7 @@ func main() {
 
 	discoveryHandlers := discoveryService.NewHandlers(service, logger)
 
-	auth := authorizer.New(fmt.Sprintf("https://%s/%s/validate", cfg.AuthHost, cfg.AuthPath), logger)
+	auth := authorizer.New(cfg.DomainType, cfg.DomainID, fmt.Sprintf("https://%s/%s/validate", cfg.AuthHost, cfg.AuthPath), logger)
 
 	api := operations.NewDiscoveryAPI(swaggerSpec)
 	api.ServeError = utils.ServeError
@@ -105,6 +105,7 @@ func main() {
 	api.FetchHandler = discoveryHandlers.Fetch()
 	api.LinkHandler = discoveryHandlers.Link()
 	api.UnlinkHandler = discoveryHandlers.Unlink()
+	api.CodesGetHandler = discoveryHandlers.CodesGet()
 
 	server := restapi.NewServer(api)
 	server.TLSHost = cfg.ServerHost

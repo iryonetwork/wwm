@@ -583,7 +583,7 @@
 			"revisionTime": "2018-03-19T19:41:35Z"
 		},
 		{
-			"checksumSHA1": "AU3fA8Sm33Vj9PBoRPSeYfxLRuE=",
+			"checksumSHA1": "ATnwV0POluBNQEMjPdylodz0oK0=",
 			"path": "github.com/lib/pq/oid",
 			"revision": "88edab0803230a3898347e77b474f8c1820a1f20",
 			"revisionTime": "2018-02-01T18:47:07Z"
@@ -619,7 +619,7 @@
 			"revisionTime": "2016-07-23T06:10:19Z"
 		},
 		{
-			"checksumSHA1": "B0jv3Wmurf7JvZPD/Tp6m2pRQTw=",
+			"checksumSHA1": "JrFdmAFh7XYlVR/ONVkycAztGcc=",
 			"path": "github.com/minio/minio-go",
 			"revision": "d218e4cb1bfc13dcef0eb5c3e74507a35be0dd3a",
 			"revisionTime": "2018-01-13T00:13:38Z"
@@ -697,7 +697,7 @@
 			"revisionTime": "2018-01-30T22:10:49Z"
 		},
 		{
-			"checksumSHA1": "iiNWEMdn9BdSYqbRGDdMak/OVIE=",
+			"checksumSHA1": "gBWCOqKsG1Uw/GJFFYGUhbNxkt0=",
 			"path": "github.com/nats-io/gnatsd/util",
 			"revision": "f39cd53d0712265557576d74aac9351170a70c08",
 			"revisionTime": "2018-01-30T22:10:49Z"
@@ -937,7 +937,7 @@
 			"revisionTime": "2017-09-09T04:35:08Z"
 		},
 		{
-			"checksumSHA1": "G99Z/xW4ukmt8SHnsO9SIX71hFE=",
+			"checksumSHA1": "p5aJ1Wc4KA738r7q77NR/0qLKsA=",
 			"path": "golang.org/x/sys/unix",
 			"revision": "dd9ec17814d5b1de388ebe438ec013d57d8b3779",
 			"revisionTime": "2018-01-06T05:11:39Z"
@@ -991,19 +991,19 @@
 			"revisionTime": "2018-03-01T21:24:51Z"
 		},
 		{
-			"checksumSHA1": "w8kDfZ1Ug+qAcVU0v8obbu3aDOY=",
+			"checksumSHA1": "1oQpUH9BjCWlqFPDahRH+UMlYy4=",
 			"path": "golang.org/x/text/unicode/bidi",
 			"revision": "8c34f848e18c4bd34d02db7f19a0ed1a0a8f5852",
 			"revisionTime": "2018-03-01T21:24:51Z"
 		},
 		{
-			"checksumSHA1": "BCNYmf4Ek93G4lk5x3ucNi/lTwA=",
+			"checksumSHA1": "lN2xlA6Utu7tXy2iUoMF2+y9EUE=",
 			"path": "golang.org/x/text/unicode/norm",
 			"revision": "8c34f848e18c4bd34d02db7f19a0ed1a0a8f5852",
 			"revisionTime": "2018-03-01T21:24:51Z"
 		},
 		{
-			"checksumSHA1": "zuieOGXKG9vXxNhEWv3H0X8RSXM=",
+			"checksumSHA1": "+2zgqW4XeI7g/N/QYeY7BPlHd2Y=",
 			"path": "golang.org/x/text/width",
 			"revision": "e19ae1496984b1c655b8044a65c0300a3c878dd3",
 			"revisionTime": "2017-12-24T20:31:28Z"
