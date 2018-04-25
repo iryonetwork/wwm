@@ -220,6 +220,9 @@ services:
     - ./.data/waitlist:/data
     - ./bin/tls/waitlist-key.pem:/certs/private.key:ro
     - ./bin/tls/waitlist.pem:/certs/public.crt:ro
+    environment:
+    - DOMAIN_TYPE=clinic
+    - DOMAIN_ID=e4ebb41b-7c62-4db7-9e1c-f47058b96dd0
 
   localStatusReporter:
     image: golang:1.9-alpine

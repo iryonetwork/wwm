@@ -46,7 +46,7 @@ func main() {
 		logger.Fatal().Err(err).Msg("Failed to initialize waitlist storage")
 	}
 
-	auth := authorizer.New(fmt.Sprintf("https://%s/%s/validate", cfg.AuthHost, cfg.AuthPath), logger)
+	auth := authorizer.New(cfg.DomainType, cfg.DomainID, fmt.Sprintf("https://%s/%s/validate", cfg.AuthHost, cfg.AuthPath), logger)
 
 	api := operations.NewWaitlistAPI(swaggerSpec)
 	api.ServeError = utils.ServeError
