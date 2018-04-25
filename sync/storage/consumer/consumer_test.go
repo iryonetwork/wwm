@@ -351,7 +351,8 @@ func TestDurability(t *testing.T) {
 		t.Fatal("Handler was not called during specified time")
 	}
 
-	// Stop consumer
+	// Stop consumer after some time for delivering ack
+	<-time.After(time.Duration(50 * time.Millisecond))
 	cleanService()
 	// wait for disconnection
 	<-time.After(time.Duration(50 * time.Millisecond))
