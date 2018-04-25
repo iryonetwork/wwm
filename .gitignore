@@ -6,3 +6,4 @@
 **/mock/gen_*.go
 /gen
 .DS_Store
+*gomock_reflect*
