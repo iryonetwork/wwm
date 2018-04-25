@@ -11,6 +11,12 @@ import (
 	"time"
 
 	loads "github.com/go-openapi/loads"
+	"github.com/jasonlvhit/gocron"
+	flags "github.com/jessevdk/go-flags"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/rs/cors"
+	"github.com/rs/zerolog"
+
 	"github.com/iryonetwork/wwm/gen/auth/restapi"
 	"github.com/iryonetwork/wwm/gen/auth/restapi/operations"
 	logMW "github.com/iryonetwork/wwm/log"
@@ -22,10 +28,6 @@ import (
 	statusServer "github.com/iryonetwork/wwm/status/server"
 	"github.com/iryonetwork/wwm/storage/auth"
 	"github.com/iryonetwork/wwm/utils"
-	"github.com/jasonlvhit/gocron"
-	flags "github.com/jessevdk/go-flags"
-	"github.com/rs/cors"
-	"github.com/rs/zerolog"
 )
 
 func main() {
@@ -80,9 +82,16 @@ func main() {
 		}
 		storage.Close()
 	}
+
 	storage, err := auth.New(dbPath, key, true, true, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to initialize auth storage")
+	}
+	// register metrics collected by storage
+	m := storage.GetPrometheusMetricsCollection()
+	for _, metric := range m {
+		prometheus.MustRegister(metric)
+		defer prometheus.Unregister(metric)
 	}
 
 	// initialize the services
@@ -155,7 +164,7 @@ func main() {
 	api.GetUserRolesIDHandler = authDataHandlers.GetUserRolesID()
 
 	// initialize metrics middleware
-	m := APIMetrics.NewMetrics("api", "").
+	apiMetrics := APIMetrics.NewMetrics("api", "").
 		WithURLSanitize(utils.WhitelistURLSanitize([]string{
 			"login",
 			"validate",
@@ -176,7 +185,7 @@ func main() {
 		AllowedHeaders: []string{"Authorization", "Content-Type"},
 	}).Handler(api.Serve(nil))
 	handler = logMW.APILogMiddleware(handler, logger)
-	handler = m.Middleware(handler)
+	handler = apiMetrics.Middleware(handler)
 	server.SetHandler(handler)
 
 	gocron.Every(5).Minutes().Do(authSync.Sync)

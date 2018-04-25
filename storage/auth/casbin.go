@@ -6,16 +6,19 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/casbin/casbin"
 	casbinmodel "github.com/casbin/casbin/model"
 	"github.com/casbin/casbin/persist"
 	"github.com/go-openapi/swag"
 	"github.com/gobwas/glob"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 
 	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/iryonetwork/wwm/metrics"
 )
 
 // Persmissions
@@ -26,25 +29,45 @@ const (
 	Delete = 1 << 3
 )
 
+const loadPolicySeconds metrics.ID = "load_policy_seconds"
+const enforceSeconds metrics.ID = "enforce_seconds"
+
 // NewAdapter returns new Adapter
 func NewAdapter(storage *Storage) *Adapter {
 	logger := storage.logger.With().Str("component", "storage/auth/casbin").Logger()
 	logger.Debug().Msg("Initialize casbin bolt adapter")
 
+	metricsCollection := make(map[metrics.ID]prometheus.Collector)
+	h := prometheus.NewHistogram(prometheus.HistogramOpts{
+		Namespace: "casbin_adapter",
+		Name:      "load_policy_seconds",
+		Help:      "Time taken to load casbin policy",
+	})
+	metricsCollection[loadPolicySeconds] = h
+
 	return &Adapter{
-		s:      storage,
-		logger: logger,
+		s:                 storage,
+		logger:            logger,
+		metricsCollection: metricsCollection,
 	}
 }
 
 // Adapter is casbin adapter to bbolt
 type Adapter struct {
-	s      *Storage
-	logger zerolog.Logger
+	s                 *Storage
+	logger            zerolog.Logger
+	metricsCollection map[metrics.ID]prometheus.Collector
 }
 
 // LoadPolicy loads policy from database
 func (a *Adapter) LoadPolicy(model casbinmodel.Model) error {
+	// Make sure we record duration metrics even if processing fails
+	start := time.Now()
+	defer func() {
+		duration := time.Since(start)
+		a.metricsCollection[loadPolicySeconds].(prometheus.Histogram).Observe(duration.Seconds())
+	}()
+
 	a.logger.Debug().Msg("Load policy from database")
 	rules, err := a.s.GetRules()
 	if err != nil {
@@ -157,6 +180,11 @@ func (a *Adapter) RemoveFilteredPolicy(sec string, ptype string, fieldIndex int,
 	return errors.New("not implemented")
 }
 
+// GetPrometheusMetricsCollection returns all prometheus metrics collectors to be registered
+func (a *Adapter) GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
+	return a.metricsCollection
+}
+
 func binaryMatch(val1, val2 int64) bool {
 	return val1&val2 == val1
 }
@@ -216,8 +244,14 @@ func (w *wildcardMatch) Match(args ...interface{}) (interface{}, error) {
 	return rule.Match(request), nil
 }
 
+type enforcer struct {
+	*casbin.Enforcer
+	adapter           *Adapter
+	metricsCollection map[metrics.ID]prometheus.Collector
+}
+
 // NewEnforcer returns new casbin enforcer
-func NewEnforcer(storage *Storage) (*casbin.Enforcer, error) {
+func NewEnforcer(storage *Storage) (*enforcer, error) {
 	m := casbin.NewModel(`[request_definition]
 r = sub, dom, obj, act
 [dom actual location]
@@ -247,7 +281,37 @@ m = (g(r.sub, p.sub, r.dom) ||  g(r.sub, p.sub, "*")) && (wildcardMatch(r.obj, p
 		return nil, err
 	}
 
-	return e, nil
+	metricsCollection := make(map[metrics.ID]prometheus.Collector)
+	h := prometheus.NewHistogram(prometheus.HistogramOpts{
+		Namespace: "casbin_enforcer",
+		Name:      "enforce_seconds",
+		Help:      "Time taken to enforce policy",
+	})
+	metricsCollection[enforceSeconds] = h
+
+	return &enforcer{e, a, metricsCollection}, nil
+}
+
+// Enforce is a wrapper for casbin Enforce method made to measure execution time
+func (e *enforcer) Enforce(rvals ...interface{}) bool {
+	// Make sure we record duration metrics even if processing fails
+	start := time.Now()
+	defer func() {
+		duration := time.Since(start)
+		e.metricsCollection[enforceSeconds].(prometheus.Histogram).Observe(duration.Seconds())
+	}()
+
+	return (e.Enforcer).Enforce(rvals...)
+}
+
+// GetPrometheusMetricsCollection returns all prometheus metrics collectors to be registered
+func (e *enforcer) GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
+	collection := e.metricsCollection
+	for k, v := range e.adapter.GetPrometheusMetricsCollection() {
+		collection[k] = v
+	}
+
+	return collection
 }
 
 // FindACL loads all the matching rules

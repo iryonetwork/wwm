@@ -12,6 +12,7 @@ import (
 
 	loads "github.com/go-openapi/loads"
 	flags "github.com/jessevdk/go-flags"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 
@@ -60,6 +61,12 @@ func main() {
 	storage, err := auth.New(cfg.BoltDBFilepath, key, false, true, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to initialize auth storage")
+	}
+	// register metrics collected by storage
+	m := storage.GetPrometheusMetricsCollection()
+	for _, metric := range m {
+		prometheus.MustRegister(metric)
+		defer prometheus.Unregister(metric)
 	}
 
 	// load init data from config file
@@ -175,7 +182,7 @@ func main() {
 	api.GetDatabaseHandler = authDataHandlers.GetDatabase()
 
 	// initialize metrics middleware
-	m := APIMetrics.NewMetrics("api", "").
+	apiMetrics := APIMetrics.NewMetrics("api", "").
 		WithURLSanitize(utils.WhitelistURLSanitize([]string{
 			"login",
 			"validate",
@@ -196,7 +203,7 @@ func main() {
 		AllowedHeaders: []string{"Authorization", "Content-Type"},
 	}).Handler(api.Serve(nil))
 	handler = logMW.APILogMiddleware(handler, logger)
-	handler = m.Middleware(handler)
+	handler = apiMetrics.Middleware(handler)
 	server.SetHandler(handler)
 
 	// Start servers

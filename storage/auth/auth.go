@@ -5,23 +5,31 @@ import (
 	"os"
 	"sync"
 
-	"github.com/casbin/casbin"
 	"github.com/go-openapi/swag"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 	uuid "github.com/satori/go.uuid"
 
 	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/iryonetwork/wwm/metrics"
 	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 )
 
 type Storage struct {
 	db            *bolt.DB
-	enforcer      *casbin.Enforcer
+	enforcer      Enforcer
 	encryptionKey []byte
 	dbSync        *sync.RWMutex
 	refreshRules  bool
 	logger        zerolog.Logger
+}
+
+type Enforcer interface {
+	Enforce(rvals ...interface{}) bool
+	LoadPolicy() error
+	HasPolicy(params ...interface{}) bool
+	GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector
 }
 
 type InitData struct {
@@ -403,4 +411,9 @@ func (s *Storage) LoadInitData(data InitData) {
 			}
 		}
 	}
+}
+
+// GetPrometheusMetricsCollection returns all prometheus metrics collectors to be registered
+func (s *Storage) GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector {
+	return s.enforcer.GetPrometheusMetricsCollection()
 }
