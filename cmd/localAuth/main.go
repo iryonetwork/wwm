@@ -174,7 +174,6 @@ func main() {
 	handler := cors.New(cors.Options{
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
 		AllowedHeaders: []string{"Authorization", "Content-Type"},
-		Debug:          true,
 	}).Handler(api.Serve(nil))
 	handler = logMW.APILogMiddleware(handler, logger)
 	handler = m.Middleware(handler)
