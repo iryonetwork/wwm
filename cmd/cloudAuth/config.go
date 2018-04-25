@@ -18,7 +18,7 @@ type Config struct {
 	// filepath to yaml
 	ServiceCertsAndPaths Services `env:"SERVICES_FILEPATH" envDefault:"/serviceCertsAndPaths.yml"`
 	// filepath to yaml
-	StorageInitData auth.InitData `env:"STORGAE_INIT_DATA_FILEPATH" envDefault:"/storageInitData.yml"`
+	StorageInitData auth.InitData `env:"STORAGE_INIT_DATA_FILEPATH" envDefault:"/storageInitData.yml"`
 }
 
 // Services is a wrapper struct for map of allowed services certs and paths
