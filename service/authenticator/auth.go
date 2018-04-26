@@ -99,12 +99,11 @@ func (a *service) Validate(_ context.Context, userID *string, queries []*models.
 	if strings.HasPrefix(*userID, servicePrincipal) {
 		keyID := (*userID)[len(servicePrincipal):]
 		s, _ := a.syncServices[keyID]
-
 		results := make([]*models.ValidationResult, len(queries))
 		for i, query := range queries {
 			results[i] = &models.ValidationResult{
 				Query:  query,
-				Result: swag.Bool(s.glob.Match(strings.TrimPrefix(*query.Resource, "/api"))),
+				Result: swag.Bool(s.glob.Match(*query.Resource)),
 			}
 		}
 		return results, nil

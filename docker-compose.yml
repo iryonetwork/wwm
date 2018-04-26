@@ -30,6 +30,7 @@ services:
     - ./.data/localAuth:/data
     - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - ./cmd/localAuth/serviceCertsAndPaths.yml:/serviceCertsAndPaths.yml:ro
     environment:
     - DOMAIN_TYPE=clinic
     - DOMAIN_ID=e4ebb41b-7c62-4db7-9e1c-f47058b96dd0

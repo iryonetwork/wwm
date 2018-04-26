@@ -99,7 +99,7 @@ func main() {
 	}
 
 	// initialize the services
-	auth, err := authenticator.New(cfg.DomainType, cfg.DomainID, storage, nil, logger)
+	auth, err := authenticator.New(cfg.DomainType, cfg.DomainID, storage, cfg.ServiceCertsAndPaths.Map, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to initialize authenticator service")
 	}

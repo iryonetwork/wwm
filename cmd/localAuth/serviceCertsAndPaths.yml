@@ -1,0 +1,4 @@
+/certs/storageSync.pem:
+  - /api/storage/*
+/certs/batchStorageSync.pem:
+  - /api/storage/*
