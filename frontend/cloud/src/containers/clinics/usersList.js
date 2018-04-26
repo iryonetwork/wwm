@@ -149,7 +149,7 @@ class UsersList extends React.Component {
                 </h2>
                 <div className="row">
                     <div className={this.state.selectedUserID ? "col-8" : "col-12"}>
-                        <table className="table table-hover">
+                        <table className="table table-hover text-center">
                             <thead>
                                 <tr>
                                     <th scope="col">#</th>

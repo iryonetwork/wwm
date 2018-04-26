@@ -135,7 +135,7 @@ class ClinicsList extends React.Component {
                 <h2>Clinics</h2>
                 <div className="row">
                     <div className="col-12">
-                        <table className="table table-hover">
+                        <table className="table table-hover text-center">
                             <thead>
                                 <tr>
                                     <th scope="col">#</th>

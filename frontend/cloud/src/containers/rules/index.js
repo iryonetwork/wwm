@@ -191,7 +191,7 @@ class Rules extends React.Component {
             <div>
                 {props.embedded ? <h3>ACL</h3> : <h1>ACL</h1>}
 
-                <table className="table table-hover">
+                <table className="table table-hover text-center">
                     <thead>
                         <tr>
                             <th scope="col">#</th>

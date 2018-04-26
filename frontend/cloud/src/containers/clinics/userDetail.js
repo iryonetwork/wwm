@@ -117,7 +117,7 @@ class UserDetail extends React.Component {
 
         return (
             <div>
-                <table className="table table-hover">
+                <table className="table table-hover text-center">
                     <thead>
                         <tr>
                             <th scope="col">#</th>

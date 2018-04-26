@@ -161,8 +161,8 @@ class ClinicsList extends React.Component {
             <div id="clinics">
                 <h2>Clinics</h2>
                 <div className="row">
-                    <div className={this.state.selectedClinicID ? "col-5" : "col-12"}>
-                        <table className="table table-hover">
+                    <div className={this.state.selectedClinicID ? "col-8" : "col-12"}>
+                        <table className="table table-hover text-center">
                             <thead>
                                 <tr>
                                     <th scope="col">#</th>
@@ -196,7 +196,7 @@ class ClinicsList extends React.Component {
                                                         )}
                                                     </select>
                                                 </td>
-                                                <td colSpan="2">
+                                                <td>
                                                     <select className="form-control form-control-sm" value={userClinic.roleID} onChange={this.editRoleID(i)}>
                                                         <option value="">Select role</option>
                                                         {_.map(props.roles, role => (
@@ -207,36 +207,24 @@ class ClinicsList extends React.Component {
                                                     </select>
                                                 </td>
                                                 <td className="text-right">
-                                                    {userClinic.edit ? (
-                                                        <div className="btn-group" role="group">
-                                                            <button
-                                                                className="btn btn-sm btn-light"
-                                                                disabled={userClinic.saving}
-                                                                type="button"
-                                                                onClick={this.cancelNewUserClinic(i)}
-                                                            >
-                                                                <span className="icon_close" />
-                                                            </button>
-                                                            <button
-                                                                className="btn btn-sm btn-light"
-                                                                disabled={userClinic.saving || !userClinic.canSave}
-                                                                type="button"
-                                                                onClick={this.saveUserClinic(i)}
-                                                            >
-                                                                <span className="icon_floppy" />
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="btn-group" role="group">
-                                                            <button
-                                                                className="btn btn-sm btn-light"
-                                                                type="button"
-                                                                onClick={this.removeUserClinic(userClinic.id)}
-                                                            >
-                                                                <span className="icon_trash" />
-                                                            </button>
-                                                        </div>
-                                                    )}
+                                                    <div className="btn-group" role="group">
+                                                        <button
+                                                            className="btn btn-sm btn-light"
+                                                            disabled={userClinic.saving}
+                                                            type="button"
+                                                            onClick={this.cancelNewUserClinic(i)}
+                                                        >
+                                                            <span className="icon_close" />
+                                                        </button>
+                                                        <button
+                                                            className="btn btn-sm btn-light"
+                                                            disabled={userClinic.saving || !userClinic.canSave}
+                                                            type="button"
+                                                            onClick={this.saveUserClinic(i)}
+                                                        >
+                                                            <span className="icon_floppy" />
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ) : (
@@ -259,7 +247,19 @@ class ClinicsList extends React.Component {
                                                         {props.organizations[props.clinics[userClinic.id].organization].name}
                                                     </Link>
                                                 </td>
-                                                <td />
+                                                <td className="text-right">
+                                                    {props.canEdit ? (
+                                                        <div className="btn-group" role="group">
+                                                            <button
+                                                                className="btn btn-sm btn-light"
+                                                                type="button"
+                                                                onClick={this.removeUserClinic(userClinic.id)}
+                                                            >
+                                                                <span className="icon_trash" />
+                                                            </button>
+                                                        </div>
+                                                    ) : null}
+                                                </td>
                                             </tr>
                                         )
                                 )}

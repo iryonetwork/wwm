@@ -91,7 +91,7 @@ class Roles extends React.Component {
                         <header>
                             <h1>Roles</h1>
                         </header>
-                        <table className="table table-hover">
+                        <table className="table table-hover text-center">
                             <thead>
                                 <tr>
                                     <th scope="col">#</th>
