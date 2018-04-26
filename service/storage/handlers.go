@@ -1,10 +1,8 @@
 package storage
 
 import (
-	"net/http"
 	"strings"
 
-	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/rs/zerolog"
@@ -28,8 +26,6 @@ type Handlers interface {
 	SyncFileMetadata() operations.SyncFileMetadataHandler
 	SyncFile() operations.SyncFileHandler
 	SyncFileDelete() operations.SyncFileDeleteHandler
-	Authorizer() runtime.Authorizer
-	GetUserIDFromToken(token string) (*string, error)
 }
 
 type handlers struct {
@@ -332,18 +328,6 @@ func (h *handlers) SyncFileDelete() operations.SyncFileDeleteHandler {
 
 		return operations.NewSyncFileDeleteNoContent()
 	})
-}
-
-func (h *handlers) Authorizer() runtime.Authorizer {
-	return runtime.AuthorizerFunc(func(r *http.Request, principal interface{}) error {
-		// @TODO
-		return nil
-	})
-}
-
-func (h *handlers) GetUserIDFromToken(token string) (*string, error) {
-	userID := "USER"
-	return &userID, nil
 }
 
 // NewHandlers returns a new instance of authenticator handlers

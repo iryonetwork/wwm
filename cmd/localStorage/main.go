@@ -26,6 +26,7 @@ import (
 	logMW "github.com/iryonetwork/wwm/log"
 	APIMetrics "github.com/iryonetwork/wwm/metrics/api"
 	metricsServer "github.com/iryonetwork/wwm/metrics/server"
+	"github.com/iryonetwork/wwm/service/authorizer"
 	storage "github.com/iryonetwork/wwm/service/storage"
 	statusServer "github.com/iryonetwork/wwm/status/server"
 	"github.com/iryonetwork/wwm/storage/s3"
@@ -136,6 +137,9 @@ func main() {
 	// initialize the servicex
 	service := storage.New(s3, keys, p, logger)
 
+	// initialize authorizer
+	auth := authorizer.New(cfg.DomainType, cfg.DomainID, fmt.Sprintf("https://%s/%s/validate", cfg.AuthHost, cfg.AuthPath), logger.With().Str("component", "service/authorizer").Logger())
+
 	api := operations.NewStorageAPI(swaggerSpec)
 	api.ServeError = utils.ServeError
 	server := restapi.NewServer(api)
@@ -149,8 +153,8 @@ func main() {
 
 	serverLogger := logger.WithLevel(zerolog.InfoLevel).Str("component", "server")
 	api.Logger = serverLogger.Msgf
-	api.TokenAuth = storageHandlers.GetUserIDFromToken
-	api.APIAuthorizer = storageHandlers.Authorizer()
+	api.TokenAuth = auth.GetPrincipalFromToken
+	api.APIAuthorizer = auth.Authorizer()
 	api.FileListHandler = storageHandlers.FileList()
 	api.FileGetHandler = storageHandlers.FileGet()
 	api.FileGetVersionHandler = storageHandlers.FileGetVersion()
