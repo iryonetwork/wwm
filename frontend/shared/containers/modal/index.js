@@ -1,10 +1,6 @@
 import React, { Component } from "react"
 
 class Modal extends Component {
-    constructor(props) {
-        super(props)
-    }
-
     componentDidMount() {
         document.body.style.overflow = "hidden"
     }

@@ -1,42 +1,46 @@
 @import "shared/styles/variables.scss";
 
-.new-patient {
-    .modal-body {
-        h3 {
-            font-size: 18px;
-            padding: 15px 0;
-            border-bottom: 1px solid $gray-300;
-            margin-bottom: 30px;
-        }
+.patient-form {
+    h3 {
+        font-size: 18px;
+        padding: 15px 0;
+        border-bottom: 1px solid $gray-300;
+        margin-bottom: 30px;
+    }
 
-        .image {
-            width: 100px;
-            height: 100px;
-            display: inline-block;
-            border-radius: 50px;
-            background-color: $gray-100;
-            border: 1px solid $gray-300;
-            background-size: contain;
-        }
-        .btn-image {
-            margin: 30px 10px;
-        }
+    .image {
+        width: 100px;
+        height: 100px;
+        display: inline-block;
+        border-radius: 50px;
+        background-color: $gray-100;
+        border: 1px solid $gray-300;
+        background-size: contain;
+    }
 
-        .custom-file-input {
-            position: absolute;
-            top: 0;
-            left: -100px;
-            height: 100px;
-            cursor: pointer;
-        }
+    .btn-image {
+        margin: 30px 10px;
+    }
 
-        .habits {
-            padding-bottom: 20px;
-            border-bottom: 1px solid $gray-300;
+    .custom-file-input {
+        position: absolute;
+        top: 0;
+        left: -100px;
+        height: 100px;
+        cursor: pointer;
+    }
 
-            .form-row {
-                margin-top: 30px;
-            }
+    .form-row {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .habits {
+        padding-bottom: 20px;
+        border-bottom: 1px solid $gray-300;
+
+        .form-row {
+            margin-top: 40px;
         }
     }
 }

@@ -1,11 +1,12 @@
 import React from "react"
+import { Link } from "react-router-dom"
 import { UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap"
 
 import Patient from "shared/containers/patient"
 
 import "./style.css"
 
-export default () => (
+export default ({ match }) => (
     <div className="waitlist">
         <h1>Waiting list</h1>
 
@@ -20,7 +21,7 @@ export default () => (
                         </th>
                         <td>Knee pain (both knees)</td>
                         <VitalSigns />
-                        <Tools />
+                        <Tools waitlistID={match.params.waitlistID} itemID={"acsd"} />
                     </tr>
                 </tbody>
             </table>
@@ -42,7 +43,7 @@ export default () => (
                             </div>
                         </td>
                         <VitalSigns />
-                        <Tools />
+                        <Tools waitlistID={match.params.waitlistID} itemID={"acsd"} />
                     </tr>
                 </tbody>
             </table>
@@ -65,7 +66,7 @@ export default () => (
                                 </div>
                             </td>
                             <VitalSigns />
-                            <Tools />
+                            <Tools waitlistID={match.params.waitlistID} itemID={"acsd"} />
                         </tr>
                     ))}
                 </tbody>
@@ -74,7 +75,7 @@ export default () => (
     </div>
 )
 
-const Tools = () => (
+const Tools = ({ waitlistID, itemID }) => (
     <td className="tools">
         <UncontrolledDropdown>
             <DropdownToggle color="link">
@@ -82,7 +83,9 @@ const Tools = () => (
             </DropdownToggle>
             <DropdownMenu right>
                 <DropdownItem>Edit main complaint</DropdownItem>
-                <DropdownItem>Add vital signs</DropdownItem>
+                <DropdownItem>
+                    <Link to={`/waitlist/${waitlistID}/${itemID}/consultation/add-data`}>Add vital signs</Link>
+                </DropdownItem>
                 <DropdownItem>Remove from Waiting list</DropdownItem>
             </DropdownMenu>
         </UncontrolledDropdown>
