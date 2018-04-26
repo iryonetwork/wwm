@@ -46,7 +46,15 @@ class ClinicDetail extends React.Component {
     }
 
     determineState(props) {
-        let loading = !props.roles || props.rolesLoading || !props.userRoles || props.userRolesLoading || !props.clinicUserRoles || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
+        let loading =
+            !props.roles ||
+            props.rolesLoading ||
+            !props.userRoles ||
+            props.userRolesLoading ||
+            !props.clinicUserRoles ||
+            props.canEdit === undefined ||
+            props.canSee === undefined ||
+            props.validationsLoading
 
         this.setState({
             loading: loading,
@@ -56,7 +64,10 @@ class ClinicDetail extends React.Component {
 
     newUserRole = () => e => {
         if (this.state.userRoles) {
-            let userRoles = [...this.state.userRoles, { edit: true, canSave: false, userID: this.props.userID, roleID: "", domainType: "clinic", domainID: this.props.clinicID }]
+            let userRoles = [
+                ...this.state.userRoles,
+                { edit: true, canSave: false, userID: this.props.userID, roleID: "", domainType: "clinic", domainID: this.props.clinicID }
+            ]
             this.setState({ userRoles: userRoles })
         }
     }
@@ -64,7 +75,7 @@ class ClinicDetail extends React.Component {
     editRoleID = index => e => {
         let userRoles = [...this.state.userRoles]
         userRoles[index].roleID = e.target.value
-        userRoles[index].canSave = (userRoles[index].roleID.length !== 0)
+        userRoles[index].canSave = userRoles[index].roleID.length !== 0
         this.setState({ userRoles: userRoles })
     }
 
@@ -107,32 +118,48 @@ class ClinicDetail extends React.Component {
                     </thead>
                     <tbody>
                         {_.map(this.state.userRoles, (userRole, i) => (
-                            <tr key={userRole.id || (i+1)}>
-                                <th scope="row">{i+1}</th>
+                            <tr key={userRole.id || i + 1}>
+                                <th scope="row">{i + 1}</th>
                                 <td>
-                                  {(props.canEdit && userRole.edit) ?(
-                                      <select className="form-control form-control-sm" value={userRole.roleID} onChange={this.editRoleID(i)}>
-                                          <option value="">Select role</option>
-                                          {_.map(_.difference(_.map(_.values(props.roles), role => role.id), _.map(_.values(props.clinicUserRoles), userRole => userRole.roleID)),  roleID => (
-                                              <option key={roleID} value={roleID}>
-                                                  {props.roles[roleID].name}
-                                              </option>
-                                          ))}
-                                      </select>
-                                  ) : (
-                                        props.canEdit ? (
-                                            <Link to={`/roles/${userRole.roleID}`}>{props.roles[userRole.roleID].name}</Link>
-                                        ): (props.roles[userRole.roleID].name)
-                                  )}
+                                    {props.canEdit && userRole.edit ? (
+                                        <select className="form-control form-control-sm" value={userRole.roleID} onChange={this.editRoleID(i)}>
+                                            <option value="">Select role</option>
+                                            {_.map(
+                                                _.difference(
+                                                    _.map(_.values(props.roles), role => role.id),
+                                                    _.map(_.values(props.clinicUserRoles), userRole => userRole.roleID)
+                                                ),
+                                                roleID => (
+                                                    <option key={roleID} value={roleID}>
+                                                        {props.roles[roleID].name}
+                                                    </option>
+                                                )
+                                            )}
+                                        </select>
+                                    ) : props.canEdit ? (
+                                        <Link to={`/roles/${userRole.roleID}`}>{props.roles[userRole.roleID].name}</Link>
+                                    ) : (
+                                        props.roles[userRole.roleID].name
+                                    )}
                                 </td>
                                 <td className="text-right">
                                     {props.canEdit ? (
-                                        userRole.edit ?(
+                                        userRole.edit ? (
                                             <div className="btn-group" role="group">
-                                                <button className="btn btn-sm btn-light" disabled={userRole.saving} type="button" onClick={this.cancelNewUserRole(i)}>
+                                                <button
+                                                    className="btn btn-sm btn-light"
+                                                    disabled={userRole.saving}
+                                                    type="button"
+                                                    onClick={this.cancelNewUserRole(i)}
+                                                >
                                                     <span className="icon_close" />
                                                 </button>
-                                                <button className="btn btn-sm btn-light" disabled={userRole.saving || !userRole.canSave} type="button" onClick={this.saveUserRole(i)}>
+                                                <button
+                                                    className="btn btn-sm btn-light"
+                                                    disabled={userRole.saving || !userRole.canSave}
+                                                    type="button"
+                                                    onClick={this.saveUserRole(i)}
+                                                >
                                                     <span className="icon_floppy" />
                                                 </button>
                                             </div>
@@ -143,17 +170,22 @@ class ClinicDetail extends React.Component {
                                                 </button>
                                             </div>
                                         )
-                                    ) : (null)}
+                                    ) : null}
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
                 {props.canEdit ? (
-                    <button type="button" className="btn btn-sm btn-outline-primary col" disabled={(this.state.userRoles.length !== 0 && this.state.userRoles[this.state.userRoles.length - 1].edit) ? true : null} onClick={this.newUserRole()}>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-primary col"
+                        disabled={this.state.userRoles.length !== 0 && this.state.userRoles[this.state.userRoles.length - 1].edit ? true : null}
+                        onClick={this.newUserRole()}
+                    >
                         Add new role at the clinic
                     </button>
-                ) : (null)}
+                ) : null}
             </div>
         )
     }
@@ -179,11 +211,11 @@ const makeMapStateToProps = () => {
             rolesLoading: state.roles.loading,
             userRoles: state.userRoles.userUserRoles ? (state.userRoles.userUserRoles[userID] ? state.userRoles.userUserRoles[userID] : undefined) : undefined,
             userRolesLoading: state.userRoles.loading,
-            clinicUserRoles: getClinicUserUserRoles(state, {userID: userID, clinicID: clinicID}),
+            clinicUserRoles: getClinicUserUserRoles(state, { userID: userID, clinicID: clinicID }),
             canSee: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
             canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
             validationsLoading: state.validations.loading,
-            forbidden: state.userRoles.forbidden || state.users.forbidden || state.roles.forbidden,
+            forbidden: state.userRoles.forbidden || state.users.forbidden || state.roles.forbidden
         }
     }
     return mapStateToProps
@@ -197,7 +229,7 @@ const mapDispatchToProps = dispatch =>
             saveUserRole,
             deleteUserRole,
             loadUserRights,
-            open,
+            open
         },
         dispatch
     )

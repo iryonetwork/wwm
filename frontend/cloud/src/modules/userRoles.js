@@ -53,11 +53,17 @@ export default (state = initialState, action) => {
             }
         case LOAD_ALL_USERROLES_SUCCESS:
             userRoles = _.keyBy(action.userRoles, "id")
-            userUserRoles = _.mapValues(_.groupBy(action.userRoles, "userID"), function(o) { return _.keyBy(o, "id") })
-            roleUserRoles = _.mapValues(_.groupBy(action.userRoles, "roleID"), function(o) { return _.keyBy(o, "id") })
+            userUserRoles = _.mapValues(_.groupBy(action.userRoles, "userID"), function(o) {
+                return _.keyBy(o, "id")
+            })
+            roleUserRoles = _.mapValues(_.groupBy(action.userRoles, "roleID"), function(o) {
+                return _.keyBy(o, "id")
+            })
             domainUserRoles = _.groupBy(action.userRoles, "domainType")
             _.forEach(domainUserRoles, function(domainTypeUserRoles, domainType) {
-                domainUserRoles[domainType] = _.mapValues(_.groupBy(domainTypeUserRoles, "domainID"), function(o) { return _.keyBy(o, "id") })
+                domainUserRoles[domainType] = _.mapValues(_.groupBy(domainTypeUserRoles, "domainID"), function(o) {
+                    return _.keyBy(o, "id")
+                })
             })
 
             return {
@@ -188,7 +194,6 @@ export default (state = initialState, action) => {
                 userUserRoles[userID] = _.assign({}, userUserRoles[userID] || {}, _.fromPairs([[id, action.userRole]]))
             }
 
-
             roleUserRoles = state.roleUserRoles || {}
             if (roleUserRoles[roleID]) {
                 roleUserRoles[roleID] = _.assign({}, roleUserRoles[roleID] || {}, _.fromPairs([[id, action.userRole]]))
@@ -206,7 +211,7 @@ export default (state = initialState, action) => {
                 userRoles: userRoles,
                 userUserRoles: userUserRoles,
                 roleUserRoles: roleUserRoles,
-                domainUserRoles: domainUserRoles,
+                domainUserRoles: domainUserRoles
             }
 
         case CLEAR_USERROLES_STATE:
@@ -216,7 +221,7 @@ export default (state = initialState, action) => {
                 userRoles: undefined,
                 userUserRoles: undefined,
                 roleUserRoles: undefined,
-                domainUserRoles: undefined,
+                domainUserRoles: undefined
             }
 
         default:
@@ -411,7 +416,7 @@ export const saveUserRole = userRole => {
     }
 }
 
-export const saveUserRoleCustomMsg = (userRole, msg)  => {
+export const saveUserRoleCustomMsg = (userRole, msg) => {
     return dispatch => {
         dispatch(close())
 

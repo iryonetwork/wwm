@@ -25,10 +25,14 @@ export default (state = initialState, action) => {
         case LOAD_USER_RIGHTS_SUCCESS:
             return {
                 ...state,
-                userRights: _.reduce(action.userRights, function(result, value, key) {
-                  result[value.query.resource] = value.result
-                  return result;
-                }, {}),
+                userRights: _.reduce(
+                    action.userRights,
+                    function(result, value, key) {
+                        result[value.query.resource] = value.result
+                        return result
+                    },
+                    {}
+                ),
                 loading: false
             }
         case LOAD_USER_RIGHTS_FAIL:
@@ -38,7 +42,7 @@ export default (state = initialState, action) => {
             }
         default:
             return state
-        }
+    }
 }
 
 export const loadUserRights = userID => {
@@ -74,7 +78,7 @@ export const loadUserRights = userID => {
             })
             .catch(error => {
                 dispatch({
-                    type: LOAD_USER_RIGHTS_FAIL,
+                    type: LOAD_USER_RIGHTS_FAIL
                 })
                 dispatch(open(error.message, error.code, COLOR_DANGER))
             })

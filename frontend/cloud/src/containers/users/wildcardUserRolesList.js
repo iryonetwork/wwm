@@ -44,8 +44,15 @@ class WildcardUserRolesList extends React.Component {
     }
 
     determineState(props) {
-        let loading = !props.userRoles || props.userRolesLoading || !props.roles || props.rolesLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
-        this.setState({loading: loading})
+        let loading =
+            !props.userRoles ||
+            props.userRolesLoading ||
+            !props.roles ||
+            props.rolesLoading ||
+            props.canEdit === undefined ||
+            props.canSee === undefined ||
+            props.validationsLoading
+        this.setState({ loading: loading })
     }
 
     removeUserRole = userRoleID => e => {
@@ -84,7 +91,9 @@ class WildcardUserRolesList extends React.Component {
                                         <td>
                                             {props.canEdit ? (
                                                 <Link to={`/roles/${userRole.roleID}`}>{props.roles[userRole.roleID].name}</Link>
-                                            ): (props.roles[userRole.roleID].name)}
+                                            ) : (
+                                                props.roles[userRole.roleID].name
+                                            )}
                                         </td>
                                         <td>{userRole.domainType}</td>
                                         <td className="text-right">
@@ -92,7 +101,7 @@ class WildcardUserRolesList extends React.Component {
                                                 <button onClick={this.removeUserRole(userRole.id)} className="btn btn-sm btn-light" type="button">
                                                     <span className="icon_trash" />
                                                 </button>
-                                            ) : (null)}
+                                            ) : null}
                                         </td>
                                     </tr>
                                 ))}
@@ -119,11 +128,11 @@ const makeMapStateToProps = () => {
             rolesLoading: state.roles.loading,
             userRoles: state.userRoles.userUserRoles ? (state.userRoles.userUserRoles[userID] ? state.userRoles.userUserRoles[userID] : undefined) : undefined,
             userRolesLoading: state.userRoles.loading,
-            wildcardUserRoles: getWildcardUserUserRoles(state, {userID: userID}),
+            wildcardUserRoles: getWildcardUserUserRoles(state, { userID: userID }),
             canSee: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
             canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
             validationsLoading: state.validations.loading,
-            forbidden: state.userRoles.forbidden || state.users.forbidden || state.roles.forbidden,
+            forbidden: state.userRoles.forbidden || state.users.forbidden || state.roles.forbidden
         }
     }
     return mapStateToProps
@@ -135,7 +144,7 @@ const mapDispatchToProps = dispatch =>
             loadRoles,
             loadUserUserRoles,
             deleteUserRole,
-            loadUserRights,
+            loadUserRights
         },
         dispatch
     )

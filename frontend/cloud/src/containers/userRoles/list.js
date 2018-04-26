@@ -17,7 +17,6 @@ class UserRoles extends React.Component {
     constructor(props) {
         super(props)
         this.state = { loading: true }
-
     }
 
     componentDidMount() {
@@ -37,7 +36,7 @@ class UserRoles extends React.Component {
             this.props.loadClinics()
         }
         if (!this.props.userRoles) {
-          this.props.loadAllUserRoles()
+            this.props.loadAllUserRoles()
         }
         if (this.props.canSee === undefined || this.props.canEdit === undefined) {
             this.props.loadUserRights()
@@ -63,7 +62,7 @@ class UserRoles extends React.Component {
             this.props.loadOrganizations()
         }
         if (!nextProps.userRoles && !nextProps.userRolesLoading) {
-          this.props.loadAllUserRoles()
+            this.props.loadAllUserRoles()
         }
         if ((nextProps.canSee === undefined || nextProps.canEdit === undefined) && !nextProps.validationsLoading) {
             this.props.loadUserRights()
@@ -73,11 +72,26 @@ class UserRoles extends React.Component {
     }
 
     determineState(props) {
-        let loading = !props.userRoles || props.userRolesLoading || !props.users || props.usersLoading || !props.roles || props.rolesLoading || !props.clinics || props.clinicsLoading || !props.locations || props.locationsLoading || !props.organizations || props.organizationsLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
+        let loading =
+            !props.userRoles ||
+            props.userRolesLoading ||
+            !props.users ||
+            props.usersLoading ||
+            !props.roles ||
+            props.rolesLoading ||
+            !props.clinics ||
+            props.clinicsLoading ||
+            !props.locations ||
+            props.locationsLoading ||
+            !props.organizations ||
+            props.organizationsLoading ||
+            props.canEdit === undefined ||
+            props.canSee === undefined ||
+            props.validationsLoading
 
         this.setState({
-          loading: loading,
-          userRoles: _.values(props.userRoles)
+            loading: loading,
+            userRoles: _.values(props.userRoles)
         })
     }
 
@@ -91,14 +105,22 @@ class UserRoles extends React.Component {
     editUserID = index => e => {
         let userRoles = [...this.state.userRoles]
         userRoles[index].userID = e.target.value
-        userRoles[index].canSave = (userRoles[index].userID.length !== 0 && userRoles[index].roleID.length !== 0 && userRoles[index].domainType.length !== 0 && userRoles[index].domainID.length !== 0)
+        userRoles[index].canSave =
+            userRoles[index].userID.length !== 0 &&
+            userRoles[index].roleID.length !== 0 &&
+            userRoles[index].domainType.length !== 0 &&
+            userRoles[index].domainID.length !== 0
         this.setState({ userRoles: userRoles })
     }
 
     editRoleID = index => e => {
         let userRoles = [...this.state.userRoles]
         userRoles[index].roleID = e.target.value
-        userRoles[index].canSave = (userRoles[index].userID.length !== 0 && userRoles[index].roleID.length !== 0 && userRoles[index].domainType.length !== 0 && userRoles[index].domainID.length !== 0)
+        userRoles[index].canSave =
+            userRoles[index].userID.length !== 0 &&
+            userRoles[index].roleID.length !== 0 &&
+            userRoles[index].domainType.length !== 0 &&
+            userRoles[index].domainID.length !== 0
         this.setState({ userRoles: userRoles })
     }
 
@@ -110,14 +132,22 @@ class UserRoles extends React.Component {
         } else {
             userRoles[index].domainID = ""
         }
-        userRoles[index].canSave = (userRoles[index].userID.length !== 0 && userRoles[index].roleID.length !== 0 && userRoles[index].domainType.length !== 0 && userRoles[index].domainID.length !== 0)
+        userRoles[index].canSave =
+            userRoles[index].userID.length !== 0 &&
+            userRoles[index].roleID.length !== 0 &&
+            userRoles[index].domainType.length !== 0 &&
+            userRoles[index].domainID.length !== 0
         this.setState({ userRoles: userRoles })
     }
 
     editDomainID = index => e => {
         let userRoles = [...this.state.userRoles]
         userRoles[index].domainID = e.target.value
-        userRoles[index].canSave = (userRoles[index].userID.length !== 0 && userRoles[index].roleID.length !== 0 && userRoles[index].domainType.length !== 0 && userRoles[index].domainID.length !== 0)
+        userRoles[index].canSave =
+            userRoles[index].userID.length !== 0 &&
+            userRoles[index].roleID.length !== 0 &&
+            userRoles[index].domainType.length !== 0 &&
+            userRoles[index].domainID.length !== 0
         this.setState({ userRoles: userRoles })
     }
 
@@ -140,7 +170,7 @@ class UserRoles extends React.Component {
     }
 
     getDomainName(domainType, domainID) {
-        switch(domainType) {
+        switch (domainType) {
             case "location":
                 if (this.props.locations[domainID]) {
                     return <Link to={`/locations/${domainID}`}>{this.props.locations[domainID].name}</Link>
@@ -158,7 +188,11 @@ class UserRoles extends React.Component {
                 return domainID
             case "user":
                 if (this.props.users[domainID]) {
-                    return <Link to={`/users/${domainID}`}>{this.props.users[domainID].username} - {getName(this.props.users[domainID])}</Link>
+                    return (
+                        <Link to={`/users/${domainID}`}>
+                            {this.props.users[domainID].username} - {getName(this.props.users[domainID])}
+                        </Link>
+                    )
                 }
                 return domainID
             default:
@@ -167,59 +201,61 @@ class UserRoles extends React.Component {
     }
 
     getDomainSelect(index, domainType, domainID) {
-        switch(domainType) {
-           case "organization":
+        switch (domainType) {
+            case "organization":
                 return (
                     <select className="form-control form-control-sm" value={domainID} onChange={this.editDomainID(index)}>
-                      <option>Select organization</option>
-                      {_.map(this.props.organizations, organization => (
-                          <option key={organization.id} value={organization.id}>
-                              {organization.name}
-                          </option>
-                      ))}
-                      <option value="*">*</option>
+                        <option>Select organization</option>
+                        {_.map(this.props.organizations, organization => (
+                            <option key={organization.id} value={organization.id}>
+                                {organization.name}
+                            </option>
+                        ))}
+                        <option value="*">*</option>
                     </select>
                 )
-           case "clinic":
+            case "clinic":
                 return (
                     <select className="form-control form-control-sm" value={domainID} onChange={this.editDomainID(index)}>
-                      <option>Select clinic</option>
-                      {_.map(this.props.clinics, clinic => (
-                          <option key={clinic.id} value={clinic.id}>
-                              {clinic.name}
-                          </option>
-                      ))}
-                      <option value="*">*</option>
+                        <option>Select clinic</option>
+                        {_.map(this.props.clinics, clinic => (
+                            <option key={clinic.id} value={clinic.id}>
+                                {clinic.name}
+                            </option>
+                        ))}
+                        <option value="*">*</option>
                     </select>
                 )
-           case "location":
+            case "location":
                 return (
                     <select className="form-control form-control-sm" value={domainID} onChange={this.editDomainID(index)}>
-                      <option>Select location</option>
-                      {_.map(this.props.locations, location => (
-                          <option key={location.id} value={location.id}>
-                              {location.name}
-                          </option>
-                      ))}
-                      <option value="*">*</option>
+                        <option>Select location</option>
+                        {_.map(this.props.locations, location => (
+                            <option key={location.id} value={location.id}>
+                                {location.name}
+                            </option>
+                        ))}
+                        <option value="*">*</option>
                     </select>
                 )
-           case "user":
+            case "user":
                 return (
                     <select className="form-control form-control-sm" value={domainID} onChange={this.editDomainID(index)}>
-                      <option>Select user</option>
-                      {_.map(this.props.users, user => (
-                          <option key={user.id} value={user.id}>
-                              {user.username} - {getName(user)}
-                          </option>
-                      ))}
-                      <option value="*">*</option>
+                        <option>Select user</option>
+                        {_.map(this.props.users, user => (
+                            <option key={user.id} value={user.id}>
+                                {user.username} - {getName(user)}
+                            </option>
+                        ))}
+                        <option value="*">*</option>
                     </select>
                 )
-           case "global":
+            case "global":
                 return (
                     <select className="form-control form-control-sm" value={domainID} onChange={this.editDomainID(index)}>
-                        <option key="*" value="*">*</option>
+                        <option key="*" value="*">
+                            *
+                        </option>
                     </select>
                 )
             default:
@@ -242,106 +278,132 @@ class UserRoles extends React.Component {
 
         return (
             <div>
-            <table className="table table-hover">
-                <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">User</th>
-                        <th scope="col">Role</th>
-                        <th scope="col">Domain type</th>
-                        <th scope="col">Domain</th>
-                        <th />
-                    </tr>
-                </thead>
-                <tbody>
-                        {_.map(this.state.userRoles, (userRole, i) => (
-                        <tr key={userRole.id || i}>
-                            <th scope="row">{i+1}</th>
-                            <td>
-                              {(props.canEdit && userRole.edit) ? (
-                                  <select className="form-control form-control-sm" value={userRole.userID} onChange={this.editUserID(i)}>
-                                      <option>Select user</option>
-                                      {_.map(props.users, user => (
-                                          <option key={user.id} value={user.id}>
-                                              {user.username} - {getName(user)}
-                                          </option>
-                                      ))}
-                                  </select>
-                              ) : (
-                                <Link to={`/users/${userRole.userID}`}>{props.users[userRole.userID].username} - {getName(props.users[userRole.userID])}</Link>
-                              )}
-                            </td>
-                            <td>
-                              {(props.canEdit && userRole.edit) ? (
-                                  <select className="form-control form-control-sm" value={userRole.roleID} onChange={this.editRoleID(i)}>
-                                      <option>Select role</option>
-                                      {_.map(props.roles, role => (
-                                          <option key={role.id} value={role.id}>
-                                              {role.name}
-                                          </option>
-                                      ))}
-                                  </select>
-                              ) : (
-                                <Link to={`/roles/${userRole.roleID}`}>{props.roles[userRole.roleID].name}</Link>
-                              )}
-                            </td>
-                            <td>
-                              {(props.canEdit && userRole.edit) ? (
-                                  <select className="form-control form-control-sm" value={userRole.domainType} onChange={this.editDomainType(i)}>
-                                      <option>Select domain type</option>
-                                      <option key="global" value="global">global</option>
-                                      <option key="organization" value="organization">organization</option>
-                                      <option key="clinic" value="clinic">clinic</option>
-                                      <option key="location" value="location">location</option>
-                                      <option key="user" value="user">user</option>
-                                  </select>
-                              ) : (
-                                userRole.domainType
-                              )}
-                            </td>
-                            <td>
-                                {(props.canEdit && userRole.edit) ? (
-                                  this.getDomainSelect(i, userRole.domainType)
-                                ) : (
-                                  this.getDomainName(userRole.domainType, userRole.domainID)
-                                )}
-                            </td>
-                            <td className="text-right">
-                                {props.canEdit ? (
-                                    userRole.edit ? (
-                                        <div className="btn-group" role="group">
-                                            <button className="btn btn-sm btn-light" disabled={userRole.saving} type="button" onClick={this.cancelNewUserRole(i)}>
-                                                <span className="icon_close" />
-                                            </button>
-                                            <button className="btn btn-sm btn-light" disabled={userRole.saving || !userRole.canSave} type="button" onClick={this.saveUserRole(i)}>
-                                                <span className="icon_floppy" />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="btn-group" role="group">
-                                            <button className="btn btn-sm btn-light" type="button" onClick={this.deleteUserRole(userRole.id)}>
-                                                <span className="icon_trash" />
-                                            </button>
-                                        </div>
-                                    )
-                                ) : (null)}
-                            </td>
+                <table className="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Role</th>
+                            <th scope="col">Domain type</th>
+                            <th scope="col">Domain</th>
+                            <th />
                         </tr>
-                    ))}
-                </tbody>
-            </table>
-            {props.canEdit ? (
-                <button type="button" className="btn btn-sm btn-outline-primary col" onClick={this.newUserRole()}>
-                    Add new user role
-                </button>
-            ) : (null)}
+                    </thead>
+                    <tbody>
+                        {_.map(this.state.userRoles, (userRole, i) => (
+                            <tr key={userRole.id || i}>
+                                <th scope="row">{i + 1}</th>
+                                <td>
+                                    {props.canEdit && userRole.edit ? (
+                                        <select className="form-control form-control-sm" value={userRole.userID} onChange={this.editUserID(i)}>
+                                            <option>Select user</option>
+                                            {_.map(props.users, user => (
+                                                <option key={user.id} value={user.id}>
+                                                    {user.username} - {getName(user)}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <Link to={`/users/${userRole.userID}`}>
+                                            {props.users[userRole.userID].username} - {getName(props.users[userRole.userID])}
+                                        </Link>
+                                    )}
+                                </td>
+                                <td>
+                                    {props.canEdit && userRole.edit ? (
+                                        <select className="form-control form-control-sm" value={userRole.roleID} onChange={this.editRoleID(i)}>
+                                            <option>Select role</option>
+                                            {_.map(props.roles, role => (
+                                                <option key={role.id} value={role.id}>
+                                                    {role.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <Link to={`/roles/${userRole.roleID}`}>{props.roles[userRole.roleID].name}</Link>
+                                    )}
+                                </td>
+                                <td>
+                                    {props.canEdit && userRole.edit ? (
+                                        <select className="form-control form-control-sm" value={userRole.domainType} onChange={this.editDomainType(i)}>
+                                            <option>Select domain type</option>
+                                            <option key="global" value="global">
+                                                global
+                                            </option>
+                                            <option key="organization" value="organization">
+                                                organization
+                                            </option>
+                                            <option key="clinic" value="clinic">
+                                                clinic
+                                            </option>
+                                            <option key="location" value="location">
+                                                location
+                                            </option>
+                                            <option key="user" value="user">
+                                                user
+                                            </option>
+                                        </select>
+                                    ) : (
+                                        userRole.domainType
+                                    )}
+                                </td>
+                                <td>
+                                    {props.canEdit && userRole.edit
+                                        ? this.getDomainSelect(i, userRole.domainType)
+                                        : this.getDomainName(userRole.domainType, userRole.domainID)}
+                                </td>
+                                <td className="text-right">
+                                    {props.canEdit ? (
+                                        userRole.edit ? (
+                                            <div className="btn-group" role="group">
+                                                <button
+                                                    className="btn btn-sm btn-light"
+                                                    disabled={userRole.saving}
+                                                    type="button"
+                                                    onClick={this.cancelNewUserRole(i)}
+                                                >
+                                                    <span className="icon_close" />
+                                                </button>
+                                                <button
+                                                    className="btn btn-sm btn-light"
+                                                    disabled={userRole.saving || !userRole.canSave}
+                                                    type="button"
+                                                    onClick={this.saveUserRole(i)}
+                                                >
+                                                    <span className="icon_floppy" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="btn-group" role="group">
+                                                <button className="btn btn-sm btn-light" type="button" onClick={this.deleteUserRole(userRole.id)}>
+                                                    <span className="icon_trash" />
+                                                </button>
+                                            </div>
+                                        )
+                                    ) : null}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                {props.canEdit ? (
+                    <button type="button" className="btn btn-sm btn-outline-primary col" onClick={this.newUserRole()}>
+                        Add new user role
+                    </button>
+                ) : null}
             </div>
         )
     }
 }
 
 const mapStateToProps = (state, ownProps) => ({
-    userRoles: ownProps.userRoles ? (state.userRoles.allLoaded ? _.fromPairs(_.map(ownProps.userRoles, userRoleID => [userRoleID, state.userRoles.userRoles[userRoleID]])) : undefined) : (state.userRoles.allLoaded ? state.userRoles.userRoles : undefined),
+    userRoles: ownProps.userRoles
+        ? state.userRoles.allLoaded
+            ? _.fromPairs(_.map(ownProps.userRoles, userRoleID => [userRoleID, state.userRoles.userRoles[userRoleID]]))
+            : undefined
+        : state.userRoles.allLoaded
+            ? state.userRoles.userRoles
+            : undefined,
     userRolesLoading: state.userRoles.loading,
     users: state.users.allLoaded ? state.users.users : undefined,
     usersLoading: state.users.loading,
@@ -356,7 +418,13 @@ const mapStateToProps = (state, ownProps) => ({
     canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
     canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
     validationsLoading: state.validations.loading,
-    forbidden: state.userRoles.forbidden || state.users.forbidden || state.roles.forbidden || state.locations.forbidden || state.organizations.forbidden || state.clinics.forbidden,
+    forbidden:
+        state.userRoles.forbidden ||
+        state.users.forbidden ||
+        state.roles.forbidden ||
+        state.locations.forbidden ||
+        state.organizations.forbidden ||
+        state.clinics.forbidden
 })
 
 const mapDispatchToProps = dispatch =>
@@ -370,7 +438,7 @@ const mapDispatchToProps = dispatch =>
             loadAllUserRoles,
             saveUserRole,
             deleteUserRole,
-            loadUserRights,
+            loadUserRights
         },
         dispatch
     )

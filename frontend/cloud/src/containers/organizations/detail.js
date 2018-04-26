@@ -60,7 +60,14 @@ class OrganizationDetail extends React.Component {
     }
 
     determineState(props) {
-        let loading = (!props.organization && props.organizationID !== "new") || props.organizationsLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading || !props.countries || props.codesLoading
+        let loading =
+            (!props.organization && props.organizationID !== "new") ||
+            props.organizationsLoading ||
+            props.canEdit === undefined ||
+            props.canSee === undefined ||
+            props.validationsLoading ||
+            !props.countries ||
+            props.codesLoading
         this.setState({ loading: loading })
 
         if (props.organization) {
@@ -79,8 +86,8 @@ class OrganizationDetail extends React.Component {
     }
 
     updateInput = e => {
-        const target = e.target;
-        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const target = e.target
+        const value = target.type === "checkbox" ? target.checked : target.value
 
         let id
         let toAssign
@@ -96,8 +103,8 @@ class OrganizationDetail extends React.Component {
         }
 
         this.setState({
-          [id]: toAssign
-        });
+            [id]: toAssign
+        })
     }
 
     submit = e => {
@@ -113,12 +120,11 @@ class OrganizationDetail extends React.Component {
         organization.representative = _.clone(this.state.representative)
         organization.primaryContact = _.clone(this.state.primaryContact)
 
-        this.props.saveOrganization(organization)
-            .then(response => {
-                if (!organization.id && response.id) {
-                    this.props.history.push(`/organizations/${response.id}`)
-                }
-            })
+        this.props.saveOrganization(organization).then(response => {
+            if (!organization.id && response.id) {
+                this.props.history.push(`/organizations/${response.id}`)
+            }
+        })
     }
 
     render() {
@@ -139,37 +145,93 @@ class OrganizationDetail extends React.Component {
                     <form onSubmit={this.submit}>
                         <div className="form-group">
                             <label htmlFor="name">Name</label>
-                            <input className="form-control" id="name" value={this.state.name} onChange={this.updateInput} disabled={!props.canEdit} placeholder="Organization name" />
+                            <input
+                                className="form-control"
+                                id="name"
+                                value={this.state.name}
+                                onChange={this.updateInput}
+                                disabled={!props.canEdit}
+                                placeholder="Organization name"
+                            />
                         </div>
                         <div className="form-group">
                             <label htmlFor="legalStatus">Legal status</label>
-                            <input className="form-control" id="legalStatus" value={this.state.legalStatus} onChange={this.updateInput} disabled={!props.canEdit} placeholder="e.g. NGO" />
+                            <input
+                                className="form-control"
+                                id="legalStatus"
+                                value={this.state.legalStatus}
+                                onChange={this.updateInput}
+                                disabled={!props.canEdit}
+                                placeholder="e.g. NGO"
+                            />
                         </div>
                         <div className="form-group">
                             <label htmlFor="country">Service type</label>
-                            <input className="form-control" id="serviceType" value={this.state.serviceType} onChange={this.updateInput} disabled={!props.canEdit} placeholder="e.g. Basic care" />
+                            <input
+                                className="form-control"
+                                id="serviceType"
+                                value={this.state.serviceType}
+                                onChange={this.updateInput}
+                                disabled={!props.canEdit}
+                                placeholder="e.g. Basic care"
+                            />
                         </div>
                         <div className="form-group">
                             <h3>Address</h3>
                             <div className="form-group">
                                 <label htmlFor="address.addressLine1">Address line 1</label>
-                                <input className="form-control" id="address.addressLine1" value={this.state.address.addressLine1} onChange={this.updateInput} disabled={!props.canEdit} placeholder="e.g. Street" />
+                                <input
+                                    className="form-control"
+                                    id="address.addressLine1"
+                                    value={this.state.address.addressLine1}
+                                    onChange={this.updateInput}
+                                    disabled={!props.canEdit}
+                                    placeholder="e.g. Street"
+                                />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="address.addressLine2">Address line 2</label>
-                                <input className="form-control" id="address.addressLine2" value={this.state.address.addressLine2} onChange={this.updateInput} disabled={!props.canEdit} placeholder="e.g. Building information"/>
+                                <input
+                                    className="form-control"
+                                    id="address.addressLine2"
+                                    value={this.state.address.addressLine2}
+                                    onChange={this.updateInput}
+                                    disabled={!props.canEdit}
+                                    placeholder="e.g. Building information"
+                                />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="address.city">City</label>
-                                <input className="form-control" id="address.city" value={this.state.address.city} onChange={this.updateInput} disabled={!props.canEdit} placeholder="City" />
+                                <input
+                                    className="form-control"
+                                    id="address.city"
+                                    value={this.state.address.city}
+                                    onChange={this.updateInput}
+                                    disabled={!props.canEdit}
+                                    placeholder="City"
+                                />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="address.postCode">Post code</label>
-                                <input type="tel" className="form-control" id="address.postCode" value={this.state.address.postCode} onChange={this.updateInput} disabled={!props.canEdit} placeholder="Postcode" />
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    id="address.postCode"
+                                    value={this.state.address.postCode}
+                                    onChange={this.updateInput}
+                                    disabled={!props.canEdit}
+                                    placeholder="Postcode"
+                                />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="address.country">Country</label>
-                                <select className="form-control form-control-sm" id="address.country" value={this.state.address.country} onChange={this.updatePersonalData} disabled={!props.canEdit}>
+                                <select
+                                    className="form-control form-control-sm"
+                                    id="address.country"
+                                    value={this.state.address.country}
+                                    onChange={this.updatePersonalData}
+                                    disabled={!props.canEdit}
+                                >
                                     <option value="">Select country</option>
                                     {_.map(props.countries, country => (
                                         <option key={country.id} value={country.id}>
@@ -183,30 +245,76 @@ class OrganizationDetail extends React.Component {
                             <h3>Representative</h3>
                             <div className="form-group">
                                 <label htmlFor="representative.name">Name</label>
-                                <input className="form-control" id="representative.name" value={this.state.representative.name} onChange={this.updateInput} disabled={!props.canEdit} placeholder="Full name" />
+                                <input
+                                    className="form-control"
+                                    id="representative.name"
+                                    value={this.state.representative.name}
+                                    onChange={this.updateInput}
+                                    disabled={!props.canEdit}
+                                    placeholder="Full name"
+                                />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="representative.email">Email address</label>
-                                <input type="email" className="form-control" id="representative.email" value={this.state.representative.email} onChange={this.updateInput} disabled={!props.canEdit} placeholder="user@email.com"/>
+                                <input
+                                    type="email"
+                                    className="form-control"
+                                    id="representative.email"
+                                    value={this.state.representative.email}
+                                    onChange={this.updateInput}
+                                    disabled={!props.canEdit}
+                                    placeholder="user@email.com"
+                                />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="representative.phoneNumber">Phone number</label>
-                                <input type="tel" className="form-control" id="representative.phoneNumber" value={this.state.representative.phoneNumber} onChange={this.updateInput} disabled={!props.canEdit} placeholder="+38640..." />
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    id="representative.phoneNumber"
+                                    value={this.state.representative.phoneNumber}
+                                    onChange={this.updateInput}
+                                    disabled={!props.canEdit}
+                                    placeholder="+38640..."
+                                />
                             </div>
                         </div>
                         <div className="form-group">
                             <h3>Primary contact</h3>
                             <div className="form-group">
                                 <label htmlFor="primaryContact.name">Name</label>
-                                <input className="form-control" id="primaryContact.name" value={this.state.primaryContact.name} onChange={this.updateInput} disabled={!props.canEdit} placeholder="Full name" />
+                                <input
+                                    className="form-control"
+                                    id="primaryContact.name"
+                                    value={this.state.primaryContact.name}
+                                    onChange={this.updateInput}
+                                    disabled={!props.canEdit}
+                                    placeholder="Full name"
+                                />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="primaryContact.email">Email address</label>
-                                <input type="email" className="form-control" id="primaryContact.email" value={this.state.primaryContact.email} onChange={this.updateInput} disabled={!props.canEdit} placeholder="user@email.com"/>
+                                <input
+                                    type="email"
+                                    className="form-control"
+                                    id="primaryContact.email"
+                                    value={this.state.primaryContact.email}
+                                    onChange={this.updateInput}
+                                    disabled={!props.canEdit}
+                                    placeholder="user@email.com"
+                                />
                             </div>
                             <div className="form-group">
                                 <label htmlFor="primaryContact.phoneNumber">Phone number</label>
-                                <input type="tel" className="form-control" id="primaryContact.phoneNumber" value={this.state.primaryContact.phoneNumber} onChange={this.updateInput} disabled={!props.canEdit} placeholder="+38640..." />
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    id="primaryContact.phoneNumber"
+                                    value={this.state.primaryContact.phoneNumber}
+                                    onChange={this.updateInput}
+                                    disabled={!props.canEdit}
+                                    placeholder="+38640..."
+                                />
                             </div>
                         </div>
                         <div className="form-group">
@@ -214,7 +322,7 @@ class OrganizationDetail extends React.Component {
                                 <button type="submit" className="btn btn-outline-primary col">
                                     Save
                                 </button>
-                            ) : (null)}
+                            ) : null}
                         </div>
                     </form>
                 </div>
@@ -223,9 +331,9 @@ class OrganizationDetail extends React.Component {
                         <div className="m-4">
                             <ClinicsList organizationID={props.organizationID} />
                         </div>
-                            <div className="m-4">
-                                <UsersList organizationID={props.organizationID} />
-                            </div>
+                        <div className="m-4">
+                            <UsersList organizationID={props.organizationID} />
+                        </div>
                     </div>
                 ) : null}
             </div>
@@ -248,7 +356,7 @@ const mapStateToProps = (state, ownProps) => {
         canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
         canSee: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
         validationsLoading: state.validations.loading,
-        forbidden: state.organizations.forbidden,
+        forbidden: state.organizations.forbidden
     }
 }
 
@@ -260,7 +368,7 @@ const mapDispatchToProps = dispatch =>
             loadCodes,
             loadUserRights,
             open,
-            close,
+            close
         },
         dispatch
     )

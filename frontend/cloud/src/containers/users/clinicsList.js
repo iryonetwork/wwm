@@ -6,7 +6,7 @@ import _ from "lodash"
 
 import { loadRoles } from "../../modules/roles"
 import { loadOrganizations } from "../../modules/organizations"
-import { loadLocations} from "../../modules/locations"
+import { loadLocations } from "../../modules/locations"
 import { loadClinics, deleteUserFromClinic } from "../../modules/clinics"
 import { makeGetUserClinicIDs, makeGetUserAllowedClinicIDs } from "../../selectors/userRolesSelectors"
 import { loadUserUserRoles, saveUserRoleCustomMsg, deleteUserRole } from "../../modules/userRoles"
@@ -66,7 +66,22 @@ class ClinicsList extends React.Component {
     }
 
     determineState(props) {
-        let loading = !props.userRoles || props.userRolesLoading || !props.roles || props.rolesLoading || !props.clinics || props.clinicsLoading || !props.organizations || props.organizationsLoading || !props.locations || props.locationsLoading || !props.userClinicIDs || !props.allowedClinicIDs || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
+        let loading =
+            !props.userRoles ||
+            props.userRolesLoading ||
+            !props.roles ||
+            props.rolesLoading ||
+            !props.clinics ||
+            props.clinicsLoading ||
+            !props.organizations ||
+            props.organizationsLoading ||
+            !props.locations ||
+            props.locationsLoading ||
+            !props.userClinicIDs ||
+            !props.allowedClinicIDs ||
+            props.canEdit === undefined ||
+            props.canSee === undefined ||
+            props.validationsLoading
 
         let selectedClinicID = props.clinicID
         if (!selectedClinicID) {
@@ -74,12 +89,14 @@ class ClinicsList extends React.Component {
         }
         this.setState({
             loading: loading,
-            userClinics: _.map(props.userClinicIDs, clinicID => {return {"id": clinicID}}),
+            userClinics: _.map(props.userClinicIDs, clinicID => {
+                return { id: clinicID }
+            }),
             selectedClinicID: selectedClinicID ? selectedClinicID : undefined
         })
     }
 
-   newUserClinic = () => e => {
+    newUserClinic = () => e => {
         if (this.state.userClinics) {
             let userClinics = [...this.state.userClinics, { id: "", edit: true, canSave: false, userID: this.props.userID, roleID: "", domainType: "clinic" }]
             this.setState({ userClinics: userClinics })
@@ -89,14 +106,14 @@ class ClinicsList extends React.Component {
     editClinicID = index => e => {
         let userClinics = [...this.state.userClinics]
         userClinics[index].id = e.target.value
-        userClinics[index].canSave = (userClinics[index].id.length !== 0) && (userClinics[index].roleID.length !== 0)
+        userClinics[index].canSave = userClinics[index].id.length !== 0 && userClinics[index].roleID.length !== 0
         this.setState({ userClinics: userClinics })
     }
 
     editRoleID = index => e => {
         let userClinics = [...this.state.userClinics]
         userClinics[index].roleID = e.target.value
-        userClinics[index].canSave = (userClinics[index].id.length !== 0) && (userClinics[index].roleID.length !== 0)
+        userClinics[index].canSave = userClinics[index].id.length !== 0 && userClinics[index].roleID.length !== 0
         this.setState({ userClinics: userClinics })
     }
 
@@ -111,12 +128,11 @@ class ClinicsList extends React.Component {
         userClinics[index].edit = false
         userClinics[index].saving = true
 
-        this.props.saveUserRoleCustomMsg(userRole, "Added user to clinic")
-            .then(response => {
-                if (response && response.domainID) {
-                    this.props.history.push(`/users/${this.props.userID}/clinics/${response.domainID}`)
-                }
-            })
+        this.props.saveUserRoleCustomMsg(userRole, "Added user to clinic").then(response => {
+            if (response && response.domainID) {
+                this.props.history.push(`/users/${this.props.userID}/clinics/${response.domainID}`)
+            }
+        })
     }
 
     cancelNewUserClinic = index => e => {
@@ -157,18 +173,27 @@ class ClinicsList extends React.Component {
                                 </tr>
                             </thead>
                             <tbody>
-                                {_.map(this.state.userClinics, (userClinic, i) => (
-                                        (props.canEdit && userClinic.edit) ? (
-                                            <tr key={userClinic.id || i} className={(this.state.selectedClinicID === userClinic.id) ? "table-active" : ""}>
-                                                <th scope="row">{i+1}</th>
+                                {_.map(
+                                    this.state.userClinics,
+                                    (userClinic, i) =>
+                                        props.canEdit && userClinic.edit ? (
+                                            <tr key={userClinic.id || i} className={this.state.selectedClinicID === userClinic.id ? "table-active" : ""}>
+                                                <th scope="row">{i + 1}</th>
                                                 <td colSpan="2">
                                                     <select className="form-control form-control-sm" value={userClinic.id} onChange={this.editClinicID(i)}>
                                                         <option value="">Select clinic</option>
-                                                        {_.map(_.difference(props.allowedClinicIDs, _.without(_.map(this.state.userClinics, clinic => clinic.id), userClinic.id)), clinicID => (
-                                                            <option key={clinicID} value={clinicID}>
-                                                                {props.organizations[props.clinics[clinicID].organization].name} - {props.clinics[clinicID].name}
-                                                            </option>
-                                                        ))}
+                                                        {_.map(
+                                                            _.difference(
+                                                                props.allowedClinicIDs,
+                                                                _.without(_.map(this.state.userClinics, clinic => clinic.id), userClinic.id)
+                                                            ),
+                                                            clinicID => (
+                                                                <option key={clinicID} value={clinicID}>
+                                                                    {props.organizations[props.clinics[clinicID].organization].name} -{" "}
+                                                                    {props.clinics[clinicID].name}
+                                                                </option>
+                                                            )
+                                                        )}
                                                     </select>
                                                 </td>
                                                 <td colSpan="2">
@@ -184,16 +209,30 @@ class ClinicsList extends React.Component {
                                                 <td className="text-right">
                                                     {userClinic.edit ? (
                                                         <div className="btn-group" role="group">
-                                                            <button className="btn btn-sm btn-light" disabled={userClinic.saving} type="button" onClick={this.cancelNewUserClinic(i)}>
+                                                            <button
+                                                                className="btn btn-sm btn-light"
+                                                                disabled={userClinic.saving}
+                                                                type="button"
+                                                                onClick={this.cancelNewUserClinic(i)}
+                                                            >
                                                                 <span className="icon_close" />
                                                             </button>
-                                                            <button className="btn btn-sm btn-light" disabled={userClinic.saving || !userClinic.canSave} type="button" onClick={this.saveUserClinic(i)}>
+                                                            <button
+                                                                className="btn btn-sm btn-light"
+                                                                disabled={userClinic.saving || !userClinic.canSave}
+                                                                type="button"
+                                                                onClick={this.saveUserClinic(i)}
+                                                            >
                                                                 <span className="icon_floppy" />
                                                             </button>
                                                         </div>
                                                     ) : (
                                                         <div className="btn-group" role="group">
-                                                            <button className="btn btn-sm btn-light" type="button" onClick={this.removeUserClinic(userClinic.id)}>
+                                                            <button
+                                                                className="btn btn-sm btn-light"
+                                                                type="button"
+                                                                onClick={this.removeUserClinic(userClinic.id)}
+                                                            >
                                                                 <span className="icon_trash" />
                                                             </button>
                                                         </div>
@@ -201,32 +240,41 @@ class ClinicsList extends React.Component {
                                                 </td>
                                             </tr>
                                         ) : (
-                                            <tr key={userClinic.id || i} className={(this.state.selectedClinicID === userClinic.id) ? "table-active" : ""}>
-                                                <th scope="row">{i+1}</th>
+                                            <tr key={userClinic.id || i} className={this.state.selectedClinicID === userClinic.id ? "table-active" : ""}>
+                                                <th scope="row">{i + 1}</th>
                                                 <td>
-                                                    {(this.state.selectedClinicID === userClinic.id) ? (
+                                                    {this.state.selectedClinicID === userClinic.id ? (
                                                         props.clinics[userClinic.id].name
                                                     ) : (
                                                         <Link to={`/users/${props.userID}/clinics/${userClinic.id}`}>{props.clinics[userClinic.id].name}</Link>
                                                     )}
                                                 </td>
                                                 <td>
-                                                    <Link to={`/locations/${props.clinics[userClinic.id].location}`}>{props.locations[props.clinics[userClinic.id].location].name}</Link>
+                                                    <Link to={`/locations/${props.clinics[userClinic.id].location}`}>
+                                                        {props.locations[props.clinics[userClinic.id].location].name}
+                                                    </Link>
                                                 </td>
                                                 <td>
-                                                    <Link to={`/organizations/${props.clinics[userClinic.id].organization}`}>{props.organizations[props.clinics[userClinic.id].organization].name}</Link>
+                                                    <Link to={`/organizations/${props.clinics[userClinic.id].organization}`}>
+                                                        {props.organizations[props.clinics[userClinic.id].organization].name}
+                                                    </Link>
                                                 </td>
-                                                <td></td>
+                                                <td />
                                             </tr>
                                         )
-                                ))}
+                                )}
                             </tbody>
                         </table>
                         {props.canEdit ? (
-                            <button type="button" className="btn btn-sm btn-outline-primary col" disabled={(this.state.userClinics.length !== 0 && this.state.userClinics[this.state.userClinics.length - 1].edit) ? true : null} onClick={this.newUserClinic()}>
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-primary col"
+                                disabled={this.state.userClinics.length !== 0 && this.state.userClinics[this.state.userClinics.length - 1].edit ? true : null}
+                                onClick={this.newUserClinic()}
+                            >
                                 Add current user to clinic
                             </button>
-                        ) : (null)}
+                        ) : null}
                     </div>
                     <div className="col">
                         <Route path="/users/:userID/clinics/:clinicID" component={ClinicDetail} />
@@ -259,12 +307,13 @@ const makeMapStateToProps = () => {
             rolesLoading: state.roles.loading,
             userRoles: state.userRoles.userUserRoles ? (state.userRoles.userUserRoles[userID] ? state.userRoles.userUserRoles[userID] : undefined) : undefined,
             userRolesLoading: state.userRoles.loading,
-            userClinicIDs: getUserClinicIDs(state, {userID: userID}),
-            allowedClinicIDs: getUserAllowedClinicIDs(state, {userID: userID}),
+            userClinicIDs: getUserClinicIDs(state, { userID: userID }),
+            allowedClinicIDs: getUserAllowedClinicIDs(state, { userID: userID }),
             canSee: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
             canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
             validationsLoading: state.validations.loading,
-            forbidden: state.userRoles.forbidden || state.users.forbidden || state.organizations.forbidden || state.clinics.forbidden | state.locations.forbidden,
+            forbidden:
+                state.userRoles.forbidden || state.users.forbidden || state.organizations.forbidden || state.clinics.forbidden | state.locations.forbidden
         }
     }
     return mapStateToProps

@@ -1,4 +1,4 @@
-export const getName = user =>  {
+export const getName = user => {
     if (user.personalData !== undefined) {
         var name = ""
         if (user.personalData.firstName !== undefined && user.personalData.firstName !== "") {

@@ -36,9 +36,10 @@ class Organizations extends React.Component {
     }
 
     determineState(props) {
-        let loading = !props.organizations || props.organizationsLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
+        let loading =
+            !props.organizations || props.organizationsLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
 
-        this.setState({loading: loading})
+        this.setState({ loading: loading })
     }
 
     removeOrganization = organizationID => e => {
@@ -71,7 +72,9 @@ class Organizations extends React.Component {
                     {_.map(_.filter(props.organizations, organization => organization), organization => (
                         <tr key={organization.id}>
                             <th scope="row">{++i}</th>
-                            <td><Link to={`/organizations/${organization.id}`}>{organization.name}</Link></td>
+                            <td>
+                                <Link to={`/organizations/${organization.id}`}>{organization.name}</Link>
+                            </td>
                             <td>{organization.legalStatus}</td>
                             <td>{organization.serviceType}</td>
                             <td>{organization.clinics.length}</td>
@@ -80,7 +83,7 @@ class Organizations extends React.Component {
                                     <button onClick={this.removeOrganization(organization.id)} className="btn btn-sm btn-light" type="button">
                                         <span className="icon_trash" />
                                     </button>
-                                ) : (null)}
+                                ) : null}
                             </td>
                         </tr>
                     ))}
@@ -91,12 +94,18 @@ class Organizations extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => ({
-    organizations:ownProps.organizations ? (state.organizations.allLoaded ? _.fromPairs(_.map(ownProps.organizations, organizationID => [organizationID, state.organizations.organizations[organizationID]])) : undefined) : (state.organizations.allLoaded ? state.organizations.organizations : undefined),
+    organizations: ownProps.organizations
+        ? state.organizations.allLoaded
+            ? _.fromPairs(_.map(ownProps.organizations, organizationID => [organizationID, state.organizations.organizations[organizationID]]))
+            : undefined
+        : state.organizations.allLoaded
+            ? state.organizations.organizations
+            : undefined,
     organizationsLoading: state.organizations.loading,
     canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
     canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
     validationsLoading: state.validations.loading,
-    forbidden: state.organizations.forbidden,
+    forbidden: state.organizations.forbidden
 })
 
 const mapDispatchToProps = dispatch =>
@@ -104,7 +113,7 @@ const mapDispatchToProps = dispatch =>
         {
             loadOrganizations,
             deleteOrganization,
-            loadUserRights,
+            loadUserRights
         },
         dispatch
     )

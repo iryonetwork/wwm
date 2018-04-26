@@ -67,7 +67,16 @@ class UserDetail extends React.Component {
     }
 
     determineState(props) {
-        let loading = (!props.user && props.userID !== "new") || props.usersLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading || !props.countries || !props.languages || !props.licenses || props.codesLoading
+        let loading =
+            (!props.user && props.userID !== "new") ||
+            props.usersLoading ||
+            props.canEdit === undefined ||
+            props.canSee === undefined ||
+            props.validationsLoading ||
+            !props.countries ||
+            !props.languages ||
+            !props.licenses ||
+            props.codesLoading
         this.setState({ loading: loading })
 
         if (props.user) {
@@ -84,22 +93,26 @@ class UserDetail extends React.Component {
 
             // format dates
             if (personalData && personalData.dateOfBirth) {
-                personalData.dateOfBirth = moment(personalData.dateOfBirth).format('DD/MM/YYYY')
+                personalData.dateOfBirth = moment(personalData.dateOfBirth).format("DD/MM/YYYY")
             }
             if (personalData && personalData.passport && personalData.passport.expiryDate) {
-                personalData.passport.expiryDate = moment(personalData.passport.expiryDate).format('DD/MM/YYYY')
+                personalData.passport.expiryDate = moment(personalData.passport.expiryDate).format("DD/MM/YYYY")
             }
             // format languages
             if (personalData && personalData.languages) {
-                personalData.languages = _.map(personalData.languages, languageCodeID => {return {"id": languageCodeID}})
+                personalData.languages = _.map(personalData.languages, languageCodeID => {
+                    return { id: languageCodeID }
+                })
             }
             // format licenses
             if (personalData && personalData.licenses) {
-                personalData.licenses = _.map(personalData.licenses, licenseCodeID => {return {"id": licenseCodeID}})
+                personalData.licenses = _.map(personalData.licenses, licenseCodeID => {
+                    return { id: licenseCodeID }
+                })
             }
 
             this.setState({ email: props.user.email })
-            this.setState({ personalData: personalData ? personalData : {}})
+            this.setState({ personalData: personalData ? personalData : {} })
         }
     }
 
@@ -120,22 +133,22 @@ class UserDetail extends React.Component {
     }
 
     updatePersonalData = e => {
-        const target = e.target;
-        const value = target.type === 'checkbox' ? target.checked : target.value;
-        const id = target.id;
+        const target = e.target
+        const value = target.type === "checkbox" ? target.checked : target.value
+        const id = target.id
 
-        this.setState({ personalData: _.assign({}, this.state.personalData, _.fromPairs([[id, value]])) });
+        this.setState({ personalData: _.assign({}, this.state.personalData, _.fromPairs([[id, value]])) })
     }
 
     updatePassportData = e => {
-        const target = e.target;
-        const value = target.type === 'checkbox' ? target.checked : target.value;
-        const id = target.id;
+        const target = e.target
+        const value = target.type === "checkbox" ? target.checked : target.value
+        const id = target.id
 
         let passportData = this.state.personalData.passport ? this.state.personalData.passport : {}
         passportData = _.assign({}, passportData, _.fromPairs([[id, value]]))
 
-        this.setState({ personalData: _.assign({}, this.state.personalData, _.fromPairs([["passport", passportData]])) });
+        this.setState({ personalData: _.assign({}, this.state.personalData, _.fromPairs([["passport", passportData]])) })
     }
 
     processDateString = (previousStringValue, currentStringValue) => {
@@ -143,7 +156,7 @@ class UserDetail extends React.Component {
         let finalIndex = 0
 
         for (var i = 0; i < currentStringValue.length; i++) {
-            if (finalIndex < 2 || (finalIndex > 2 && finalIndex < 5) || finalIndex > 5 ) {
+            if (finalIndex < 2 || (finalIndex > 2 && finalIndex < 5) || finalIndex > 5) {
                 let digit = parseInt(currentStringValue.charAt(i))
                 if (!isNaN(digit)) {
                     date += currentStringValue.charAt(i)
@@ -155,11 +168,11 @@ class UserDetail extends React.Component {
             }
         }
 
-        if (previousStringValue.length === 3 && date.length === 2 ) {
+        if (previousStringValue.length === 3 && date.length === 2) {
             date = date.substring(0, 1)
         } else if (date.length === 2) {
             date += "/"
-        } else if (previousStringValue.length === 6 && date.length === 5 ) {
+        } else if (previousStringValue.length === 6 && date.length === 5) {
             date = date.substring(0, 4)
         } else if (date.length === 5) {
             date += "/"
@@ -178,16 +191,16 @@ class UserDetail extends React.Component {
             caretLocation = 6
         }
 
-        this.setState(
-            { personalData: _.assign({}, this.state.personalData, _.fromPairs([["dateOfBirth", dateOfBirth]]))},
-            () => {
-                this.refs.dateOfBirth.selectionStart = this.refs.dateOfBirth.selectionEnd = caretLocation
-            }
-        )
+        this.setState({ personalData: _.assign({}, this.state.personalData, _.fromPairs([["dateOfBirth", dateOfBirth]])) }, () => {
+            this.refs.dateOfBirth.selectionStart = this.refs.dateOfBirth.selectionEnd = caretLocation
+        })
     }
 
     updatePassportExpiryDate = e => {
-        let expiryDate = this.processDateString((this.state.personalData.passport && this.state.personalData.passport.expiryDate) ? this.state.personalData.passport.expiryDate : "", e.target.value)
+        let expiryDate = this.processDateString(
+            this.state.personalData.passport && this.state.personalData.passport.expiryDate ? this.state.personalData.passport.expiryDate : "",
+            e.target.value
+        )
 
         var caretLocation = e.target.selectionStart
         if (caretLocation === 2) {
@@ -198,15 +211,12 @@ class UserDetail extends React.Component {
 
         let passportData = this.state.personalData.passport ? this.state.personalData.passport : {}
         passportData = _.assign({}, passportData, _.fromPairs([["expiryDate", expiryDate]]))
-        this.setState(
-            { personalData: _.assign({}, this.state.personalData, _.fromPairs([["passport", passportData]]))},
-            () => {
-                this.refs.expiryDate.selectionStart = this.refs.expiryDate.selectionEnd = caretLocation
-            }
-        )
+        this.setState({ personalData: _.assign({}, this.state.personalData, _.fromPairs([["passport", passportData]])) }, () => {
+            this.refs.expiryDate.selectionStart = this.refs.expiryDate.selectionEnd = caretLocation
+        })
     }
 
-   newLanguage = () => e => {
+    newLanguage = () => e => {
         let personalData = this.state.personalData
         if (personalData.languages) {
             personalData.languages = [...personalData.languages, { id: undefined, edit: true }]
@@ -221,7 +231,7 @@ class UserDetail extends React.Component {
         if (personalData.languages) {
             personalData.languages[index].id = e.target.value
         }
-        this.setState({ personalData: personalData})
+        this.setState({ personalData: personalData })
     }
 
     removeLanguage = index => e => {
@@ -229,10 +239,10 @@ class UserDetail extends React.Component {
         if (personalData.languages) {
             personalData.languages.splice(index, 1)
         }
-        this.setState({ personalData: personalData})
+        this.setState({ personalData: personalData })
     }
 
-   newLicense = () => e => {
+    newLicense = () => e => {
         let personalData = this.state.personalData
         if (personalData.licenses) {
             personalData.licenses = [...personalData.licenses, { id: undefined, edit: true }]
@@ -247,7 +257,7 @@ class UserDetail extends React.Component {
         if (personalData.licenses) {
             personalData.licenses[index].id = e.target.value
         }
-        this.setState({ personalData: personalData})
+        this.setState({ personalData: personalData })
     }
 
     removeLicense = index => e => {
@@ -255,7 +265,7 @@ class UserDetail extends React.Component {
         if (personalData.licenses) {
             personalData.licenses.splice(index, 1)
         }
-        this.setState({ personalData: personalData})
+        this.setState({ personalData: personalData })
     }
 
     submit = e => {
@@ -316,20 +326,19 @@ class UserDetail extends React.Component {
 
         // format languages
         if (user.personalData.languages && user.personalData.languages.length !== 0) {
-            user.personalData.languages = _.map(_.pickBy(user.personalData.languages, language => (language.id && language.id !== "")), language => language.id)
+            user.personalData.languages = _.map(_.pickBy(user.personalData.languages, language => language.id && language.id !== ""), language => language.id)
         }
 
         // format licenses
         if (user.personalData.licenses && user.personalData.licenses.length !== 0) {
-            user.personalData.licenses = _.map(_.pickBy(user.personalData.licenses, license => (license.id && license.id !== "")), license => license.id)
+            user.personalData.licenses = _.map(_.pickBy(user.personalData.licenses, license => license.id && license.id !== ""), license => license.id)
         }
 
-        this.props.saveUser(user)
-            .then(response => {
-                if (!user.id && response.id) {
-                    this.props.history.push(`/users/${response.id}`)
-                }
-            })
+        this.props.saveUser(user).then(response => {
+            if (!user.id && response.id) {
+                this.props.history.push(`/users/${response.id}`)
+            }
+        })
     }
 
     render() {
@@ -352,160 +361,225 @@ class UserDetail extends React.Component {
                     </div>
                 )}
                 <div>
-                <form onSubmit={this.submit}>
-                    {props.user ? null : (
-                        <div className="form-group">
-                            <label htmlFor="username">Username</label>
-                            <input className="form-control" id="username" value={this.state.username} onChange={this.updateUsername} disabled={!props.canEdit} placeholder="username"/>
-                        </div>
-                    )}
-                    <div className="form-group">
-                        <label htmlFor="password">{props.user ? "Enter new password" : "Enter password"}</label>
-                        <input type="password" className="form-control" id="paswword" value={this.state.password} onChange={this.updatePassword} disabled={!props.canEdit} placeholder={props.user ? "●●●●●" : "password"}/>
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="password2">{props.user ? "Enter new password again" : "Enter password again"}</label>
-                        <input type="password" className="form-control" id="paswword2" value={this.state.password2} onChange={this.updatePassword2} disabled={!props.canEdit} placeholder={props.user ? "●●●●●" : "password"}/>
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="email">Email address</label>
-                        <input type="email" className="form-control" id="email" value={this.state.email} onChange={this.updateEmail} disabled={!props.canEdit} placeholder="user@email.com"/>
-                    </div>
-                    <div className="form-group">
-                        <h3>Personal data</h3>
-                        <div className="form-group">
-                            <label htmlFor="firstName">First name</label>
-                            <input className="form-control" id="firstName" value={this.state.personalData.firstName} onChange={this.updatePersonalData} disabled={!props.canEdit} placeholder="First name" />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="middleName">Middle name</label>
-                            <input className="form-control" id="middleName" value={this.state.personalData.middleName} onChange={this.updatePersonalData} disabled={!props.canEdit} placeholder="Middle name" />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="lastName">Last name</label>
-                            <input className="form-control" id="lastName" value={this.state.personalData.lastName} onChange={this.updatePersonalData} disabled={!props.canEdit} placeholder="Last name" />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="dateOfBirth">Date of birth</label>
-                             <input className="form-control" id="dateOfBirth" ref="dateOfBirth" value={this.state.personalData.dateOfBirth} onChange={this.updateDateOfBirth} disabled={!props.canEdit} placeholder="DD/MM/YYYY" />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="specialisation">Specialisation</label>
-                            <input className="form-control" id="specialisation" value={this.state.personalData.specialisation} onChange={this.updatePersonalData} disabled={!props.canEdit} placeholder="Medical worker specialisation" />
-                        </div>
-                        <div className="form-group">
-                            <h4>Languages</h4>
-                            <table className="table table-hover table-sm">
-                                <tbody>
-                                    {_.map(this.state.personalData.languages ? this.state.personalData.languages : [], (language, i) => (
-                                        <tr key={i}>
-                                            <td class="col-6">
-                                                {language.edit ? (
-                                                    <select className="form-control form-control-sm" id="residency" value={language.id} onChange={this.updateLanguage(i)} disabled={!props.canEdit}>
-                                                        <option value="">Select language</option>
-                                                        {_.map(_.difference(_.map(props.languages, language => language.id), _.without(_.map(this.state.personalData.languages, language => language.id), language.id)), languageCodeID => (
-                                                            <option key={languageCodeID} value={languageCodeID}>
-                                                                {props.languages[languageCodeID].title}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                ) : (
-                                                    props.languages[language.id] ? props.languages[language.id].title : language.id
-                                                )}
-                                            </td>
-                                            <td className="text-right col-1">
-                                                {props.canEdit ? (
-                                                    <button onClick={this.removeLanguage(i)} className="btn btn-sm btn-light" type="button">
-                                                        {language.edit ? (
-                                                            <span className="icon_close" />
-                                                        ) : (
-                                                            <span className="icon_trash" />
-                                                        )}
-                                                    </button>
-                                                ) : (null)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                            {props.canEdit ? (
-                                <button type="button" className="btn btn-sm btn-outline-primary col" onClick={this.newLanguage()}>
-                                    Add language
-                                </button>
-                            ) : (null)}
-                        </div>
-                        <div className="form-group">
-                            <h4>Licenses</h4>
-                            <table className="table table-hover table-sm">
-                                <tbody>
-                                    {_.map(this.state.personalData.licenses ? this.state.personalData.licenses : [], (license, i) => (
-                                        <tr key={i}>
-                                            <td class="col-6">
-                                                {license.edit ? (
-                                                    <select className="form-control form-control-sm" id="residency" value={license.id} onChange={this.updateLicense(i)} disabled={!props.canEdit}>
-                                                        <option value="">Select license</option>
-                                                        {_.map(_.difference(_.map(props.licenses, license => license.id), _.without(_.map(this.state.personalData.licenses, license => license.id), license.id)), licenseCodeID => (
-                                                            <option key={licenseCodeID} value={licenseCodeID}>
-                                                                {props.licenses[licenseCodeID].title}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                ) : (
-                                                    props.licenses[license.id] ? props.licenses[license.id].title : license.code.id
-                                                )}
-                                            </td>
-                                            <td className="text-right col-1">
-                                                {props.canEdit ? (
-                                                    <button onClick={this.removeLicense(i)} className="btn btn-sm btn-light" type="button">
-                                                        {license.edit ? (
-                                                            <span className="icon_close" />
-                                                        ) : (
-                                                            <span className="icon_trash" />
-                                                        )}
-                                                    </button>
-                                                ) : (null)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                            {props.canEdit ? (
-                                <button type="button" className="btn btn-sm btn-outline-primary col" onClick={this.newLicense()}>
-                                    Add license
-                                </button>
-                            ) : (null)}
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="nationality">Nationality</label>
-                            <select className="form-control form-control-sm" id="nationality" value={this.state.personalData.nationality} onChange={this.updatePersonalData} disabled={!props.canEdit}>
-                                <option value="">Select country</option>
-                                {_.map(props.countries, country => (
-                                    <option key={country.id} value={country.id}>
-                                        {country.title}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="residency">Residency</label>
-                            <select className="form-control form-control-sm" id="residency" value={this.state.personalData.residency} onChange={this.updatePersonalData} disabled={!props.canEdit}>
-                                <option value="">Select country</option>
-                                {_.map(props.countries, country => (
-                                    <option key={country.id} value={country.id}>
-                                        {country.title}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="form_group">
-                            <h4>Passport</h4>
+                    <form onSubmit={this.submit}>
+                        {props.user ? null : (
                             <div className="form-group">
-                                <label htmlFor="number">Number</label>
-                                <input className="form-control" id="number" value={this.state.personalData.passport ? this.state.personalData.passport.number : undefined} onChange={this.updatePassportData} placeholder="Passport number" disabled={!props.canEdit} />
+                                <label htmlFor="username">Username</label>
+                                <input
+                                    className="form-control"
+                                    id="username"
+                                    value={this.state.username}
+                                    onChange={this.updateUsername}
+                                    disabled={!props.canEdit}
+                                    placeholder="username"
+                                />
+                            </div>
+                        )}
+                        <div className="form-group">
+                            <label htmlFor="password">{props.user ? "Enter new password" : "Enter password"}</label>
+                            <input
+                                type="password"
+                                className="form-control"
+                                id="paswword"
+                                value={this.state.password}
+                                onChange={this.updatePassword}
+                                disabled={!props.canEdit}
+                                placeholder={props.user ? "●●●●●" : "password"}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="password2">{props.user ? "Enter new password again" : "Enter password again"}</label>
+                            <input
+                                type="password"
+                                className="form-control"
+                                id="paswword2"
+                                value={this.state.password2}
+                                onChange={this.updatePassword2}
+                                disabled={!props.canEdit}
+                                placeholder={props.user ? "●●●●●" : "password"}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="email">Email address</label>
+                            <input
+                                type="email"
+                                className="form-control"
+                                id="email"
+                                value={this.state.email}
+                                onChange={this.updateEmail}
+                                disabled={!props.canEdit}
+                                placeholder="user@email.com"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <h3>Personal data</h3>
+                            <div className="form-group">
+                                <label htmlFor="firstName">First name</label>
+                                <input
+                                    className="form-control"
+                                    id="firstName"
+                                    value={this.state.personalData.firstName}
+                                    onChange={this.updatePersonalData}
+                                    disabled={!props.canEdit}
+                                    placeholder="First name"
+                                />
                             </div>
                             <div className="form-group">
-                                <label htmlFor="issuingCountry">Issuing country</label>
-                                <select className="form-control form-control-sm" id="issuingCountry" value={this.state.personalData.passport ? this.state.personalData.passport.issuingCountry : undefined} onChange={this.updatePassportData} disabled={!props.canEdit}>
+                                <label htmlFor="middleName">Middle name</label>
+                                <input
+                                    className="form-control"
+                                    id="middleName"
+                                    value={this.state.personalData.middleName}
+                                    onChange={this.updatePersonalData}
+                                    disabled={!props.canEdit}
+                                    placeholder="Middle name"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="lastName">Last name</label>
+                                <input
+                                    className="form-control"
+                                    id="lastName"
+                                    value={this.state.personalData.lastName}
+                                    onChange={this.updatePersonalData}
+                                    disabled={!props.canEdit}
+                                    placeholder="Last name"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="dateOfBirth">Date of birth</label>
+                                <input
+                                    className="form-control"
+                                    id="dateOfBirth"
+                                    ref="dateOfBirth"
+                                    value={this.state.personalData.dateOfBirth}
+                                    onChange={this.updateDateOfBirth}
+                                    disabled={!props.canEdit}
+                                    placeholder="DD/MM/YYYY"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="specialisation">Specialisation</label>
+                                <input
+                                    className="form-control"
+                                    id="specialisation"
+                                    value={this.state.personalData.specialisation}
+                                    onChange={this.updatePersonalData}
+                                    disabled={!props.canEdit}
+                                    placeholder="Medical worker specialisation"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <h4>Languages</h4>
+                                <table className="table table-hover table-sm">
+                                    <tbody>
+                                        {_.map(this.state.personalData.languages ? this.state.personalData.languages : [], (language, i) => (
+                                            <tr key={i}>
+                                                <td class="col-6">
+                                                    {language.edit ? (
+                                                        <select
+                                                            className="form-control form-control-sm"
+                                                            id="residency"
+                                                            value={language.id}
+                                                            onChange={this.updateLanguage(i)}
+                                                            disabled={!props.canEdit}
+                                                        >
+                                                            <option value="">Select language</option>
+                                                            {_.map(
+                                                                _.difference(
+                                                                    _.map(props.languages, language => language.id),
+                                                                    _.without(_.map(this.state.personalData.languages, language => language.id), language.id)
+                                                                ),
+                                                                languageCodeID => (
+                                                                    <option key={languageCodeID} value={languageCodeID}>
+                                                                        {props.languages[languageCodeID].title}
+                                                                    </option>
+                                                                )
+                                                            )}
+                                                        </select>
+                                                    ) : props.languages[language.id] ? (
+                                                        props.languages[language.id].title
+                                                    ) : (
+                                                        language.id
+                                                    )}
+                                                </td>
+                                                <td className="text-right col-1">
+                                                    {props.canEdit ? (
+                                                        <button onClick={this.removeLanguage(i)} className="btn btn-sm btn-light" type="button">
+                                                            {language.edit ? <span className="icon_close" /> : <span className="icon_trash" />}
+                                                        </button>
+                                                    ) : null}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                {props.canEdit ? (
+                                    <button type="button" className="btn btn-sm btn-outline-primary col" onClick={this.newLanguage()}>
+                                        Add language
+                                    </button>
+                                ) : null}
+                            </div>
+                            <div className="form-group">
+                                <h4>Licenses</h4>
+                                <table className="table table-hover table-sm">
+                                    <tbody>
+                                        {_.map(this.state.personalData.licenses ? this.state.personalData.licenses : [], (license, i) => (
+                                            <tr key={i}>
+                                                <td class="col-6">
+                                                    {license.edit ? (
+                                                        <select
+                                                            className="form-control form-control-sm"
+                                                            id="residency"
+                                                            value={license.id}
+                                                            onChange={this.updateLicense(i)}
+                                                            disabled={!props.canEdit}
+                                                        >
+                                                            <option value="">Select license</option>
+                                                            {_.map(
+                                                                _.difference(
+                                                                    _.map(props.licenses, license => license.id),
+                                                                    _.without(_.map(this.state.personalData.licenses, license => license.id), license.id)
+                                                                ),
+                                                                licenseCodeID => (
+                                                                    <option key={licenseCodeID} value={licenseCodeID}>
+                                                                        {props.licenses[licenseCodeID].title}
+                                                                    </option>
+                                                                )
+                                                            )}
+                                                        </select>
+                                                    ) : props.licenses[license.id] ? (
+                                                        props.licenses[license.id].title
+                                                    ) : (
+                                                        license.code.id
+                                                    )}
+                                                </td>
+                                                <td className="text-right col-1">
+                                                    {props.canEdit ? (
+                                                        <button onClick={this.removeLicense(i)} className="btn btn-sm btn-light" type="button">
+                                                            {license.edit ? <span className="icon_close" /> : <span className="icon_trash" />}
+                                                        </button>
+                                                    ) : null}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                {props.canEdit ? (
+                                    <button type="button" className="btn btn-sm btn-outline-primary col" onClick={this.newLicense()}>
+                                        Add license
+                                    </button>
+                                ) : null}
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="nationality">Nationality</label>
+                                <select
+                                    className="form-control form-control-sm"
+                                    id="nationality"
+                                    value={this.state.personalData.nationality}
+                                    onChange={this.updatePersonalData}
+                                    disabled={!props.canEdit}
+                                >
                                     <option value="">Select country</option>
                                     {_.map(props.countries, country => (
                                         <option key={country.id} value={country.id}>
@@ -515,19 +589,74 @@ class UserDetail extends React.Component {
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label htmlFor="expiryDate">Expiry date</label>
-                                 <input className="form-control" id="expiryDate" ref="expiryDate" value={this.state.personalData.passport ? this.state.personalData.passport.expiryDate : undefined} onChange={this.updatePassportExpiryDate} placeholder="DD/MM/YYYY" disabled={!props.canEdit} />
+                                <label htmlFor="residency">Residency</label>
+                                <select
+                                    className="form-control form-control-sm"
+                                    id="residency"
+                                    value={this.state.personalData.residency}
+                                    onChange={this.updatePersonalData}
+                                    disabled={!props.canEdit}
+                                >
+                                    <option value="">Select country</option>
+                                    {_.map(props.countries, country => (
+                                        <option key={country.id} value={country.id}>
+                                            {country.title}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form_group">
+                                <h4>Passport</h4>
+                                <div className="form-group">
+                                    <label htmlFor="number">Number</label>
+                                    <input
+                                        className="form-control"
+                                        id="number"
+                                        value={this.state.personalData.passport ? this.state.personalData.passport.number : undefined}
+                                        onChange={this.updatePassportData}
+                                        placeholder="Passport number"
+                                        disabled={!props.canEdit}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="issuingCountry">Issuing country</label>
+                                    <select
+                                        className="form-control form-control-sm"
+                                        id="issuingCountry"
+                                        value={this.state.personalData.passport ? this.state.personalData.passport.issuingCountry : undefined}
+                                        onChange={this.updatePassportData}
+                                        disabled={!props.canEdit}
+                                    >
+                                        <option value="">Select country</option>
+                                        {_.map(props.countries, country => (
+                                            <option key={country.id} value={country.id}>
+                                                {country.title}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="expiryDate">Expiry date</label>
+                                    <input
+                                        className="form-control"
+                                        id="expiryDate"
+                                        ref="expiryDate"
+                                        value={this.state.personalData.passport ? this.state.personalData.passport.expiryDate : undefined}
+                                        onChange={this.updatePassportExpiryDate}
+                                        placeholder="DD/MM/YYYY"
+                                        disabled={!props.canEdit}
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    {props.canEdit ? (
-                        <div className="form-group">
-                            <button type="submit" className="btn btn-outline-primary col">
-                                Save
-                            </button>
-                        </div>
-                    ) : (null)}
-                </form>
+                        {props.canEdit ? (
+                            <div className="form-group">
+                                <button type="submit" className="btn btn-outline-primary col">
+                                    Save
+                                </button>
+                            </div>
+                        ) : null}
+                    </form>
                 </div>
                 {props.user ? (
                     <div className="m-4">
@@ -565,7 +694,7 @@ const mapStateToProps = (state, ownProps) => {
         canSee: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
         canEdit: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
         validationsLoading: state.validations.loading,
-        forbidden: state.users.forbidden,
+        forbidden: state.users.forbidden
     }
 }
 
@@ -577,7 +706,7 @@ const mapDispatchToProps = dispatch =>
             loadCodes,
             loadUserRights,
             open,
-            close,
+            close
         },
         dispatch
     )

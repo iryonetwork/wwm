@@ -30,7 +30,7 @@ class Users extends React.Component {
 
     determineState(props) {
         let loading = !props.users || props.usersLoading
-        this.setState({loading: loading})
+        this.setState({ loading: loading })
     }
 
     removeUser = userID => e => {
@@ -80,7 +80,13 @@ class Users extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => ({
-    users: ownProps.users ? (state.users.allLoaded ? _.fromPairs(_.map(ownProps.users, userID => [userID, state.users.users[userID]])) : undefined) : (state.users.allLoaded ? state.users.users : undefined),
+    users: ownProps.users
+        ? state.users.allLoaded
+            ? _.fromPairs(_.map(ownProps.users, userID => [userID, state.users.users[userID]]))
+            : undefined
+        : state.users.allLoaded
+            ? state.users.users
+            : undefined,
     usersLoading: state.users.loading,
     forbidden: state.users.forbidden
 })

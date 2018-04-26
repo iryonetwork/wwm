@@ -50,17 +50,33 @@ class ClinicsList extends React.Component {
     }
 
     determineState(props) {
-        let loading = !props.clinics || props.clinicsLoading || !props.organization || props.organizationsLoading || !props.locations || props.locationsLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
+        let loading =
+            !props.clinics ||
+            props.clinicsLoading ||
+            !props.organization ||
+            props.organizationsLoading ||
+            !props.locations ||
+            props.locationsLoading ||
+            props.canEdit === undefined ||
+            props.canSee === undefined ||
+            props.validationsLoading
         this.setState({ loading: loading })
 
         if (!loading) {
-            this.setState({organizationClinics: _.map((props.organization.clinics ? props.organization.clinics : []), clinicID => {return props.clinics[clinicID]})})
+            this.setState({
+                organizationClinics: _.map(props.organization.clinics ? props.organization.clinics : [], clinicID => {
+                    return props.clinics[clinicID]
+                })
+            })
         }
     }
 
     newClinic = () => e => {
         if (this.state.organizationClinics) {
-            let organizationClinics = [...this.state.organizationClinics, { id: "", edit: true, canSave: false, name: "", location: "", organization: this.props.organizationID }]
+            let organizationClinics = [
+                ...this.state.organizationClinics,
+                { id: "", edit: true, canSave: false, name: "", location: "", organization: this.props.organizationID }
+            ]
             this.setState({
                 organizationClinics: organizationClinics,
                 edit: true
@@ -71,14 +87,14 @@ class ClinicsList extends React.Component {
     editClinicName = index => e => {
         let organizationClinics = [...this.state.organizationClinics]
         organizationClinics[index].name = e.target.value
-        organizationClinics[index].canSave = (organizationClinics[index].name.length !== 0) && (organizationClinics[index].location.length !== 0)
+        organizationClinics[index].canSave = organizationClinics[index].name.length !== 0 && organizationClinics[index].location.length !== 0
         this.setState({ organizationClinics: organizationClinics })
     }
 
     editLocationID = index => e => {
         let organizationClinics = [...this.state.organizationClinics]
         organizationClinics[index].location = e.target.value
-        organizationClinics[index].canSave = (organizationClinics[index].name.length !== 0) && (organizationClinics[index].location.length !== 0)
+        organizationClinics[index].canSave = organizationClinics[index].name.length !== 0 && organizationClinics[index].location.length !== 0
         this.setState({ organizationClinics: organizationClinics })
     }
 
@@ -131,66 +147,83 @@ class ClinicsList extends React.Component {
                             <tbody>
                                 {_.map(this.state.organizationClinics, (clinic, i) => (
                                     <tr key={clinic.id || i}>
-                                        <th scope="row">{i+1}</th>
+                                        <th scope="row">{i + 1}</th>
                                         <td>
-                                        {props.canEdit ? (
-                                            clinic.edit ? (
-                                                <input
-                                                    value={clinic.name}
-                                                    onChange={this.editClinicName(i)}
-                                                    type="text"
-                                                    className="form-control form-control-sm"
-                                                    placeholder="Clinic name"
-                                                    aria-label="Clinic name"
-                                                />
+                                            {props.canEdit ? (
+                                                clinic.edit ? (
+                                                    <input
+                                                        value={clinic.name}
+                                                        onChange={this.editClinicName(i)}
+                                                        type="text"
+                                                        className="form-control form-control-sm"
+                                                        placeholder="Clinic name"
+                                                        aria-label="Clinic name"
+                                                    />
+                                                ) : (
+                                                    <Link to={`/clinics/${clinic.id}`}>{clinic.name}</Link>
+                                                )
                                             ) : (
-                                                <Link to={`/clinics/${clinic.id}`}>{clinic.name}</Link>
-                                            )
-                                        ) : (clinic.name)}
+                                                clinic.name
+                                            )}
                                         </td>
                                         <td>
-                                        {(props.canEdit && clinic.edit) ? (
-                                            <select className="form-control form-control-sm" value={clinic.location} onChange={this.editLocationID(i)}>
-                                                <option value="">Select location</option>
-                                                {_.map(props.locations, location => (
-                                                    <option key={location.id} value={location.id}>
-                                                        {location.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        ) : (
-                                            <Link to={`/locations/${clinic.location}`}>{props.locations[clinic.location].name}</Link>
-                                        )}
+                                            {props.canEdit && clinic.edit ? (
+                                                <select className="form-control form-control-sm" value={clinic.location} onChange={this.editLocationID(i)}>
+                                                    <option value="">Select location</option>
+                                                    {_.map(props.locations, location => (
+                                                        <option key={location.id} value={location.id}>
+                                                            {location.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <Link to={`/locations/${clinic.location}`}>{props.locations[clinic.location].name}</Link>
+                                            )}
                                         </td>
                                         <td className="text-right">
-                                        {props.canEdit ? (
-                                            clinic.edit ? (
-                                                <div className="btn-group" role="group">
-                                                    <button className="btn btn-sm btn-light" disabled={clinic.saving} type="button" onClick={this.cancelNewClinic(i)}>
-                                                        <span className="icon_close" />
-                                                    </button>
-                                                    <button className="btn btn-sm btn-light" disabled={clinic.saving || !clinic.canSave} type="button" onClick={this.saveClinic(i)}>
-                                                        <span className="icon_floppy" />
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <div className="btn-group" role="group">
-                                                    <button onClick={this.removeClinic(clinic.id)} className="btn btn-sm btn-light" type="button">
-                                                        <span className="icon_trash" />
-                                                    </button>
-                                                </div>
-                                            )
-                                        ) : (null)}
+                                            {props.canEdit ? (
+                                                clinic.edit ? (
+                                                    <div className="btn-group" role="group">
+                                                        <button
+                                                            className="btn btn-sm btn-light"
+                                                            disabled={clinic.saving}
+                                                            type="button"
+                                                            onClick={this.cancelNewClinic(i)}
+                                                        >
+                                                            <span className="icon_close" />
+                                                        </button>
+                                                        <button
+                                                            className="btn btn-sm btn-light"
+                                                            disabled={clinic.saving || !clinic.canSave}
+                                                            type="button"
+                                                            onClick={this.saveClinic(i)}
+                                                        >
+                                                            <span className="icon_floppy" />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="btn-group" role="group">
+                                                        <button onClick={this.removeClinic(clinic.id)} className="btn btn-sm btn-light" type="button">
+                                                            <span className="icon_trash" />
+                                                        </button>
+                                                    </div>
+                                                )
+                                            ) : null}
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                         {props.canEdit ? (
-                            <button type="button" className="btn btn-sm btn-outline-primary col" disabled={this.state.edit ? true: null} onClick={this.newClinic()}>
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-primary col"
+                                disabled={this.state.edit ? true : null}
+                                onClick={this.newClinic()}
+                            >
                                 Add clinic
                             </button>
-                        ) : (null)}
+                        ) : null}
                     </div>
                 </div>
             </div>
@@ -216,7 +249,7 @@ const makeMapStateToProps = () => {
             canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
             canSee: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
             validationsLoading: state.validations.loading,
-            forbidden: state.organizations.forbidden || state.locations.forbidden || state.clinics.forbidden,
+            forbidden: state.organizations.forbidden || state.locations.forbidden || state.clinics.forbidden
         }
     }
     return mapStateToProps
@@ -230,7 +263,7 @@ const mapDispatchToProps = dispatch =>
             saveClinic,
             deleteClinic,
             loadLocations,
-            loadUserRights,
+            loadUserRights
         },
         dispatch
     )

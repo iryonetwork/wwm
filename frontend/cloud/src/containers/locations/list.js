@@ -44,7 +44,7 @@ class Locations extends React.Component {
 
     determineState(props) {
         let loading = !props.locations || props.locationsLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
-        this.setState({loading: loading})
+        this.setState({ loading: loading })
     }
 
     removeLocation = locationID => e => {
@@ -77,7 +77,9 @@ class Locations extends React.Component {
                     {_.map(_.filter(props.locations, location => location), location => (
                         <tr key={location.id}>
                             <th scope="row">{++i}</th>
-                            <td><Link to={`/locations/${location.id}`}>{location.name}</Link></td>
+                            <td>
+                                <Link to={`/locations/${location.id}`}>{location.name}</Link>
+                            </td>
                             <td>{location.city}</td>
                             <td>{props.countries[location.country] ? props.countries[location.country].title : location.country}</td>
                             <td>{location.clinics.length}</td>
@@ -86,7 +88,7 @@ class Locations extends React.Component {
                                     <button onClick={this.removeLocation(location.id)} className="btn btn-sm btn-light" type="button">
                                         <span className="icon_trash" />
                                     </button>
-                                ) : (null)}
+                                ) : null}
                             </td>
                         </tr>
                     ))}
@@ -97,14 +99,20 @@ class Locations extends React.Component {
 }
 
 const mapStateToProps = (state, ownProps) => ({
-    locations: ownProps.locations ? (state.locations.allLoaded ? _.fromPairs(_.map(ownProps.locations, locationID => [locationID, state.locations.locations[locationID]])) : undefined) : (state.locations.allLoaded ? state.locations.locations : undefined),
+    locations: ownProps.locations
+        ? state.locations.allLoaded
+            ? _.fromPairs(_.map(ownProps.locations, locationID => [locationID, state.locations.locations[locationID]]))
+            : undefined
+        : state.locations.allLoaded
+            ? state.locations.locations
+            : undefined,
     locationsLoading: state.locations.loading,
     countries: state.codes.codes[CATEGORY_COUNTRIES],
     codesLoading: state.codes.loading,
     canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
     canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
     validationsLoading: state.validations.loading,
-    forbidden: state.locations.forbidden,
+    forbidden: state.locations.forbidden
 })
 
 const mapDispatchToProps = dispatch =>
@@ -113,7 +121,7 @@ const mapDispatchToProps = dispatch =>
             loadLocations,
             deleteLocation,
             loadCodes,
-            loadUserRights,
+            loadUserRights
         },
         dispatch
     )

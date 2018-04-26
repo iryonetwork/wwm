@@ -12,7 +12,6 @@ class DetailRole extends React.Component {
     constructor(props) {
         super(props)
         this.state = { loading: true }
-
     }
 
     componentDidMount() {
@@ -39,7 +38,7 @@ class DetailRole extends React.Component {
 
     determineState(props) {
         let loading = !props.rules || props.rulesLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
-        this.setState({loading: loading})
+        this.setState({ loading: loading })
     }
 
     render() {

@@ -249,32 +249,41 @@ export const deleteUserFromOrganization = (organizationID, userID) => {
     return dispatch => {
         dispatch(close())
 
-        let organization = (store.getState().organizations.organizations && store.getState().organizations.organizations[organizationID]) ? store.getState().organizations.organizations[organizationID] : undefined
+        let organization =
+            store.getState().organizations.organizations && store.getState().organizations.organizations[organizationID]
+                ? store.getState().organizations.organizations[organizationID]
+                : undefined
         if (!organization) {
-            return dispatch(loadOrganization(organizationID))
-                .then(() => {
-                    return dispatch(deleteUserFromOrganization(organizationID, userID))
-                })
+            return dispatch(loadOrganization(organizationID)).then(() => {
+                return dispatch(deleteUserFromOrganization(organizationID, userID))
+            })
         }
 
         // check for user roles to delete in store
         let userRolesToDelete = undefined
-        let organizationUserRoles = (store.getState().userRoles.domainUserRoles && store.getState().userRoles.domainUserRoles["organization"] && store.getState().userRoles.domainUserRoles["organization"][organizationID]) ? store.getState().userRoles.domainUserRoles["organization"][organizationID] : undefined
+        let organizationUserRoles =
+            store.getState().userRoles.domainUserRoles &&
+            store.getState().userRoles.domainUserRoles["organization"] &&
+            store.getState().userRoles.domainUserRoles["organization"][organizationID]
+                ? store.getState().userRoles.domainUserRoles["organization"][organizationID]
+                : undefined
         if (organizationUserRoles === undefined) {
-            let userUserRoles = (store.getState().userRoles.userUserRoles && store.getState().userRoles.userUserRoles[userID]) ? store.getState().userRoles.userUserRoles[userID] : undefined
+            let userUserRoles =
+                store.getState().userRoles.userUserRoles && store.getState().userRoles.userUserRoles[userID]
+                    ? store.getState().userRoles.userUserRoles[userID]
+                    : undefined
             if (userUserRoles !== undefined) {
-                userRolesToDelete = _.pickBy(userUserRoles, userRole => (userRole.domainType === "organization" && userRole.domainID === organizationID)) || {}
+                userRolesToDelete = _.pickBy(userUserRoles, userRole => userRole.domainType === "organization" && userRole.domainID === organizationID) || {}
             }
         } else {
-            userRolesToDelete = _.pickBy(organizationUserRoles, userRole => (userRole.userID === userID)) || {}
+            userRolesToDelete = _.pickBy(organizationUserRoles, userRole => userRole.userID === userID) || {}
         }
 
         // no user roles to delete in store, fetch
         if (userRolesToDelete === undefined) {
-            return dispatch(loadDomainUserRoles("organization", organizationID))
-                .then(() => {
-                    return dispatch(deleteUserFromOrganization(organizationID, userID))
-                })
+            return dispatch(loadDomainUserRoles("organization", organizationID)).then(() => {
+                return dispatch(deleteUserFromOrganization(organizationID, userID))
+            })
         }
 
         _.forEach(userRolesToDelete, userRole => {

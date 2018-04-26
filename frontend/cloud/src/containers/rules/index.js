@@ -17,7 +17,6 @@ class Rules extends React.Component {
     constructor(props) {
         super(props)
         this.state = { loading: true }
-
     }
 
     componentDidMount() {
@@ -61,8 +60,17 @@ class Rules extends React.Component {
     }
 
     determineState(props) {
-        let loading = !props.roles || props.rolesLoading || !props.rules || props.rulesLoading || !props.users || props.usersLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
-        this.setState({loading: loading})
+        let loading =
+            !props.roles ||
+            props.rolesLoading ||
+            !props.rules ||
+            props.rulesLoading ||
+            !props.users ||
+            props.usersLoading ||
+            props.canEdit === undefined ||
+            props.canSee === undefined ||
+            props.validationsLoading
+        this.setState({ loading: loading })
 
         if (props.rules) {
             let rules = props.rules
@@ -209,7 +217,7 @@ class Rules extends React.Component {
                                       <th scope="row">{i + 1}</th>
                                       {!props.embedded ? (
                                           <td>
-                                              {(props.canEdit && rule.edit) ? (
+                                              {props.canEdit && rule.edit ? (
                                                   <select className="form-control form-control-sm" value={rule.subject} onChange={this.editSubject(i)}>
                                                       <option>Select subject</option>
                                                       <optgroup label="Roles">
@@ -235,7 +243,7 @@ class Rules extends React.Component {
                                       ) : null}
 
                                       <td>
-                                          {(props.canEdit && rule.edit) ? (
+                                          {props.canEdit && rule.edit ? (
                                               <input
                                                   type="text"
                                                   className="form-control form-control-sm"
@@ -248,7 +256,7 @@ class Rules extends React.Component {
                                       </td>
 
                                       <td>
-                                          {(props.canEdit && rule.edit) ? (
+                                          {props.canEdit && rule.edit ? (
                                               <select className="form-control form-control-sm" value={rule.deny || false} onChange={this.editDeny(i)}>
                                                   <option value={false}>Allow</option>
                                                   <option value={true}>Deny</option>
@@ -305,7 +313,7 @@ class Rules extends React.Component {
                                                       </button>
                                                   </div>
                                               )
-                                          ) : (null)}
+                                          ) : null}
                                       </td>
                                   </tr>
                               ))
@@ -316,7 +324,7 @@ class Rules extends React.Component {
                     <button type="button" className="btn btn-sm btn-outline-secondary float-right" onClick={this.newRule()}>
                         Add new ACL rule
                     </button>
-                ) : (null)}
+                ) : null}
             </div>
         )
     }
@@ -348,7 +356,7 @@ const mapDispatchToProps = dispatch =>
             loadRules,
             saveRule,
             deleteRule,
-            loadUserRights,
+            loadUserRights
         },
         dispatch
     )

@@ -68,7 +68,7 @@ export default (state = initialState, action) => {
             delete roles[action.roleID]
             return {
                 ...state,
-                roles,
+                roles
             }
 
         default:

@@ -68,11 +68,22 @@ class UsersList extends React.Component {
     }
 
     determineState(props) {
-        let loading = !props.users || props.usersLoading || !props.roles || props.rolesLoading || !props.userRoles || props.userRolesLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
+        let loading =
+            !props.users ||
+            props.usersLoading ||
+            !props.roles ||
+            props.rolesLoading ||
+            !props.userRoles ||
+            props.userRolesLoading ||
+            props.canEdit === undefined ||
+            props.canSee === undefined ||
+            props.validationsLoading
         this.setState({ loading: loading })
         if (!loading) {
             this.setState({
-                clinicUsers: _.map((props.clinicUserIDs ? props.clinicUserIDs : []), userID => {return props.users[userID]}),
+                clinicUsers: _.map(props.clinicUserIDs ? props.clinicUserIDs : [], userID => {
+                    return props.users[userID]
+                }),
                 selectedUserID: props.selectedUserID
             })
         }
@@ -80,7 +91,10 @@ class UsersList extends React.Component {
 
     newUser = () => e => {
         if (this.state.clinicUsers) {
-            let clinicUsers = [...this.state.clinicUsers, { id: "", edit: true, canSave: false, domainType: "clinic", domainID: this.props.clinicID, userID: "", roleID: "" }]
+            let clinicUsers = [
+                ...this.state.clinicUsers,
+                { id: "", edit: true, canSave: false, domainType: "clinic", domainID: this.props.clinicID, userID: "", roleID: "" }
+            ]
             this.setState({ clinicUsers: clinicUsers })
         }
     }
@@ -88,14 +102,14 @@ class UsersList extends React.Component {
     editUserID = index => e => {
         let clinicUsers = [...this.state.clinicUsers]
         clinicUsers[index].userID = e.target.value
-        clinicUsers[index].canSave = (clinicUsers[index].userID.length !== 0) && (clinicUsers[index].roleID.length !== 0)
+        clinicUsers[index].canSave = clinicUsers[index].userID.length !== 0 && clinicUsers[index].roleID.length !== 0
         this.setState({ clinicUsers: clinicUsers })
     }
 
     editRoleID = index => e => {
         let clinicUsers = [...this.state.clinicUsers]
         clinicUsers[index].roleID = e.target.value
-        clinicUsers[index].canSave = (clinicUsers[index].userID.length !== 0) && (clinicUsers[index].roleID.length !== 0)
+        clinicUsers[index].canSave = clinicUsers[index].userID.length !== 0 && clinicUsers[index].roleID.length !== 0
         this.setState({ clinicUsers: clinicUsers })
     }
 
@@ -129,7 +143,9 @@ class UsersList extends React.Component {
 
         return (
             <div id="users">
-                <h2>Users of clinic <em>{props.clinic.name}</em></h2>
+                <h2>
+                    Users of clinic <em>{props.clinic.name}</em>
+                </h2>
                 <div className="row">
                     <div className={this.state.selectedUserID ? "col-8" : "col-12"}>
                         <table className="table table-hover">
@@ -145,9 +161,9 @@ class UsersList extends React.Component {
                             </thead>
                             <tbody>
                                 {_.map(this.state.clinicUsers, (user, i) => {
-                                    return (props.canEdit && user.edit) ? (
+                                    return props.canEdit && user.edit ? (
                                         <tr key={i}>
-                                            <th scope="row">{i+1}</th>
+                                            <th scope="row">{i + 1}</th>
                                             <td colSpan="3">
                                                 <select className="form-control form-control-sm" value={user.userID} onChange={this.editUserID(i)}>
                                                     <option>Select user</option>
@@ -156,7 +172,7 @@ class UsersList extends React.Component {
                                                             {props.users[userID].username} - {getName(props.users[userID])} ({props.users[userID].email})
                                                         </option>
                                                     ))}
-                                                  </select>
+                                                </select>
                                             </td>
                                             <td>
                                                 <select className="form-control form-control-sm" value={user.roleID} onChange={this.editRoleID(i)}>
@@ -170,21 +186,30 @@ class UsersList extends React.Component {
                                             </td>
                                             <td className="text-right">
                                                 <div className="btn-group" role="group">
-                                                    <button className="btn btn-sm btn-light" disabled={user.saving} type="button" onClick={this.cancelNewUser(i)}>
+                                                    <button
+                                                        className="btn btn-sm btn-light"
+                                                        disabled={user.saving}
+                                                        type="button"
+                                                        onClick={this.cancelNewUser(i)}
+                                                    >
                                                         <span className="icon_close" />
                                                     </button>
-                                                    <button className="btn btn-sm btn-light" disabled={user.saving || !user.canSave} type="button" onClick={this.saveUser(i)}>
+                                                    <button
+                                                        className="btn btn-sm btn-light"
+                                                        disabled={user.saving || !user.canSave}
+                                                        type="button"
+                                                        onClick={this.saveUser(i)}
+                                                    >
                                                         <span className="icon_floppy" />
                                                     </button>
                                                 </div>
                                             </td>
                                         </tr>
-                                    )
-                                    : (
-                                        <tr key={user.id} className={(this.state.selectedUserID === user.id) ? "table-active" : ""}>
-                                            <th scope="row">{i+1}</th>
+                                    ) : (
+                                        <tr key={user.id} className={this.state.selectedUserID === user.id ? "table-active" : ""}>
+                                            <th scope="row">{i + 1}</th>
                                             <td>
-                                                {(this.state.selectedUserID === user.id) ? (
+                                                {this.state.selectedUserID === user.id ? (
                                                     <Link to={`/users/${user.id}`}>{user.username}</Link>
                                                 ) : (
                                                     <Link to={`/clinics/${props.clinicID}/users/${user.id}`}>{user.username}</Link>
@@ -192,15 +217,15 @@ class UsersList extends React.Component {
                                             </td>
                                             <td>{getName(user)}</td>
                                             <td>{user.email}</td>
-                                            <td></td>
+                                            <td />
                                             <td className="text-right">
-                                            {props.canEdit ? (
-                                                <div className="btn-group" role="group">
-                                                    <button onClick={this.removeUser(user.id)} className="btn btn-sm btn-light" type="button">
-                                                        <span className="icon_trash" />
-                                                    </button>
-                                                </div>
-                                            ) : (null)}
+                                                {props.canEdit ? (
+                                                    <div className="btn-group" role="group">
+                                                        <button onClick={this.removeUser(user.id)} className="btn btn-sm btn-light" type="button">
+                                                            <span className="icon_trash" />
+                                                        </button>
+                                                    </div>
+                                                ) : null}
                                             </td>
                                         </tr>
                                     )
@@ -208,10 +233,15 @@ class UsersList extends React.Component {
                             </tbody>
                         </table>
                         {props.canEdit ? (
-                            <button type="button" className="btn btn-sm btn-outline-primary col" disabled={(this.state.clinicUsers.length !== 0 && this.state.clinicUsers[this.state.clinicUsers.length - 1].edit) ? true : null} onClick={this.newUser()}>
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-primary col"
+                                disabled={this.state.clinicUsers.length !== 0 && this.state.clinicUsers[this.state.clinicUsers.length - 1].edit ? true : null}
+                                onClick={this.newUser()}
+                            >
                                 Add user
                             </button>
-                        ) : (null)}
+                        ) : null}
                     </div>
                     <div className="col">
                         <Route path="/clinics/:clinicID/users/:userID" component={UserDetail} />
@@ -245,15 +275,24 @@ const makeMapStateToProps = () => {
             selectedUserID: selectedUserID ? selectedUserID : undefined,
             clinic: clinic,
             clinicsLoading: state.clinics.loading,
-            userRoles: (state.userRoles.domainUserRoles && state.userRoles.domainUserRoles["clinic"] && state.userRoles.domainUserRoles["clinic"][clinicID]) ? state.userRoles.domainUserRoles["clinic"][clinicID] : undefined,
-            clinicsOrganizationUserRoles: (organizationID && state.userRoles.domainUserRoles && state.userRoles.domainUserRoles["organization"] && state.userRoles.domainUserRoles["organization"][organizationID]) ? state.userRoles.domainUserRoles["organization"][organizationID] : undefined,
+            userRoles:
+                state.userRoles.domainUserRoles && state.userRoles.domainUserRoles["clinic"] && state.userRoles.domainUserRoles["clinic"][clinicID]
+                    ? state.userRoles.domainUserRoles["clinic"][clinicID]
+                    : undefined,
+            clinicsOrganizationUserRoles:
+                organizationID &&
+                state.userRoles.domainUserRoles &&
+                state.userRoles.domainUserRoles["organization"] &&
+                state.userRoles.domainUserRoles["organization"][organizationID]
+                    ? state.userRoles.domainUserRoles["organization"][organizationID]
+                    : undefined,
             userRolesLoading: state.userRoles.loading,
             users: state.users.allLoaded ? state.users.users : undefined,
             usersLoading: state.users.loading,
             roles: state.roles.allLoaded ? state.roles.roles : undefined,
             rolesLoading: state.roles.loading,
-            clinicUserIDs: getClinicUserIDs(state, {clinicID: clinicID}),
-            allowedClinicUserIDs: getOrganizationUserIDs(state, {organizationID: organizationID}),
+            clinicUserIDs: getClinicUserIDs(state, { clinicID: clinicID }),
+            allowedClinicUserIDs: getOrganizationUserIDs(state, { organizationID: organizationID }),
             canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
             canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
             validationsLoading: state.validations.loading,
@@ -271,7 +310,7 @@ const mapDispatchToProps = dispatch =>
             loadDomainUserRoles,
             saveUserRoleCustomMsg,
             deleteUserFromClinic,
-            loadUserRights,
+            loadUserRights
         },
         dispatch
     )

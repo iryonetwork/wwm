@@ -165,7 +165,6 @@ export const deleteClinic = clinicID => {
     }
 }
 
-
 export const saveClinic = clinic => {
     return dispatch => {
         dispatch(close())
@@ -207,22 +206,29 @@ export const deleteUserFromClinic = (clinicID, userID) => {
 
         // check for user roles to delete in store
         let userRolesToDelete = undefined
-        let clinicUserRoles = (store.getState().userRoles.domainUserRoles && store.getState().userRoles.domainUserRoles["clinic"] && store.getState().userRoles.domainUserRoles["clinic"][clinicID]) ? store.getState().userRoles.domainUserRoles["clinic"][clinicID] : undefined
+        let clinicUserRoles =
+            store.getState().userRoles.domainUserRoles &&
+            store.getState().userRoles.domainUserRoles["clinic"] &&
+            store.getState().userRoles.domainUserRoles["clinic"][clinicID]
+                ? store.getState().userRoles.domainUserRoles["clinic"][clinicID]
+                : undefined
         if (clinicUserRoles === undefined) {
-            let userUserRoles = (store.getState().userRoles.userUserRoles && store.getState().userRoles.userUserRoles[userID]) ? store.getState().userRoles.userUserRoles[userID] : undefined
+            let userUserRoles =
+                store.getState().userRoles.userUserRoles && store.getState().userRoles.userUserRoles[userID]
+                    ? store.getState().userRoles.userUserRoles[userID]
+                    : undefined
             if (userUserRoles !== undefined) {
-                userRolesToDelete = _.pickBy(userUserRoles, userRole => (userRole.domainType === "clinic" && userRole.domainID === clinicID)) || {}
+                userRolesToDelete = _.pickBy(userUserRoles, userRole => userRole.domainType === "clinic" && userRole.domainID === clinicID) || {}
             }
         } else {
-            userRolesToDelete = _.pickBy(clinicUserRoles, userRole => (userRole.userID === userID)) || {}
+            userRolesToDelete = _.pickBy(clinicUserRoles, userRole => userRole.userID === userID) || {}
         }
 
         // no user roles to delete in store, fetch
         if (userRolesToDelete === undefined) {
-            return dispatch(loadDomainUserRoles("clinic", clinicID))
-                .then(() => {
-                    return dispatch(deleteUserFromClinic(clinicID, userID))
-                })
+            return dispatch(loadDomainUserRoles("clinic", clinicID)).then(() => {
+                return dispatch(deleteUserFromClinic(clinicID, userID))
+            })
         }
 
         _.forEach(userRolesToDelete, userRole => {

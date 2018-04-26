@@ -49,17 +49,16 @@ class Roles extends React.Component {
     determineState(props) {
         let loading = !props.roles || props.rolesLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
 
-        this.setState({loading: loading})
+        this.setState({ loading: loading })
     }
 
     addRole = () => e => {
         if (this.state.roleName) {
-            this.props.addRole(this.state.roleName)
-                .then(response => {
-                    if (response.id) {
-                        this.props.history.push(`/roles/${response.id}`)
-                    }
-                })
+            this.props.addRole(this.state.roleName).then(response => {
+                if (response.id) {
+                    this.props.history.push(`/roles/${response.id}`)
+                }
+            })
         } else {
             this.props.open("You must enter role name", "", COLOR_DANGER)
         }
@@ -70,10 +69,9 @@ class Roles extends React.Component {
     }
 
     deleteRole = id => e => {
-        this.props.deleteRole(id)
-            .then(response => {
-                this.props.history.push(`/roles`)
-            })
+        this.props.deleteRole(id).then(response => {
+            this.props.history.push(`/roles`)
+        })
     }
 
     render() {
@@ -113,7 +111,7 @@ class Roles extends React.Component {
                                                 <button onClick={this.deleteRole(role.id)} className="btn btn-sm btn-light" type="button">
                                                     <span className="icon_trash" />
                                                 </button>
-                                            ) : (null)}
+                                            ) : null}
                                         </td>
                                     </tr>
                                 ))}
@@ -135,7 +133,7 @@ class Roles extends React.Component {
                                     </button>
                                 </div>
                             </div>
-                        ) : (null)}
+                        ) : null}
                     </div>
 
                     <div className="col">
@@ -149,14 +147,20 @@ class Roles extends React.Component {
 
 const mapStateToProps = (state, ownProps) => {
     return {
-        roles: ownProps.roles ? (state.roles.allLoaded ? _.fromPairs(_.map(ownProps.roles, roleID => [roleID, state.roles.roles[roleID]])) : undefined) : (state.roles.allLoaded ? state.roles.roles : undefined),
+        roles: ownProps.roles
+            ? state.roles.allLoaded
+                ? _.fromPairs(_.map(ownProps.roles, roleID => [roleID, state.roles.roles[roleID]]))
+                : undefined
+            : state.roles.allLoaded
+                ? state.roles.roles
+                : undefined,
         rolesLoading: state.roles.loading,
         withDetail: !ownProps.match.isExact,
         path: ownProps.location.pathname,
         canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
         canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
         validationsLoading: state.validations.loading,
-        forbidden: state.roles.forbidden,
+        forbidden: state.roles.forbidden
     }
 }
 

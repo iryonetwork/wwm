@@ -51,7 +51,7 @@ class App extends React.Component {
                         </Link>
                     </div>
 
-                    { this.props.isAdmin ? (
+                    {this.props.isAdmin ? (
                         <div>
                             <NavLink className="navigation" to="/users">
                                 Users
@@ -81,7 +81,7 @@ class App extends React.Component {
                                 User roles
                             </NavLink>
                         </div>
-                    ) : (null)}
+                    ) : null}
 
                     <div className="bottom">
                         <NavLink className="navigation" to="/me">

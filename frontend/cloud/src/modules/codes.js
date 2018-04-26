@@ -1,5 +1,5 @@
 import _ from "lodash"
-import store from '../store'
+import store from "../store"
 
 import api from "./api"
 import { open, COLOR_DANGER } from "shared/modules/alert"
@@ -28,7 +28,7 @@ export default (state = initialState, action) => {
         case LOAD_CODES_SUCCESS:
             return {
                 loading: false,
-                codes: _.assign({}, state.codes || {}, _.fromPairs([[action.category, _.keyBy(action.codes, "id")]])),
+                codes: _.assign({}, state.codes || {}, _.fromPairs([[action.category, _.keyBy(action.codes, "id")]]))
             }
         case LOAD_CODES_FAIL:
             let forbidden = false

@@ -56,7 +56,7 @@ class OrganizationsIndex extends React.Component {
                     <Link to="/organizations/new" className="btn btn-sm btn-outline-primary col">
                         Add new organization
                     </Link>
-                ) : (null)}
+                ) : null}
             </div>
         )
     }
@@ -66,13 +66,13 @@ const mapStateToProps = state => ({
     canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
     canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
     validationsLoading: state.validations.loading,
-    forbidden: false,
+    forbidden: false
 })
 
 const mapDispatchToProps = dispatch =>
     bindActionCreators(
         {
-            loadUserRights,
+            loadUserRights
         },
         dispatch
     )
