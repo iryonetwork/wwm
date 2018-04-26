@@ -20,7 +20,6 @@ type Config struct {
 	StoragePath      string `env:"STORAGE_PATH" envDefault:"storage"`
 	AuthHost         string `env:"AUTH_HOST" envDefault:"localAuth"`
 	AuthPath         string `env:"AUTH_PATH" envDefault:"auth"`
-	VaultAddress     string `env:"VAULT_ADDRESS" envDefault:"https://vault:8200"`
 }
 
 // New returns new instance of Config
