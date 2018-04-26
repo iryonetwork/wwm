@@ -70,7 +70,7 @@ class Clinics extends React.Component {
         this.setState({
             loading: loading,
             clinics: _.values(props.clinics),
-            selectedClinicID: selectedClinicID ? selectedClinicID : undefined
+            selectedClinicID: selectedClinicID || undefined
         })
     }
 

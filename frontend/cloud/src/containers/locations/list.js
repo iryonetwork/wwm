@@ -43,7 +43,14 @@ class Locations extends React.Component {
     }
 
     determineState(props) {
-        let loading = !props.locations || props.locationsLoading || props.canEdit === undefined || props.canSee === undefined || props.validationsLoading
+        let loading =
+            !props.locations ||
+            props.locationsLoading ||
+            props.canEdit === undefined ||
+            props.canSee === undefined ||
+            props.validationsLoading ||
+            !props.countries ||
+            props.codesLoading
         this.setState({ loading: loading })
     }
 

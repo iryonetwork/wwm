@@ -71,17 +71,15 @@ class OrganizationDetail extends React.Component {
         this.setState({ loading: loading })
 
         if (props.organization) {
-            let address = _.clone(props.organization.address)
-            let representative = _.clone(props.organization.representative)
-            let primaryContact = _.clone(props.organization.primaryContact)
-
-            this.setState({ organization: props.organization })
-            this.setState({ name: props.organization.name })
-            this.setState({ legalStatus: props.organization.legalStatus ? props.organization.legalStatus : "" })
-            this.setState({ serviceType: props.organization.serviceType ? props.organization.serviceType : "" })
-            this.setState({ address: address ? address : {} })
-            this.setState({ representative: representative ? representative : {} })
-            this.setState({ primaryContact: primaryContact ? primaryContact : {} })
+            this.setState({
+                organization: props.organization,
+                name: props.organization.name,
+                legalStatus: props.organization.legalStatus || "",
+                serviceType: props.organization.serviceType || "",
+                address: _.clone(props.organization.address) || {},
+                representative: _.clone(props.organization.representative) || {},
+                primaryContact: _.clone(props.organization.primaryContact) || {}
+            })
         }
     }
 

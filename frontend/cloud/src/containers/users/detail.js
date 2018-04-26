@@ -111,8 +111,10 @@ class UserDetail extends React.Component {
                 })
             }
 
-            this.setState({ email: props.user.email })
-            this.setState({ personalData: personalData ? personalData : {} })
+            this.setState({
+                email: props.user.email,
+                personalData: personalData || {}
+            })
         }
     }
 

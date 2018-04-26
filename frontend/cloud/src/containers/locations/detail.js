@@ -66,13 +66,15 @@ class LocationDetail extends React.Component {
         if (props.location) {
             let manager = _.clone(props.location.manager)
 
-            this.setState({ name: props.location.name })
-            this.setState({ capacity: props.location.capacity ? props.location.capacity : "" })
-            this.setState({ country: props.location.country ? props.location.country : "" })
-            this.setState({ city: props.location.city ? props.location.city : "" })
-            this.setState({ electricty: props.location.electricty ? props.location.electricty : false })
-            this.setState({ waterSupply: props.location.watterSupply ? props.location.watterSupply : false })
-            this.setState({ manager: manager ? manager : {} })
+            this.setState({
+                name: props.location.name,
+                capacity: props.location.capacity || "",
+                country: props.location.country || "",
+                city: props.location.city || "",
+                electricty: props.location.electricty || false,
+                waterSupply: props.location.waterSupply || false,
+                manager: manager || {}
+            })
         }
     }
 

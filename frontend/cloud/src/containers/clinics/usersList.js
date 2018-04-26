@@ -79,6 +79,7 @@ class UsersList extends React.Component {
             props.canSee === undefined ||
             props.validationsLoading
         this.setState({ loading: loading })
+
         if (!loading) {
             this.setState({
                 clinicUsers: _.map(props.clinicUserIDs ? props.clinicUserIDs : [], userID => {
