@@ -2,6 +2,7 @@ package waitlist
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/rs/zerolog"
 
@@ -51,6 +52,8 @@ var keyQueue = []byte("queue")
 
 const priorityLevels = 4
 
+var dbPermissions os.FileMode = 0666
+
 // New returns a new instance of storage
 func New(path string, key []byte, logger zerolog.Logger) (Storage, error) {
 	logger = logger.With().Str("component", "storage/waitlist").Logger()
@@ -60,7 +63,7 @@ func New(path string, key []byte, logger zerolog.Logger) (Storage, error) {
 		return nil, fmt.Errorf("Encryption key must be 32 bytes long")
 	}
 
-	db, err := bolt.Open(key, path, 0x600, nil)
+	db, err := bolt.Open(key, path, dbPermissions, nil)
 	if err != nil {
 		return nil, err
 	}

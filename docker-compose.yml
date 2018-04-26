@@ -209,7 +209,7 @@ services:
     - DOMAIN_TYPE=clinic
     - DOMAIN_ID=e4ebb41b-7c62-4db7-9e1c-f47058b96dd0
     - KEY_PATH=/certs/private.key
-    - CERT_PATH=/certs/public.key
+    - CERT_PATH=/certs/public.crt
     - STORAGE_ENCRYPTION_KEY=6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
 
   localStatusReporter:

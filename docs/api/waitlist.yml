@@ -379,7 +379,7 @@ definitions:
         example: Sore throat
       vital_signs:
         type: object
-        additionalProperties: 
+        additionalProperties:
           type: string
       added:
         type: string

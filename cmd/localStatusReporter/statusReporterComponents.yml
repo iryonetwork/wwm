@@ -8,6 +8,9 @@ Local:
   discovery:
     urlType: Internal
     url: https://localDiscovery:4433/status
+  waitlist:
+    urlType: Internal
+    url: https://waitlist:4433/status
 Cloud:
   storage:
     urlType: Internal

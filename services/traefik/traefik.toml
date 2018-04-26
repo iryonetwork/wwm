@@ -60,6 +60,14 @@ address = ":8080"
     [backends.waitlist.servers.server1]
     url = "https://waitlist"
 
+  [backends.waitlistMetrics]
+    [backends.waitlistMetrics.servers.server1]
+    url = "https://waitlist:9090"
+
+  [backends.waitlistStatus]
+    [backends.waitlistStatus.servers.server1]
+    url = "https://waitlist:4433"
+
   [backends.localMinio]
     [backends.localMinio.servers.server1]
     url = "https://localMinio:9000"
