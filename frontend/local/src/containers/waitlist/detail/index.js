@@ -1,19 +1,28 @@
 import React from "react"
+import { Route, Link } from "react-router-dom"
 
-//import "./style.css"
+import "./style.css"
 
 import { ReactComponent as ComplaintIcon } from "shared/icons/complaint.svg"
 import { ReactComponent as MedicalDataIcon } from "shared/icons/vitalsigns.svg"
 import { ReactComponent as LaboratoryIcon } from "shared/icons/laboratory.svg"
-
 import { ReactComponent as NegativeIcon } from "shared/icons/negative.svg"
 import { ReactComponent as PositiveIcon } from "shared/icons/positive.svg"
 
-export default () => (
+import { joinPaths } from "shared/utils"
+
+import MedicalData from "./add-data"
+import LaboratoryTest from "./add-lab-test"
+import EditComplaint from "./edit-complaint"
+import AddDiagnosis from "./add-diagnosis"
+
+export default ({ match }) => (
     <div>
         <header>
             <h1>In consultation</h1>
-            <button className="btn btn-primary btn-wide">Add diagnosis</button>
+            <Link to={joinPaths(match.url, "add-diagnosis")} className="btn btn-primary btn-wide">
+                Add diagnosis
+            </Link>
         </header>
 
         <div className="section">
@@ -21,7 +30,9 @@ export default () => (
                 <h2>
                     <ComplaintIcon />Main Complaint
                 </h2>
-                <button className="btn btn-link">Edit main complaint</button>
+                <Link to={joinPaths(match.url, "edit-complaint")} className="btn btn-link">
+                    Edit main complaint
+                </Link>
             </header>
 
             <h3>Knee pain</h3>
@@ -38,7 +49,9 @@ export default () => (
                     <MedicalDataIcon />
                     Medical Data
                 </h2>
-                <button className="btn btn-link">Add medical data</button>
+                <Link to={joinPaths(match.url, "add-data")} className="btn btn-link">
+                    Add medical data
+                </Link>
             </header>
             <div className="card-group">
                 <div className="col-md-5 col-lg-4 col-xl-3">
@@ -121,7 +134,9 @@ export default () => (
                     <LaboratoryIcon />
                     Laboratory Tests
                 </h2>
-                <button className="btn btn-link">Add laboratory test</button>
+                <Link to={joinPaths(match.url, "add-lab-test")} className="btn btn-link">
+                    Add laboratory test
+                </Link>
             </header>
 
             <dl className="lab">
@@ -142,5 +157,10 @@ export default () => (
                 </dd>
             </dl>
         </div>
+
+        <Route path={match.url + "/add-diagnosis"} component={AddDiagnosis} />
+        <Route path={match.url + "/add-data"} component={MedicalData} />
+        <Route path={match.url + "/add-lab-test"} component={LaboratoryTest} />
+        <Route path={match.url + "/edit-complaint"} component={EditComplaint} />
     </div>
 )

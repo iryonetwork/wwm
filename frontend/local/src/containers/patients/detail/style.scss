@@ -261,3 +261,85 @@
         }
     }
 }
+
+.personal {
+    .navigation {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px;
+
+        a {
+            display: inline-block;
+            margin-right: 30px;
+            padding-bottom: 20px;
+            color: $grey4;
+
+            &.active {
+                border-bottom: 3px solid $black !important;
+                color: $black;
+            }
+
+            &:hover {
+                border-bottom: 3px solid $grey4;
+                text-decoration: none;
+            }
+        }
+    }
+
+    .section {
+        padding-top: 25px;
+        display: flex;
+
+        .row {
+            flex: 1;
+        }
+
+        h3 {
+            width: 240px;
+            font-size: 18px;
+            padding-top: 10px;
+        }
+
+        .buttons {
+            margin-top: 20px;
+        }
+
+        .content {
+            flex: 1;
+
+            .label {
+                text-transform: uppercase;
+                color: $grey5;
+                font-size: 11px;
+            }
+            .value {
+                font-weight: bold;
+            }
+
+            .row {
+                margin-bottom: 40px;
+            }
+        }
+    }
+
+    .patient-form {
+        position: relative;
+
+        .remove {
+            right: 0;
+            z-index: 1;
+        }
+
+        h3 {
+            border-top: 1px solid $gray-300;
+            border-bottom: none;
+            padding-top: 35px;
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            margin-left: -10px;
+            margin-right: -10px;
+        }
+    }
+}

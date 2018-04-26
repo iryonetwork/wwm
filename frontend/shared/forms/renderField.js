@@ -47,10 +47,11 @@ const renderRadio = ({ input, className, label, options, meta: { touched, error 
     </div>
 )
 
-const renderTextarea = ({ input, optional, label, meta: { touched, error } }) => (
+const renderTextarea = ({ input, rows, optional, label, meta: { touched, error } }) => (
     <label>
         <textarea
             {...input}
+            rows={rows || 5}
             className={classnames("form-control", { "is-invalid": touched && error })}
             placeholder={classnames(label, { "(optional)": optional })}
         />

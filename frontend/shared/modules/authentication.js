@@ -42,6 +42,7 @@ export default (state = initialState, action) => {
                 draft.form.password = action.password
                 break
             case RENEW_RETRY:
+                draft.redirectToReferrer = false
                 draft.retries = state.retries + 1
                 break
             case RENEW_FAILED:
@@ -79,6 +80,8 @@ export const renewToken = () => {
                         })
 
                         localStorage.setItem("token", token)
+
+                        dispatch({ type: RENEW_RETRY })
 
                         return setTimeout(() => {
                             dispatch(renewToken())

@@ -352,16 +352,27 @@ label {
     }
 
     span {
-        font-size: 11px;
-        color: $gray-500;
-        display: block;
         position: absolute;
-        text-transform: uppercase;
         top: -20px;
-        transition: top 0.1s ease-in-out;
     }
 
     .invalid-feedback {
         position: absolute;
     }
+}
+
+.patient-form,
+.medical-data {
+    label span,
+    .label {
+        font-size: 11px;
+        color: $gray-500;
+        display: block;
+        text-transform: uppercase;
+        transition: top 0.1s ease-in-out;
+    }
+}
+
+.form-inline-container span {
+    margin-right: 0;
 }
