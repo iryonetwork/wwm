@@ -19,6 +19,7 @@ import (
 	"github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats-streaming"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/rs/cors"
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/restapi"
@@ -168,11 +169,15 @@ func main() {
 	m := APIMetrics.NewMetrics("api", "").
 		WithURLSanitize(utils.WhitelistURLSanitize([]string{"storage", "versions", "sync"}))
 
-	// set handler with middlewares
-	apiHandler := logMW.APILogMiddleware(api.Serve(nil), logger)
-	apiHandler = m.Middleware(apiHandler)
+	// set API handler with middlewares
+	handler := cors.New(cors.Options{
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders: []string{"Authorization", "Content-Type"},
+	}).Handler(api.Serve(nil))
+	handler = logMW.APILogMiddleware(handler, logger)
+	handler = m.Middleware(handler)
 
-	server.SetHandler(apiHandler)
+	server.SetHandler(handler)
 
 	// Start servers
 	// create exit channel that is used to wait for all servers goroutines to exit orederly and carry the errors
