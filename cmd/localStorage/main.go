@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -14,7 +15,6 @@ import (
 	"time"
 
 	loads "github.com/go-openapi/loads"
-	"github.com/golang/mock/gomock"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats-streaming"
@@ -30,10 +30,10 @@ import (
 	storage "github.com/iryonetwork/wwm/service/storage"
 	statusServer "github.com/iryonetwork/wwm/status/server"
 	"github.com/iryonetwork/wwm/storage/s3"
-	"github.com/iryonetwork/wwm/storage/s3/mock"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 	"github.com/iryonetwork/wwm/sync/storage/publisher"
 	"github.com/iryonetwork/wwm/utils"
+	"github.com/iryonetwork/wwm/utils/keyProvider"
 )
 
 func main() {
@@ -60,18 +60,17 @@ func main() {
 	}
 
 	// initialize keyProvider
-	ctrl := gomock.NewController(nil)
-	keys := mock.NewMockKeyProvider(ctrl)
-	keys.EXPECT().Get(gomock.Any()).AnyTimes().Return("SECRETSECRETSECRETSECRETSECRETSE", nil)
-
-	// TODO: fetch from vault
-	s3secret := "localminio"
+	key, err := base64.StdEncoding.DecodeString(cfg.StorageEncryptionKey)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to decode storage encryption key")
+	}
+	keys := keyProvider.New(string(key))
 
 	// initialize storage
 	s3cfg := &s3.Config{
 		Endpoint:     cfg.S3Endpoint,
 		AccessKey:    cfg.S3AccessKey,
-		AccessSecret: s3secret,
+		AccessSecret: cfg.S3Secret,
 		Secure:       true,
 		Region:       cfg.S3Region,
 	}
@@ -82,9 +81,7 @@ func main() {
 
 	// initialize storageSync publisher
 	// create nats/nats-streaming connection
-	// TODO: get secret from vault
-	secret := "secret"
-	URLs := fmt.Sprintf("tls://%s:%s@%s", cfg.NatsUsername, secret, cfg.NatsAddr)
+	URLs := fmt.Sprintf("tls://%s:%s@%s", cfg.NatsUsername, cfg.NatsSecret, cfg.NatsAddr)
 	ClusterID := cfg.NatsClusterID
 	ClientID := cfg.NatsClientID
 	ClientCert := cfg.CertPath

@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -13,7 +14,6 @@ import (
 	"syscall"
 
 	loads "github.com/go-openapi/loads"
-	"github.com/golang/mock/gomock"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/rs/zerolog"
 
@@ -26,9 +26,9 @@ import (
 	storage "github.com/iryonetwork/wwm/service/storage"
 	statusServer "github.com/iryonetwork/wwm/status/server"
 	"github.com/iryonetwork/wwm/storage/s3"
-	"github.com/iryonetwork/wwm/storage/s3/mock"
 	"github.com/iryonetwork/wwm/sync/storage/publisher"
 	"github.com/iryonetwork/wwm/utils"
+	"github.com/iryonetwork/wwm/utils/keyProvider"
 )
 
 func main() {
@@ -54,18 +54,17 @@ func main() {
 	}
 
 	// initialize keyProvider
-	ctrl := gomock.NewController(nil)
-	keys := mock.NewMockKeyProvider(ctrl)
-	keys.EXPECT().Get(gomock.Any()).AnyTimes().Return("SECRETSECRETSECRETSECRETSECRETSE", nil)
-
-	// TODO: fetch from vault
-	s3secret := "cloudminio"
+	key, err := base64.StdEncoding.DecodeString(cfg.StorageEncryptionKey)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to decode storage encryption key")
+	}
+	keys := keyProvider.New(string(key))
 
 	// initialize storage
 	s3cfg := &s3.Config{
 		Endpoint:     cfg.S3Endpoint,
 		AccessKey:    cfg.S3AccessKey,
-		AccessSecret: s3secret,
+		AccessSecret: cfg.S3Secret,
 		Secure:       true,
 		Region:       cfg.S3Region,
 	}

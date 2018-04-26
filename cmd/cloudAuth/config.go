@@ -14,6 +14,9 @@ import (
 // Config represents configuration of cloudAuth
 type Config struct {
 	config.Config
+
+	StorageEncryptionKey string `env:"STORAGE_ENCRYPTION_KEY,required"`
+
 	BoltDBFilepath string `env:"BOLT_DB_FILEPATH" envDefault:"/data/cloudAuth.db"`
 	// filepath to yaml
 	ServiceCertsAndPaths Services `env:"SERVICES_FILEPATH" envDefault:"/serviceCertsAndPaths.yml"`

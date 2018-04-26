@@ -17,6 +17,7 @@ type Config struct {
 	NatsClusterID      string        `env:"NATS_CLUSTER_ID" envDefault:"localNats"`
 	NatsClientID       string        `env:"NATS_CLIENT_ID" envDefault:"storageSync"`
 	NatsUsername       string        `env:"NATS_USERNAME" envDefault:"nats"`
+	NatsSecret         string        `env:"NATS_SECRET,required"`
 	NatsConnRetries    int           `env:"NATS_CONN_RETRIES" envDefault:"10"`
 	NatsConnWait       time.Duration `env:"NATS_CONN_WAIT" envDefault:"500ms"`
 	NatsConnWaitFactor float32       `env:"NATS_CONN_WAIT_FACTOR" envDefault:"3.0"`

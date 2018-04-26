@@ -21,6 +21,7 @@ Environment variable | Default value | Description
 `CLOUD_STORAGE_PATH` | `storage` | *Root path of cloud Storage service API, used as destination storage for sync.*
 `NATS_ADDR` | `localNats:4242` | *NATS server address.*
 `NATS_USERNAME` | `nats` | *Username used to connect to NATS.*
+`NATS_SECRET` | *none*, ***required*** | *Secret used to connect to NATS.*
 `NATS_CONN_RETRIES` | `10` | *Number of attempts to connect to NATS.*
 `NATS_CONN_WAIT` | `500ms` | *Initial wait time before reattempting to connect to NATS after failed attempt.*
 `NATS_CONN_WAIT_FACTOR` | `3.0` | *Factor by which wait time increases after each consecutive failed retry.*

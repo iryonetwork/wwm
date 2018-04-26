@@ -14,6 +14,7 @@ Environment variable | Default value | Description
 `DOMAIN_ID` | `*` |  *Domain in which component is operating, normally it should be '*' for all cloud components and clinic ID for local components.*
 `KEY_PATH` | *none*, ***required*** | *Path to service's private key (PEM-formatted file).*
 `CERT_PATH` | *none*, ***required*** | *Path to service's public key (PEM-formatted file).*
+`STORAGE_ENCRYPTION_KEY` | *none*, ***required*** | *Base64-encoded storage encryption key.*
 `AUTH_SYNC_KEY_PATH` | *none*, ***required*** | *Path to service's private key (PEM-formatted file) used for auth data sync.*
 `AUTH_SYNC_CERT_PATH` | *none*, ***required*** | *Path to service's public key (PEM-formatted file) used for auth data sync.*
 `BOLT_DB_FILEPATH` | `/data/localAuth.db` | *Path to Bolt DB file in which auhtentication data are stored.*

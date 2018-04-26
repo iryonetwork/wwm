@@ -10,6 +10,8 @@ import (
 type Config struct {
 	config.Config
 
+	StorageEncryptionKey string `env:"STORAGE_ENCRYPTION_KEY,required"`
+
 	BoltDBFilepath string `env:"BOLT_DB_FILEPATH" envDefault:"/data/waitlist.db"`
 }
 

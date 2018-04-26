@@ -68,7 +68,6 @@ type Storage interface {
 // KeyProvider lists methods required for reading encryption keys
 type KeyProvider interface {
 	Get(string) (string, error)
-	Read(b []byte) (n int, err error)
 }
 
 // Minio interface describes functions used in minio-go package for mocking

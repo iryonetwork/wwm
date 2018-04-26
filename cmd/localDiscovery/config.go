@@ -10,8 +10,8 @@ import (
 type Config struct {
 	config.Config
 
-	VaultToken  string `env:"VAULT_TOKEN,required"`
-	VaultDBRole string `env:"VAULT_DB_ROLE,required"`
+	DbUsername string `env:"DB_USERNAME,required"`
+	DbPassword string `env:"DB_PASSWORD,required"`
 
 	PGHost     string `env:"POSTGRES_HOST" envDefault:"postgres"`
 	PGDatabase string `env:"POSTGRES_DATABASE" envDefault:"localdiscovery"`

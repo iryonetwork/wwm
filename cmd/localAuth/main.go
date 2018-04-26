@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"os/signal"
@@ -52,8 +53,10 @@ func main() {
 	}
 
 	// initialize storage
-	// TODO: get key from vault
-	key := []byte{0xe9, 0xf8, 0x2d, 0xf9, 0xc4, 0x14, 0xc1, 0x41, 0xdb, 0x87, 0x31, 0x1a, 0x95, 0x79, 0x5, 0xbf, 0x71, 0x12, 0x30, 0xd3, 0x2d, 0x8b, 0x59, 0x9d, 0x27, 0x13, 0xfa, 0x84, 0x55, 0x63, 0x64, 0x64}
+	key, err := base64.StdEncoding.DecodeString(cfg.StorageEncryptionKey)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to decode storage encryption key")
+	}
 
 	dbPath := cfg.BoltDBFilepath
 	// if there is no database file download it from cloud
@@ -87,6 +90,7 @@ func main() {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to initialize auth storage")
 	}
+
 	// register metrics collected by storage
 	m := storage.GetPrometheusMetricsCollection()
 	for _, metric := range m {

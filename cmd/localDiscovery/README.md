@@ -8,6 +8,8 @@ Environment variable | Default value | Description
 ------------ | ------------- | -------------
 `KEY_PATH` | *none*, ***required*** | *Path to service's private key (PEM-formatted file).*
 `CERT_PATH` | *none*, ***required*** | *Path to service's public key (PEM-formatted file).*
+`DB_USERNAME` | *none*, ***required*** | *PostgreSQL DB username.*
+`DB_PASSWORD` | *none*, ***required*** | *PostgreSQL DB password.*
 `AUTH_HOST` | `localAuth` | *Hostname of adjacent (local) Auth service API.*
 `AUTH_PATH` | `auth` | *Root path of adjacent (local) Auth service API.*
 `SERVER_HOST` | `0.0.0.0` | *Hostname under which service exposes its HTTP servers.*

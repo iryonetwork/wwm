@@ -9,9 +9,14 @@ import (
 // Config represents configuration of localAuth
 type Config struct {
 	config.Config
-	BoltDBFilepath   string `env:"BOLT_DB_FILEPATH" envDefault:"/data/localAuth.db"`
-	CloudAuthHost    string `env:"CLOUD_AUTH_HOST" envDefault:"cloudAuth"`
-	CloudAuthPath    string `env:"CLOUD_AUTH_PATH" envDefault:"auth"`
+
+	StorageEncryptionKey string `env:"STORAGE_ENCRYPTION_KEY,required"`
+
+	BoltDBFilepath string `env:"BOLT_DB_FILEPATH" envDefault:"/data/localAuth.db"`
+
+	CloudAuthHost string `env:"CLOUD_AUTH_HOST" envDefault:"cloudAuth"`
+	CloudAuthPath string `env:"CLOUD_AUTH_PATH" envDefault:"auth"`
+
 	AuthSyncKeyPath  string `env:"AUTH_SYNC_KEY_PATH,required"`
 	AuthSyncCertPath string `env:"AUTH_SYNC_CERT_PATH,required"`
 }

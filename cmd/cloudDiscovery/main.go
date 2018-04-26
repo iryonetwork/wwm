@@ -10,6 +10,12 @@ import (
 	"syscall"
 
 	loads "github.com/go-openapi/loads"
+	flags "github.com/jessevdk/go-flags"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/rs/cors"
+	"github.com/rs/zerolog"
+
 	"github.com/iryonetwork/wwm/gen/discovery/restapi"
 	"github.com/iryonetwork/wwm/gen/discovery/restapi/operations"
 	APIMetrics "github.com/iryonetwork/wwm/metrics/api"
@@ -19,12 +25,6 @@ import (
 	statusServer "github.com/iryonetwork/wwm/status/server"
 	discoveryStorage "github.com/iryonetwork/wwm/storage/discovery"
 	"github.com/iryonetwork/wwm/utils"
-	"github.com/iryonetwork/wwm/utils/dbLease"
-	flags "github.com/jessevdk/go-flags"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"github.com/rs/cors"
-	"github.com/rs/zerolog"
 )
 
 func main() {
@@ -50,21 +50,10 @@ func main() {
 		return
 	}
 
-	// fetch database credentials
-	leaseCfg := &dbLease.Config{
-		VaultAddress: cfg.VaultAddress,
-		VaultToken:   cfg.VaultToken,
-		VaultDBRole:  cfg.VaultDBRole,
-	}
-	dbCreds, err := dbLease.GetCreds(ctx, leaseCfg, logger)
-	if err != nil {
-		logger.Fatal().Err(err).Msg("Failed to fetch database credentials")
-	}
-
 	// connect to database
 	connStr := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=require",
-		dbCreds.Username,
-		dbCreds.Password,
+		cfg.DbUsername,
+		cfg.DbPassword,
 		cfg.PGHost,
 		cfg.PGDatabase)
 	db, err := gorm.Open("postgres", connStr)

@@ -17,29 +17,6 @@ services:
     - 443:443
     - 8080:8080
 
-  vault:
-    image: vault
-    environment:
-    - VAULT_DEV_ROOT_TOKEN_ID=root
-    - VAULT_DEV_LISTEN_ADDRESS=127.0.0.1:8800
-    cap_add:
-    - IPC_LOCK
-    ports:
-    - 8200:8200
-    volumes:
-    - ./bin/tls:/certs
-    - ./services/vault/vault.hcl:/vault/config/local.hcl
-    - ./services/vault/policies:/vault/config/policies
-
-  vaultui:
-    image: djenriquez/vault-ui
-    environment:
-    - VAULT_URL_DEFAULT=https://vault:8200
-    - VAULT_AUTH_DEFAULT=TOKEN
-    - NODE_TLS_REJECT_UNAUTHORIZED=0
-    depends_on:
-    - vault
-
   localAuth:
     build:
       context: .
@@ -60,6 +37,7 @@ services:
     - CERT_PATH=/certs/localAuth.pem
     - AUTH_SYNC_KEY_PATH=/certs/localAuthSync-key.pem
     - AUTH_SYNC_CERT_PATH=/certs/localAuthSync.pem
+    - STORAGE_ENCRYPTION_KEY=6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
 
   localStorage:
     image: golang:1.9-alpine
@@ -74,6 +52,9 @@ services:
     - DOMAIN_ID=e4ebb41b-7c62-4db7-9e1c-f47058b96dd0
     - KEY_PATH=/certs/localStorage-key.pem
     - CERT_PATH=/certs/localStorage.pem
+    - S3_SECRET=localminio
+    - STORAGE_ENCRYPTION_KEY=6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
+    - NATS_SECRET=secret
 
   localMinio:
     image: minio/minio
@@ -103,6 +84,8 @@ services:
     - DOMAIN_ID=*
     - KEY_PATH=/certs/cloudStorage-key.pem
     - CERT_PATH=/certs/cloudStorage.pem
+    - S3_SECRET=cloudminio
+    - STORAGE_ENCRYPTION_KEY=6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
 
   cloudMinio:
     image: minio/minio
@@ -135,6 +118,7 @@ services:
     - DOMAIN_ID=*
     - KEY_PATH=/certs/cloudAuth-key.pem
     - CERT_PATH=/certs/cloudAuth.pem
+    - STORAGE_ENCRYPTION_KEY=6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
 
   localNats:
     image: nats-streaming
@@ -160,6 +144,7 @@ services:
     environment:
     - KEY_PATH=/certs/storageSync-key.pem
     - CERT_PATH=/certs/storageSync.pem
+    - NATS_SECRET=secret
 
   localPrometheus:
     image: prom/prometheus
@@ -223,6 +208,9 @@ services:
     environment:
     - DOMAIN_TYPE=clinic
     - DOMAIN_ID=e4ebb41b-7c62-4db7-9e1c-f47058b96dd0
+    - KEY_PATH=/certs/private.key
+    - CERT_PATH=/certs/public.key
+    - STORAGE_ENCRYPTION_KEY=6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
 
   localStatusReporter:
     image: golang:1.9-alpine
@@ -268,6 +256,8 @@ services:
     - VAULT_DB_ROLE=localDiscoveryService
     - KEY_PATH=/certs/localDiscovery-key.pem
     - CERT_PATH=/certs/localDiscovery.pem
+    - DB_USERNAME=localdiscovery
+    - DB_PASSWORD=localdiscovery
     # - DEBUG=1
 
   cloudDiscovery:
@@ -287,6 +277,8 @@ services:
     - KEY_PATH=/certs/cloudDiscovery-key.pem
     - CERT_PATH=/certs/cloudDiscovery.pem
     - AUTH_HOST=cloudAuth
+    - DB_USERNAME=clouddiscovery
+    - DB_PASSWORD=clouddiscovery
     # - DEBUG=1
 
   pgweb:

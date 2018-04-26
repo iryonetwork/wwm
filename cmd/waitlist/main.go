@@ -3,6 +3,7 @@ package main
 //go:generate sh -c "mkdir -p ../../gen/waitlist/ && swagger generate server -A waitlist -t ../../gen/waitlist/ -f ../../docs/api/waitlist.yml --exclude-main --principal string"
 
 import (
+	"encoding/base64"
 	"fmt"
 	"os"
 
@@ -37,10 +38,11 @@ func main() {
 		logger.Fatal().Err(err).Msg("failed to get config")
 	}
 
-	// TODO: don't hardcode this key
-	key := []byte{0x8c, 0x7b, 0x71, 0x7f, 0xd9, 0x13, 0xaf, 0xef, 0x5d, 0xcb, 0x18, 0x84, 0xc9, 0x9c, 0xc, 0x44, 0x61, 0x8b, 0xa6, 0xa9, 0x78, 0x69, 0x31, 0x0, 0x21, 0x55, 0x51, 0x22, 0xc2, 0xf4, 0xa0, 0xe3}
-
 	// initialize the service
+	key, err := base64.StdEncoding.DecodeString(cfg.StorageEncryptionKey)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to decode storage encryption key")
+	}
 	storage, err := waitlist.New(cfg.BoltDBFilepath, key, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to initialize waitlist storage")

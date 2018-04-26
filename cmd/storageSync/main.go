@@ -63,9 +63,7 @@ func main() {
 	handlers := storageSync.NewHandlers(localClient.Operations, auth, cloudClient.Operations, auth, logger)
 
 	// create nats/nats-streaming connection
-	// TODO: get secret from vault
-	secret := "secret"
-	URLs := fmt.Sprintf("tls://%s:%s@%s", cfg.NatsUsername, secret, cfg.NatsAddr)
+	URLs := fmt.Sprintf("tls://%s:%s@%s", cfg.NatsUsername, cfg.NatsSecret, cfg.NatsAddr)
 	ClusterID := cfg.NatsClusterID
 	ClientID := cfg.NatsClientID
 	ClientCert := cfg.CertPath

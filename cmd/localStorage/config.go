@@ -11,13 +11,19 @@ import (
 // Config represents configuration of localStorage
 type Config struct {
 	config.Config
-	S3Endpoint         string        `env:"S3_ENDPOINT" envDefault:"localMinio:9000"`
-	S3AccessKey        string        `env:"S3_ACCESS_KEY" envDefault:"local"`
-	S3Region           string        `env:"S3_REGION" envDefault:"us-east-1"`
+
+	S3Endpoint  string `env:"S3_ENDPOINT" envDefault:"localMinio:9000"`
+	S3AccessKey string `env:"S3_ACCESS_KEY" envDefault:"local"`
+	S3Region    string `env:"S3_REGION" envDefault:"us-east-1"`
+	S3Secret    string `env:"S3_SECRET,required"`
+
+	StorageEncryptionKey string `env:"STORAGE_ENCRYPTION_KEY,required"`
+
 	NatsAddr           string        `env:"NATS_ADDR" envDefault:"localNats:4242"`
 	NatsClusterID      string        `env:"NATS_CLUSTER_ID" envDefault:"localNats"`
 	NatsClientID       string        `env:"NATS_CLIENT_ID" envDefault:"localStorage"`
 	NatsUsername       string        `env:"NATS_USERNAME" envDefault:"nats"`
+	NatsSecret         string        `env:"NATS_SECRET,required"`
 	NatsConnRetries    int           `env:"NATS_CONN_RETRIES" envDefault:"5"`
 	NatsConnWait       time.Duration `env:"NATS_CONN_WAIT" envDefault:"500ms"`
 	NatsConnWaitFactor float32       `env:"NATS_CONN_WAIT_FACTOR" envDefault:"3.0"`

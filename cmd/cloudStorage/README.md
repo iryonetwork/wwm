@@ -12,6 +12,8 @@ Environment variable | Default value | Description
 `S3_ENDPOINT` | `cloudMinio:9000` | *S3 object storage endpoint.*
 `S3_ACCESS_KEY` | `cloud` | *S3 object storage access key.*
 `S3_REGION` | `us-east-1` | *S3 object storage region.*
+`S3_SECRET` | *none*, ***required*** | *S3 object storage secret.*
+`STORAGE_ENCRYPTION_KEY` | *none*, ***required***  | *Base64-encoded storage encryption key.*
 `AUTH_HOST` | `localAuth` | *Hostname of adjacent (cloud) Auth service API.*
 `AUTH_PATH` | `auth` | *Root pathof adjacent (cloud) Auth service API.*
 `SERVER_HOST` | `0.0.0.0` | *Hostname under which service exposes its HTTP servers.*

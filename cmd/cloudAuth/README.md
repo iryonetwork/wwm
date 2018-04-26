@@ -58,6 +58,7 @@ Environment variable | Default value | Description
 `DOMAIN_ID` | `*` |  *Domain in which component is operating, normally it should be '*' for all cloud components and clinic ID for local components.*
 `KEY_PATH` | *none*, ***required*** | *Path to service's private key (PEM-formatted file).*
 `CERT_PATH` | *none*, ***required*** | *Path to service's public key (PEM-formatted file).*
+`STORAGE_ENCRYPTION_KEY` |  *none*, ***required*** | *Base64-encoded storage encryption key.*
 `BOLT_DB_FILEPATH` | `/data/cloudAuth.db` | *Path to Bolt DB file in which authentication data are stored.*
 `SERVICES_FILEPATH` | `/serviceCertsAndPaths.yml` | *Path to YAML file listing services certificates and API paths that they are allowed to access.*
 `STORAGE_INIT_DATA_FILEPATH` | `/storageInitData.yml` | *Path to YAML file containing data to be initialized in database.*

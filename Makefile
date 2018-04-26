@@ -1,4 +1,4 @@
-BASIC_SERVICES = traefik postgres cloudSymmetric pgweb vault localMinio cloudMinio localNats natsStreamingExporter localPrometheusPushGateway localPrometheus cloudPrometheus cloudAuth localAuth localStorage cloudStorage localNats storageSync waitlist localStatusReporter cloudDiscovery localDiscovery localSymmetric
+BASIC_SERVICES = traefik postgres cloudSymmetric pgweb localMinio cloudMinio localNats natsStreamingExporter localPrometheusPushGateway localPrometheus cloudPrometheus cloudAuth localAuth localStorage cloudStorage localNats storageSync waitlist localStatusReporter cloudDiscovery localDiscovery localSymmetric
 BIN_CMD ?=
 
 .PHONY: up run stop build
@@ -20,11 +20,6 @@ up: $(addprefix up/,$(BASIC_SERVICES)) ## start all basic services
 
 up/%: .bin/% stop/% ## start a service in background
 	docker-compose up -d $*
-
-up/vault: stop/vault ensure/postgres waitFor/postgres-5432
-	docker-compose up -d vault
-	$(MAKE) waitFor/vault:8200
-	./bin/vault-init.sh
 
 up/cloudSymmetric: stop/cloudSymmetric ensure/postgres waitFor/postgres-5432
 	docker-compose up -d cloudSymmetric
