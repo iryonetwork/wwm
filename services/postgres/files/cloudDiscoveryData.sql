@@ -272,7 +272,22 @@ INSERT INTO codes (category_id, code_id) VALUES
     ('licenses', 'dl-a'),
     ('licenses', 'dl-b'),
     ('licenses', 'dl-c'),
-    ('licenses', 'dl-d');
+    ('licenses', 'dl-d'),
+
+    -- Concept 224083004
+    ('maritalStatus', 'SNOMED-33553000'),
+    ('maritalStatus', 'SNOMED-87915002'),
+    ('maritalStatus', 'SNOMED-20295000'),
+    ('maritalStatus', 'SNOMED-54986009'),
+    ('maritalStatus', 'SNOMED-125681006'),
+
+    ('gender', 'CODED-at0310'),
+    ('gender', 'CODED-at0311'),
+    ('gender', 'CODED-at0312'),
+    ('gender', 'CODED-at0313'),
+
+    ('documentTypes', 'un-id'),
+    ('documentTypes', 'syrian-id');
 
 INSERT INTO code_titles (category_id, code_id, locale, title) VALUES
     ('countries', 'AF', 'en', 'Afghanistan'),
@@ -535,4 +550,19 @@ INSERT INTO code_titles (category_id, code_id, locale, title) VALUES
     ('licenses', 'dl-a', 'en', 'Category A driving license'),
     ('licenses', 'dl-b', 'en', 'Category B driving license'),
     ('licenses', 'dl-c', 'en', 'Category C driving license'),
-    ('licenses', 'dl-d', 'en', 'Category D driving license');
+    ('licenses', 'dl-d', 'en', 'Category D driving license'),
+
+    -- Concept 224083004
+    ('maritalStatus', 'SNOMED-33553000', 'en', 'Widowed'),
+    ('maritalStatus', 'SNOMED-87915002', 'en', 'Married'),
+    ('maritalStatus', 'SNOMED-20295000', 'en', 'Divorced'),
+    ('maritalStatus', 'SNOMED-54986009', 'en', 'Engaged'),
+    ('maritalStatus', 'SNOMED-125681006', 'en', 'Single'),
+
+    ('gender', 'CODED-at0310', 'en', 'Male'),
+    ('gender', 'CODED-at0311', 'en', 'Female'),
+    ('gender', 'CODED-at0312', 'en', 'Intersex or indeterminate'),
+    ('gender', 'CODED-at0313', 'en', 'Not declared/inadequately described'),
+
+    ('documentTypes', 'un-id', 'en', 'UN ID'),
+    ('documentTypes', 'syrian-id', 'en', 'Syrian ID');

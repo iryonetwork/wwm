@@ -2,6 +2,8 @@ import React, { Component } from "react"
 //import PropTypes from "prop-types"
 import classnames from "classnames"
 
+import Alert from "shared/containers/alert"
+
 import Step1 from "./step1"
 import Step2 from "./step2"
 import Step3 from "./step3"
@@ -66,6 +68,8 @@ class NewPatientForm extends Component {
                                     </li>
                                 </ol>
                             </div>
+
+                            <Alert />
 
                             <div>
                                 {page === 1 && <Step1 onSubmit={this.nextPage} />}

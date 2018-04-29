@@ -1,5 +1,12 @@
 @import "shared/styles/variables.scss";
 
+.new-patient {
+    .alert {
+        top: 0;
+        margin-bottom: -10px;
+    }
+}
+
 .patient-form {
     h3 {
         font-size: 18px;
