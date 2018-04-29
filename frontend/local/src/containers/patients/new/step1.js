@@ -1,65 +1,22 @@
-import React from "react"
+import React, { Component } from "react"
+import { connect } from 'react-redux'
 import { Field, FieldArray, reduxForm } from "redux-form"
 
 import validate from "./validate"
 import Footer from "./footer"
+import Spinner from "shared/containers/spinner"
 import { renderInput, renderSelect } from "shared/forms/renderField"
+import { getCodesAsOptions, loadCategories as loadCategoriesImport } from "shared/modules/codes"
 import { documentTypeOptions } from "./options"
-
-const genderOptions = [
-    {
-        label: "Male",
-        value: "m"
-    },
-    {
-        label: "Female",
-        value: "f"
-    }
-]
-
-const maritalStatusOptions = [
-    {
-        label: "Single",
-        value: "single"
-    },
-    {
-        label: "Maried",
-        value: "maried"
-    },
-    {
-        label: "Divorced",
-        value: "divorced"
-    },
-    {
-        label: "Widowed",
-        value: "widowed"
-    }
-]
 
 const numberOfKidsOptions = Array.from(Array(9), (x, i) => ({
     label: i,
     value: i
 }))
 
-const nationalityOptions = [
-    {
-        label: "Syrian",
-        value: "syrian"
-    }
-]
-
-const countryOptions = [
-    {
-        label: "Syria",
-        value: "syria"
-    }
-]
-
-const Form = () => (
+const Form = (props) => (
     <div className="patient-form">
         <h3>Identification</h3>
-
-        <Field name="image" type="file" component={renderImageField} />
 
         <div className="form-row">
             <div className="form-group col-sm-4">
@@ -75,10 +32,10 @@ const Form = () => (
 
         <div className="form-row">
             <div className="form-group col-sm-4">
-                <Field name="gender" component={renderSelect} options={genderOptions} label="Gender" />
+                <Field name="gender" component={renderSelect} options={props.genders} label="Gender" />
             </div>
             <div className="form-group col-sm-4">
-                <Field name="maritalStatus" component={renderSelect} options={maritalStatusOptions} label="Marital status" />
+                <Field name="maritalStatus" component={renderSelect} options={props.maritalStatus} label="Marital status" />
             </div>
             <div className="form-group col-sm-4">
                 <Field name="numberOfKids" component={renderSelect} options={numberOfKidsOptions} label="Number of kids" />
@@ -87,10 +44,10 @@ const Form = () => (
 
         <div className="form-row">
             <div className="form-group col-sm-4">
-                <Field name="nationality" component={renderSelect} options={nationalityOptions} label="Nationality" />
+                <Field name="nationality" component={renderSelect} options={props.countries} label="Nationality" />
             </div>
             <div className="form-group col-sm-4">
-                <Field name="countryOfOrigin" component={renderSelect} options={countryOptions} label="Country of origin" />
+                <Field name="countryOfOrigin" component={renderSelect} options={props.countries} label="Country of origin" />
             </div>
         </div>
 
@@ -103,12 +60,12 @@ const Form = () => (
             </div>
         </div>
 
-        <FieldArray name="documents" component={renderDocuments} />
+        <FieldArray name="documents" component={renderDocuments} documentTypes={props.documentTypes} />
 
         <h3>Contact</h3>
         <div className="form-row">
             <div className="form-group col-sm-4">
-                <Field name="country" component={renderSelect} options={countryOptions} label="Country" />
+                <Field name="country" component={renderSelect} options={props.countries} label="Country" />
             </div>
             <div className="form-group col-sm-2">
                 <Field name="camp" component={renderInput} label="Camp" />
@@ -147,24 +104,40 @@ const Form = () => (
     </div>
 )
 
-const Step1 = props => {
-    const { handleSubmit, reset } = props
-    return (
-        <form onSubmit={handleSubmit}>
-            <div className="modal-body">
-                <Form />
-            </div>
+class Step1 extends Component {
+    componentWillMount() {
+        this.props.loadCategories('gender', 'maritalStatus', 'countries', 'documentTypes')
+    }
 
-            <Footer reset={reset} />
-        </form>
-    )
+    render() {
+        const { handleSubmit, reset, codesLoading, getCodes } = this.props
+
+        if (codesLoading) {
+            return <Spinner />
+        }
+
+        return (
+            <form onSubmit={handleSubmit}>
+                <div className="modal-body">
+                    <Form
+                        countries={getCodes('countries')}
+                        maritalStatus={getCodes('maritalStatus')}
+                        genders={getCodes('gender')}
+                        documentTypes={getCodes('documentTypes')}/>
+                </div>
+
+                <Footer reset={reset} />
+            </form>
+        )
+    }
 }
 
-const renderDocuments = ({ fields, meta: { error, submitFailed } }) =>
-    fields.map((doc, index) => (
+const renderDocuments = (props) => {
+    const { fields, documentTypes, meta: { error, submitFailed } } = props
+    return fields.map((doc, index) => (
         <div className="form-row" key={index}>
             <div className="form-group col-sm-4">
-                <Field name={`${doc}.type`} options={documentTypeOptions} component={renderSelect} label="ID document type" />
+                <Field name={`${doc}.type`} options={documentTypes} component={renderSelect} label="ID document type" />
             </div>
             <div className="form-group col-sm-4">
                 <Field name={`${doc}.number`} component={renderInput} label="Number" />
@@ -172,49 +145,15 @@ const renderDocuments = ({ fields, meta: { error, submitFailed } }) =>
             {index === fields.length - 1 && (
                 <div className="form-group col-sm-4">
                     <button className="btn btn-link addDocument" onClick={() => fields.push({})}>
-                        Add addidional document
+                        Add additional document
                     </button>
                 </div>
             )}
         </div>
     ))
-
-const renderImageField = field => {
-    let value = field.input.value
-    delete field.input.value
-
-    let image = null
-    if (value && value.length) {
-        let reader = new FileReader()
-        reader.onload = e => {
-            if (image) {
-                image.style.backgroundImage = "url('" + e.target.result.replace(/(\r\n|\n|\r)/gm, "") + "')"
-            }
-        }
-        reader.readAsDataURL(value[0])
-    }
-
-    return (
-        <div className="form-row">
-            <div className="form-group col-sm-2">
-                <div
-                    className="image"
-                    ref={div => {
-                        image = div
-                    }}
-                />
-            </div>
-            <div className="form-group col-sm-10">
-                <input type="file" className="custom-file-input" accept="image/*" {...field.input} />
-                <button type="button" className="btn btn-image btn-secondary btn-wide">
-                    Add profile picture
-                </button>
-            </div>
-        </div>
-    )
 }
 
-export default reduxForm({
+Step1 = reduxForm({
     form: "newPatient",
     destroyOnUnmount: false,
     forceUnregisterOnUnmount: true,
@@ -223,5 +162,14 @@ export default reduxForm({
     },
     validate
 })(Step1)
+
+Step1 = connect(
+    state => ({
+        codesLoading: state.codes.loading,
+    }),
+    { getCodes: getCodesAsOptions, loadCategories: loadCategoriesImport }
+)(Step1)
+
+export default Step1
 
 export { Form }

@@ -3,6 +3,7 @@ import { push } from "react-router-redux"
 import jwtDecode from "jwt-decode"
 
 import { open, close, COLOR_DANGER } from "./alert"
+import { LOADING } from "./codes";
 
 export const LOGIN = "authentication/LOGIN"
 export const ERROR = "authentication/ERROR"
@@ -176,6 +177,12 @@ export const setPassword = password => {
             type: SET_PASSWORD,
             password
         })
+    }
+}
+
+export const getToken = () => {
+    return (dispatch, getState) => {
+        return getState().authentication.tokenString
     }
 }
 
