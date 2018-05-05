@@ -39,6 +39,7 @@ import (
 	"io"
 	"regexp"
 	"sort"
+	"strings"
 
 	"github.com/go-openapi/strfmt"
 	"github.com/minio/minio-go/pkg/encrypt"
@@ -111,6 +112,8 @@ const Write Operation = Operation(models.FileDescriptorOperationW)
 // Delete represents read operation
 const Delete Operation = Operation(models.FileDescriptorOperationD)
 
+const bucketExistsErrMsg = "Your previous request to create the named bucket succeeded and you already own it."
+
 // ErrAlreadyExists indicates bucket or file already exists
 var ErrAlreadyExists = errors.New("Item already exists")
 
@@ -164,7 +167,10 @@ func (s *s3storage) MakeBucket(_ context.Context, bucketID string) error {
 	}
 
 	if !exists {
-		if err := s.client.MakeBucket(bucketID, s.cfg.Region); err != nil {
+		if err := s.client.MakeBucket(bucketID, s.cfg.Region); err != nil && strings.Contains(err.Error(), bucketExistsErrMsg) {
+			s.logger.Debug().Err(err).Msg("Looks like bucket actually exists when MakeBucket was called")
+			return ErrAlreadyExists
+		} else if err != nil {
 			return errors.Wrap(err, "Failed to create a new bucket")
 		}
 	}
