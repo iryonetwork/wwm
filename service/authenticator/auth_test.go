@@ -109,7 +109,7 @@ func TestAuthorizerForSyncPaths(t *testing.T) {
 	s := &service{
 		syncServices: map[string]syncService{
 			"test_cert_key_id": {
-				glob: glob.MustCompile("{/auth/login,/storage/*,/something/other*,/storage/*/bucket}"),
+				glob: glob.MustCompile("{/api/auth/login,/api/storage/*,/api/something/other*,/api/storage/*/bucket}"),
 			},
 		},
 	}
