@@ -5,10 +5,21 @@ import { defaultsDeep, get } from "lodash"
 
 export const LOCALE = 'locale'
 export const BASE_URL = 'baseUrl'
+export const CLINIC_ID = 'clinicId'
+export const LOCATION_ID = 'locationId'
+export const BABY_MAX_AGE = 'babyMaxAge'
+export const CHILD_MAX_AGE = 'childMaxAge'
 
-let initialState = {}
-initialState[LOCALE] = 'en'
-initialState[BASE_URL] = 'https://iryo.local'
+let initialState = {
+    [LOCALE]: 'en',
+    [BASE_URL]: 'https://iryo.local',
+    [CLINIC_ID]: 'e4ebb41b-7c62-4db7-9e1c-f47058b96dd0',
+    [LOCATION_ID]: '2d04b22e-1cc3-46b4-96dd-2bee5bad9ffa',
+    [BABY_MAX_AGE]: 1,
+    [CHILD_MAX_AGE]: 7,
+}
+
+// @TODO: Fetch config from URL
 
 export default (state = initialState, action) => {
     return produce(state, draft => {

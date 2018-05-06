@@ -1,12 +1,15 @@
 import React, { Component } from "react"
-import { withRouter } from "react-router-dom"
+import { connect } from "react-redux"
+import { push } from "react-router-redux"
 import { Field, reduxForm } from "redux-form"
 //import PropTypes from "prop-types"
 //import classnames from "classnames"
 
+import { get, cardToObject } from "../../../modules/discovery"
 import { renderInput, renderRadio, renderTextarea, renderSelect } from "shared/forms/renderField"
 import { yesNoOptions } from "shared/forms/options"
 import Patient from "shared/containers/patient"
+import Spinner from "shared/containers/spinner"
 import "./style.css"
 
 const doctorOptions = [
@@ -19,8 +22,7 @@ const doctorOptions = [
 class AddToWaitlist extends Component {
     constructor(props) {
         super(props)
-
-        this.state = {}
+        props.get(props.match.params.patientID)
     }
 
     componentDidMount() {
@@ -32,14 +34,62 @@ class AddToWaitlist extends Component {
     }
 
     render() {
-        let { history } = this.props
+        const { fetching, patient } = this.props
+        console.log(JSON.stringify(fetching), JSON.stringify(patient))
+        if (fetching || !patient) {
+            return (
+                <React.Fragment>
+                    <div className="add-to-waitlist modal fade show" tabIndex="-1" role="dialog">
+                        <div className="modal-dialog" role="document">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h1>Add to Waiting List</h1>
+                                </div>
+                                <form>
+                                    <div className="modal-body">
+                                        <Spinner />
+                                    </div>
+
+                                    <div className="modal-footer">
+                                        <div className="form-row">
+                                            <div className="col-sm-4">
+                                                <button
+                                                    type="button"
+                                                    tabIndex="-1"
+                                                    className="btn btn-link btn-block"
+                                                    datadismiss="modal"
+                                                    disabled
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                            <div className="col-sm-4" />
+                                            <div className="col-sm-4">
+                                                <button type="submit" className="float-right btn btn-primary btn-block" disabled>
+                                                    Add
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="modal-backdrop fade show" />
+                </React.Fragment>
+            )
+        }
+
+        const p = cardToObject(patient)
+
         return (
             <React.Fragment>
                 <div className="add-to-waitlist modal fade show" tabIndex="-1" role="dialog">
                     <div className="modal-dialog" role="document">
                         <div className="modal-content">
                             <div className="modal-header">
-                                <Patient />
+                                <Patient data={p} />
                                 <h1>Add to Waiting List</h1>
                             </div>
                             <form>
@@ -70,7 +120,7 @@ class AddToWaitlist extends Component {
                                                 className="btn btn-link btn-block"
                                                 datadismiss="modal"
                                                 onClick={() => {
-                                                    history.push("/")
+                                                    push("/")
                                                 }}
                                             >
                                                 Cancel
@@ -95,8 +145,19 @@ class AddToWaitlist extends Component {
     }
 }
 
-export default withRouter(
-    reduxForm({
-        form: "addToWaitlist"
-    })(AddToWaitlist)
-)
+AddToWaitlist = reduxForm({
+    form: "addToWaitlist"
+})(AddToWaitlist)
+
+AddToWaitlist = connect(
+    state => ({
+        patient: state.discovery.patient,
+        fetching: state.discovery.fetching,
+    }),
+    {
+        push,
+        get,
+    }
+)(AddToWaitlist)
+
+export default AddToWaitlist

@@ -1,9 +1,9 @@
 import produce from "immer"
 import { push } from "react-router-redux"
 import jwtDecode from "jwt-decode"
+import {read, BASE_URL} from "./config"
 
 import { open, close, COLOR_DANGER } from "./alert"
-import { LOADING } from "./codes";
 
 export const LOGIN = "authentication/LOGIN"
 export const ERROR = "authentication/ERROR"
@@ -59,11 +59,10 @@ export default (state = initialState, action) => {
 
 // 10 minutes
 const renewInterval = 10 * 60 * 1000
-const baseURL = "https://iryo.cloud"
 
 export const renewToken = () => {
     return (dispatch, getState) => {
-        return fetch(`${baseURL}/auth/renew`, {
+        return fetch(`${read(BASE_URL)}/auth/renew`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: getState().authentication.tokenString
@@ -121,7 +120,7 @@ export const login = () => {
             type: LOGIN
         })
 
-        return fetch(`${baseURL}/auth/login`, {
+        return fetch(`${read(BASE_URL)}/auth/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

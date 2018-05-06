@@ -15,13 +15,29 @@ const renderInput = ({ input, optional, label, type, meta: { touched, error } })
     </label>
 )
 
+const renderHorizontalInput = ({ input, optional, label, unit, hideLabel, type, meta: { touched, error } }) => (
+    <div className="form-row">
+        <div className="col-sm-6">{!hideLabel && label}</div>
+        <div className={'form-group ' + (unit ? 'col-sm-4' : 'col-sm-6')}>
+            <input
+                {...input}
+                className={classnames("form-control", { "is-invalid": touched && error })}
+                placeholder={classnames(label, { "(optional)": optional })}
+                type={type || "text"}
+            />
+            {touched && error && <div className="invalid-feedback">{error}</div>}
+        </div>
+        { unit && <div className="col-sm-2">{unit}</div>}
+    </div>
+)
+
 const renderSelect = ({ input, pristine, label, options, meta: { touched, error } }) => (
     <label>
         <select {...input} className={classnames("form-control", { "is-invalid": touched && error, selected: input.value !== "" })}>
             <option value="" disabled>
                 {label}
             </option>
-            {options.map(option => (
+            {(options || []).map(option => (
                 <option value={option.value} key={option.value}>
                     {option.label}
                 </option>
@@ -33,9 +49,29 @@ const renderSelect = ({ input, pristine, label, options, meta: { touched, error 
     </label>
 )
 
-const renderRadio = ({ input, className, label, options, meta: { touched, error } }) => (
+const renderHorizontalSelect = ({ input, pristine, label, unit, options, meta: { touched, error } }) => (
+    <div className="form-row">
+        <div className="col-sm-6">{label}</div>
+        <div className={'form-group ' + (unit ? 'col-sm-4' : 'col-sm-6')}>
+            <select {...input} className={classnames("form-control", { "is-invalid": touched && error, selected: input.value !== "" })}>
+                <option value="" disabled>
+                    {label}
+                </option>
+                {options.map(option => (
+                    <option value={option.value} key={option.value}>
+                        {option.label}
+                    </option>
+                ))}
+            </select>
+            {touched && error && <div className="invalid-feedback">{error}</div>}
+        </div>
+        { unit && <div className="col-sm-2">{unit}</div>}
+    </div>
+)
+
+const renderRadio = ({ input, className, label, options, hideLabel, meta: { touched, error } }) => (
     <div className={classnames("form-inline-container", className)}>
-        <span className="label">{label}</span>
+        { !hideLabel && <span className="label">{label}</span> }
         {options.map((option, index) => (
             <div key={index} className="form-check form-check-inline">
                 <input {...input} className="form-check-input" type="radio" id={`${input.name}${index}`} value={option.value} />
@@ -44,6 +80,22 @@ const renderRadio = ({ input, className, label, options, meta: { touched, error 
                 </label>
             </div>
         ))}
+    </div>
+)
+
+const renderHorizontalRadio = ({ input, className, label, options, hideLabel, meta: { touched, error } }) => (
+    <div className="form-row">
+        <div className="col-sm-6">{label}</div>
+        <div className="form-inline-container">
+            {options.map((option, index) => (
+                <div key={index} className="form-check form-check-inline">
+                    <input {...input} className="form-check-input" type="radio" id={`${input.name}${index}`} value={option.value} />
+                    <label className="form-check-label" htmlFor={`${input.name}${index}`}>
+                        {option.label}
+                    </label>
+                </div>
+            ))}
+        </div>
     </div>
 )
 
@@ -94,4 +146,4 @@ const renderHabitFields = fields => (
     </div>
 )
 
-export { renderInput, renderSelect, renderRadio, renderTextarea, renderHabitFields }
+export { renderInput, renderHorizontalInput, renderSelect, renderHorizontalSelect, renderRadio, renderHorizontalRadio, renderTextarea, renderHabitFields }

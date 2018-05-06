@@ -1,9 +1,9 @@
 import React from "react"
-import { Field, reduxForm } from "redux-form"
+import { reduxForm } from "redux-form"
 
 import Modal from "shared/containers/modal"
 import Patient from "shared/containers/patient"
-import { renderInput, renderTextarea } from "shared/forms/renderField"
+// import { renderInput, renderTextarea } from "shared/forms/renderField"
 
 import { ReactComponent as MedicalHistoryIcon } from "shared/icons/medical-history-active.svg"
 

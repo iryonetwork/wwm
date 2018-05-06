@@ -287,7 +287,23 @@ INSERT INTO codes (category_id, code_id) VALUES
     ('gender', 'CODED-at0313'),
 
     ('documentTypes', 'un-id'),
-    ('documentTypes', 'syrian-id');
+    ('documentTypes', 'syrian-id'),
+
+    ('childCommunication', 'smiles'),
+    ('childCommunication', 'babbles'),
+    ('childCommunication', 'pointsToBody'),
+    ('childCommunication', 'knowsOwnNams'),
+    ('childCommunication', 'pointsToBodyParts'),
+    ('childCommunication', 'simplesWords'),
+    ('childCommunication', 'sentences'),
+
+    ('babyFood', 'breastMilk'),
+    ('babyFood', 'babyFood'),
+    ('babyFood', 'formula'),
+    ('babyFood', 'regularFood'),
+
+    ('deliveryType', 'natural'),
+    ('deliveryType', 'ceasarean');
 
 INSERT INTO code_titles (category_id, code_id, locale, title) VALUES
     ('countries', 'AF', 'en', 'Afghanistan'),
@@ -565,4 +581,20 @@ INSERT INTO code_titles (category_id, code_id, locale, title) VALUES
     ('gender', 'CODED-at0313', 'en', 'Not declared/inadequately described'),
 
     ('documentTypes', 'un-id', 'en', 'UN ID'),
-    ('documentTypes', 'syrian-id', 'en', 'Syrian ID');
+    ('documentTypes', 'syrian-id', 'en', 'Syrian ID'),
+
+    ('childCommunication', 'smiles', 'en', 'Smiles'),
+    ('childCommunication', 'babbles', 'en', 'Babbles'),
+    ('childCommunication', 'pointsToBody', 'en', 'Can point to body'),
+    ('childCommunication', 'knowsOwnNams', 'en', 'Knows own name'),
+    ('childCommunication', 'pointsToBodyParts', 'en', 'Can point to body parts'),
+    ('childCommunication', 'simplesWords', 'en', 'Can say simple words'),
+    ('childCommunication', 'sentences', 'en', 'Speaks in sentence'),
+
+    ('babyFood', 'breastMilk', 'en', 'Breast milk'),
+    ('babyFood', 'babyFood', 'en', 'Baby food'),
+    ('babyFood', 'formula', 'en', 'Formula'),
+    ('babyFood', 'regularFood', 'en', 'Regular food'),
+
+    ('deliveryType', 'natural', 'en', 'Natural'),
+    ('deliveryType', 'ceasarean', 'en', 'Ceasarean');

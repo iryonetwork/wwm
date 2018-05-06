@@ -1,7 +1,9 @@
 import React, { Component } from "react"
+import { connect } from 'react-redux'
 //import PropTypes from "prop-types"
 import classnames from "classnames"
 
+import { createPatient } from "../../../modules/patient"
 import Alert from "shared/containers/alert"
 
 import Step1 from "./step1"
@@ -15,11 +17,13 @@ class NewPatientForm extends Component {
         super(props)
         this.nextPage = this.nextPage.bind(this)
         this.previousPage = this.previousPage.bind(this)
+        this.onSubmit = this.onSubmit.bind(this)
         this.state = {
             page: 1,
             maxPage: 1
         }
     }
+
     nextPage() {
         this.setState({
             page: this.state.page + 1,
@@ -37,6 +41,12 @@ class NewPatientForm extends Component {
         }
     }
 
+    onSubmit(data) {
+        return this.props.dispatch(createPatient(data))
+            .then(patientId => {})
+            .catch(ex => {})
+    }
+
     componentDidMount() {
         document.body.style.overflow = "hidden"
     }
@@ -46,7 +56,6 @@ class NewPatientForm extends Component {
     }
 
     render() {
-        const { onSubmit } = this.props
         const { page } = this.state
         return (
             <React.Fragment>
@@ -74,7 +83,7 @@ class NewPatientForm extends Component {
                             <div>
                                 {page === 1 && <Step1 onSubmit={this.nextPage} />}
                                 {page === 2 && <Step2 previousPage={this.previousPage} onSubmit={this.nextPage} />}
-                                {page === 3 && <Step3 previousPage={this.previousPage} onSubmit={onSubmit} />}
+                                {page === 3 && <Step3 previousPage={this.previousPage} onSubmit={this.onSubmit} />}
                             </div>
                         </div>
                     </div>
@@ -89,5 +98,7 @@ class NewPatientForm extends Component {
 NewPatientForm.propTypes = {
     //onSubmit: PropTypes.func.isRequired
 }
+
+NewPatientForm = connect()(NewPatientForm)
 
 export default NewPatientForm

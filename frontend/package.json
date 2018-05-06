@@ -48,5 +48,8 @@
         "semi": false,
         "tabWidth": 4,
         "printWidth": 160
+    },
+    "devDependencies": {
+        "redux-mock-store": "^1.5.1"
     }
 }

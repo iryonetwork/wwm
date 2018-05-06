@@ -3,10 +3,12 @@ import { expect } from "chai"
 import { shallow, mount } from "enzyme"
 import sinon from "sinon"
 
-import { combineReducers, createStore } from "redux"
+import { combineReducers, createStore, applyMiddleware } from "redux"
 import { Provider } from "react-redux"
 import { ConnectedRouter } from "react-router-redux"
 import createHistory from "history/createBrowserHistory"
+// import configureMockStore from "redux-mock-store";
+import thunk from "redux-thunk";
 import rootReducer from "../../../modules"
 
 import Enzyme from "enzyme"
@@ -19,19 +21,75 @@ import Step1 from "./step1"
 import Step2 from "./step2"
 import Step3 from "./step3"
 
+if (!global.window.localStorage) {
+    global.window.localStorage = {
+        getItem() { return '{}'; },
+        setItem() {}
+    };
+}
+
+const initState = {
+    codes: {
+        fetching: [],
+        cache: {
+            countries: [
+                {category: "category", id: "SH", locale: "en", title: "Saint Helena"},
+                {category: "category", id: "SI", locale: "en", title: "Slovenia"},
+            ],
+            gender: [
+                {category: "category", id: "SH", locale: "en", title: "Saint Helena"},
+                {category: "category", id: "SI", locale: "en", title: "Slovenia"},
+            ],
+            maritalStatus: [
+                {category: "category", id: "SH", locale: "en", title: "Saint Helena"},
+                {category: "category", id: "SI", locale: "en", title: "Slovenia"},
+            ],
+            documentTypes: [
+                {category: "category", id: "SH", locale: "en", title: "Saint Helena"},
+                {category: "category", id: "SI", locale: "en", title: "Slovenia"},
+            ],
+        },
+    },
+    patient: {
+        newData: {
+            documents: [{}],
+        },
+    }
+}
+
 describe("<NewPatientForm />", () => {
     it("renders three header links", () => {
-        const wrapper = shallow(<NewPatientForm />)
+        const store = createStore(rootReducer, initState, applyMiddleware(thunk))
+        const history = createHistory()
+
+        const wrapper = mount(
+            <Provider store={store}>
+                <ConnectedRouter history={history}>
+                    <NewPatientForm />
+                </ConnectedRouter>
+            </Provider>
+        )
+
         expect(wrapper.find("ol li")).to.have.length(3)
     })
 
     it("renders first page", () => {
-        const wrapper = shallow(<NewPatientForm />)
+        const store = createStore(rootReducer, initState, applyMiddleware(thunk))
+        const history = createHistory()
+
+        const wrapper = mount(
+            <Provider store={store}>
+                <ConnectedRouter history={history}>
+                    <NewPatientForm />
+                </ConnectedRouter>
+            </Provider>
+        )
+
         expect(wrapper.find(Step1)).to.have.length(1)
     })
 
     it("renders required errors on empty submit", () => {
-        const store = createStore(rootReducer)
+        const store = createStore(rootReducer, initState, applyMiddleware(thunk))
         const history = createHistory()
 
         const wrapper = mount(
@@ -46,7 +104,7 @@ describe("<NewPatientForm />", () => {
     })
 
     it("goes to page 2 when entered required values", () => {
-        const store = createStore(rootReducer)
+        const store = createStore(rootReducer, initState, applyMiddleware(thunk))
         const history = createHistory()
 
         const wrapper = mount(
@@ -56,6 +114,7 @@ describe("<NewPatientForm />", () => {
                 </ConnectedRouter>
             </Provider>
         )
+
         wrapper.find("form").simulate("submit")
         expect(wrapper.find(".is-invalid")).to.have.lengthOf.above(1)
 
@@ -74,7 +133,7 @@ describe("<NewPatientForm />", () => {
         wrapper.find(`select[name="documents[1].type"]`).simulate("change", { target: { value: "syrian_id" } })
         wrapper.find(`input[name="documents[1].number"]`).simulate("change", { target: { value: "54321" } })
 
-        wrapper.find(`select[name="country"]`).simulate("change", { target: { value: "syria" } })
+        wrapper.find(`select[name="country"]`).simulate("change", { target: { value: "SY" } })
         wrapper.find(`input[name="camp"]`).simulate("change", { target: { value: "2" } })
         wrapper.find(`input[name="tent"]`).simulate("change", { target: { value: "7" } })
         expect(wrapper.find(".is-invalid")).to.have.length(0)

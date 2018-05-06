@@ -14,14 +14,6 @@ const requiredFields = [
 
 const validate = values => {
     const errors = {}
-    /*
-    if (!values.firstName) {
-        errors.firstName = "Required"
-    }
-    if (!values.lastName) {
-        errors.lastName = "Required"
-    }
-    */
 
     requiredFields.forEach(field => {
         if (!values[field] || values[field].trim() === "") {

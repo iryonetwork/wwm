@@ -7,7 +7,6 @@ import Footer from "./footer"
 import Spinner from "shared/containers/spinner"
 import { renderInput, renderSelect } from "shared/forms/renderField"
 import { getCodesAsOptions, loadCategories as loadCategoriesImport } from "shared/modules/codes"
-import { documentTypeOptions } from "./options"
 
 const numberOfKidsOptions = Array.from(Array(9), (x, i) => ({
     label: i,
@@ -105,8 +104,9 @@ const Form = (props) => (
 )
 
 class Step1 extends Component {
-    componentWillMount() {
-        this.props.loadCategories('gender', 'maritalStatus', 'countries', 'documentTypes')
+    constructor(props) {
+        super(props)
+        props.loadCategories('gender', 'maritalStatus', 'countries', 'documentTypes')
     }
 
     render() {
@@ -133,7 +133,7 @@ class Step1 extends Component {
 }
 
 const renderDocuments = (props) => {
-    const { fields, documentTypes, meta: { error, submitFailed } } = props
+    const { fields, documentTypes } = props
     return fields.map((doc, index) => (
         <div className="form-row" key={index}>
             <div className="form-group col-sm-4">
@@ -157,17 +157,21 @@ Step1 = reduxForm({
     form: "newPatient",
     destroyOnUnmount: false,
     forceUnregisterOnUnmount: true,
-    initialValues: {
-        documents: [{}]
-    },
+    // initialValues: {
+    //     documents: [{}]
+    // },
     validate
 })(Step1)
 
 Step1 = connect(
     state => ({
         codesLoading: state.codes.loading,
+        initialValues: state.patient.newData,
     }),
-    { getCodes: getCodesAsOptions, loadCategories: loadCategoriesImport }
+    {
+        getCodes: getCodesAsOptions,
+        loadCategories: loadCategoriesImport,
+    }
 )(Step1)
 
 export default Step1
