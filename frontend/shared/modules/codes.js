@@ -1,6 +1,6 @@
 import produce from "immer"
 import { read, LOCALE, BASE_URL } from "./config"
-import { open, close, COLOR_DANGER } from "./alert"
+import { open, COLOR_DANGER } from "./alert"
 import { getToken } from "./authentication"
 
 export const LOADING = "codes/LOADING"
@@ -14,9 +14,6 @@ const initialState = {
     fetching: [],
     failed: [],
 }
-
-const locale = 'en'
-const onlyUnique = (value, index, self) => self.indexOf(value) === index
 
 export default (state = initialState, action) => {
     return produce(state, draft => {
@@ -42,9 +39,16 @@ export default (state = initialState, action) => {
                 break
 
             case FAILED:
+                draft.fetching = draft.fetching.filter(cat => cat !== action.category)
+
                 if (draft.failed.indexOf(action.category) === -1) {
                     draft.failed.push(action.category)
                 }
+
+                if (draft.fetching.length === 0) {
+                    draft.loading = false
+                }
+                break
 
             default:
         }
@@ -52,7 +56,9 @@ export default (state = initialState, action) => {
 }
 
 export const getCodes = (category) => (dispatch, getState) => {
-    return []
+    return (dispatch, getState) => {
+        return getState().codes.cache[category] || []
+    }
 }
 
 export const getCodesAsOptions = (category) => {
@@ -98,12 +104,13 @@ export const loadCategories = (...categories) => {
     }
 }
 
-const load = (category) => {
+export const load = (category) => {
     return dispatch => {
         dispatch({type: LOADING, category})
-        let locale = read(LOCALE)
+        const locale = read(LOCALE)
         const url = `${read(BASE_URL)}/discovery/codes/${category}?locale=${locale}`
-        fetch(url, {
+
+        return fetch(url, {
             method: 'GET',
             headers: {
                 Authorization: dispatch(getToken()),
@@ -112,10 +119,11 @@ const load = (category) => {
         })
             .then(response => Promise.all([response.ok, response.json()]))
             .then(([ok, data]) => {
-                if (ok) {
-                    return dispatch({type: LOADED, category, data})
+                if (!ok) {
+                    throw new Error('Failed to load codes')
                 }
-                throw new Error('Failed to load codes')
+                dispatch({type: LOADED, category, data})
+                return data
             })
             .catch(ex => {
                 dispatch(open('Failed to fetch codes :: '+ex.message, COLOR_DANGER))
@@ -123,28 +131,3 @@ const load = (category) => {
             })
     }
 }
-
-/*
-export const open = (message, code, color, closeIn) => {
-    return dispatch => {
-        dispatch({
-            type: SHOW_ALERT,
-            message,
-            code,
-            color
-        })
-
-        if (closeIn) {
-            setTimeout(() => {
-                dispatch({ type: HIDE_ALERT })
-            }, closeIn * 1000)
-        }
-    }
-}
-
-export const close = () => {
-    return dispatch => {
-        dispatch({ type: HIDE_ALERT })
-    }
-}
-*/

@@ -5,6 +5,10 @@ import { connect } from "react-redux"
 import { close } from "../../modules/alert"
 
 const Alert = props => {
+    if (!props.message) {
+        return null
+    }
+
     return (
         <div className={`alert alert-${props.color} alert-dismissible fade ${props.open ? "show" : ""}`} role="alert">
             {props.code ? `${props.code}:` : ""} {props.message}

@@ -20,7 +20,7 @@ export default (state = initialState, action) => {
                 draft.color = action.color ? action.color : COLOR_PRIMARY
                 break
             case HIDE_ALERT:
-                draft.open = false
+                draft.message = ''
                 break
             default:
         }

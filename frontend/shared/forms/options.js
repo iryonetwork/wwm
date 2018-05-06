@@ -9,4 +9,15 @@ const yesNoOptions = [
     }
 ]
 
-export { yesNoOptions }
+const positiveNegativeOptions = [
+    {
+        value: true,
+        label: "Positive"
+    },
+    {
+        value: false,
+        label: "Negative"
+    }
+]
+
+export { yesNoOptions, positiveNegativeOptions }
