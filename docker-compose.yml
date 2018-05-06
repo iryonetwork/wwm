@@ -204,13 +204,13 @@ services:
     volumes:
     - ./.bin/:/wwm
     - ./.data/waitlist:/data
-    - ./bin/tls/waitlist-key.pem:/certs/private.key:ro
-    - ./bin/tls/waitlist.pem:/certs/public.crt:ro
+    - ./bin/tls:/certs:ro
+    - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
     environment:
     - DOMAIN_TYPE=clinic
     - DOMAIN_ID=e4ebb41b-7c62-4db7-9e1c-f47058b96dd0
-    - KEY_PATH=/certs/private.key
-    - CERT_PATH=/certs/public.crt
+    - KEY_PATH=/certs/waitlist-key.pem
+    - CERT_PATH=/certs/waitlist.pem
     - STORAGE_ENCRYPTION_KEY=6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
 
   localStatusReporter:
