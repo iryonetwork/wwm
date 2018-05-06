@@ -27,6 +27,7 @@ type DB interface {
 	Related(interface{}, ...string) DB
 	Rollback() DB
 	Rows() (*sql.Rows, error)
+	Select(interface{}, ...interface{}) DB
 	Save(interface{}) DB
 	Set(string, interface{}) DB
 	Update(...interface{}) DB
@@ -75,6 +76,10 @@ func (d *db) GetError() error {
 
 func (d *db) GetErrors() []error {
 	return d.db.GetErrors()
+}
+
+func (d *db) Select(query interface{}, args ...interface{}) DB {
+	return &db{d.db.Select(query, args...)}
 }
 
 func (d *db) Model(value interface{}) DB {

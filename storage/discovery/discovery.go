@@ -233,15 +233,18 @@ var getCard = func(tx db.DB, patientID strfmt.UUID) (*models.Card, error) {
 
 // Find looks up a patient by connection's value
 func (s *storage) Find(q string) (models.Cards, error) {
-	conns := []connection{}
-	if err := s.db.Find(&conns, "value ILIKE ?", fmt.Sprintf("%%%s%%", q)).GetError(); err != nil {
+	rows, err := s.db.Model(&connection{}).Where("value ILIKE ?", fmt.Sprintf("%%%s%%", q)).Select("DISTINCT patient_id").Rows()
+	if err != nil {
 		return nil, errors.Wrap(err, "failed to look up matching connections")
 	}
+	defer rows.Close()
 
 	// iterate connections and fetch cards
 	results := models.Cards{}
-	for _, conn := range conns {
-		c, err := getCard(s.db, strfmt.UUID(conn.PatientID))
+	for rows.Next() {
+		var patientID string
+		rows.Scan(&patientID)
+		c, err := getCard(s.db, strfmt.UUID(patientID))
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to fetch card for search results")
 		}
