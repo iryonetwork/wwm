@@ -73,6 +73,58 @@ func (s *storage) AddList(name string) (*models.List, error) {
 	return list, nil
 }
 
+// EnsureDefaultList ensures that default list exists
+func (s *storage) EnsureDefaultList(id, name string) (*models.List, error) {
+	uid, err := uuid.FromString(id)
+	if err != nil {
+		return nil, utils.NewError(utils.ErrBadRequest, err.Error())
+	}
+
+	var list models.List
+
+	// check if list with this id already exists and if so, do not overwrite
+	err = s.db.View(func(tx *bolt.Tx) error {
+		data := tx.Bucket(bucketListMetadata).Get(uid.Bytes())
+		if data == nil {
+			return fmt.Errorf("List does not exist yet")
+		}
+
+		err := list.UnmarshalBinary(data)
+		return err
+	})
+
+	if err == nil {
+		s.logger.Info().Msgf("default list was not created, list with id %s already exists", id)
+		return &list, nil
+	}
+
+	// default list does not exist yet, create it
+	list = models.List{
+		ID:   id,
+		Name: &name,
+	}
+	list.Added = strfmt.DateTime(time.Now())
+
+	data, err := list.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.db.Update(func(tx *bolt.Tx) error {
+		// does not exist yet, create
+		_, err := tx.Bucket(bucketCurrent).CreateBucket(uid.Bytes())
+		if err != nil {
+			return err
+		}
+		return tx.Bucket(bucketListMetadata).Put(uid.Bytes(), data)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &list, nil
+}
+
 // UpdateList updates list metadata
 func (s *storage) UpdateList(list *models.List) (*models.List, error) {
 	id, err := uuid.FromString(list.ID)

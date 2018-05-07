@@ -12,6 +12,9 @@ import (
 
 // Storage provides an interface for waitlist public functions
 type Storage interface {
+	// EnsureDefaultList ensures that default list exists
+	EnsureDefaultList(id, name string) (*models.List, error)
+
 	// Lists returns all active lists
 	Lists() ([]*models.List, error)
 
@@ -69,7 +72,8 @@ func New(path string, key []byte, logger zerolog.Logger) (Storage, error) {
 	}
 
 	s := &storage{
-		db: db,
+		db:     db,
+		logger: &logger,
 	}
 
 	// add initial buckets

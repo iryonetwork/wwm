@@ -51,6 +51,61 @@ func (storage *testStorage) Close() {
 	storage.storage.Close()
 }
 
+func TestEnsureDefaultList(t *testing.T) {
+	s := newTestStorage(nil)
+	defer s.Close()
+
+	defaultListID := "22afd921-0630-49f4-89a8-d1ad7639ee83"
+	defaultListName := "default"
+
+	list, err := s.EnsureDefaultList(defaultListID, defaultListName)
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	if list.ID == "" {
+		t.Fatalf("Expected ID to be set, got an empty string")
+	}
+
+	lists, err := s.Lists()
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+
+	if lists[0].ID != list.ID {
+		t.Fatalf("Expected list ID to be '%s', got '%s'", defaultListID, lists[0].ID)
+	}
+	if *(lists[0].Name) != *list.Name {
+		t.Fatalf("Expected list name to be '%s', got '%s'", defaultListName, *(lists[0].Name))
+	}
+
+	// trying to ensure again with the same ID, should return the list from storage and do not add another one
+	list, err = s.EnsureDefaultList(defaultListID, "different name")
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	if list.ID == "" {
+		t.Fatalf("Expected ID to be set, got an empty string")
+	}
+
+	lists, err = s.Lists()
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+
+	if lists[0].ID != list.ID {
+		t.Fatalf("Expected list ID to be '%s', got '%s'", defaultListID, lists[0].ID)
+	}
+	if *(lists[0].Name) != *list.Name {
+		t.Fatalf("Expected list name to be '%s', got '%s'", defaultListName, *(lists[0].Name))
+	}
+
+	// trying to add with invalid ID should return an error
+	list, err = s.EnsureDefaultList("invalid_id", "list with invalid id")
+	if err == nil {
+		t.Fatalf("Expected error to error, got '%v'", err)
+	}
+}
+
 func TestAddList(t *testing.T) {
 	s := newTestStorage(nil)
 	defer s.Close()

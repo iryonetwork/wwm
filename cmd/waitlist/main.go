@@ -59,6 +59,11 @@ func main() {
 		logger.Fatal().Err(err).Msg("Failed to initialize waitlist storage")
 	}
 
+	_, err = storage.EnsureDefaultList(cfg.DefaultListID, cfg.DefaultListName)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Failed to ensure default list")
+	}
+
 	auth := authorizer.New(cfg.DomainType, cfg.DomainID, fmt.Sprintf("https://%s/%s/validate", cfg.AuthHost, cfg.AuthPath), logger)
 
 	api := operations.NewWaitlistAPI(swaggerSpec)
