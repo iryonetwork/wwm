@@ -7,7 +7,8 @@ const LOAD_USER_RIGHTS = "user/LOAD_USER_RIGHTS"
 const LOAD_USER_RIGHTS_SUCCESS = "user/LOAD_USER_RIGHTS_SUCCESS"
 const LOAD_USER_RIGHTS_FAIL = "user/LOAD_USER_RIGHTS_FAIL"
 
-export const ADMIN_RIGHTS_RESOURCE = "/frontend/dashboard"
+export const SUPERADMIN_RIGHTS_RESOURCE = "/frontend/dashboard/superadmin"
+export const ADMIN_RIGHTS_RESOURCE = "/frontend/dashboard/admin"
 export const SELF_RIGHTS_RESOURCE = "/frontend/dashboard/self"
 
 const initialState = {
@@ -63,12 +64,17 @@ export const loadUserRights = userID => {
                 actions: 1,
                 domainType: "global",
                 domainID: "*"
+            },
+            {
+                resource: SUPERADMIN_RIGHTS_RESOURCE,
+                actions: 1,
+                domainType: "global",
+                domainID: "*"
             }
         ]
 
         return api("/auth/validate", "POST", validations)
             .then(response => {
-                console.log(response)
                 dispatch({
                     type: LOAD_USER_RIGHTS_SUCCESS,
                     userRights: response

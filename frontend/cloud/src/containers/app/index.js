@@ -15,7 +15,7 @@ import LocationDetail from "../locations/detail"
 import Organizations from "../organizations"
 import OrganizationDetail from "../organizations/detail"
 import Clinics from "../clinics"
-import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
+import { SUPERADMIN_RIGHTS_RESOURCE, ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { close } from "shared/modules/alert"
 import Logo from "shared/containers/logo"
 import { ReactComponent as LogoutIcon } from "shared/icons/logout.svg"
@@ -23,7 +23,7 @@ import { ReactComponent as MoreIcon } from "shared/icons/more.svg"
 
 class App extends React.Component {
     componentDidMount() {
-        if (this.props.isAdmin === undefined) {
+        if (this.props.isAdmin === undefined || this.props.isSuperadmin === undefined) {
             this.props.loadUserRights()
         }
     }
@@ -32,7 +32,7 @@ class App extends React.Component {
         if (nextProps.location.pathname !== this.props.location.pathname) {
             this.props.close()
         }
-        if (nextProps.isAdmin === undefined && !nextProps.validationsLoading) {
+        if ((nextProps.isAdmin === undefined || nextProps.isSuperadmin === undefined) && !nextProps.validationsLoading) {
             this.props.loadUserRights()
         }
     }
@@ -68,7 +68,11 @@ class App extends React.Component {
                             <NavLink className="navigation" to="/clinics">
                                 Clinics
                             </NavLink>
+                        </div>
+                    ) : null}
 
+                    {this.props.isSuperadmin ? (
+                        <div>
                             <NavLink className="navigation" to="/roles">
                                 Roles
                             </NavLink>
@@ -124,6 +128,7 @@ class App extends React.Component {
 const mapStateToProps = state => {
     return {
         isAdmin: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+        isSuperadmin: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
         validationsLoading: state.validations.loading
     }
 }

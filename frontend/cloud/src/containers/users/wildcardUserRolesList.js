@@ -7,7 +7,7 @@ import _ from "lodash"
 import { loadRoles } from "../../modules/roles"
 import { makeGetWildcardUserUserRoles } from "../../selectors/userRolesSelectors"
 import { loadUserUserRoles, deleteUserRole } from "../../modules/userRoles"
-import { ADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
+import { SUPERADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 
 class WildcardUserRolesList extends React.Component {
     constructor(props) {
@@ -129,8 +129,8 @@ const makeMapStateToProps = () => {
             userRoles: state.userRoles.userUserRoles ? (state.userRoles.userUserRoles[userID] ? state.userRoles.userUserRoles[userID] : undefined) : undefined,
             userRolesLoading: state.userRoles.loading,
             wildcardUserRoles: getWildcardUserUserRoles(state, { userID: userID }),
-            canSee: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
-            canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+            canSee: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
+            canEdit: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
             validationsLoading: state.validations.loading,
             forbidden: state.userRoles.forbidden || state.users.forbidden || state.roles.forbidden
         }
