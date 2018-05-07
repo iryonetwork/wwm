@@ -81,14 +81,14 @@ paths:
           $ref: '#/responses/500'
 
 
-  /{listId}:
+  /{listID}:
     get:
       tags:
         - item
 
       parameters:
         - in: path
-          name: listId
+          name: listID
           required: true
           type: string
           format: uuid
@@ -124,7 +124,7 @@ paths:
 
       parameters:
         - in: path
-          name: listId
+          name: listID
           required: true
           type: string
           format: uuid
@@ -163,7 +163,7 @@ paths:
 
       parameters:
         - in: path
-          name: listId
+          name: listID
           required: true
           type: string
           format: uuid
@@ -202,7 +202,7 @@ paths:
 
       parameters:
         - in: path
-          name: listId
+          name: listID
           required: true
           type: string
           format: uuid
@@ -226,7 +226,7 @@ paths:
           $ref: '#/responses/500'
 
 
-  /{listId}/{itemId}:
+  /{listID}/{itemID}:
     put:
       summary: Updates item on the waitlist
       tags:
@@ -234,13 +234,13 @@ paths:
 
       parameters:
         - in: path
-          name: listId
+          name: listID
           required: true
           type: string
           format: uuid
 
         - in: path
-          name: itemId
+          name: itemID
           required: true
           type: string
           format: uuid
@@ -277,13 +277,13 @@ paths:
 
       parameters:
         - in: path
-          name: listId
+          name: listID
           required: true
           type: string
           format: uuid
 
         - in: path
-          name: itemId
+          name: itemID
           required: true
           type: string
           format: uuid
@@ -344,7 +344,7 @@ definitions:
   Item:
     type: object
     required:
-      - patient_id
+      - patientID
       - priority
     properties:
       id:
@@ -352,7 +352,7 @@ definitions:
         description: Items UUID
         readOnly: true
         example: 1bdf4870-00b1-4f00-b3b1-e4758f5c7c03
-      patient_id:
+      patientID:
         type: string
         description: Patients UUID
         example: 6a0b7d41-b2d9-4fee-9296-7d678186396d
@@ -377,7 +377,7 @@ definitions:
         type: string
         description: Main complaint
         example: Sore throat
-      vital_signs:
+      vitalSigns:
         type: object
         additionalProperties:
           type: string
