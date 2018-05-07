@@ -8,9 +8,9 @@ import Patient from "shared/containers/patient"
 import Spinner from "shared/containers/spinner"
 import "./style.css"
 
-const ListRow = ({patient}) => {
+const ListRow = ({ patient }) => {
     const p = cardToObject(patient)
-    const id = p['syrian-id'] ? `Syrian ID: ${p['syrian-id']}` : (p['un-id'] ? `UN ID: ${p['un-id']}` : '')
+    const id = p["syrian-id"] ? `Syrian ID: ${p["syrian-id"]}` : p["un-id"] ? `UN ID: ${p["un-id"]}` : ""
 
     return (
         <tr>
@@ -19,7 +19,9 @@ const ListRow = ({patient}) => {
             </th>
             <td>{p.nationality}</td>
             <td>{id}</td>
-            <td>Camp {p.camp}, Tent {p.tent}</td>
+            <td>
+                Camp {p.camp}, Tent {p.tent}
+            </td>
             <td>
                 <Link to={`/to-waitlist/${patient.patientID}`}>Add to Waiting List</Link>
             </td>
@@ -27,7 +29,7 @@ const ListRow = ({patient}) => {
     )
 }
 
-class PatientList extends React.Component{
+class PatientList extends React.Component {
     constructor(props) {
         super(props)
         this.props.search("")
@@ -47,24 +49,24 @@ class PatientList extends React.Component{
 
                 <input name="search" placeholder="Search" className="search" />
 
-                {this.props.searching
-                    ? <Spinner />
-                    : <table className="table patients">
-                        <tbody>
-                            {this.props.patients.map(patient => <ListRow patient={patient} key={patient.patientID} />)}
-                        </tbody>
-                    </table>}
+                {this.props.searching ? (
+                    <Spinner />
+                ) : (
+                    <table className="table patients">
+                        <tbody>{this.props.patients.map(patient => <ListRow patient={patient} key={patient.patientID} />)}</tbody>
+                    </table>
+                )}
             </div>
         )
     }
 }
 
 PatientList = connect(
-    (state) => ({
+    state => ({
         searching: state.discovery.searching || false,
-        patients: state.discovery.patients || [],
+        patients: state.discovery.patients || []
     }),
-    {search, push}
-)(PatientList);
+    { search, push }
+)(PatientList)
 
 export default PatientList

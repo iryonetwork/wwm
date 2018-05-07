@@ -8,7 +8,7 @@ import { Provider } from "react-redux"
 import { ConnectedRouter } from "react-router-redux"
 import createHistory from "history/createBrowserHistory"
 // import configureMockStore from "redux-mock-store";
-import thunk from "redux-thunk";
+import thunk from "redux-thunk"
 import rootReducer from "../../../modules"
 
 import Enzyme from "enzyme"
@@ -23,9 +23,11 @@ import Step3 from "./step3"
 
 if (!global.window.localStorage) {
     global.window.localStorage = {
-        getItem() { return '{}'; },
+        getItem() {
+            return "{}"
+        },
         setItem() {}
-    };
+    }
 }
 
 const initState = {
@@ -33,27 +35,27 @@ const initState = {
         fetching: [],
         cache: {
             countries: [
-                {category: "category", id: "SH", locale: "en", title: "Saint Helena"},
-                {category: "category", id: "SI", locale: "en", title: "Slovenia"},
+                { category: "category", id: "SH", locale: "en", title: "Saint Helena" },
+                { category: "category", id: "SI", locale: "en", title: "Slovenia" }
             ],
             gender: [
-                {category: "category", id: "SH", locale: "en", title: "Saint Helena"},
-                {category: "category", id: "SI", locale: "en", title: "Slovenia"},
+                { category: "category", id: "SH", locale: "en", title: "Saint Helena" },
+                { category: "category", id: "SI", locale: "en", title: "Slovenia" }
             ],
             maritalStatus: [
-                {category: "category", id: "SH", locale: "en", title: "Saint Helena"},
-                {category: "category", id: "SI", locale: "en", title: "Slovenia"},
+                { category: "category", id: "SH", locale: "en", title: "Saint Helena" },
+                { category: "category", id: "SI", locale: "en", title: "Slovenia" }
             ],
             documentTypes: [
-                {category: "category", id: "SH", locale: "en", title: "Saint Helena"},
-                {category: "category", id: "SI", locale: "en", title: "Slovenia"},
-            ],
-        },
+                { category: "category", id: "SH", locale: "en", title: "Saint Helena" },
+                { category: "category", id: "SI", locale: "en", title: "Slovenia" }
+            ]
+        }
     },
     patient: {
         newData: {
-            documents: [{}],
-        },
+            documents: [{}]
+        }
     }
 }
 

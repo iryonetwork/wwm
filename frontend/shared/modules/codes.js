@@ -12,7 +12,7 @@ const initialState = {
     loading: false,
     cache: {},
     fetching: [],
-    failed: [],
+    failed: []
 }
 
 export default (state = initialState, action) => {
@@ -55,17 +55,15 @@ export default (state = initialState, action) => {
     })
 }
 
-export const getCodes = (category) => (dispatch, getState) => {
+export const getCodes = category => (dispatch, getState) => {
     return (dispatch, getState) => {
         return getState().codes.cache[category] || []
     }
 }
 
-export const getCodesAsOptions = (category) => {
+export const getCodesAsOptions = category => {
     return (dispatch, getState) => {
-        return (getState().codes.cache[category] || []).map((code => (
-            {label: code.title, value: code.id}
-        )))
+        return (getState().codes.cache[category] || []).map(code => ({ label: code.title, value: code.id }))
     }
 }
 
@@ -74,14 +72,14 @@ export const loadCategories = (...categories) => {
         const state = getState().codes
         const requestedCategories = (categories || []).length
         let preloadedCategories = 0
-        dispatch({type: LOADING})
+        dispatch({ type: LOADING })
 
-        if (typeof getState !== 'function') {
+        if (typeof getState !== "function") {
             return
         }
 
         // iterate over categories an start loading missing categories
-        (categories || []).forEach(category => {
+        ;(categories || []).forEach(category => {
             // skip if category is
             if (state.cache.hasOwnProperty(category)) {
                 preloadedCategories++
@@ -95,23 +93,23 @@ export const loadCategories = (...categories) => {
 
             // load the category
             dispatch(load(category))
-        });
+        })
 
         // try to mark as done if all categories were skipped
         if (requestedCategories === preloadedCategories) {
-            dispatch({type: LOADED})
+            dispatch({ type: LOADED })
         }
     }
 }
 
-export const load = (category) => {
+export const load = category => {
     return dispatch => {
-        dispatch({type: LOADING, category})
+        dispatch({ type: LOADING, category })
         const locale = read(LOCALE)
         const url = `${read(BASE_URL)}/discovery/codes/${category}?locale=${locale}`
 
         return fetch(url, {
-            method: 'GET',
+            method: "GET",
             headers: {
                 Authorization: dispatch(getToken()),
                 "Content-Type": "application/json"
@@ -120,14 +118,14 @@ export const load = (category) => {
             .then(response => Promise.all([response.ok, response.json()]))
             .then(([ok, data]) => {
                 if (!ok) {
-                    throw new Error('Failed to load codes')
+                    throw new Error("Failed to load codes")
                 }
-                dispatch({type: LOADED, category, data})
+                dispatch({ type: LOADED, category, data })
                 return data
             })
             .catch(ex => {
-                dispatch(open('Failed to fetch codes :: '+ex.message, COLOR_DANGER))
-                dispatch({type: FAILED, category})
+                dispatch(open("Failed to fetch codes :: " + ex.message, COLOR_DANGER))
+                dispatch({ type: FAILED, category })
             })
     }
 }

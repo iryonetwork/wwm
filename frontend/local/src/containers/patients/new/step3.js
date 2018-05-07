@@ -1,11 +1,19 @@
 import React, { Component } from "react"
 import { Field, Fields, FieldArray, formValueSelector, reduxForm } from "redux-form"
-import { connect } from 'react-redux'
+import { connect } from "react-redux"
 import classnames from "classnames"
 
 import Footer from "./footer"
 import validate from "./validate"
-import { renderInput, renderHabitFields, renderRadio, renderSelect, renderHorizontalInput, renderHorizontalSelect, renderHorizontalRadio } from "shared/forms/renderField"
+import {
+    renderInput,
+    renderHabitFields,
+    renderRadio,
+    renderSelect,
+    renderHorizontalInput,
+    renderHorizontalSelect,
+    renderHorizontalRadio
+} from "shared/forms/renderField"
 import { yesNoOptions, positiveNegativeOptions } from "shared/forms/options"
 import { read, BABY_MAX_AGE, CHILD_MAX_AGE } from "shared/modules/config"
 import { getCodesAsOptions, loadCategories as loadCategoriesImport } from "shared/modules/codes"
@@ -19,18 +27,20 @@ const numberOptions = Array.from(Array(9), (x, i) => ({
 
 class Step3 extends Component {
     componentWillMount() {
-        this.props.loadCategories('babyFood', 'childCommunication', 'deliveryType')
+        this.props.loadCategories("babyFood", "childCommunication", "deliveryType")
     }
 
     render() {
-        const { handleSubmit, reset, previousPage, dateOfBirth, codesLoading, getCodes} = this.props
+        const { handleSubmit, reset, previousPage, dateOfBirth, codesLoading, getCodes } = this.props
         return (
             <form onSubmit={handleSubmit}>
-                <RenderForm dateOfBirth={dateOfBirth}
-                    babyFoods={getCodes('babyFood')}
-                    communicationTypes={getCodes('childCommunication')}
-                    deliveryTypes={getCodes('deliveryType')}
-                    codesLoading={codesLoading} />
+                <RenderForm
+                    dateOfBirth={dateOfBirth}
+                    babyFoods={getCodes("babyFood")}
+                    communicationTypes={getCodes("childCommunication")}
+                    deliveryTypes={getCodes("deliveryType")}
+                    codesLoading={codesLoading}
+                />
 
                 <Footer reset={reset} previousPage={previousPage} />
             </form>
@@ -38,15 +48,15 @@ class Step3 extends Component {
     }
 }
 
-const RenderForm = ({dateOfBirth, babyFoods, communicationTypes, deliveryTypes, codesLoading}) => {
+const RenderForm = ({ dateOfBirth, babyFoods, communicationTypes, deliveryTypes, codesLoading }) => {
     if (codesLoading) {
         return null
     }
 
-    const age = (Date.now() - (new Date(dateOfBirth)).getTime()) / (1000 * 60 * 60 * 24 * 365)
+    const age = (Date.now() - new Date(dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365)
 
     if (age <= read(BABY_MAX_AGE)) {
-        return renderBabyForm({babyFoods, deliveryTypes, communicationTypes})
+        return renderBabyForm({ babyFoods, deliveryTypes, communicationTypes })
     } else if (age <= read(CHILD_MAX_AGE)) {
         return renderChildForm()
     } else {
@@ -54,17 +64,16 @@ const RenderForm = ({dateOfBirth, babyFoods, communicationTypes, deliveryTypes, 
     }
 }
 
-const renderAdultForm = (props) => (
+const renderAdultForm = props => (
     <div className="modal-body">
         <HealthAttributes />
         <HabitsAndLivingConditions />
     </div>
 )
 
-const renderBabyForm = ({babyFoods, deliveryTypes, communicationTypes}) => (
+const renderBabyForm = ({ babyFoods, deliveryTypes, communicationTypes }) => (
     <div className="modal-body">
         <h3>Birth data</h3>
-
         <div className="baby-form">
             <div className="form-row">
                 <div className="form-group col-sm-4">
@@ -79,33 +88,30 @@ const renderBabyForm = ({babyFoods, deliveryTypes, communicationTypes}) => (
                 <div className="form-group col-sm-2">
                     <Field name="weeksAtBirth" component={renderInput} label="Weeks at birth" />
                 </div>
-                <div className="col-sm-2 unit">
-                    weeks
-                </div>
+                <div className="col-sm-2 unit">weeks</div>
                 <div className="form-group col-sm-2">
                     <Field name="weightAtBirth" component={renderInput} label="Weight at birth" />
                 </div>
-                <div className="col-sm-2 unit">
-                    grams
-                </div>
+                <div className="col-sm-2 unit">grams</div>
                 <div className="form-group col-sm-2">
                     <Field name="heightAtBirth" component={renderInput} label="Height at birth" />
                 </div>
-                <div className="col-sm-2 unit">
-                    cm
-                </div>
+                <div className="col-sm-2 unit">cm</div>
             </div>
         </div>
-
         <HealthAttributes />
-
         <h3>Habits and living conditions</h3>
-
         <Field name="breastfeeding" component={renderHorizontalRadio} options={yesNoOptions} label="Breastfeeding?" />
         <Field name="breastfeedingDuration" component={renderHorizontalInput} label="For how long?" />
-        <Field name="babyEatsAndDrinks" component={renderHorizontalSelect} options={babyFoods} label="What does your baby eat and drink?" /> { /*@TODO codes */ }
+        <Field name="babyEatsAndDrinks" component={renderHorizontalSelect} options={babyFoods} label="What does your baby eat and drink?" /> {/*@TODO codes */}
         <Field name="babyWetDiapers" component={renderHorizontalSelect} options={numberOptions} label="How many diapers does your child wet in 24h?" />
-        <Field name="babyBowelMovements" component={renderHorizontalSelect} options={numberOptions} label="How frequent does your baby have bowel movements?" /> { /*@ TODO codes */ }
+        <Field
+            name="babyBowelMovements"
+            component={renderHorizontalSelect}
+            options={numberOptions}
+            label="How frequent does your baby have bowel movements?"
+        />{" "}
+        {/*@ TODO codes */}
         <Field name="babyBowelMovementsComment" component={renderHorizontalInput} label="Describe baby's bowel movements" />
         <Field name="babySleep" component={renderHorizontalRadio} options={yesNoOptions} label="Are you satisfied with child's sleep?" />
         <Field name="babySleepComment" component={renderHorizontalInput} label="Comment" hideLabel={true} />
@@ -126,12 +132,27 @@ const renderChildForm = () => (
     <div className="modal-body">
         <h3>Vaccine information</h3>
 
-        <Field name="vaccinationUpToDate" component={renderHorizontalRadio} options={yesNoOptions} label="Was this child up to date with the home country vaccination schedule?" />
-        <Field name="vaccinationCertificates" component={renderHorizontalRadio} options={yesNoOptions} label="Do you have this child's immunization certificates?" />
+        <Field
+            name="vaccinationUpToDate"
+            component={renderHorizontalRadio}
+            options={yesNoOptions}
+            label="Was this child up to date with the home country vaccination schedule?"
+        />
+        <Field
+            name="vaccinationCertificates"
+            component={renderHorizontalRadio}
+            options={yesNoOptions}
+            label="Do you have this child's immunization certificates?"
+        />
         <Field name="tuberculosisTested" component={renderHorizontalRadio} options={yesNoOptions} label="Has this child been tested for tuberculosis?" />
         <Field name="tuberculosisTestResult" component={renderHorizontalRadio} options={positiveNegativeOptions} label="• What was the result?" />
         <Field name="tuberculosisAdditionalInvestigationDetails" component={renderHorizontalInput} label="• Investigation details" />
-        <Field name="tuberculosisAdditionalInvestigation" component={renderHorizontalRadio} options={yesNoOptions} label="• Any additional investigation done?" />
+        <Field
+            name="tuberculosisAdditionalInvestigation"
+            component={renderHorizontalRadio}
+            options={yesNoOptions}
+            label="• Any additional investigation done?"
+        />
         <Field name="vaccinationReaction" component={renderHorizontalRadio} options={yesNoOptions} label="Has the child ever experienced vaccine reaction?" />
         <Field name="vaccinationReactionDetails" component={renderHorizontalRadio} options={yesNoOptions} label="• Any additional investigation done?" />
 
@@ -166,11 +187,7 @@ const HabitsAndLivingConditions = () => (
             component={renderHabitFields}
         />
 
-        <Fields
-            label="Do you have access to clean water?"
-            names={["conditions_clean_water", "conditions_clean_water_comment"]}
-            component={renderHabitFields}
-        />
+        <Fields label="Do you have access to clean water?" names={["conditions_clean_water", "conditions_clean_water_comment"]} component={renderHabitFields} />
 
         <Fields
             label="Do you have sufficient food supply?"
@@ -178,19 +195,11 @@ const HabitsAndLivingConditions = () => (
             component={renderHabitFields}
         />
 
-        <Fields
-            label="Do you have a good appetite?"
-            names={["conditions_good_appetite", "conditions_good_appetite_comment"]}
-            component={renderHabitFields}
-        />
+        <Fields label="Do you have a good appetite?" names={["conditions_good_appetite", "conditions_good_appetite_comment"]} component={renderHabitFields} />
 
         <Fields label="Does your tent have heating?" names={["conditions_heating", "conditions_heating_comment"]} component={renderHabitFields} />
 
-        <Fields
-            label="Does your tent have electricity?"
-            names={["conditions_electricity", "conditions_electricity_comment"]}
-            component={renderHabitFields}
-        />
+        <Fields label="Does your tent have electricity?" names={["conditions_electricity", "conditions_electricity_comment"]} component={renderHabitFields} />
     </div>
 )
 
@@ -443,16 +452,16 @@ Step3 = reduxForm({
     validate
 })(Step3)
 
-const selector = formValueSelector('newPatient')
+const selector = formValueSelector("newPatient")
 Step3 = connect(
     state => ({
-        dateOfBirth: selector(state, 'dateOfBirth'),
-        codesLoading: state.codes.loading,
+        dateOfBirth: selector(state, "dateOfBirth"),
+        codesLoading: state.codes.loading
     }),
     {
         getCodes: getCodesAsOptions,
         loadCategories: loadCategoriesImport
-    },
+    }
 )(Step3)
 
 export default Step3

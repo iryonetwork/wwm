@@ -103,7 +103,7 @@ class Waitlist extends React.Component {
     }
 }
 
-const Section = ({list, title, waitlistID}) => {
+const Section = ({ list, title, waitlistID }) => {
     if (!list) {
         return null
     }
@@ -121,9 +121,11 @@ const Section = ({list, title, waitlistID}) => {
                             </th>
                             <td>
                                 {el.complaint}
-                                {el.priority === 4 && <div>
-                                    <span className="badge badge-pill badge-danger">Urgent</span>
-                                </div>}
+                                {el.priority === 4 && (
+                                    <div>
+                                        <span className="badge badge-pill badge-danger">Urgent</span>
+                                    </div>
+                                )}
                             </td>
                             <VitalSigns />
                             <Tools waitlistID={waitlistID} itemID={el.id} />
@@ -172,10 +174,10 @@ Waitlist = connect(
         listEncounter: state.waitlist.list.length > 0 ? [state.waitlist.list[0]] : [],
         listNext: state.waitlist.list.length > 1 ? [state.waitlist.list[1]] : [],
         list: state.waitlist.list.length > 2 ? state.waitlist.list.slice(2) : [],
-        listing: state.waitlist.listing,
+        listing: state.waitlist.listing
     }),
     {
-        listAll,
+        listAll
     }
 )(Waitlist)
 

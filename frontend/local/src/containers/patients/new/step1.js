@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { connect } from 'react-redux'
+import { connect } from "react-redux"
 import { Field, FieldArray, reduxForm } from "redux-form"
 
 import validate from "./validate"
@@ -13,7 +13,7 @@ const numberOfKidsOptions = Array.from(Array(9), (x, i) => ({
     value: i
 }))
 
-const Form = (props) => (
+const Form = props => (
     <div className="patient-form">
         <h3>Identification</h3>
 
@@ -106,7 +106,7 @@ const Form = (props) => (
 class Step1 extends Component {
     constructor(props) {
         super(props)
-        props.loadCategories('gender', 'maritalStatus', 'countries', 'documentTypes')
+        props.loadCategories("gender", "maritalStatus", "countries", "documentTypes")
     }
 
     render() {
@@ -120,10 +120,11 @@ class Step1 extends Component {
             <form onSubmit={handleSubmit}>
                 <div className="modal-body">
                     <Form
-                        countries={getCodes('countries')}
-                        maritalStatus={getCodes('maritalStatus')}
-                        genders={getCodes('gender')}
-                        documentTypes={getCodes('documentTypes')}/>
+                        countries={getCodes("countries")}
+                        maritalStatus={getCodes("maritalStatus")}
+                        genders={getCodes("gender")}
+                        documentTypes={getCodes("documentTypes")}
+                    />
                 </div>
 
                 <Footer reset={reset} />
@@ -132,7 +133,7 @@ class Step1 extends Component {
     }
 }
 
-const renderDocuments = (props) => {
+const renderDocuments = props => {
     const { fields, documentTypes } = props
     return fields.map((doc, index) => (
         <div className="form-row" key={index}>
@@ -166,11 +167,11 @@ Step1 = reduxForm({
 Step1 = connect(
     state => ({
         codesLoading: state.codes.loading,
-        initialValues: state.patient.newData,
+        initialValues: state.patient.newData
     }),
     {
         getCodes: getCodesAsOptions,
-        loadCategories: loadCategoriesImport,
+        loadCategories: loadCategoriesImport
     }
 )(Step1)
 
