@@ -19,6 +19,7 @@ class OrganizationDetail extends React.Component {
             name: "",
             legalStatus: "",
             serviceType: "",
+            address: {},
             representative: {},
             primaryContact: {},
             loading: true
