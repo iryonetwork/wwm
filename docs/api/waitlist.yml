@@ -398,25 +398,17 @@ definitions:
         example: '2018-01-09T13:18:07Z'
         readOnly: true
 
-
   Patient:
-    type: object
+    description: Collection of key-value pairs with patient data.
+    type: array
     readOnly: true
-    properties:
-      name:
-        type: string
-        description: Patients name
-      sex:
-        type: string
-        enum:
-          - male
-          - female
-      birthdate:
-        type: string
-        description: Date of birth
-        format: date
-        example: '1985-01-09'
-
+    items:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
 
   Error:
     type: object
