@@ -11,6 +11,7 @@ import discovery from "./discovery"
 import locations from "./locations"
 import patient from "./patient"
 import users from "./users"
+import waitlist from "./waitlist"
 
 export default combineReducers({
     router: routerReducer,
@@ -23,5 +24,6 @@ export default combineReducers({
     discovery,
     locations,
     patient,
-    users
+    users,
+    waitlist,
 })

@@ -9,6 +9,7 @@ export const CLINIC_ID = 'clinicId'
 export const LOCATION_ID = 'locationId'
 export const BABY_MAX_AGE = 'babyMaxAge'
 export const CHILD_MAX_AGE = 'childMaxAge'
+export const DEFAULT_WAITLIST_ID = 'waitlistId'
 
 let initialState = {
     [LOCALE]: 'en',
@@ -17,6 +18,7 @@ let initialState = {
     [LOCATION_ID]: '2d04b22e-1cc3-46b4-96dd-2bee5bad9ffa',
     [BABY_MAX_AGE]: 1,
     [CHILD_MAX_AGE]: 7,
+    [DEFAULT_WAITLIST_ID]: '22afd921-0630-49f4-89a8-d1ad7639ee83',
 }
 
 // @TODO: Fetch config from URL

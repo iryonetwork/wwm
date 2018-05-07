@@ -1,79 +1,139 @@
 import React from "react"
+import { connect } from "react-redux"
 import { Link } from "react-router-dom"
 import { UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap"
+import { listAll } from "../../modules/waitlist"
 
 import Patient from "shared/containers/patient"
+import Spinner from "shared/containers/spinner"
 
 import "./style.css"
 
-export default ({ match }) => (
-    <div className="waitlist">
-        <h1>Waiting list</h1>
+class Waitlist extends React.Component {
+    constructor(props) {
+        super(props)
+        props.listAll(props.match.params.waitlistID)
+    }
 
-        <div className="part now">
-            <h2>Encounter</h2>
+    render() {
+        const { match, listEncounter, listNext, list, listing } = this.props
 
-            <table className="table patients">
-                <tbody>
-                    <tr>
-                        <th scope="row">
-                            <Patient />
-                        </th>
-                        <td>Knee pain (both knees)</td>
-                        <VitalSigns />
-                        <Tools waitlistID={match.params.waitlistID} itemID={"acsd"} />
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        if (listing) {
+            return (
+                <div className="waitlist">
+                    <h1>Waiting list</h1>
+                    <Spinner />
+                </div>
+            )
+        }
 
-        <div className="part next">
-            <h2>Up Next</h2>
+        return (
+            <div className="waitlist">
+                <h1>Waiting list</h1>
 
-            <table className="table patients">
-                <tbody>
-                    <tr>
-                        <th scope="row">
-                            <Patient />
-                        </th>
-                        <td>
-                            Knee pain (both knees)
-                            <div>
-                                <span className="badge badge-pill badge-danger">Urgent</span>
-                            </div>
-                        </td>
-                        <VitalSigns />
-                        <Tools waitlistID={match.params.waitlistID} itemID={"acsd"} />
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+                <Section list={listEncounter} title="Encounter" waitlistID={match.params.waitlistID} />
 
+                <Section list={listNext} title="Up next" waitlistID={match.params.waitlistID} />
+
+                <Section list={list} title="Waiting list" waitlistID={match.params.waitlistID} />
+                {/* {listEncounter && <div className="part now">
+                    <h2>Encounter</h2>
+
+                    <table className="table patients">
+                        <tbody>
+                            <tr>
+                                <th scope="row">
+                                    <Patient />
+                                </th>
+                                <td>Knee pain (both knees)</td>
+                                <VitalSigns />
+                                <Tools waitlistID={match.params.waitlistID} itemID={"acsd"} />
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>}
+
+                {listNext && <div className="part next">
+                    <h2>Up Next</h2>
+
+                    <table className="table patients">
+                        <tbody>
+                            <tr>
+                                <th scope="row">
+                                    <Patient />
+                                </th>
+                                <td>
+                                    Knee pain (both knees)
+                                    <div>
+                                        <span className="badge badge-pill badge-danger">Urgent</span>
+                                    </div>
+                                </td>
+                                <VitalSigns />
+                                <Tools waitlistID={match.params.waitlistID} itemID={"acsd"} />
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>}
+
+                {list && <div className="part">
+                    <h2>Waiting list</h2>
+
+                    <table className="table patients">
+                        <tbody>
+                            {(list || []).map(el => (
+                                <tr key={el.patient_id}>
+                                    <th scope="row">
+                                        <Patient />
+                                    </th>
+                                    <td>
+                                        {el.complaint}
+                                        {el.priority === 4 && <div>
+                                            <span className="badge badge-pill badge-danger">Urgent</span>
+                                        </div>}
+                                    </td>
+                                    <VitalSigns />
+                                    <Tools waitlistID={match.params.waitlistID} itemID={"acsd"} />
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>} */}
+            </div>
+        )
+    }
+}
+
+const Section = ({list, title, waitlistID}) => {
+    if (!list) {
+        return null
+    }
+
+    return (
         <div className="part">
-            <h2>Waiting list</h2>
+            <h2>{title}</h2>
 
             <table className="table patients">
                 <tbody>
-                    {Array.from(Array(5), (v, i) => (
-                        <tr key={i}>
+                    {(list || []).map(el => (
+                        <tr key={el.patient_id}>
                             <th scope="row">
                                 <Patient />
                             </th>
                             <td>
-                                Knee pain (both knees)
-                                <div>
+                                {el.complaint}
+                                {el.priority === 4 && <div>
                                     <span className="badge badge-pill badge-danger">Urgent</span>
-                                </div>
+                                </div>}
                             </td>
                             <VitalSigns />
-                            <Tools waitlistID={match.params.waitlistID} itemID={"acsd"} />
+                            <Tools waitlistID={waitlistID} itemID={el.id} />
                         </tr>
                     ))}
                 </tbody>
             </table>
         </div>
-    </div>
-)
+    )
+}
 
 const Tools = ({ waitlistID, itemID }) => (
     <td className="tools">
@@ -106,3 +166,17 @@ const VitalSigns = () => (
         </div>
     </td>
 )
+
+Waitlist = connect(
+    state => ({
+        listEncounter: state.waitlist.list.length > 0 ? [state.waitlist.list[0]] : [],
+        listNext: state.waitlist.list.length > 1 ? [state.waitlist.list[1]] : [],
+        list: state.waitlist.list.length > 2 ? state.waitlist.list.slice(2) : [],
+        listing: state.waitlist.listing,
+    }),
+    {
+        listAll,
+    }
+)(Waitlist)
+
+export default Waitlist
