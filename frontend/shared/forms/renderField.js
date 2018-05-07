@@ -18,7 +18,7 @@ const renderInput = ({ input, optional, label, type, meta: { touched, error } })
 const renderHorizontalInput = ({ input, optional, label, unit, hideLabel, type, meta: { touched, error } }) => (
     <div className="form-row">
         <div className="col-sm-6">{!hideLabel && label}</div>
-        <div className={'form-group ' + (unit ? 'col-sm-4' : 'col-sm-6')}>
+        <div className={"form-group " + (unit ? "col-sm-4" : "col-sm-6")}>
             <input
                 {...input}
                 className={classnames("form-control", { "is-invalid": touched && error })}
@@ -27,7 +27,7 @@ const renderHorizontalInput = ({ input, optional, label, unit, hideLabel, type, 
             />
             {touched && error && <div className="invalid-feedback">{error}</div>}
         </div>
-        { unit && <div className="col-sm-2">{unit}</div>}
+        {unit && <div className="col-sm-2">{unit}</div>}
     </div>
 )
 
@@ -52,7 +52,7 @@ const renderSelect = ({ input, pristine, label, options, meta: { touched, error 
 const renderHorizontalSelect = ({ input, pristine, label, unit, options, meta: { touched, error } }) => (
     <div className="form-row">
         <div className="col-sm-6">{label}</div>
-        <div className={'form-group ' + (unit ? 'col-sm-4' : 'col-sm-6')}>
+        <div className={"form-group " + (unit ? "col-sm-4" : "col-sm-6")}>
             <select {...input} className={classnames("form-control", { "is-invalid": touched && error, selected: input.value !== "" })}>
                 <option value="" disabled>
                     {label}
@@ -65,13 +65,13 @@ const renderHorizontalSelect = ({ input, pristine, label, unit, options, meta: {
             </select>
             {touched && error && <div className="invalid-feedback">{error}</div>}
         </div>
-        { unit && <div className="col-sm-2">{unit}</div>}
+        {unit && <div className="col-sm-2">{unit}</div>}
     </div>
 )
 
 const renderRadio = ({ input, className, label, options, hideLabel, meta: { touched, error } }) => (
     <div className={classnames("form-inline-container", className)}>
-        { !hideLabel && <span className="label">{label}</span> }
+        {!hideLabel && <span className="label">{label}</span>}
         {options.map((option, index) => (
             <div key={index} className="form-check form-check-inline">
                 <input {...input} className="form-check-input" type="radio" id={`${input.name}${index}`} value={option.value} />

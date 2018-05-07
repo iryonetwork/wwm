@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { connect } from 'react-redux'
+import { connect } from "react-redux"
 //import PropTypes from "prop-types"
 import classnames from "classnames"
 
@@ -42,7 +42,8 @@ class NewPatientForm extends Component {
     }
 
     onSubmit(data) {
-        return this.props.dispatch(createPatient(data))
+        return this.props
+            .dispatch(createPatient(data))
             .then(patientId => {})
             .catch(ex => {})
     }

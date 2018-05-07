@@ -13,10 +13,7 @@ import Patient from "shared/containers/patient"
 import Spinner from "shared/containers/spinner"
 import "./style.css"
 
-const priorityOptions = [
-    {value: 1, label: 'Yes'},
-    {value: 4, label: 'No'},
-]
+const priorityOptions = [{ value: 1, label: "Yes" }, { value: 4, label: "No" }]
 
 class AddToWaitlist extends Component {
     constructor(props) {
@@ -65,7 +62,7 @@ class AddToWaitlist extends Component {
                                                     onClick={() => {
                                                         push("/")
                                                     }}
-                                                    >
+                                                >
                                                     Cancel
                                                 </button>
                                             </div>
@@ -155,19 +152,19 @@ class AddToWaitlist extends Component {
 AddToWaitlist = reduxForm({
     form: "addToWaitlist",
     initialValues: {
-        priority: 1,
+        priority: 1
     }
 })(AddToWaitlist)
 
 AddToWaitlist = connect(
     state => ({
         patient: state.discovery.patient,
-        fetching: state.discovery.fetching,
+        fetching: state.discovery.fetching
     }),
     {
         push,
         get,
-        add,
+        add
     }
 )(AddToWaitlist)
 

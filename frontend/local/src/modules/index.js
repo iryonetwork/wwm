@@ -25,5 +25,5 @@ export default combineReducers({
     locations,
     patient,
     users,
-    waitlist,
+    waitlist
 })

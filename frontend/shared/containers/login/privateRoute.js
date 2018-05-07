@@ -22,8 +22,7 @@ const PrivateRoute = ({ component: Component, isAuthenticated, ...rest }) => (
 )
 
 const mapStateToProps = state => ({
-    isAuthenticated:
-        get(state, "authentication.token.exp", 0) > Date.now() / 1000
+    isAuthenticated: get(state, "authentication.token.exp", 0) > Date.now() / 1000
 })
 
 export default connect(mapStateToProps)(PrivateRoute)

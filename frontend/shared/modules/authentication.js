@@ -1,7 +1,7 @@
 import produce from "immer"
 import { push } from "react-router-redux"
 import jwtDecode from "jwt-decode"
-import {read, BASE_URL} from "./config"
+import { read, BASE_URL } from "./config"
 
 import { open, close, COLOR_DANGER } from "./alert"
 

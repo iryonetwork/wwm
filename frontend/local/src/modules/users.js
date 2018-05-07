@@ -11,7 +11,7 @@ const initialState = {
     cache: [],
     loading: false,
     loaded: true,
-    failed: true,
+    failed: true
 }
 
 export default (state = initialState, action) => {
@@ -41,18 +41,18 @@ export default (state = initialState, action) => {
     })
 }
 
-export const load = (id) => (dispatch, getState) => {
+export const load = id => (dispatch, getState) => {
     // check cache
     const cache = getState().users.cache
     if (cache[id]) {
         return Promise.resolve(cache[id])
     }
 
-    dispatch({type: LOADING})
+    dispatch({ type: LOADING })
     const url = `${read(BASE_URL)}/auth/users/${id}`
 
     return fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: {
             Authorization: dispatch(getToken()),
             "Content-Type": "application/json"
@@ -61,13 +61,13 @@ export const load = (id) => (dispatch, getState) => {
         .then(response => Promise.all([response.ok, response.json()]))
         .then(([ok, data]) => {
             if (!ok) {
-                throw new Error('Failed to load user data')
+                throw new Error("Failed to load user data")
             }
-            dispatch({type: LOADED, id, data})
+            dispatch({ type: LOADED, id, data })
             return data
         })
         .catch(ex => {
-            dispatch(open('Failed to fetch user data :: '+ex.message, COLOR_DANGER))
-            dispatch({type: FAILED, id})
+            dispatch(open("Failed to fetch user data :: " + ex.message, COLOR_DANGER))
+            dispatch({ type: FAILED, id })
         })
 }

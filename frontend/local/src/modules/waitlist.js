@@ -1,7 +1,7 @@
 import produce from "immer"
 import { open, COLOR_DANGER } from "shared/modules/alert"
-import { read, BASE_URL, DEFAULT_WAITLIST_ID } from 'shared/modules/config'
-import { getToken } from 'shared/modules/authentication'
+import { read, BASE_URL, DEFAULT_WAITLIST_ID } from "shared/modules/config"
+import { getToken } from "shared/modules/authentication"
 
 export const LIST = "waitlist/LIST"
 export const LISTED = "waitlist/LISTED"
@@ -12,7 +12,7 @@ export const ADDED = "waitlist/ADDED"
 export const FAILED = "waitlist/FAILED"
 
 const initialState = {
-    list: [],
+    list: []
 }
 
 export default (state = initialState, action) => {
@@ -101,10 +101,10 @@ export default (state = initialState, action) => {
 //     }
 // )
 
-export const add = (formData, patient) => (dispatch) => {
-    const url = `${read(BASE_URL)}/waitlist/${read(DEFAULT_WAITLIST_ID)}`;
+export const add = (formData, patient) => dispatch => {
+    const url = `${read(BASE_URL)}/waitlist/${read(DEFAULT_WAITLIST_ID)}`
     const p = cardToObject(patient)
-    dispatch({type: ADD});
+    dispatch({ type: ADD })
     console.log(formData, patient)
 
     const data = {
@@ -114,54 +114,54 @@ export const add = (formData, patient) => (dispatch) => {
         patient: {
             name: `${p.lastName}, ${p.firstName}`,
             birthdate: p.dateOfBirth,
-            gender: p.gender === 'CODED-at0310' ? 'M' : (p.gender === 'CODED-at0311' ? 'F' : '?')
-        },
+            gender: p.gender === "CODED-at0310" ? "M" : p.gender === "CODED-at0311" ? "F" : "?"
+        }
     }
 
     return fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
             Authorization: dispatch(getToken()),
             "Content-Type": "application/json"
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(data)
     })
         .then(response => Promise.all([response.status === 201, response.json(), response.status]))
         .then(([ok, data, status]) => {
             if (!ok) {
                 throw new Error(`Failed to add patient to waitlist (${status})`)
             }
-            dispatch({type: ADDED, results: data})
+            dispatch({ type: ADDED, results: data })
             return data
         })
         .catch(ex => {
             dispatch(open(ex.message, "", COLOR_DANGER))
-            dispatch({type: FAILED})
+            dispatch({ type: FAILED })
         })
 }
 
-export const listAll = (listID) => (dispatch) => {
-    const url = `${read(BASE_URL)}/waitlist/${listID}`;
-    dispatch({type: LIST});
+export const listAll = listID => dispatch => {
+    const url = `${read(BASE_URL)}/waitlist/${listID}`
+    dispatch({ type: LIST })
 
     return fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: {
             Authorization: dispatch(getToken()),
             "Content-Type": "application/json"
-        },
+        }
     })
         .then(response => Promise.all([response.status === 200, response.json(), response.status]))
         .then(([ok, data, status]) => {
             if (!ok) {
                 throw new Error(`Failed to search for patients (${status})`)
             }
-            dispatch({type: LISTED, results: data})
+            dispatch({ type: LISTED, results: data })
             return data
         })
         .catch(ex => {
             dispatch(open(ex.message, "", COLOR_DANGER))
-            dispatch({type: FAILED})
+            dispatch({ type: FAILED })
         })
 }
 
@@ -190,12 +190,9 @@ export const listAll = (listID) => (dispatch) => {
 //         })
 // }
 
-export const cardToObject = (card) => {
-    return card.connections.reduce(
-        (acc, conn) => {
-            acc[conn.key] = conn.value
-            return acc
-        },
-        {}
-    )
+export const cardToObject = card => {
+    return card.connections.reduce((acc, conn) => {
+        acc[conn.key] = conn.value
+        return acc
+    }, {})
 }
