@@ -377,6 +377,10 @@ definitions:
         type: string
         description: Main complaint
         example: Sore throat
+      complaintComment:
+        type: string
+        description: Comment to main complaint
+        example: Visible flushes on the skin.
       vitalSigns:
         type: object
         additionalProperties:
