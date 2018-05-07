@@ -3,6 +3,7 @@ import { Route, NavLink, Redirect } from "react-router-dom"
 import { connect } from "react-redux"
 import { bindActionCreators } from "redux"
 
+import { read, DEFAULT_WAITLIST_ID } from "shared/modules/config"
 import { close } from "shared/modules/alert"
 import Logo from "shared/containers/logo"
 import Status from "shared/containers/status"
@@ -42,7 +43,7 @@ class App extends React.Component {
                         Patients
                     </NavLink>
 
-                    <NavLink className="navigation" to="/waitlist/abc">
+                    <NavLink className="navigation" to={`/waitlist/${read(DEFAULT_WAITLIST_ID)}`}>
                         <WaitlistIcon />
                         Waiting list
                     </NavLink>

@@ -6,23 +6,23 @@ import { Field, reduxForm } from "redux-form"
 //import classnames from "classnames"
 
 import { get, cardToObject } from "../../../modules/discovery"
-import { renderInput, renderRadio, renderTextarea, renderSelect } from "shared/forms/renderField"
+import { add } from "../../../modules/waitlist"
+import { renderInput, renderRadio, renderTextarea } from "shared/forms/renderField"
 import { yesNoOptions } from "shared/forms/options"
 import Patient from "shared/containers/patient"
 import Spinner from "shared/containers/spinner"
 import "./style.css"
 
-const doctorOptions = [
-    {
-        label: "Dr. Doctor",
-        value: "uuid-of-the-doctor"
-    }
+const priorityOptions = [
+    {value: 1, label: 'Yes'},
+    {value: 4, label: 'No'},
 ]
 
 class AddToWaitlist extends Component {
     constructor(props) {
         super(props)
         props.get(props.match.params.patientID)
+        this.onSubmit = this.onSubmit.bind(this)
     }
 
     componentDidMount() {
@@ -33,9 +33,12 @@ class AddToWaitlist extends Component {
         document.body.style.overflow = "auto"
     }
 
+    onSubmit(formData) {
+        this.props.add(formData, this.props.patient)
+    }
+
     render() {
-        const { fetching, patient } = this.props
-        console.log(JSON.stringify(fetching), JSON.stringify(patient))
+        const { fetching, patient, push } = this.props
         if (fetching || !patient) {
             return (
                 <React.Fragment>
@@ -59,7 +62,10 @@ class AddToWaitlist extends Component {
                                                     className="btn btn-link btn-block"
                                                     datadismiss="modal"
                                                     disabled
-                                                >
+                                                    onClick={() => {
+                                                        push("/")
+                                                    }}
+                                                    >
                                                     Cancel
                                                 </button>
                                             </div>
@@ -82,6 +88,7 @@ class AddToWaitlist extends Component {
         }
 
         const p = cardToObject(patient)
+        const { handleSubmit } = this.props
 
         return (
             <React.Fragment>
@@ -92,10 +99,10 @@ class AddToWaitlist extends Component {
                                 <Patient data={p} />
                                 <h1>Add to Waiting List</h1>
                             </div>
-                            <form>
+                            <form onSubmit={handleSubmit(this.onSubmit)}>
                                 <div className="modal-body">
                                     <div className="form-row">
-                                        <Field name="urgent" component={renderRadio} label="Urgent?" options={yesNoOptions} />
+                                        <Field name="priority" component={renderRadio} label="Urgent?" options={priorityOptions} />
                                     </div>
 
                                     <div className="form-row">
@@ -106,9 +113,9 @@ class AddToWaitlist extends Component {
                                         <Field name="mainComplaintDetails" component={renderTextarea} optional={true} label="Details" />
                                     </div>
 
-                                    <div className="form-row">
+                                    {/* <div className="form-row">
                                         <Field name="doctor" component={renderSelect} options={doctorOptions} label="Doctor" />
-                                    </div>
+                                    </div> */}
                                 </div>
 
                                 <div className="modal-footer">
@@ -146,7 +153,10 @@ class AddToWaitlist extends Component {
 }
 
 AddToWaitlist = reduxForm({
-    form: "addToWaitlist"
+    form: "addToWaitlist",
+    initialValues: {
+        priority: 1,
+    }
 })(AddToWaitlist)
 
 AddToWaitlist = connect(
@@ -157,6 +167,7 @@ AddToWaitlist = connect(
     {
         push,
         get,
+        add,
     }
 )(AddToWaitlist)
 
