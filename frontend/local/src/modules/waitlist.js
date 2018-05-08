@@ -5,8 +5,8 @@ import { getToken } from "shared/modules/authentication"
 
 export const LIST = "waitlist/LIST"
 export const LISTED = "waitlist/LISTED"
-// export const FETCH = "waitlist/FETCH"
-// export const FETCHED = "waitlist/FETCHED"
+export const FETCH = "waitlist/FETCH"
+export const FETCHED = "waitlist/FETCHED"
 export const ADD = "waitlist/ADD"
 export const ADDED = "waitlist/ADDED"
 export const FAILED = "waitlist/FAILED"
@@ -29,16 +29,16 @@ export default (state = initialState, action) => {
                 draft.list = action.results
                 break
 
-            // case FETCH:
-            //     draft.fetching = true
-            //     draft.fetched = draft.failed = false
-            //     break
+            case FETCH:
+                draft.fetching = true
+                draft.fetched = draft.failed = false
+                break
 
-            // case FETCHED:
-            //     draft.fetching = false
-            //     draft.fetched = true
-            //     draft.patient = action.result
-            //     break
+            case FETCHED:
+                draft.fetching = false
+                draft.fetched = true
+                draft.item = action.result
+                break
 
             case ADD:
                 draft.adding = true
@@ -48,7 +48,7 @@ export default (state = initialState, action) => {
             case ADDED:
                 draft.adding = false
                 draft.added = true
-                draft.patient = action.result
+                draft.item = action.result
                 break
 
             case FAILED:
@@ -131,7 +131,7 @@ export const add = (formData, patient) => dispatch => {
             if (!ok) {
                 throw new Error(`Failed to add patient to waitlist (${status})`)
             }
-            dispatch({ type: ADDED, results: data })
+            dispatch({ type: ADDED, result: data })
             return data
         })
         .catch(ex => {
@@ -165,30 +165,42 @@ export const listAll = listID => dispatch => {
         })
 }
 
-// export const get = (patientID) => (dispatch) => {
-//     const url = `${read(BASE_URL)}/discovery/${patientID}`;
-//     dispatch({type: FETCH});
+export const get = (waitlistID, itemID) => (dispatch, getState) => {
+    dispatch({ type: FETCH })
+    return dispatch(listAll(waitlistID)).then(list => {
+        const items = (list || []).filter(item => item.id === itemID)
 
-//     return fetch(url, {
-//         method: 'GET',
-//         headers: {
-//             Authorization: dispatch(getToken()),
-//             "Content-Type": "application/json"
-//         },
-//     })
-//         .then(response => Promise.all([response.status === 200, response.json(), response.status]))
-//         .then(([ok, data, status]) => {
-//             if (!ok) {
-//                 throw new Error(`Failed to fetch patient's details (${status})`)
-//             }
-//             dispatch({type: FETCHED, result: data})
-//             return data
-//         })
-//         .catch(ex => {
-//             dispatch(open(ex.message, "", COLOR_DANGER))
-//             dispatch({type: FAILED})
-//         })
-// }
+        if (items.length === 1) {
+            dispatch({ type: FETCHED, result: items[0] })
+            return items[0]
+        }
+
+        dispatch({ type: FAILED })
+        dispatch(open("Waitlist item not found", "", COLOR_DANGER))
+        throw new Error("waitlist item not found")
+    })
+    // const url = `${read(BASE_URL)}/waitlist/${waitlistID}/${itemID}`
+
+    // return fetch(url, {
+    //     method: "GET",
+    //     headers: {
+    //         Authorization: dispatch(getToken()),
+    //         "Content-Type": "application/json"
+    //     }
+    // })
+    //     .then(response => Promise.all([response.status === 200, response.json(), response.status]))
+    //     .then(([ok, data, status]) => {
+    //         if (!ok) {
+    //             throw new Error(`Failed to fetch waitlist item (${status})`)
+    //         }
+    //         dispatch({ type: FETCHED, result: data })
+    //         return data
+    //     })
+    //     .catch(ex => {
+    //         dispatch(open(ex.message, "", COLOR_DANGER))
+    //         dispatch({ type: FAILED })
+    //     })
+}
 
 export const cardToObject = card => {
     return card.connections.reduce((acc, conn) => {

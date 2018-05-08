@@ -1,4 +1,5 @@
 import React from "react"
+import { connect } from "react-redux"
 import { Route, Link } from "react-router-dom"
 import { reduxForm, Field, FieldArray, Fields } from "redux-form"
 
@@ -8,7 +9,7 @@ import { joinPaths } from "shared/utils"
 
 //import "./style.css"
 
-const History = ({ match }) => (
+let History = ({ match, patient }) => (
     <div className="history">
         <header>
             <h1>Medical History</h1>
@@ -17,19 +18,27 @@ const History = ({ match }) => (
             </Link>
         </header>
 
-        <div className="section">
+        {/* @TODO confirm if needed <div className="section">
             <div className="name">Blood type</div>
             <div className="values">A+</div>
-        </div>
+        </div> */}
 
         <div className="section">
             <div className="name">Allergies</div>
             <div className="values">
                 <dl>
-                    <dt>Peanuts</dt>
-                    <dd>high risk</dd>
-                    <dt>Pollen</dt>
-                    <dd />
+                    {(patient.allergies || []).map((item, i) => (
+                        <React.Fragment>
+                            <dt>{item.allergy}</dt>
+                            {(item.critical === "true" || item.comment) && (
+                                <dd>
+                                    {item.critical === "true" && <div>High risk</div>}
+                                    {item.comment && <div>{item.comment}</div>}
+                                </dd>
+                            )}
+                        </React.Fragment>
+                    ))}
+                    {(patient.allergies || []).length === 0 && <dd>None</dd>}
                 </dl>
             </div>
         </div>
@@ -38,10 +47,14 @@ const History = ({ match }) => (
             <div className="name">Immunization</div>
             <div className="values">
                 <dl>
-                    <dt>TBC</dt>
-                    <dd>21 January 2005</dd>
-                    <dt>Varicella</dt>
-                    <dd>11 March 2004</dd>
+                    {(patient.immunizations || []).map((item, i) => (
+                        <React.Fragment>
+                            <dt>{item.immunization}</dt>
+                            {/* @TODO format date */}
+                            {item.date && <dd>{item.date}</dd>}
+                        </React.Fragment>
+                    ))}
+                    {(patient.immunizations || []).length === 0 && <dd>None</dd>}
                 </dl>
             </div>
         </div>
@@ -50,10 +63,14 @@ const History = ({ match }) => (
             <div className="name">Chronic diseases</div>
             <div className="values">
                 <dl>
-                    <dt>Asthma</dt>
-                    <dd>
-                        11 March 2004<br />Ventolin 100 micrograms
-                    </dd>
+                    {(patient.chronicDiseases || []).map((item, i) => (
+                        <React.Fragment>
+                            <dt>{item.disease}</dt>
+                            {/* @TODO format date */}
+                            {item.date && <dd>{item.date}</dd>}
+                        </React.Fragment>
+                    ))}
+                    {(patient.chronicDiseases || []).length === 0 && <dd>None</dd>}
                 </dl>
             </div>
         </div>
@@ -62,10 +79,14 @@ const History = ({ match }) => (
             <div className="name">Injuries &amp; handicaps</div>
             <div className="values">
                 <dl>
-                    <dt>Broken left ankle</dt>
-                    <dd>
-                        11 March 2012<br />Splint
-                    </dd>
+                    {(patient.injuries || []).map((item, i) => (
+                        <React.Fragment>
+                            <dt>{item.injury}</dt>
+                            {/* @TODO format date */}
+                            {item.date && <dd>{item.date}</dd>}
+                        </React.Fragment>
+                    ))}
+                    {(patient.injuries || []).length === 0 && <dd>None</dd>}
                 </dl>
             </div>
         </div>
@@ -74,8 +95,29 @@ const History = ({ match }) => (
             <div className="name">Surgeries</div>
             <div className="values">
                 <dl>
-                    <dt>Vermiform Appendix</dt>
-                    <dd>21 January 2002</dd>
+                    {(patient.surgeries || []).map((item, i) => (
+                        <React.Fragment>
+                            <dt>{item.injury}</dt>
+                            {/* @TODO format date */}
+                            {item.date && <dd>{item.date}</dd>}
+                        </React.Fragment>
+                    ))}
+                    {(patient.surgeries || []).length === 0 && <dd>None</dd>}
+                </dl>
+            </div>
+        </div>
+
+        <div className="section">
+            <div className="name">Additional medications</div>
+            <div className="values">
+                <dl>
+                    {(patient.medications || []).map((item, i) => (
+                        <React.Fragment>
+                            <dt>{item.medication}</dt>
+                            {item.comment && <dd>{item.comment}</dd>}
+                        </React.Fragment>
+                    ))}
+                    {(patient.medications || []).length === 0 && <dd>None</dd>}
                 </dl>
             </div>
         </div>
@@ -91,6 +133,13 @@ const History = ({ match }) => (
         </div>
     </div>
 )
+
+History = connect(
+    state => ({
+        patient: state.patient.patient
+    }),
+    {}
+)(History)
 
 const bloodTypeOptions = [
     {
@@ -127,7 +176,7 @@ const bloodTypeOptions = [
     }
 ]
 
-const EditHistory = ({ match }) => (
+let EditHistory = ({ match }) => (
     <div className="edit-history">
         <header>
             <h1>Edit Medical History</h1>
@@ -221,13 +270,20 @@ const EditHistory = ({ match }) => (
     </div>
 )
 
-const EditHistoryContainer = reduxForm({
+EditHistory = reduxForm({
     form: "editMedicalHistory"
 })(EditHistory)
+
+EditHistory = connect(
+    state => ({
+        initialState: state.patient.patient
+    }),
+    {}
+)(EditHistory)
 
 export default ({ match }) => (
     <div>
         <Route exact path={match.url} component={History} />
-        <Route exact path={match.url + "/edit"} component={EditHistoryContainer} />
+        <Route exact path={match.url + "/edit"} component={EditHistory} />
     </div>
 )

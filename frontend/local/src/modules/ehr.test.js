@@ -4,13 +4,14 @@ import { shallow, mount } from "enzyme"
 import sinon from "sinon"
 import { load as loadClinic } from "./clinics"
 import { load as loadCodes } from "shared/modules/codes"
-// import locations from './locations'
+import { load as loadLocation } from "./locations"
 import { load as loadUser } from "./users"
 jest.mock("./users")
 jest.mock("./clinics")
+jest.mock("./locations")
 jest.mock("shared/modules/codes")
 
-import { composePatientData, codeToString } from "./ehr"
+import { composePatientData, codeToString, extractPatientData } from "./ehr"
 
 const fullFormData = {
     documents: [
@@ -36,7 +37,6 @@ const fullFormData = {
     country: "SI",
     camp: "19",
     tent: "83",
-    clinic: "ZD Kranj",
     phone: "040123456",
     email: "email@test.com",
     whatsapp: "987987654",
@@ -74,7 +74,7 @@ const fullFormData = {
             date: "2014-02-01"
         },
         {
-            immunization: "Immunuzation 2",
+            immunization: "Immunization 2",
             date: "2004-03-02"
         }
     ],
@@ -136,6 +136,109 @@ const fullFormData = {
     conditions_electricity: "true"
 }
 
+const personDocument = {
+    "/context/health_care_facility|name": "CLINIC1",
+    "/context/health_care_facility|identifier": "e4ebb41b-7c62-4db7-9e1c-f47058b96dd0",
+    "/territory": "CNT",
+    "/language": "en",
+    "/context/start_time": "2018-05-07T21:53:45.635Z",
+    "/context/end_time": "2018-05-07T21:53:45.635Z",
+    "/category": "openehr::431|persistent|",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0005]/items[openEHR-DEMOGRAPHIC-CLUSTER.person_identifier.v1]/item[at0001]:0|id":
+        "1234567",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0005]/items[openEHR-DEMOGRAPHIC-CLUSTER.person_identifier.v1]/item[at0001]:0|type":
+        "syrian-id",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0005]/items[openEHR-DEMOGRAPHIC-CLUSTER.person_identifier.v1]/item[at0001]:1|id":
+        "987654",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0005]/items[openEHR-DEMOGRAPHIC-CLUSTER.person_identifier.v1]/item[at0001]:1|type":
+        "un-id",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/identities[openEHR-DEMOGRAPHIC-PARTY_IDENTITY.person_name.v1]/details[at0001]/items[at0002]": "Dominik",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/identities[openEHR-DEMOGRAPHIC-PARTY_IDENTITY.person_name.v1]/details[at0001]/items[at0003]": "Znidar",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/identities[openEHR-DEMOGRAPHIC-PARTY_IDENTITY.person_name.v1]/details[at0001]/items[at0008]": "true",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0010]": "1983-05-21",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0012]": "category::SI|Slovenia|",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0017]": "local::at0310|Male|",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0033]": "SNOMED::125681006|Married|",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.address.v1]:0/details[at0001]/items[at0033]":
+        "local::at0463|Temporary Accommodation|",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.address.v1]:0/details[at0001]/items[at0002]/items[at0009]":
+        "category::SI|Slovenia|",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.address.v1]:0/details[at0001]/items[at0002]/items[at00014]": "19",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.address.v1]:0/details[at0001]/items[at0002]/items[at00013]": "83",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.electronic_communication.v1.0.0]:1/name[at0014]":
+        "local::at0022|Mobile|",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.electronic_communication.v1.0.0]:1/details[at0001]/items[at0007]":
+        "040123456",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.electronic_communication.v1.0.0]:2/name[at0014]":
+        "local::at0024|Email|",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.electronic_communication.v1.0.0]:2/details[at0001]/items[at0007]":
+        "email@test.com",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.electronic_communication.v1.0.0]:3/name[at0013]": "whatsapp",
+    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.electronic_communication.v1.0.0]:3/details[at0001]/items[at0007]":
+        "987987654"
+}
+
+const infoDocument = {
+    "/context/health_care_facility|name": "CLINIC1",
+    "/context/health_care_facility|identifier": "e4ebb41b-7c62-4db7-9e1c-f47058b96dd0",
+    "/territory": "CNT",
+    "/language": "en",
+    "/context/start_time": "2018-05-07T21:53:45.635Z",
+    "/context/end_time": "2018-05-07T21:53:45.635Z",
+    "/category": "openehr::431|persistent|",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0015]:0/items[at0018]": "Chronic 1",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0015]:0/items[at0017]": "2004-03-12",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0015]:1/items[at0018]": "Chronic 2 ",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0015]:1/items[at0017]": "2005-04-23",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0014]:0/items[at0019]": "Immunization 1",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0014]:0/items[at0021]": "2014-02-01",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0014]:1/items[at0019]": "Immunization 2",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0014]:1/items[at0021]": "2004-03-02",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0009]:0/items[at0010]": "allergy 1",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0009]:0/items[at0012]": "false",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0009]:0/items[at0013]": "allergy comment 1",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0009]:1/items[at0010]": "allergy 2",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0009]:1/items[at0012]": "true",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0009]:1/items[at0013]": "allergy comment 2",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0022]:0/items[at0023]": "Injury 1",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0022]:0/items[at0024]": "2007-06-05",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0022]:0/items[at0025]": "Aids 1",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0022]:1/items[at0023]": "Injury 2",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0022]:1/items[at0024]": "2009-08-07",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0022]:1/items[at0025]": "Aids 2",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0026]:0/items[at0028]": "Surgery 1",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0026]:0/items[at0029]": "2004-03-12",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0026]:0/items[at0030]": "Comment 1",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0026]:1/items[at0028]": "Surgery 2 ",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0026]:1/items[at0029]": "2004-03-12",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0026]:1/items[at0030]": "Comment 2",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0031]:0/items[at0032]": "Medication 1",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0031]:0/items[at0034]": "Comment 1",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0031]:0/items[at0016]": "Comment 1",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0031]:1/items[at0032]": "Medication 2",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0031]:1/items[at0034]": "Comment 2",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0031]:1/items[at0016]": "Comment 2",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0047]": "1",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0048]": "category::SI|Slovenia|",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0049]": "category::SI|Slovenia|",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0050]": ">education::secondary|Secondary education|<",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0058]": "developer",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0059]": "2016-01-01",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0061]": "2016-12-31",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0060]": "Slovenia",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0036]/items[at0039]": "true",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0036]/items[at0038]": "10 boxes a day",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0051]/items[at0040]": "true",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0052]/items[at0041]": "true",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0053]/items[at0042]": "true",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0054]/items[at0043]": "true",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0055]/items[at0044]": "true",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0056]/items[at0045]": "true",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0057]/items[at0046]": "true",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0074]/items[at0078]": "weightAtBirth",
+    "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0074]/items[at0079]": "heightAtBirth"
+}
+
 // const waitlistItem = {
 //     added: '2018-05-02T15:30:13.435Z',
 // }
@@ -152,11 +255,13 @@ if (!global.window.localStorage) {
 beforeEach(() => {
     loadClinic.mockClear()
     loadUser.mockClear()
+    loadLocation.mockClear()
+    loadCodes.mockClear()
 })
 
 describe("ehr", () => {
     describe("composePatientData", () => {
-        it("should return object with person and info keys", () => {
+        it("should return object with person and info keys", done => {
             loadClinic.mockResolvedValue({
                 id: "e4ebb41b-7c62-4db7-9e1c-f47058b96dd0",
                 name: "CLINIC1"
@@ -168,22 +273,15 @@ describe("ehr", () => {
                     lastName: "X"
                 }
             })
-            loadCodes.mockResolvedValue(() => [
+            loadCodes.mockResolvedValue([
                 { category: "category", id: "SH", locale: "en", title: "Saint Helena" },
-                { category: "category", id: "SI", locale: "en", title: "Slovenia" }
+                { category: "category", id: "SI", locale: "en", title: "Slovenia" },
+                { category: "gender", id: "CODED-at0310", locale: "en", title: "Male" },
+                { category: "maritalStatus", id: "SNOMED-125681006", locale: "en", title: "Married" }
             ])
-            // loadCodes.mockResolvedValue([
-            //     { "category": "gender", "id": "CODED-at0310", "locale": "en", "title": "Male" },
-            //     { "category": "gender", "id": "CODED-at0311", "locale": "en", "title": "Female" },
-            // ])
-            // loadCodes.mockResolvedValue([
-            //     {category: "maritalStatus", id: "SNOMED-125681006", locale: "en", title: "Single"},
-            //     {category: "maritalStatus", id: "SNOMED-20295000", locale: "en", title: "Divorced"},
-            // ])
-            // loadCodes.mockResolvedValue([
-            //     {category: "countries", id: "SH", locale: "en", title: "Saint Helena"},
-            //     {category: "countries", id: "SI", locale: "en", title: "Slovenia"},
-            // ])
+            loadLocation.mockResolvedValue({
+                country: "CNT"
+            })
 
             const getState = () => ({
                 locations: {
@@ -193,21 +291,65 @@ describe("ehr", () => {
                     tokenString: "TOKEN"
                 }
             })
+
             const dispatch = fn => {
+                // console.log(fn, new Error().stack)
                 return typeof fn === "function" ? fn(dispatch, getState) : fn
             }
 
             dispatch(composePatientData(fullFormData))
                 .then(out => {
                     expect(Object.keys(out)).toEqual(["person", "info"])
+
+                    // copy over timestamps
+                    out.person["/context/start_time"] = personDocument["/context/start_time"]
+                    out.person["/context/end_time"] = personDocument["/context/end_time"]
+                    out.info["/context/start_time"] = infoDocument["/context/start_time"]
+                    out.info["/context/end_time"] = infoDocument["/context/end_time"]
+                    // expect(out.person).toEqual(personDocument) // @TODO should match
+                    // expect(out.info).toEqual(infoDocument) // @TODO should match
                     expect(loadUser).toHaveBeenLastCalledWith("me")
                     expect(loadClinic).toHaveBeenLastCalledWith("e4ebb41b-7c62-4db7-9e1c-f47058b96dd0")
                     expect(loadCodes).toHaveBeenCalledTimes(4)
                     expect(loadCodes).toHaveBeenCalledWith("gender")
                     expect(loadCodes).toHaveBeenCalledWith("countries")
                     expect(loadCodes).toHaveBeenCalledWith("maritalStatus")
+                    // console.log(out)
+                    done()
                 })
                 .catch(ex => {
+                    // console.log(ex)
+                    expect(ex).toBeUndefined()
+                })
+        })
+
+        //
+    })
+
+    describe("extractPatientData", () => {
+        it("should return an object", done => {
+            loadClinic.mockResolvedValue({})
+            loadUser.mockResolvedValue({})
+            loadCodes.mockResolvedValue([])
+            loadLocation.mockResolvedValue({})
+
+            const getState = () => ({})
+
+            const dispatch = fn => {
+                return typeof fn === "function" ? fn(dispatch, getState) : fn
+            }
+
+            dispatch(extractPatientData(personDocument, infoDocument))
+                .then(out => {
+                    // expect(out).toEqual(fullFormData) // @TODO should match!
+                    expect(loadCodes).toHaveBeenCalledTimes(4)
+                    expect(loadCodes).toHaveBeenCalledWith("gender")
+                    expect(loadCodes).toHaveBeenCalledWith("countries")
+                    expect(loadCodes).toHaveBeenCalledWith("maritalStatus")
+                    done()
+                })
+                .catch(ex => {
+                    console.log(ex)
                     expect(ex).toBeUndefined()
                 })
         })

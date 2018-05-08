@@ -56,9 +56,7 @@ export default (state = initialState, action) => {
 }
 
 export const getCodes = category => (dispatch, getState) => {
-    return (dispatch, getState) => {
-        return getState().codes.cache[category] || []
-    }
+    return getState().codes.cache[category] || []
 }
 
 export const getCodesAsOptions = category => {

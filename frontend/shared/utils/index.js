@@ -1,3 +1,22 @@
+import React from "react"
+import { Route } from "react-router-dom"
+
+const renderMergedProps = (component, ...rest) => {
+    const finalProps = Object.assign({}, ...rest)
+    return React.createElement(component, finalProps)
+}
+
+const PropRoute = ({ component, ...rest }) => {
+    return (
+        <Route
+            {...rest}
+            render={routeProps => {
+                return renderMergedProps(component, routeProps, rest)
+            }}
+        />
+    )
+}
+
 const joinPaths = (...paths) => {
     for (let i = 0; i < paths.length - 1; i++) {
         let current = paths[i]
@@ -14,4 +33,4 @@ const joinPaths = (...paths) => {
     return paths.join("")
 }
 
-export { joinPaths }
+export { PropRoute, joinPaths }

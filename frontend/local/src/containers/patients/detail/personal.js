@@ -1,14 +1,16 @@
 import React from "react"
+import { connect } from "react-redux"
 import { Route, Link, NavLink, Switch } from "react-router-dom"
 import { reduxForm } from "redux-form"
 
-//import "./style.css"
+import { loadCategories, getCodes } from "shared/modules/codes"
 
 import { joinPaths } from "shared/utils"
+import Spinner from "shared/containers/spinner"
 import { Form as PatientForm } from "../new/step1"
 import { Form as FamilyForm } from "../new/step2"
 
-const View = ({ match, location }) => (
+const View = ({ patient, match, location }) => (
     <div>
         <header>
             <h1>Personal Info</h1>
@@ -31,130 +33,126 @@ const View = ({ match, location }) => (
     </div>
 )
 
-const ViewPersonal = () => (
-    <div>
-        <div className="section">
-            <h3>Identification</h3>
-            <div className="content">
-                <div className="row">
-                    <div className="col-sm-4">
-                        <div className="label">First name</div>
-                        <div className="value">Alma</div>
-                    </div>
-                    <div className="col-sm-4">
-                        <div className="label">Middle name</div>
-                        <div className="value">Tina</div>
-                    </div>
-                    <div className="col-sm-4">
-                        <div className="label">Last name</div>
-                        <div className="value">Graves</div>
+const Column = ({ value, label, codes, width }) => {
+    // don't render if empty
+    if (value === undefined) {
+        return null
+    }
+
+    // convert for a code
+    if (codes && codes.length > 0) {
+        value = codes.reduce((acc, code) => {
+            if (code.id === value) {
+                return code.title
+            }
+            return acc
+        }, undefined)
+        // don't render if code is not found
+        if (value === undefined) {
+            return null
+        }
+    }
+
+    return (
+        <div className={`col-sm-${width}`}>
+            <div className="label" key="label">
+                {label}
+            </div>
+            <div className="value" key="value">
+                {value}
+            </div>
+        </div>
+    )
+}
+
+class ViewPersonal extends React.Component {
+    constructor(props) {
+        super(props)
+        props.loadCategories("countries", "maritalStatus", "gender")
+    }
+
+    render() {
+        const { codesLoading, patient, fetchCodes } = this.props
+
+        if (codesLoading) {
+            return <Spinner />
+        }
+
+        return (
+            <div>
+                <div className="section">
+                    <h3>Identification</h3>
+                    <div className="content">
+                        <div className="row">
+                            <Column width="4" label="First name" value={patient.firstName} key="firstName" />
+                            <Column width="4" label="Middle name" value={patient.middleName} key="middleName" />
+                            <Column width="4" label="Last name" value={patient.lastName} key="lastName" />
+                        </div>
+
+                        <div className="row">
+                            <Column width="4" label="Date of birth" value={patient.dateOfBirth} key="dateOfBirth" /> {/* @TODO format date */}
+                            <Column width="4" label="Gender" value={patient.gender} key="gender" codes={fetchCodes("gender")} />
+                        </div>
+
+                        <div className="row">
+                            <Column width="4" label="Marital status" value={patient.maritalStatus} key="maritalStatus" codes={fetchCodes("maritalStatus")} />
+                            <Column width="4" label="Number of kids" value={patient.numberOfKids} key="numberOfKids" />
+                        </div>
+
+                        <div className="row">
+                            <Column width="4" label="Nationality" value={patient.nationality} key="nationality" codes={fetchCodes("countries")} />
+                            <Column width="4" label="Country of origin" value={patient.countryOfOrigin} key="countryOfOrigin" codes={fetchCodes("countries")} />
+                        </div>
+
+                        <div className="row">
+                            <Column width="4" label="Education" value={patient.education} key="education" codes={[]} /> {/* @TODO codes */}
+                            <Column width="4" label="Occupation" value={patient.profession} key="profession" />
+                        </div>
+
+                        {patient.documents &&
+                            patient.documents.length > 0 && (
+                                <div className="row">{patient.documents.map((el, i) => <Column width="4" label={el.type} value={el.number} key={i} />)}</div>
+                            )}
                     </div>
                 </div>
 
-                <div className="row">
-                    <div className="col-sm-4">
-                        <div className="label">Date of birth</div>
-                        <div className="value">3 June 1994</div>
-                    </div>
-                    <div className="col-sm-4">
-                        <div className="label">Gender</div>
-                        <div className="value">Female</div>
-                    </div>
-                </div>
+                <div className="section">
+                    <h3>Contact</h3>
+                    <div className="content">
+                        <div className="row">
+                            <Column width="2" label="Country" value={patient.country} key="country" codes={fetchCodes("countries")} />
+                            <Column width="2" label="Camp" value={patient.camp} key="camp" />
+                            <Column width="2" label="Tent" value={patient.tent} key="tent" />
+                        </div>
 
-                <div className="row">
-                    <div className="col-sm-4">
-                        <div className="label">Marital status</div>
-                        <div className="value">Married</div>
-                    </div>
-                    <div className="col-sm-4">
-                        <div className="label">Number of kids</div>
-                        <div className="value">2</div>
-                    </div>
-                </div>
+                        <div className="row">
+                            <Column width="4" label="Phone number" value={patient.phone} key="phone" />
+                            <Column width="4" label="Email address" value={patient.email} key="email" />
+                            <Column width="4" label="Whatsapp" value={patient.whatsapp} key="whatsapp" />
+                        </div>
 
-                <div className="row">
-                    <div className="col-sm-4">
-                        <div className="label">Nationality</div>
-                        <div className="value">Syrian</div>
-                    </div>
-                    <div className="col-sm-4">
-                        <div className="label">Country of origin</div>
-                        <div className="value">Syria</div>
-                    </div>
-                </div>
-
-                <div className="row">
-                    <div className="col-sm-4">
-                        <div className="label">Education</div>
-                        <div className="value">Secondary school</div>
-                    </div>
-                    <div className="col-sm-4">
-                        <div className="label">Occupation</div>
-                        <div className="value">Computer scientist</div>
-                    </div>
-                </div>
-
-                <div className="row">
-                    <div className="col-sm-4">
-                        <div className="label">UN ID</div>
-                        <div className="value">453ds4a56w4d8</div>
+                        <div className="row">
+                            <Column width="4" label="Date of leaving home country" value={patient.dateOfLeaving} key="dateOfLeaving" />
+                            {/* @TODO format date */}
+                            <Column width="4" label="Date of arrival" value={patient.dateOfArrival} key="dateOfArrival" /> {/* @TODO format date */}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        )
+    }
+}
 
-        <div className="section">
-            <h3>Contact</h3>
-            <div className="content">
-                <div className="row">
-                    <div className="col-sm-4">
-                        <div className="label">Country</div>
-                        <div className="value">Lebanon</div>
-                    </div>
-                    <div className="col-sm-2">
-                        <div className="label">Camp</div>
-                        <div className="value">017</div>
-                    </div>
-                    <div className="col-sm-2">
-                        <div className="label">Tent</div>
-                        <div className="value">12</div>
-                    </div>
-                    <div className="col-sm-4">
-                        <div className="label">Clinic</div>
-                        <div className="value">CareHealth</div>
-                    </div>
-                </div>
-
-                <div className="row">
-                    <div className="col-sm-4">
-                        <div className="label">Phone number</div>
-                        <div className="value">+963 29 2939 2919</div>
-                    </div>
-                    <div className="col-sm-4">
-                        <div className="label">Email address</div>
-                        <div className="value">alma@gmail.com</div>
-                    </div>
-                    <div className="col-sm-4">
-                        <div className="label">Whatsapp</div>
-                        <div className="value">+963 29 2939 2919</div>
-                    </div>
-                </div>
-
-                <div className="row">
-                    <div className="col-sm-4">
-                        <div className="label">Date of leaving home country</div>
-                        <div className="value">13 November 2017</div>
-                    </div>
-                    <div className="col-sm-4">
-                        <div className="label">Date of arrival</div>
-                        <div className="value">2 February 2018</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-)
+ViewPersonal = connect(
+    state => ({
+        patient: state.patient.patient,
+        codesLoading: state.codes.loading
+    }),
+    {
+        loadCategories,
+        fetchCodes: getCodes
+    }
+)(ViewPersonal)
 
 const ViewFamily = () => (
     <div>

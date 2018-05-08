@@ -3,12 +3,13 @@ import { newPatient } from "./discovery"
 import produce from "immer"
 // insert into storage
 import { open, COLOR_DANGER } from "shared/modules/alert"
-import { createPatient as createPatientInStorage } from "./storage"
+import { createPatient as createPatientInStorage, readFileByLabel } from "./storage"
+import { extractPatientData } from "./ehr"
 
 export const CREATE = "patient/CREATE"
 export const CREATED = "patient/CREATED"
 export const LOADING = "patient/LOADING"
-export const LOAD = "patient/LOAD"
+export const LOADED = "patient/LOADED"
 export const FAILED = "patient/FAILED"
 
 const newPatientFormData = {
@@ -154,6 +155,17 @@ export default (state = initialState, action) => {
                 draft.created = true
                 break
 
+            case LOADING:
+                draft.loading = true
+                draft.loaded = false
+                break
+
+            case LOADED:
+                draft.loading = false
+                draft.loaded = true
+                draft.patient = action.result
+                break
+
             case FAILED:
                 draft.creating = draft.created = false
                 draft.failed = true
@@ -179,5 +191,18 @@ export const createPatient = formData => (dispatch, getState) => {
         .catch(ex => {
             dispatch(open(`Failed to create a new patient (${ex.message})`, "", COLOR_DANGER))
             // throw ex
+        })
+}
+
+export const fetchPatient = patientID => dispatch => {
+    dispatch({ type: LOADING })
+
+    return Promise.all([dispatch(readFileByLabel(patientID, "person")), dispatch(readFileByLabel(patientID, "info"))])
+        .then(([person, info]) => dispatch(extractPatientData(person, info)))
+        .then(patient => {
+            // add patientID
+            patient.ID = patientID
+            dispatch({ type: LOADED, result: patient })
+            return patient
         })
 }
