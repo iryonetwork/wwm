@@ -174,7 +174,7 @@ paths:
               description: File's full path
             X-Labels:
               type: string
-              description: Pipe-delimited file's labels
+              description: Comma-delimited file's labels
 
         403:
           $ref: '#/responses/403'
@@ -389,7 +389,7 @@ paths:
               description: File's full path
             X-Labels:
               type: string
-              description: Pipe-delimited file's labels
+              description: Comma-delimited file's labels
 
         403:
           $ref: '#/responses/403'
@@ -556,7 +556,7 @@ paths:
               description: File's full path
             X-Labels:
               type: string
-              description: Pipe-delimited file's labels
+              description: Comma-delimited file's labels
 
         403:
           description: Forbidden
