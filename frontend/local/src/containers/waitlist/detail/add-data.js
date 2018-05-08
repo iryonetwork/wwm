@@ -8,6 +8,7 @@ import Modal from "shared/containers/modal"
 import Patient from "shared/containers/patient"
 import { open, COLOR_DANGER } from "shared/modules/alert"
 import { listAll, update } from "../../../modules/waitlist"
+import { cardToObject } from "../../../modules/discovery"
 
 import { ReactComponent as MedicalDataIcon } from "shared/icons/vitalsigns.svg"
 import { ReactComponent as NegativeIcon } from "shared/icons/negative.svg"
@@ -82,7 +83,7 @@ class MedicalData extends React.Component {
                 <div className="medical-data">
                     <form onSubmit={props.handleSubmit(this.handleSubmit)}>
                         <div className="modal-header">
-                            <Patient />
+                            <Patient data={props.item.patient && cardToObject({ connections: props.item.patient })} />
                             <h1>
                                 <MedicalDataIcon />
                                 Add medical Data

@@ -171,6 +171,17 @@ header {
     overflow-y: auto;
 }
 
+.has-modal {
+    overflow: hidden;
+
+    .alert {
+        z-index: 9000;
+        left: 20px;
+        top: 20px;
+        right: 20px;
+    }
+}
+
 .modal-dialog {
     max-width: 940px;
 

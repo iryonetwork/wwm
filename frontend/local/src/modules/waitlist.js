@@ -132,14 +132,11 @@ export const add = (formData, patient) => dispatch => {
     dispatch({ type: ADD })
 
     const data = {
-        patient_id: patient.patientID,
+        patientID: patient.patientID,
+        patient: patient.connections,
         priority: parseInt(formData.priority, 10) || 1,
         complaint: formData.mainComplaint,
-        patient: {
-            name: `${p.lastName}, ${p.firstName}`,
-            birthdate: p.dateOfBirth,
-            gender: p.gender === "CODED-at0310" ? "M" : p.gender === "CODED-at0311" ? "F" : "?"
-        }
+        complaintComment: formData.mainComplaintDetails
     }
 
     return fetch(url, {

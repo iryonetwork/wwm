@@ -8,6 +8,7 @@ import Patient from "shared/containers/patient"
 import { renderInput, renderTextarea } from "shared/forms/renderField"
 import { open, COLOR_DANGER } from "shared/modules/alert"
 import { listAll, update } from "../../../modules/waitlist"
+import { cardToObject } from "../../../modules/discovery"
 
 import { ReactComponent as ComplaintIcon } from "shared/icons/complaint.svg"
 
@@ -43,7 +44,7 @@ class EditComplaint extends React.Component {
                 <div className="add-to-waitlist">
                     <form onSubmit={handleSubmit(this.handleSubmit)}>
                         <div className="modal-header">
-                            <Patient />
+                            <Patient data={item.patient && cardToObject({ connections: item.patient })} />
                             <h1>
                                 <ComplaintIcon />
                                 Edit main complaint

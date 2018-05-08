@@ -4,6 +4,7 @@ import { connect } from "react-redux"
 import { Link } from "react-router-dom"
 import { UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap"
 import { listAll } from "../../modules/waitlist"
+import { cardToObject } from "../../modules/discovery"
 
 import Patient from "shared/containers/patient"
 import Spinner from "shared/containers/spinner"
@@ -118,7 +119,7 @@ const Section = ({ list, title, waitlistID }) => {
                     {(list || []).map(el => (
                         <tr key={el.id}>
                             <th scope="row">
-                                <Patient />
+                                <Patient data={el.patient && cardToObject({ connections: el.patient })} />
                             </th>
                             <td>
                                 {el.complaint}

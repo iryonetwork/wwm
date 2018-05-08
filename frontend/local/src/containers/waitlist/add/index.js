@@ -23,11 +23,11 @@ class AddToWaitlist extends Component {
     }
 
     componentDidMount() {
-        document.body.style.overflow = "hidden"
+        document.body.classList.add("has-modal")
     }
 
     componentWillUnmount() {
-        document.body.style.overflow = "auto"
+        document.body.classList.remove("has-modal")
     }
 
     onSubmit(formData) {

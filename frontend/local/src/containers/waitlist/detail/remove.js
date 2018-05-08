@@ -5,6 +5,7 @@ import Modal from "shared/containers/modal"
 import Patient from "shared/containers/patient"
 import { open, COLOR_DANGER } from "shared/modules/alert"
 import { listAll, remove } from "../../../modules/waitlist"
+import { cardToObject } from "../../../modules/discovery"
 
 class Remove extends React.Component {
     constructor(props) {
@@ -36,12 +37,12 @@ class Remove extends React.Component {
                 <div className="add-to-waitlist">
                     <form onSubmit={this.handleSubmit}>
                         <div className="modal-header">
-                            <Patient />
+                            <Patient data={item.patient && cardToObject({ connections: item.patient })} />
                             <h1>Remove from Waiting list</h1>
                         </div>
 
                         {item && item.id ? (
-                            <div className="modal-body">Do you really want to remove [person] from waiting list?</div>
+                            <div className="modal-body">Do you really want to remove patient from waiting list?</div>
                         ) : (
                             <div className="modal-body">Loading...</div>
                         )}
