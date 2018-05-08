@@ -122,7 +122,7 @@ paths:
         - local
         - cloud
       summary: Fetch a file
-      description: Fetches the latest revision of a file
+      description: Fetches the latest revision of a file. Label can be used instead of fileID to fetch file containing list of files with given label, label files collection file is formatted as JSON array with file descriptors as items.
       operationId: fileGet
       produces:
         - application/octet-stream
@@ -291,7 +291,7 @@ paths:
         - local
         - cloud
       summary: List of versions of a file
-      description: Returns a list of available file versions
+      description: Returns a list of available file versions. Label can be used instead of fileID to fetch list of versions of label files collection file.
       operationId: fileListVersions
 
       parameters:
@@ -331,7 +331,7 @@ paths:
         - local
         - cloud
       summary: Get a specific version of file
-      description: Returns a specific version of a file
+      description: Returns a specific version of a file. Label can be used instead of fileID to fetch file containing list of files with given label, label files collection file is formatted as JSON array with file descriptors as items.
       operationId: fileGetVersion
       produces:
         - application/octet-stream
