@@ -1,5 +1,5 @@
 import produce from "immer"
-import { goBack } from "react-router-redux"
+import { goBack, push } from "react-router-redux"
 import _ from "lodash"
 import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 import { read, BASE_URL, DEFAULT_WAITLIST_ID } from "shared/modules/config"
@@ -16,6 +16,8 @@ export const FAILED = "waitlist/FAILED"
 export const UPDATE_ITEM = "waitlist/UPDATE_ITEM"
 export const UPDATE_ITEM_DONE = "waitlist/UPDATE_ITEM_DONE"
 export const UPDATE_ITEM_FAILED = "waitlist/UPDATE_ITEM_FAILED"
+
+export const REMOVE_ITEM = "waitlist/REMOVE_ITEM"
 
 const initialState = {
     list: [],
@@ -72,6 +74,11 @@ export default (state = initialState, action) => {
             case UPDATE_ITEM_FAILED:
             case UPDATE_ITEM_DONE:
                 draft.items[action.itemID].updating = false
+                break
+
+            case REMOVE_ITEM:
+                delete draft.items[action.itemID]
+                draft.list = _.filter(state.list, item => item.id !== action.itemID)
                 break
 
             default:
@@ -254,6 +261,35 @@ export const update = (listID, data) => dispatch => {
                 type: UPDATE_ITEM_FAILED,
                 itemID: data.id
             })
+        })
+}
+
+export const remove = (listID, itemID, reason) => dispatch => {
+    const url = `${read(BASE_URL)}/waitlist/${listID}/${itemID}?reason=${reason}`
+
+    return fetch(url, {
+        method: "DELETE",
+        headers: {
+            Authorization: dispatch(getToken()),
+            "Content-Type": "application/json"
+        }
+    })
+        .then(response => Promise.all([response.status === 204, response.status]))
+        .then(([ok, status]) => {
+            if (!ok) {
+                throw new Error(`Failed to remove waiting list item (${status})`)
+            }
+
+            dispatch({
+                type: REMOVE_ITEM,
+                itemID: itemID
+            })
+
+            dispatch(push(`/waitlist/${listID}`))
+            setTimeout(() => dispatch(open("Patient was removed from Waiting list", "", COLOR_SUCCESS, 5)), 100)
+        })
+        .catch(ex => {
+            dispatch(open(ex.message, "", COLOR_DANGER))
         })
 }
 

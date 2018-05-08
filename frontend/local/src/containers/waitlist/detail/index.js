@@ -16,6 +16,7 @@ import MedicalData from "./add-data"
 import LaboratoryTest from "./add-lab-test"
 import EditComplaint from "./edit-complaint"
 import AddDiagnosis from "./add-diagnosis"
+import Remove from "./remove"
 
 let InConsultation = ({ match, waitlistItem, waitlistFetching, patient }) => {
     if (waitlistFetching) {
@@ -164,6 +165,7 @@ let InConsultation = ({ match, waitlistItem, waitlistFetching, patient }) => {
             <Route path={match.path + "/add-data"} component={MedicalData} />
             <Route path={match.path + "/add-lab-test"} component={LaboratoryTest} />
             <Route path={match.path + "/edit-complaint"} component={EditComplaint} />
+            <Route path={match.path + "/remove"} component={Remove} />
         </div>
     )
 }
