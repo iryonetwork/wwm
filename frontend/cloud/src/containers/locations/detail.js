@@ -7,7 +7,8 @@ import _ from "lodash"
 import { loadLocation, saveLocation } from "../../modules/locations"
 import { ADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { CATEGORY_COUNTRIES, loadCodes } from "../../modules/codes"
-import { open, close } from "shared/modules/alert"
+import { open, close, COLOR_DANGER } from "shared/modules/alert"
+import { processStateOnChange, processStateOnBlur } from "../../utils/formFieldsUpdate"
 
 class LocationDetail extends React.Component {
     constructor(props) {
@@ -20,7 +21,8 @@ class LocationDetail extends React.Component {
             electricty: false,
             waterSupply: false,
             manager: {},
-            loading: true
+            loading: true,
+            validationErrors: {}
         }
     }
 
@@ -79,25 +81,11 @@ class LocationDetail extends React.Component {
     }
 
     updateInput = e => {
-        const target = e.target
-        const value = target.type === "checkbox" ? target.checked : target.value
+        this.setState(processStateOnChange(this.state, e))
+    }
 
-        let id
-        let toAssign
-        let splitID = target.id.split(".")
-
-        if (splitID.length === 2) {
-            id = splitID[0]
-            toAssign = this.state[id]
-            toAssign[splitID[1]] = value
-        } else {
-            id = target.id
-            toAssign = value
-        }
-
-        this.setState({
-            [id]: toAssign
-        })
+    onBlurInput = e => {
+        this.setState(processStateOnBlur(this.state, e))
     }
 
     updateCapacity = e => {
@@ -111,6 +99,11 @@ class LocationDetail extends React.Component {
         e.preventDefault()
         this.props.close()
 
+        let validationErrors = {}
+        if (!this.state.name || this.state.name === "") {
+            validationErrors["name"] = "Required"
+        }
+
         let location = this.props.location ? this.props.location : {}
 
         location.name = this.state.name
@@ -121,8 +114,14 @@ class LocationDetail extends React.Component {
         location.waterSupply = this.state.waterSupply
         location.manager = _.clone(this.state.manager)
 
+        if (!_.isEmpty(validationErrors)) {
+            this.props.open("There are errors in the data submitted", "", COLOR_DANGER)
+            this.setState({ validationErrors: validationErrors })
+            return
+        }
+
         this.props.saveLocation(location).then(response => {
-            if (!location.id && response.id) {
+            if (!location.id && response && response.id) {
                 this.props.history.push(`/locations/${response.id}`)
             }
         })
@@ -142,25 +141,35 @@ class LocationDetail extends React.Component {
                 <h1>Locations</h1>
                 <h2>{props.location ? this.props.location.name : "Add new location"}</h2>
 
-                <form onSubmit={this.submit}>
+                <form onSubmit={this.submit} className="needs-validation" noValidate>
                     <div className="form-group">
                         <label htmlFor="name">Name</label>
                         <input
-                            className="form-control"
+                            type="text"
+                            className={"form-control" + (this.state.validationErrors["name"] ? " is-invalid" : "")}
                             id="name"
                             value={this.state.name}
                             onChange={this.updateInput}
+                            onBlur={this.onBlurInput}
                             disabled={!props.canEdit}
                             placeholder="Location name"
+                            required="true"
                         />
+                        {this.state.validationErrors["name"] ? (
+                            <div className="invalid-feedback">{this.state.validationErrors["name"]}</div>
+                        ) : (
+                            <small className="form-text text-muted">Required</small>
+                        )}
                     </div>
                     <div className="form-group">
                         <label htmlFor="capacity">Capacity</label>
                         <input
+                            type="text"
                             className="form-control"
                             id="capacity"
                             value={this.state.capacity}
                             onChange={this.updateCapacity}
+                            onBlur={this.onBlurInput}
                             disabled={!props.canEdit}
                             placeholder="e.g. 1000"
                         />
@@ -172,6 +181,7 @@ class LocationDetail extends React.Component {
                             id="country"
                             value={this.state.country}
                             onChange={this.updateInput}
+                            onBlur={this.onBlurInput}
                             disabled={!props.canEdit}
                         >
                             <option value="">Select country</option>
@@ -185,10 +195,12 @@ class LocationDetail extends React.Component {
                     <div className="form-group">
                         <label htmlFor="city">City</label>
                         <input
+                            type="text"
                             className="form-control"
                             id="city"
                             value={this.state.city}
                             onChange={this.updateInput}
+                            onBlur={this.onBlurInput}
                             disabled={!props.canEdit}
                             placeholder="e.g. Beirut"
                         />
@@ -201,6 +213,7 @@ class LocationDetail extends React.Component {
                             id="electricty"
                             checked={this.state.electricty}
                             onChange={this.updateInput}
+                            onBlur={this.onBlurInput}
                             disabled={!props.canEdit}
                         />
                     </div>
@@ -212,6 +225,7 @@ class LocationDetail extends React.Component {
                             id="waterSupply"
                             checked={this.state.waterSupply}
                             onChange={this.updateInput}
+                            onBlur={this.onBlurInput}
                             disabled={!props.canEdit}
                         />
                     </div>
@@ -220,10 +234,12 @@ class LocationDetail extends React.Component {
                         <div className="form-group">
                             <label htmlFor="firstName">Name</label>
                             <input
+                                type="text"
                                 className="form-control"
                                 id="manager.name"
                                 value={this.state.manager.name}
                                 onChange={this.updateInput}
+                                onBlur={this.onBlurInput}
                                 disabled={!props.canEdit}
                                 placeholder="Full name"
                             />
@@ -236,6 +252,7 @@ class LocationDetail extends React.Component {
                                 id="manager.email"
                                 value={this.state.manager.email}
                                 onChange={this.updateInput}
+                                onBlur={this.onBlurInput}
                                 disabled={!props.canEdit}
                                 placeholder="user@email.com"
                             />
@@ -248,6 +265,7 @@ class LocationDetail extends React.Component {
                                 id="manager.phoneNumber"
                                 value={this.state.manager.phoneNumber}
                                 onChange={this.updateInput}
+                                onBlur={this.onBlurInput}
                                 disabled={!props.canEdit}
                                 placeholder="+38640..."
                             />

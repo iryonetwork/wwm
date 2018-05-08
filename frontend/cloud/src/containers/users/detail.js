@@ -7,11 +7,12 @@ import _ from "lodash"
 
 import { loadUser, saveUser } from "../../modules/users"
 import { CATEGORY_COUNTRIES, CATEGORY_LANGUAGES, CATEGORY_LICENSES, loadCodes } from "../../modules/codes"
-import { SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
+import { SELF_RIGHTS_RESOURCE, SUPERADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { open, close, COLOR_DANGER } from "shared/modules/alert"
 import OrganizationsList from "./organizationsList"
 import ClinicsList from "./clinicsList"
 import WildcardUserRolesList from "./wildcardUserRolesList"
+import { processStateOnChange, processStateOnBlur } from "../../utils/formFieldsUpdate"
 
 class UserDetail extends React.Component {
     constructor(props) {
@@ -21,8 +22,11 @@ class UserDetail extends React.Component {
             email: "",
             password: "",
             password2: "",
-            personalData: {},
-            loading: true
+            personalData: {
+                passport: {}
+            },
+            loading: true,
+            validationErrors: {}
         }
     }
 
@@ -81,15 +85,10 @@ class UserDetail extends React.Component {
 
         if (props.user) {
             let personalData = _.clone(props.user.personalData) || {}
-            if (personalData.passport) {
-                personalData.passport = _.clone(props.user.personalData.passport) || {}
-            }
-            if (personalData.languages) {
-                personalData.languages = _.clone(props.user.personalData.languages) || []
-            }
-            if (personalData.licenses) {
-                personalData.licenses = _.clone(props.user.personalData.licenses) || []
-            }
+
+            personalData.passport = _.clone(personalData.passport) || {}
+            personalData.languages = _.clone(personalData.languages) || []
+            personalData.licenses = _.clone(personalData.licenses) || []
 
             // format dates
             if (personalData && personalData.dateOfBirth) {
@@ -116,41 +115,6 @@ class UserDetail extends React.Component {
                 personalData: personalData || {}
             })
         }
-    }
-
-    updateEmail = e => {
-        this.setState({ email: e.target.value })
-    }
-
-    updatePassword = e => {
-        this.setState({ password: e.target.value })
-    }
-
-    updatePassword2 = e => {
-        this.setState({ password2: e.target.value })
-    }
-
-    updateUsername = e => {
-        this.setState({ username: e.target.value })
-    }
-
-    updatePersonalData = e => {
-        const target = e.target
-        const value = target.type === "checkbox" ? target.checked : target.value
-        const id = target.id
-
-        this.setState({ personalData: _.assign({}, this.state.personalData, _.fromPairs([[id, value]])) })
-    }
-
-    updatePassportData = e => {
-        const target = e.target
-        const value = target.type === "checkbox" ? target.checked : target.value
-        const id = target.id
-
-        let passportData = this.state.personalData.passport ? this.state.personalData.passport : {}
-        passportData = _.assign({}, passportData, _.fromPairs([[id, value]]))
-
-        this.setState({ personalData: _.assign({}, this.state.personalData, _.fromPairs([["passport", passportData]])) })
     }
 
     processDateString = (previousStringValue, currentStringValue) => {
@@ -193,9 +157,22 @@ class UserDetail extends React.Component {
             caretLocation = 6
         }
 
-        this.setState({ personalData: _.assign({}, this.state.personalData, _.fromPairs([["dateOfBirth", dateOfBirth]])) }, () => {
-            this.refs.dateOfBirth.selectionStart = this.refs.dateOfBirth.selectionEnd = caretLocation
-        })
+        let validationErrors = this.state.validationErrors
+        if (dateOfBirth === "") {
+            validationErrors[e.target.id] = "Required"
+        } else if (this.state.validationErrors[e.target.id]) {
+            delete validationErrors[e.target.id]
+        }
+
+        this.setState(
+            {
+                personalData: _.assign({}, this.state.personalData, _.fromPairs([["dateOfBirth", dateOfBirth]])),
+                validationErrors: validationErrors
+            },
+            () => {
+                this.refs["personalData.dateOfBirth"].selectionStart = this.refs["personalData.dateOfBirth"].selectionEnd = caretLocation
+            }
+        )
     }
 
     updatePassportExpiryDate = e => {
@@ -211,11 +188,25 @@ class UserDetail extends React.Component {
             caretLocation = 6
         }
 
+        let validationErrors = this.state.validationErrors
+        if (expiryDate === "") {
+            validationErrors[e.target.id] = "Required"
+        } else if (this.state.validationErrors[e.target.id]) {
+            delete validationErrors[e.target.id]
+        }
+
         let passportData = this.state.personalData.passport ? this.state.personalData.passport : {}
         passportData = _.assign({}, passportData, _.fromPairs([["expiryDate", expiryDate]]))
-        this.setState({ personalData: _.assign({}, this.state.personalData, _.fromPairs([["passport", passportData]])) }, () => {
-            this.refs.expiryDate.selectionStart = this.refs.expiryDate.selectionEnd = caretLocation
-        })
+
+        this.setState(
+            {
+                personalData: _.assign({}, this.state.personalData, _.fromPairs([["passport", passportData]])),
+                validationErrors: validationErrors
+            },
+            () => {
+                this.refs["personalData.passport.expiryDate"].selectionStart = this.refs["personalData.passport.expiryDate"].selectionEnd = caretLocation
+            }
+        )
     }
 
     newLanguage = () => e => {
@@ -270,39 +261,62 @@ class UserDetail extends React.Component {
         this.setState({ personalData: personalData })
     }
 
+    updateInput = e => {
+        this.setState(processStateOnChange(this.state, e))
+    }
+
+    onBlurInput = e => {
+        this.setState(processStateOnBlur(this.state, e))
+    }
+
     submit = e => {
         e.preventDefault()
         this.props.close()
-        if (!this.props.user && this.state.username === "") {
-            this.props.open("Username is required", "", COLOR_DANGER)
-            return
+
+        let validationErrors = {}
+
+        if (!this.props.user && (!this.state.username || this.state.username === "")) {
+            validationErrors["username"] = "Required"
         }
 
-        if (this.state.email === "") {
-            this.props.open("Email is required", "", COLOR_DANGER)
-            return
-        }
-
-        if (this.state.password !== this.state.password2) {
-            this.props.open("Passwords aren't the same", "", COLOR_DANGER)
-            return
+        if (!this.state.email || this.state.email === "") {
+            validationErrors["email"] = "Required"
         }
 
         if (!this.props.user && this.state.password === "") {
-            this.props.open("Password is required", "", COLOR_DANGER)
-            return
+            validationErrors["password"] = "Required"
+        }
+
+        if (!this.props.user && this.state.password2 === "") {
+            validationErrors["password2"] = "Required"
+        }
+
+        if (this.state.password !== this.state.password2) {
+            validationErrors["password"] = "Passwords don't match"
+            validationErrors["password2"] = "Passwords don't match"
+        }
+
+        if (!this.state.personalData.firstName || this.state.personalData.firstName === "") {
+            validationErrors["personalData.firstName"] = "Required"
+        }
+        if (!this.state.personalData.lastName || this.state.personalData.lastName === "") {
+            validationErrors["personalData.lastName"] = "Required"
+        }
+        if (!this.state.personalData.dateOfBirth || this.state.personalData.dateOfBirth === "" || this.state.personalData.dateOfBirth.length !== 10) {
+            validationErrors["personalData.dateOfBirth"] = "Required"
         }
 
         let user = {
             email: this.state.email
         }
+
         if (this.props.user) {
             user.id = this.props.user.id
             user.username = this.props.user.username
         } else {
             user.username = this.state.username
         }
-        if (this.state.password && this.state.password !== "") {
+        if (this.state.password && this.state.password.trim() !== "") {
             user.password = this.state.password
         }
 
@@ -312,18 +326,26 @@ class UserDetail extends React.Component {
         if (user.personalData.dateOfBirth && user.personalData.dateOfBirth !== "") {
             let dateOfBirth = moment(user.personalData.dateOfBirth, "DD/MM/YYYY")
             if (!dateOfBirth.isValid()) {
-                this.props.open("Invalid date of birth", "", COLOR_DANGER)
-                return
+                validationErrors["personalData.passport.expiryDate"] = "Invalid date of birth"
+            } else {
+                user.personalData.dateOfBirth = dateOfBirth.local().format("YYYY-MM-DD")
             }
-            user.personalData.dateOfBirth = dateOfBirth.local().format("YYYY-MM-DD")
         }
-        if (user.personalData.passport && user.personalData.passport.expiryDate && user.personalData.passport.expiryDate !== "") {
-            let expiryDate = moment(user.personalData.passport.expiryDate, "DD/MM/YYYY")
-            if (!expiryDate.isValid()) {
-                this.props.open("Invalid passport expiry date", "", COLOR_DANGER)
-                return
+        if (user.personalData.passport) {
+            if (user.personalData.passport.expiryDate === "" || user.personalData.passport.expiryDate === undefined) {
+                delete user.personalData.passport.expiryDate
+            } else {
+                if (user.personalData.passport.expiryDate.length !== 10) {
+                    validationErrors["personalData.passport.expiryDate"] = "Invalid passport expiry date"
+                } else {
+                    let expiryDate = moment(user.personalData.passport.expiryDate, "DD/MM/YYYY")
+                    if (!expiryDate.isValid()) {
+                        validationErrors["personalData.passport.expiryDate"] = "Invalid passport expiry date"
+                    } else {
+                        user.personalData.passport.expiryDate = expiryDate.local().format("YYYY-MM-DD")
+                    }
+                }
             }
-            user.personalData.passport.expiryDate = expiryDate.local().format("YYYY-MM-DD")
         }
 
         // format languages
@@ -334,6 +356,12 @@ class UserDetail extends React.Component {
         // format licenses
         if (user.personalData.licenses && user.personalData.licenses.length !== 0) {
             user.personalData.licenses = _.map(_.pickBy(user.personalData.licenses, license => license.id && license.id !== ""), license => license.id)
+        }
+
+        if (!_.isEmpty(validationErrors)) {
+            this.props.open("There are errors in the data submitted", "", COLOR_DANGER)
+            this.setState({ validationErrors: validationErrors })
+            return
         }
 
         this.props.saveUser(user).then(response => {
@@ -363,76 +391,112 @@ class UserDetail extends React.Component {
                     </div>
                 )}
                 <div>
-                    <form onSubmit={this.submit}>
+                    <form onSubmit={this.submit} className="needs-validation" noValidate>
                         {props.user ? null : (
                             <div className="form-group">
                                 <label htmlFor="username">Username</label>
                                 <input
-                                    className="form-control"
+                                    type="text"
+                                    className={"form-control" + (this.state.validationErrors["username"] ? " is-invalid" : "")}
                                     id="username"
                                     value={this.state.username}
-                                    onChange={this.updateUsername}
+                                    onChange={this.updateInput}
+                                    onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
                                     placeholder="username"
+                                    required="true"
                                 />
+                                {this.state.validationErrors["username"] ? (
+                                    <div className="invalid-feedback">{this.state.validationErrors["username"]}</div>
+                                ) : (
+                                    <small className="form-text text-muted">Required</small>
+                                )}
                             </div>
                         )}
-                        <div className="form-group">
-                            <label htmlFor="password">{props.user ? "Enter new password" : "Enter password"}</label>
-                            <input
-                                type="password"
-                                className="form-control"
-                                id="paswword"
-                                value={this.state.password}
-                                onChange={this.updatePassword}
-                                disabled={!props.canEdit}
-                                placeholder={props.user ? "●●●●●" : "password"}
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="password2">{props.user ? "Enter new password again" : "Enter password again"}</label>
-                            <input
-                                type="password"
-                                className="form-control"
-                                id="paswword2"
-                                value={this.state.password2}
-                                onChange={this.updatePassword2}
-                                disabled={!props.canEdit}
-                                placeholder={props.user ? "●●●●●" : "password"}
-                            />
-                        </div>
+                        {!props.user || props.canEditPassword ? (
+                            <div>
+                                <div className="form-group">
+                                    <label htmlFor="password">{props.user ? "Enter new password" : "Enter password"}</label>
+                                    <input
+                                        type="password"
+                                        className={"form-control" + (this.state.validationErrors["password"] ? " is-invalid" : "")}
+                                        id="password"
+                                        value={this.state.password}
+                                        onChange={this.updateInput}
+                                        onBlur={this.onBlurInput}
+                                        disabled={!props.canEdit}
+                                        placeholder={props.user ? "●●●●●" : "password"}
+                                        required={props.user ? null : "true"}
+                                    />
+                                    <div className="invalid-feedback">{this.state.validationErrors["password"]}</div>
+                                    {!props.user ? <small className="form-text text-muted">Required</small> : null}
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="password2">{props.user ? "Enter new password again" : "Enter password again"}</label>
+                                    <input
+                                        type="password"
+                                        className={"form-control" + (this.state.validationErrors["password2"] ? " is-invalid" : "")}
+                                        id="password2"
+                                        value={this.state.password2}
+                                        onChange={this.updateInput}
+                                        disabled={!props.canEdit}
+                                        placeholder={props.user ? "●●●●●" : "password"}
+                                        required={props.user ? null : "true"}
+                                    />
+                                    <div className="invalid-feedback">{this.state.validationErrors["password2"]}</div>
+                                    {!props.user ? <small className="form-text text-muted">Required</small> : null}
+                                </div>
+                            </div>
+                        ) : null}
                         <div className="form-group">
                             <label htmlFor="email">Email address</label>
                             <input
                                 type="email"
-                                className="form-control"
+                                className={"form-control" + (this.state.validationErrors["email"] ? " is-invalid" : "")}
                                 id="email"
                                 value={this.state.email}
-                                onChange={this.updateEmail}
+                                onChange={this.updateInput}
+                                onBlur={this.onBlurInput}
                                 disabled={!props.canEdit}
                                 placeholder="user@email.com"
+                                required="true"
                             />
+                            {this.state.validationErrors["email"] ? (
+                                <div className="invalid-feedback">{this.state.validationErrors["email"]}</div>
+                            ) : (
+                                <small className="form-text text-muted">Required</small>
+                            )}
                         </div>
                         <div className="form-group">
                             <h3>Personal data</h3>
                             <div className="form-group">
                                 <label htmlFor="firstName">First name</label>
                                 <input
-                                    className="form-control"
-                                    id="firstName"
+                                    type="text"
+                                    className={"form-control" + (this.state.validationErrors["personalData.firstName"] ? " is-invalid" : "")}
+                                    id="personalData.firstName"
                                     value={this.state.personalData.firstName}
-                                    onChange={this.updatePersonalData}
+                                    onChange={this.updateInput}
+                                    onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
                                     placeholder="First name"
+                                    required="true"
                                 />
+                                {this.state.validationErrors["personalData.firstName"] ? (
+                                    <div className="invalid-feedback">{this.state.validationErrors["personalData.firstName"]}</div>
+                                ) : (
+                                    <small className="form-text text-muted">Required</small>
+                                )}
                             </div>
                             <div className="form-group">
                                 <label htmlFor="middleName">Middle name</label>
                                 <input
+                                    type="text"
                                     className="form-control"
-                                    id="middleName"
+                                    id="personalData.middleName"
                                     value={this.state.personalData.middleName}
-                                    onChange={this.updatePersonalData}
+                                    onChange={this.updateInput}
+                                    onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
                                     placeholder="Middle name"
                                 />
@@ -440,33 +504,51 @@ class UserDetail extends React.Component {
                             <div className="form-group">
                                 <label htmlFor="lastName">Last name</label>
                                 <input
-                                    className="form-control"
-                                    id="lastName"
+                                    type="text"
+                                    className={"form-control" + (this.state.validationErrors["personalData.lastName"] ? " is-invalid" : "")}
+                                    id="personalData.lastName"
                                     value={this.state.personalData.lastName}
-                                    onChange={this.updatePersonalData}
+                                    onChange={this.updateInput}
+                                    onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
                                     placeholder="Last name"
+                                    required="true"
                                 />
+                                {this.state.validationErrors["personalData.lastName"] ? (
+                                    <div className="invalid-feedback">{this.state.validationErrors["personalData.lastName"]}</div>
+                                ) : (
+                                    <small className="form-text text-muted">Required</small>
+                                )}
                             </div>
                             <div className="form-group">
                                 <label htmlFor="dateOfBirth">Date of birth</label>
                                 <input
-                                    className="form-control"
-                                    id="dateOfBirth"
-                                    ref="dateOfBirth"
+                                    type="text"
+                                    className={"form-control" + (this.state.validationErrors["personalData.dateOfBirth"] ? " is-invalid" : "")}
+                                    id="personalData.dateOfBirth"
+                                    ref="personalData.dateOfBirth"
                                     value={this.state.personalData.dateOfBirth}
                                     onChange={this.updateDateOfBirth}
+                                    onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
                                     placeholder="DD/MM/YYYY"
+                                    required="true"
                                 />
+                                {this.state.validationErrors["personalData.dateOfBirth"] ? (
+                                    <div className="invalid-feedback">{this.state.validationErrors["personalData.dateOfBirth"]}</div>
+                                ) : (
+                                    <small className="form-text text-muted">Required</small>
+                                )}
                             </div>
                             <div className="form-group">
                                 <label htmlFor="specialisation">Specialisation</label>
                                 <input
+                                    type="text"
                                     className="form-control"
-                                    id="specialisation"
+                                    id="personalData.specialisation"
                                     value={this.state.personalData.specialisation}
-                                    onChange={this.updatePersonalData}
+                                    onChange={this.updateInput}
+                                    onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
                                     placeholder="Medical worker specialisation"
                                 />
@@ -481,7 +563,7 @@ class UserDetail extends React.Component {
                                                     {language.edit ? (
                                                         <select
                                                             className="form-control form-control-sm"
-                                                            id="residency"
+                                                            id="personalData.languages"
                                                             value={language.id}
                                                             onChange={this.updateLanguage(i)}
                                                             disabled={!props.canEdit}
@@ -532,7 +614,7 @@ class UserDetail extends React.Component {
                                                     {license.edit ? (
                                                         <select
                                                             className="form-control form-control-sm"
-                                                            id="residency"
+                                                            id="personalData.licenses"
                                                             value={license.id}
                                                             onChange={this.updateLicense(i)}
                                                             disabled={!props.canEdit}
@@ -577,9 +659,9 @@ class UserDetail extends React.Component {
                                 <label htmlFor="nationality">Nationality</label>
                                 <select
                                     className="form-control form-control-sm"
-                                    id="nationality"
+                                    id="personalData.nationality"
                                     value={this.state.personalData.nationality}
-                                    onChange={this.updatePersonalData}
+                                    onChange={this.updateInput}
                                     disabled={!props.canEdit}
                                 >
                                     <option value="">Select country</option>
@@ -594,9 +676,9 @@ class UserDetail extends React.Component {
                                 <label htmlFor="residency">Residency</label>
                                 <select
                                     className="form-control form-control-sm"
-                                    id="residency"
+                                    id="personalData.residency"
                                     value={this.state.personalData.residency}
-                                    onChange={this.updatePersonalData}
+                                    onChange={this.updateInput}
                                     disabled={!props.canEdit}
                                 >
                                     <option value="">Select country</option>
@@ -612,10 +694,12 @@ class UserDetail extends React.Component {
                                 <div className="form-group">
                                     <label htmlFor="number">Number</label>
                                     <input
+                                        type="text"
                                         className="form-control"
-                                        id="number"
+                                        id="personalData.passport.number"
                                         value={this.state.personalData.passport ? this.state.personalData.passport.number : undefined}
-                                        onChange={this.updatePassportData}
+                                        onChange={this.updateInput}
+                                        onBlur={this.onBlurInput}
                                         placeholder="Passport number"
                                         disabled={!props.canEdit}
                                     />
@@ -624,9 +708,9 @@ class UserDetail extends React.Component {
                                     <label htmlFor="issuingCountry">Issuing country</label>
                                     <select
                                         className="form-control form-control-sm"
-                                        id="issuingCountry"
+                                        id="personalData.passport.issuingCountry"
                                         value={this.state.personalData.passport ? this.state.personalData.passport.issuingCountry : undefined}
-                                        onChange={this.updatePassportData}
+                                        onChange={this.updateInput}
                                         disabled={!props.canEdit}
                                     >
                                         <option value="">Select country</option>
@@ -640,14 +724,17 @@ class UserDetail extends React.Component {
                                 <div className="form-group">
                                     <label htmlFor="expiryDate">Expiry date</label>
                                     <input
-                                        className="form-control"
-                                        id="expiryDate"
-                                        ref="expiryDate"
+                                        type="text"
+                                        className={"form-control" + (this.state.validationErrors["personalData.passport.expiryDate"] ? " is-invalid" : "")}
+                                        id="personalData.passport.expiryDate"
+                                        ref="personalData.passport.expiryDate"
                                         value={this.state.personalData.passport ? this.state.personalData.passport.expiryDate : undefined}
                                         onChange={this.updatePassportExpiryDate}
+                                        onBlur={this.onBlurInput}
                                         placeholder="DD/MM/YYYY"
                                         disabled={!props.canEdit}
                                     />
+                                    <div className="invalid-feedback">{this.state.validationErrors["personalData.passport.expiryDate"]}</div>
                                 </div>
                             </div>
                         </div>
@@ -695,6 +782,8 @@ const mapStateToProps = (state, ownProps) => {
         isHome: ownProps.home,
         canSee: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
         canEdit: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
+        canEditPassword:
+            state.authentication.token.sub === id || (state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined),
         validationsLoading: state.validations.loading,
         forbidden: state.users.forbidden
     }

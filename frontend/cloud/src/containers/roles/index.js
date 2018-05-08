@@ -55,7 +55,7 @@ class Roles extends React.Component {
     addRole = () => e => {
         if (this.state.roleName) {
             this.props.addRole(this.state.roleName).then(response => {
-                if (response.id) {
+                if (response && response.id) {
                     this.props.history.push(`/roles/${response.id}`)
                 }
             })
@@ -120,9 +120,9 @@ class Roles extends React.Component {
                         {props.canEdit ? (
                             <div className="input-group mb-3">
                                 <input
+                                    type="text"
                                     value={this.state.roleName}
                                     onChange={this.updateRoleName()}
-                                    type="text"
                                     className="form-control form-control-sm"
                                     placeholder="Role name"
                                     aria-label="Role name"

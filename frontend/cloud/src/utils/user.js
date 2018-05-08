@@ -1,5 +1,5 @@
 export const getName = user => {
-    if (user.personalData !== undefined) {
+    if (user.personalData) {
         var name = ""
         if (user.personalData.firstName !== undefined && user.personalData.firstName !== "") {
             name += user.personalData.firstName

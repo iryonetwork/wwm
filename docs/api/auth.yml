@@ -1676,6 +1676,7 @@ definitions:
     required:
       - username
       - email
+      - personalData
     properties:
       id:
         type: string
@@ -1785,6 +1786,10 @@ definitions:
 
   PersonalData:
     type: object
+    required:
+      - firstName
+      - lastName
+      - dateOfBirth
     properties:
       firstName:
         type: string

@@ -152,9 +152,9 @@ class ClinicsList extends React.Component {
                                             {props.canEdit ? (
                                                 clinic.edit ? (
                                                     <input
+                                                        type="text"
                                                         value={clinic.name}
                                                         onChange={this.editClinicName(i)}
-                                                        type="text"
                                                         className="form-control form-control-sm"
                                                         placeholder="Clinic name"
                                                         aria-label="Clinic name"

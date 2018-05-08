@@ -32,6 +32,11 @@ rules:
     subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
     resource: '*'
     action: 7
+  - id: fd7eb345-0500-4122-bafe-2e0af32a61df
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: /frontend/dashboard/superadmin
+    action: 7
+    deny: true
   - id: 498c9084-4a1b-4284-81b4-3e2267334e51
     subject: 338fae76-9859-4803-8441-c5c441319cfd # everyone role (hardcoded id)
     resource: /frontend/dashboard/self

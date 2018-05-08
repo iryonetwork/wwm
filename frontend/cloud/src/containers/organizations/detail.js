@@ -7,9 +7,10 @@ import _ from "lodash"
 import { loadOrganization, saveOrganization } from "../../modules/organizations"
 import { CATEGORY_COUNTRIES, loadCodes } from "../../modules/codes"
 import { ADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
-import { open, close } from "shared/modules/alert"
+import { open, close, COLOR_DANGER } from "shared/modules/alert"
 import ClinicsList from "./clinicsList"
 import UsersList from "./usersList"
+import { processStateOnChange, processStateOnBlur } from "../../utils/formFieldsUpdate"
 
 class OrganizationDetail extends React.Component {
     constructor(props) {
@@ -22,7 +23,8 @@ class OrganizationDetail extends React.Component {
             address: {},
             representative: {},
             primaryContact: {},
-            loading: true
+            loading: true,
+            validationErrors: {}
         }
     }
 
@@ -85,30 +87,21 @@ class OrganizationDetail extends React.Component {
     }
 
     updateInput = e => {
-        const target = e.target
-        const value = target.type === "checkbox" ? target.checked : target.value
+        this.setState(processStateOnChange(this.state, e))
+    }
 
-        let id
-        let toAssign
-        let splitID = target.id.split(".")
-
-        if (splitID.length === 2) {
-            id = splitID[0]
-            toAssign = this.state[id]
-            toAssign[splitID[1]] = value
-        } else {
-            id = target.id
-            toAssign = value
-        }
-
-        this.setState({
-            [id]: toAssign
-        })
+    onBlurInput = e => {
+        this.setState(processStateOnBlur(this.state, e))
     }
 
     submit = e => {
         e.preventDefault()
         this.props.close()
+
+        let validationErrors = {}
+        if (!this.state.name || this.state.name === "") {
+            validationErrors["name"] = "Required"
+        }
 
         let organization = this.state.organization
 
@@ -119,8 +112,14 @@ class OrganizationDetail extends React.Component {
         organization.representative = _.clone(this.state.representative)
         organization.primaryContact = _.clone(this.state.primaryContact)
 
+        if (!_.isEmpty(validationErrors)) {
+            this.props.open("There are errors in the data submitted", "", COLOR_DANGER)
+            this.setState({ validationErrors: validationErrors })
+            return
+        }
+
         this.props.saveOrganization(organization).then(response => {
-            if (!organization.id && response.id) {
+            if (!organization.id && response && response.id) {
                 this.props.history.push(`/organizations/${response.id}`)
             }
         })
@@ -141,36 +140,48 @@ class OrganizationDetail extends React.Component {
                     <h1>Organizations</h1>
                     <h2>{this.state.organization.id ? this.state.organization.name : "Add new organization"}</h2>
 
-                    <form onSubmit={this.submit}>
+                    <form onSubmit={this.submit} className="needs-validation" noValidate>
                         <div className="form-group">
                             <label htmlFor="name">Name</label>
                             <input
-                                className="form-control"
+                                type="text"
+                                className={"form-control" + (this.state.validationErrors["name"] ? " is-invalid" : "")}
                                 id="name"
                                 value={this.state.name}
                                 onChange={this.updateInput}
+                                onBlur={this.onBlurInput}
                                 disabled={!props.canEdit}
                                 placeholder="Organization name"
+                                required="true"
                             />
+                            {this.state.validationErrors["name"] ? (
+                                <div className="invalid-feedback">{this.state.validationErrors["name"]}</div>
+                            ) : (
+                                <small className="form-text text-muted">Required</small>
+                            )}
                         </div>
                         <div className="form-group">
                             <label htmlFor="legalStatus">Legal status</label>
                             <input
+                                type="text"
                                 className="form-control"
                                 id="legalStatus"
                                 value={this.state.legalStatus}
                                 onChange={this.updateInput}
+                                onBlur={this.onBlurInput}
                                 disabled={!props.canEdit}
                                 placeholder="e.g. NGO"
                             />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="country">Service type</label>
+                            <label htmlFor="serviceType">Service type</label>
                             <input
+                                type="text"
                                 className="form-control"
                                 id="serviceType"
                                 value={this.state.serviceType}
                                 onChange={this.updateInput}
+                                onBlur={this.onBlurInput}
                                 disabled={!props.canEdit}
                                 placeholder="e.g. Basic care"
                             />
@@ -180,10 +191,12 @@ class OrganizationDetail extends React.Component {
                             <div className="form-group">
                                 <label htmlFor="address.addressLine1">Address line 1</label>
                                 <input
+                                    type="text"
                                     className="form-control"
                                     id="address.addressLine1"
                                     value={this.state.address.addressLine1}
                                     onChange={this.updateInput}
+                                    onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
                                     placeholder="e.g. Street"
                                 />
@@ -191,10 +204,12 @@ class OrganizationDetail extends React.Component {
                             <div className="form-group">
                                 <label htmlFor="address.addressLine2">Address line 2</label>
                                 <input
+                                    type="text"
                                     className="form-control"
                                     id="address.addressLine2"
                                     value={this.state.address.addressLine2}
                                     onChange={this.updateInput}
+                                    onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
                                     placeholder="e.g. Building information"
                                 />
@@ -202,10 +217,12 @@ class OrganizationDetail extends React.Component {
                             <div className="form-group">
                                 <label htmlFor="address.city">City</label>
                                 <input
+                                    type="text"
                                     className="form-control"
                                     id="address.city"
                                     value={this.state.address.city}
                                     onChange={this.updateInput}
+                                    onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
                                     placeholder="City"
                                 />
@@ -218,6 +235,7 @@ class OrganizationDetail extends React.Component {
                                     id="address.postCode"
                                     value={this.state.address.postCode}
                                     onChange={this.updateInput}
+                                    onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
                                     placeholder="Postcode"
                                 />
@@ -229,6 +247,7 @@ class OrganizationDetail extends React.Component {
                                     id="address.country"
                                     value={this.state.address.country}
                                     onChange={this.updatePersonalData}
+                                    onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
                                 >
                                     <option value="">Select country</option>
@@ -245,10 +264,12 @@ class OrganizationDetail extends React.Component {
                             <div className="form-group">
                                 <label htmlFor="representative.name">Name</label>
                                 <input
+                                    type="text"
                                     className="form-control"
                                     id="representative.name"
                                     value={this.state.representative.name}
                                     onChange={this.updateInput}
+                                    onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
                                     placeholder="Full name"
                                 />
@@ -261,6 +282,7 @@ class OrganizationDetail extends React.Component {
                                     id="representative.email"
                                     value={this.state.representative.email}
                                     onChange={this.updateInput}
+                                    onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
                                     placeholder="user@email.com"
                                 />
@@ -273,6 +295,7 @@ class OrganizationDetail extends React.Component {
                                     id="representative.phoneNumber"
                                     value={this.state.representative.phoneNumber}
                                     onChange={this.updateInput}
+                                    onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
                                     placeholder="+38640..."
                                 />
@@ -283,6 +306,7 @@ class OrganizationDetail extends React.Component {
                             <div className="form-group">
                                 <label htmlFor="primaryContact.name">Name</label>
                                 <input
+                                    type="text"
                                     className="form-control"
                                     id="primaryContact.name"
                                     value={this.state.primaryContact.name}
@@ -299,6 +323,7 @@ class OrganizationDetail extends React.Component {
                                     id="primaryContact.email"
                                     value={this.state.primaryContact.email}
                                     onChange={this.updateInput}
+                                    onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
                                     placeholder="user@email.com"
                                 />
@@ -311,6 +336,7 @@ class OrganizationDetail extends React.Component {
                                     id="primaryContact.phoneNumber"
                                     value={this.state.primaryContact.phoneNumber}
                                     onChange={this.updateInput}
+                                    onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
                                     placeholder="+38640..."
                                 />

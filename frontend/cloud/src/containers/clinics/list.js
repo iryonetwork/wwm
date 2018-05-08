@@ -112,7 +112,7 @@ class Clinics extends React.Component {
         clinics[index].saving = true
 
         this.props.saveClinic(clinics[index]).then(response => {
-            if (response.id) {
+            if (response && response.id) {
                 this.setState({ edit: false })
                 this.props.history.push(`/clinics/${response.id}`)
             }
