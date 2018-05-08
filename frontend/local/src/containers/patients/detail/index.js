@@ -128,10 +128,10 @@ class PatientDetail extends React.Component {
                 <div className="container">
                     <Route exact path={match.url} render={() => <Redirect to={inConsultation ? baseURL + "consultation" : baseURL + "personal"} />} />
                     {inConsultation && <Route path="/patients/:patientID" render={() => <Redirect to={baseURL + "consultation"} />} />}
-                    <Route path={match.url + "/consultation"} component={Consultation} />
-                    <Route path={match.url + "/data"} component={Data} />
-                    <Route path={match.url + "/personal"} component={Personal} patient={patient} />
-                    <Route path={match.url + "/history"} component={History} />
+                    <Route path={match.path + "/consultation"} component={Consultation} />
+                    <Route path={match.path + "/data"} component={Data} />
+                    <Route path={match.path + "/personal"} component={Personal} />
+                    <Route path={match.path + "/history"} component={History} />
                 </div>
             </div>
         )

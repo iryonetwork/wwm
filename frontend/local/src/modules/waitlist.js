@@ -1,5 +1,7 @@
 import produce from "immer"
-import { open, COLOR_DANGER } from "shared/modules/alert"
+import { goBack } from "react-router-redux"
+import _ from "lodash"
+import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 import { read, BASE_URL, DEFAULT_WAITLIST_ID } from "shared/modules/config"
 import { getToken } from "shared/modules/authentication"
 
@@ -11,8 +13,13 @@ export const ADD = "waitlist/ADD"
 export const ADDED = "waitlist/ADDED"
 export const FAILED = "waitlist/FAILED"
 
+export const UPDATE_ITEM = "waitlist/UPDATE_ITEM"
+export const UPDATE_ITEM_DONE = "waitlist/UPDATE_ITEM_DONE"
+export const UPDATE_ITEM_FAILED = "waitlist/UPDATE_ITEM_FAILED"
+
 const initialState = {
-    list: []
+    list: [],
+    items: {}
 }
 
 export default (state = initialState, action) => {
@@ -27,6 +34,7 @@ export default (state = initialState, action) => {
                 draft.listing = false
                 draft.listed = true
                 draft.list = action.results
+                draft.items = _.keyBy(action.results, "id")
                 break
 
             case FETCH:
@@ -55,6 +63,15 @@ export default (state = initialState, action) => {
                 draft.listing = draft.listed = false
                 draft.adding = draft.added = false
                 draft.failed = true
+                break
+
+            case UPDATE_ITEM:
+                draft.items[action.itemID].updating = true
+                break
+
+            case UPDATE_ITEM_FAILED:
+            case UPDATE_ITEM_DONE:
+                draft.items[action.itemID].updating = false
                 break
 
             default:
@@ -102,10 +119,10 @@ export default (state = initialState, action) => {
 // )
 
 export const add = (formData, patient) => dispatch => {
-    const url = `${read(BASE_URL)}/waitlist/${read(DEFAULT_WAITLIST_ID)}`
+    const waitlistID = read(DEFAULT_WAITLIST_ID)
+    const url = `${read(BASE_URL)}/waitlist/${waitlistID}`
     const p = cardToObject(patient)
     dispatch({ type: ADD })
-    console.log(formData, patient)
 
     const data = {
         patient_id: patient.patientID,
@@ -132,6 +149,8 @@ export const add = (formData, patient) => dispatch => {
                 throw new Error(`Failed to add patient to waitlist (${status})`)
             }
             dispatch({ type: ADDED, result: data })
+            dispatch(goBack())
+            setTimeout(() => dispatch(open("Patient was added to waiting list", "", COLOR_SUCCESS, 5)), 100)
             return data
         })
         .catch(ex => {
@@ -200,6 +219,42 @@ export const get = (waitlistID, itemID) => (dispatch, getState) => {
     //         dispatch(open(ex.message, "", COLOR_DANGER))
     //         dispatch({ type: FAILED })
     //     })
+}
+
+export const update = (listID, data) => dispatch => {
+    const url = `${read(BASE_URL)}/waitlist/${listID}/${data.id}`
+    dispatch({
+        type: UPDATE_ITEM,
+        itemID: data.id
+    })
+
+    return fetch(url, {
+        method: "PUT",
+        body: JSON.stringify(data),
+        headers: {
+            Authorization: dispatch(getToken()),
+            "Content-Type": "application/json"
+        }
+    })
+        .then(response => Promise.all([response.status === 204, response.status]))
+        .then(([ok, status]) => {
+            if (!ok) {
+                throw new Error(`Failed to update waiting list item (${status})`)
+            }
+            dispatch({
+                type: UPDATE_ITEM_DONE,
+                itemID: data.id
+            })
+            dispatch(goBack())
+            setTimeout(() => dispatch(open("Waiting list was updated ", "", COLOR_SUCCESS, 5)), 100)
+        })
+        .catch(ex => {
+            dispatch(open(ex.message, "", COLOR_DANGER))
+            dispatch({
+                type: UPDATE_ITEM_FAILED,
+                itemID: data.id
+            })
+        })
 }
 
 export const cardToObject = card => {

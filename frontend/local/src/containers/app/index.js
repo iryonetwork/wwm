@@ -7,6 +7,7 @@ import { read, DEFAULT_WAITLIST_ID } from "shared/modules/config"
 import { close } from "shared/modules/alert"
 import Logo from "shared/containers/logo"
 import Status from "shared/containers/status"
+import Alert from "shared/containers/alert"
 
 import Patients from "../patients"
 import NewPatient from "../patients/new"
@@ -57,6 +58,7 @@ class App extends React.Component {
                 </nav>
                 <main>
                     <div className="container">
+                        <Alert />
                         <Route exact path="/" render={() => <Redirect to="/patients" />} />
                         <Route exact path="/patients" component={Patients} />
                         <Route exact path="/new-patient" component={NewPatient} />

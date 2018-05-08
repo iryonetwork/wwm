@@ -160,10 +160,10 @@ let InConsultation = ({ match, waitlistItem, waitlistFetching, patient }) => {
                 </dl>
             </div>
 
-            <Route path={match.url + "/add-diagnosis"} component={AddDiagnosis} />
-            <Route path={match.url + "/add-data"} component={MedicalData} />
-            <Route path={match.url + "/add-lab-test"} component={LaboratoryTest} />
-            <Route path={match.url + "/edit-complaint"} component={EditComplaint} />
+            <Route path={match.path + "/add-diagnosis"} component={AddDiagnosis} />
+            <Route path={match.path + "/add-data"} component={MedicalData} />
+            <Route path={match.path + "/add-lab-test"} component={LaboratoryTest} />
+            <Route path={match.path + "/edit-complaint"} component={EditComplaint} />
         </div>
     )
 }

@@ -1,4 +1,5 @@
 import React from "react"
+import classnames from "classnames"
 import { connect } from "react-redux"
 import { Link } from "react-router-dom"
 import { UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap"
@@ -115,19 +116,19 @@ const Section = ({ list, title, waitlistID }) => {
             <table className="table patients">
                 <tbody>
                     {(list || []).map(el => (
-                        <tr key={el.patient_id}>
+                        <tr key={el.id}>
                             <th scope="row">
                                 <Patient />
                             </th>
                             <td>
                                 {el.complaint}
-                                {el.priority === 4 && (
+                                {el.priority === 1 && (
                                     <div>
                                         <span className="badge badge-pill badge-danger">Urgent</span>
                                     </div>
                                 )}
                             </td>
-                            <VitalSigns />
+                            <VitalSigns signs={el.vital_signs || {}} />
                             <Tools waitlistID={waitlistID} itemID={el.id} />
                         </tr>
                     ))}
@@ -144,26 +145,30 @@ const Tools = ({ waitlistID, itemID }) => (
                 <span className="meatballs" />
             </DropdownToggle>
             <DropdownMenu right>
-                <DropdownItem>Edit main complaint</DropdownItem>
+                <DropdownItem>
+                    <Link to={`/waitlist/${waitlistID}/${itemID}/consultation/edit-complaint`}>Edit main complaint</Link>
+                </DropdownItem>
                 <DropdownItem>
                     <Link to={`/waitlist/${waitlistID}/${itemID}/consultation/add-data`}>Add vital signs</Link>
                 </DropdownItem>
-                <DropdownItem>Remove from Waiting list</DropdownItem>
+                <DropdownItem>
+                    <Link to={`/waitlist/${waitlistID}/${itemID}/consultation/remove`}>Remove from Waiting list</Link>
+                </DropdownItem>
             </DropdownMenu>
         </UncontrolledDropdown>
     </td>
 )
 
-const VitalSigns = () => (
+const VitalSigns = ({ signs }) => (
     <td className="vital_signs">
         <div>
             <ul>
-                <li className="active">H</li>
-                <li className="active">M</li>
-                <li className="active">T</li>
-                <li>HR</li>
-                <li>BP</li>
-                <li>OS</li>
+                <li className={classnames({ active: signs.height })}>H</li>
+                <li className={classnames({ active: signs.weight })}>W</li>
+                <li className={classnames({ active: signs.temperature })}>T</li>
+                <li className={classnames({ active: signs.heart_rate })}>HR</li>
+                <li className={classnames({ active: signs.pressure })}>BP</li>
+                <li className={classnames({ active: signs.oxygen_saturation })}>OS</li>
             </ul>
         </div>
     </td>

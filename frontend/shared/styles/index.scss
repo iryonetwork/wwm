@@ -46,9 +46,11 @@ h3,
 }
 
 .alert {
-    position: relative;
-    top: -50px;
     z-index: 1;
+    position: fixed;
+    right: 10px;
+    left: 240px;
+    top: 10px;
 }
 
 h1 {
