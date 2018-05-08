@@ -9,6 +9,7 @@ import (
 
 	"github.com/iryonetwork/wwm/gen/storage/models"
 	"github.com/iryonetwork/wwm/gen/storage/restapi/operations"
+	"github.com/iryonetwork/wwm/utils"
 )
 
 // Handlers describes the actions supported by the storage handlers
@@ -67,7 +68,7 @@ func (h *handlers) FileGet() operations.FileGetHandler {
 			}
 		}
 
-		return operations.NewFileGetOK().
+		return utils.UseProducer(operations.NewFileGetOK().
 			WithPayload(r).
 			WithContentType(fd.ContentType).
 			WithXCreated(fd.Created).
@@ -76,7 +77,7 @@ func (h *handlers) FileGet() operations.FileGetHandler {
 			WithXChecksum(fd.Checksum).
 			WithXName(fd.Name).
 			WithXPath(fd.Path).
-			WithXLabels(formatLabelsHeader(fd.Labels))
+			WithXLabels(formatLabelsHeader(fd.Labels)), utils.FileProducer)
 	})
 }
 
@@ -96,7 +97,7 @@ func (h *handlers) FileGetVersion() operations.FileGetVersionHandler {
 			}
 		}
 
-		return operations.NewFileGetVersionOK().
+		return utils.UseProducer(operations.NewFileGetVersionOK().
 			WithPayload(r).
 			WithContentType(fd.ContentType).
 			WithXCreated(fd.Created).
@@ -105,7 +106,7 @@ func (h *handlers) FileGetVersion() operations.FileGetVersionHandler {
 			WithXChecksum(fd.Checksum).
 			WithXName(fd.Name).
 			WithXPath(fd.Path).
-			WithXLabels(formatLabelsHeader(fd.Labels))
+			WithXLabels(formatLabelsHeader(fd.Labels)), utils.FileProducer)
 	})
 }
 

@@ -7,18 +7,19 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 )
 
-type producers int8
+type producer int8
 
 // Producers
 const (
-	_ producers = iota
+	_ producer = iota
 	JSONProducer
 	TextProducer
 	BinProducer
+	FileProducer
 )
 
 // UseProducer is used to override which producer will be used in response
-func UseProducer(responder middleware.Responder, p producers) middleware.Responder {
+func UseProducer(responder middleware.Responder, p producer) middleware.Responder {
 	return middleware.ResponderFunc(func(rw http.ResponseWriter, pr runtime.Producer) {
 		switch p {
 		case JSONProducer:
@@ -31,6 +32,10 @@ func UseProducer(responder middleware.Responder, p producers) middleware.Respond
 
 		case BinProducer:
 			rw.Header().Set(runtime.HeaderContentType, "application/octet-stream")
+			responder.WriteResponse(rw, runtime.ByteStreamProducer())
+
+		case FileProducer:
+			// content type is expected to be set already
 			responder.WriteResponse(rw, runtime.ByteStreamProducer())
 
 		default:
