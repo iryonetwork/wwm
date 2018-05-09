@@ -132,6 +132,14 @@ address = ":8080"
     [backends.localStatusReporterMetrics.servers.server1]
     url = "http://localStatusReporterMetrics:9090"
 
+  [backends.cloudStatusReporter]
+    [backends.cloudStatusReporter.servers.server1]
+    url = "https://cloudStatusReporter"
+
+  [backends.cloudStatusReporterMetrics]
+    [backends.cloudStatusReporterMetrics.servers.server1]
+    url = "http://cloudStatusReporterMetrics:9090"
+
   [backends.localdiscovery]
     [backends.localdiscovery.servers.server1]
     url = "https://localDiscovery"
@@ -222,6 +230,11 @@ address = ":8080"
   backend = "localStatusReporter"
     [frontends.localStatus.routes.route1]
     rule = "Host:iryo.local;PathPrefix:/status"
+
+  [frontends.cloudStatus]
+  backend = "cloudStatusReporter"
+    [frontends.cloudStatus.routes.route1]
+    rule = "Host:iryo.cloud;PathPrefix:/status"
 
   [frontends.localdiscovery]
   backend = "localdiscovery"

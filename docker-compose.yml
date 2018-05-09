@@ -228,6 +228,21 @@ services:
     - KEY_PATH=/certs/localStatusReporter-key.pem
     - CERT_PATH=/certs/localStatusReporter.pem
 
+  cloudStatusReporter:
+    image: golang:1.9-alpine
+    command:
+    - /wwm/cloudStatusReporter
+    volumes:
+    - ./.bin/:/wwm
+    - ./bin/tls:/certs:ro
+    - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - ./cmd/cloudStatusReporter/statusReporterComponents.yml:/components.yml:ro
+    environment:
+    - DOMAIN_TYPE=global
+    - DOMAIN_ID=*
+    - KEY_PATH=/certs/cloudStatusReporter-key.pem
+    - CERT_PATH=/certs/cloudStatusReporter.pem
+
   postgres:
     build:
       context: .
