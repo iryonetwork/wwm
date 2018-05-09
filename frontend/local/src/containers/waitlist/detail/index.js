@@ -43,7 +43,7 @@ let InConsultation = ({ match, waitlistItem, waitlistFetching, patient }) => {
                 </header>
 
                 <h3>{waitlistItem.complaint}</h3>
-                {waitlistItem.comment && <p>{waitlistItem.comment}</p>}
+                {waitlistItem.complaintComment && <p>{waitlistItem.complaintComment}</p>}
             </div>
 
             <div className="section">

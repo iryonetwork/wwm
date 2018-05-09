@@ -128,7 +128,6 @@ export default (state = initialState, action) => {
 export const add = (formData, patient) => dispatch => {
     const waitlistID = read(DEFAULT_WAITLIST_ID)
     const url = `${read(BASE_URL)}/waitlist/${waitlistID}`
-    const p = cardToObject(patient)
     dispatch({ type: ADD })
 
     const data = {

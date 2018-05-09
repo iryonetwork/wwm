@@ -25,7 +25,7 @@ class PatientDetail extends React.Component {
         super(props)
         props
             .getWaitlistItem(props.match.params.waitlistID, props.match.params.itemID)
-            .then(item => props.fetchPatient(item.patient_id))
+            .then(item => props.fetchPatient(item.patientID))
             .catch(ex => console.warn("Failed to load patient", ex))
     }
 
