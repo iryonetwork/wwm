@@ -93,8 +93,8 @@ EditComplaint = connect(
         let initialValues
         if (item) {
             initialValues = {
-                mainComplaint: item.complaint,
-                mainComplaintDetails: item.complaintComment
+                mainComplaint: item.mainComplaint.complaint,
+                mainComplaintDetails: item.mainComplaint.comment
             }
         }
 

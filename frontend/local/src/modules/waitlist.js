@@ -134,8 +134,10 @@ export const add = (formData, patient) => dispatch => {
         patientID: patient.patientID,
         patient: patient.connections,
         priority: parseInt(formData.priority, 10) || 1,
-        complaint: formData.mainComplaint,
-        complaintComment: formData.mainComplaintDetails
+        mainComplaint: {
+            complaint: formData.mainComplaint,
+            comment: formData.mainComplaintDetails
+        }
     }
 
     return fetch(url, {

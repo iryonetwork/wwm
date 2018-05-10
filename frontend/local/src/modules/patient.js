@@ -187,6 +187,7 @@ export default (state = initialState, action) => {
 
             case UDPATE_FAILED:
                 draft.updating = false
+                break
 
             default:
         }

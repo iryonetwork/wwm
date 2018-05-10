@@ -42,8 +42,8 @@ let InConsultation = ({ match, waitlistItem, waitlistFetching, patient }) => {
                     </Link>
                 </header>
 
-                <h3>{waitlistItem.complaint}</h3>
-                {waitlistItem.complaintComment && <p>{waitlistItem.complaintComment}</p>}
+                <h3>{waitlistItem.mainComplaint.complaint}</h3>
+                {waitlistItem.mainComplaint.comment && <p>{waitlistItem.mainComplaint.comment}</p>}
             </div>
 
             <div className="section">
