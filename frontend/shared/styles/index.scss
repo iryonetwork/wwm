@@ -276,12 +276,13 @@ header {
     }
 }
 
+/*
 .form-row > .col,
 .form-row > [class*="col-"] {
     padding-right: 10px;
     padding-left: 10px;
 }
-
+*/
 .form-inline-container {
     line-height: 36px;
 
@@ -292,7 +293,7 @@ header {
 
     .form-check-inline {
         top: 1px;
-        margin-right: 20px;
+        margin: 0 10px;
     }
 
     .form-check-label {
@@ -376,8 +377,7 @@ label {
 
 .patient-form,
 .medical-data {
-    label span,
-    .label {
+    label span {
         font-size: 11px;
         color: $gray-500;
         display: block;

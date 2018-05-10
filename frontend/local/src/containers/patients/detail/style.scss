@@ -191,7 +191,12 @@
         position: relative;
 
         .remove {
-            right: 0;
+            z-index: 1;
+            right: 10px;
+        }
+
+        h3 {
+            border-bottom: 0;
         }
 
         .section {
@@ -228,19 +233,24 @@
             }
         }
 
-        .attributes.open {
-            margin-top: 0;
+        .attributes {
+            padding: 20px 0;
+            border-top: 1px solid $grey2;
 
-            .form-row {
-                padding: 40px 0 10px;
+            &.open {
                 margin-top: 0;
-                margin-bottom: 0;
-            }
 
-            .link {
-                border-bottom: none;
-                margin: 0;
-                padding: 0;
+                .form-row {
+                    padding: 40px 0 10px;
+                    margin-top: 0;
+                    margin-bottom: 0;
+                }
+
+                .link {
+                    border-bottom: none;
+                    margin: 0;
+                    padding: 0;
+                }
             }
         }
 
@@ -248,6 +258,7 @@
             margin-top: 40px;
             padding: 20px 0 0;
             border-top: 1px solid $grey2;
+            border-bottom: none;
 
             .label {
                 @include media-breakpoint-up(sm) {

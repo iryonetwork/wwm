@@ -33,14 +33,16 @@ class Step3 extends Component {
     render() {
         const { handleSubmit, reset, previousPage, dateOfBirth, codesLoading, getCodes } = this.props
         return (
-            <form onSubmit={handleSubmit}>
-                <RenderForm
-                    dateOfBirth={dateOfBirth}
-                    babyFoods={getCodes("babyFood")}
-                    communicationTypes={getCodes("childCommunication")}
-                    deliveryTypes={getCodes("deliveryType")}
-                    codesLoading={codesLoading}
-                />
+            <form onSubmit={handleSubmit} className="patient-form">
+                <div className="modal-body">
+                    <RenderForm
+                        dateOfBirth={dateOfBirth}
+                        babyFoods={getCodes("babyFood")}
+                        communicationTypes={getCodes("childCommunication")}
+                        deliveryTypes={getCodes("deliveryType")}
+                        codesLoading={codesLoading}
+                    />
+                </div>
 
                 <Footer reset={reset} previousPage={previousPage} />
             </form>
@@ -73,14 +75,14 @@ RenderForm = connect(
 )(RenderForm)
 
 const renderAdultForm = props => (
-    <div className="modal-body">
+    <div>
         <HealthAttributes />
         <HabitsAndLivingConditions />
     </div>
 )
 
 const renderBabyForm = ({ babyFoods, deliveryTypes, communicationTypes }) => (
-    <div className="modal-body">
+    <div>
         <h3>Birth data</h3>
         <div className="baby-form">
             <div className="form-row">
@@ -137,7 +139,7 @@ const renderBabyForm = ({ babyFoods, deliveryTypes, communicationTypes }) => (
 )
 
 const renderChildForm = () => (
-    <div className="modal-body">
+    <div>
         <h3>Vaccine information</h3>
 
         <Field
@@ -451,7 +453,7 @@ const renderMedications = ({ fields, meta: { error, submitFailed } }) => (
     </div>
 )
 
-export { renderMedications, renderSurgeries, renderInjuries, renderChronicDiseases, renderImmunizations, renderAllergies }
+export { renderMedications, renderSurgeries, renderInjuries, renderChronicDiseases, renderImmunizations, renderAllergies, RenderForm }
 
 Step3 = reduxForm({
     form: "newPatient",

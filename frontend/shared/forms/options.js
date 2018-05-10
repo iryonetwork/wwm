@@ -1,21 +1,21 @@
 const yesNoOptions = [
     {
-        value: true,
+        value: "true",
         label: "Yes"
     },
     {
-        value: false,
+        value: "false",
         label: "No"
     }
 ]
 
 const positiveNegativeOptions = [
     {
-        value: true,
+        value: "true",
         label: "Positive"
     },
     {
-        value: false,
+        value: "false",
         label: "Negative"
     }
 ]

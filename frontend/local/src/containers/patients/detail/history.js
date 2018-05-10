@@ -1,13 +1,12 @@
 import React from "react"
 import { connect } from "react-redux"
 import { Route, Link } from "react-router-dom"
-import { reduxForm, Field, FieldArray, Fields } from "redux-form"
+import { reduxForm } from "redux-form"
 
-import { renderSelect, renderHabitFields } from "shared/forms/renderField"
-import { renderMedications, renderSurgeries, renderInjuries, renderChronicDiseases, renderImmunizations, renderAllergies } from "../new/step3"
+import { RenderForm } from "../new/step3"
 import { joinPaths } from "shared/utils"
-
-//import "./style.css"
+import { getCodesAsOptions, loadCategories as loadCategoriesImport } from "shared/modules/codes"
+import { updatePatient } from "../../../modules/patient"
 
 let History = ({ match, patient }) => (
     <div className="history">
@@ -28,7 +27,7 @@ let History = ({ match, patient }) => (
             <div className="values">
                 <dl>
                     {(patient.allergies || []).map((item, i) => (
-                        <React.Fragment>
+                        <React.Fragment key={i}>
                             <dt>{item.allergy}</dt>
                             {(item.critical === "true" || item.comment) && (
                                 <dd>
@@ -48,7 +47,7 @@ let History = ({ match, patient }) => (
             <div className="values">
                 <dl>
                     {(patient.immunizations || []).map((item, i) => (
-                        <React.Fragment>
+                        <React.Fragment key={i}>
                             <dt>{item.immunization}</dt>
                             {/* @TODO format date */}
                             {item.date && <dd>{item.date}</dd>}
@@ -64,7 +63,7 @@ let History = ({ match, patient }) => (
             <div className="values">
                 <dl>
                     {(patient.chronicDiseases || []).map((item, i) => (
-                        <React.Fragment>
+                        <React.Fragment key={i}>
                             <dt>{item.disease}</dt>
                             {/* @TODO format date */}
                             {item.date && <dd>{item.date}</dd>}
@@ -80,7 +79,7 @@ let History = ({ match, patient }) => (
             <div className="values">
                 <dl>
                     {(patient.injuries || []).map((item, i) => (
-                        <React.Fragment>
+                        <React.Fragment key={i}>
                             <dt>{item.injury}</dt>
                             {/* @TODO format date */}
                             {item.date && <dd>{item.date}</dd>}
@@ -96,7 +95,7 @@ let History = ({ match, patient }) => (
             <div className="values">
                 <dl>
                     {(patient.surgeries || []).map((item, i) => (
-                        <React.Fragment>
+                        <React.Fragment key={i}>
                             <dt>{item.injury}</dt>
                             {/* @TODO format date */}
                             {item.date && <dd>{item.date}</dd>}
@@ -112,7 +111,7 @@ let History = ({ match, patient }) => (
             <div className="values">
                 <dl>
                     {(patient.medications || []).map((item, i) => (
-                        <React.Fragment>
+                        <React.Fragment key={i}>
                             <dt>{item.medication}</dt>
                             {item.comment && <dd>{item.comment}</dd>}
                         </React.Fragment>
@@ -141,134 +140,61 @@ History = connect(
     {}
 )(History)
 
-const bloodTypeOptions = [
-    {
-        label: "A+",
-        value: "A+"
-    },
-    {
-        label: "A-",
-        value: "A-"
-    },
-    {
-        label: "B+",
-        value: "B+"
-    },
-    {
-        label: "B-",
-        value: "B-"
-    },
-    {
-        label: "O+",
-        value: "O+"
-    },
-    {
-        label: "O-",
-        value: "O-"
-    },
-    {
-        label: "AB+",
-        value: "AB+"
-    },
-    {
-        label: "AB-",
-        value: "AB-"
+class EditHistory extends React.Component {
+    constructor(props) {
+        super(props)
+
+        this.handleSubmit = this.handleSubmit.bind(this)
     }
-]
 
-let EditHistory = ({ match }) => (
-    <div className="edit-history">
-        <header>
-            <h1>Edit Medical History</h1>
-            <Link to="." className="btn btn-secondary btn-wide">
-                Close
-            </Link>
-        </header>
+    handleSubmit(form) {
+        this.props.updatePatient(form).then(() => {
+            this.props.history.push(".")
+        })
+    }
 
-        <div className="section blood-type">
-            <h3>Blood type</h3>
-            <div className="form-row">
-                <div className="form-group col-sm-4">
-                    <Field name="bloodType" options={bloodTypeOptions} component={renderSelect} label="Blood type" />
-                    <p className="warning">Warning: Be very careful when entering blood type</p>
-                </div>
+    componentWillMount() {
+        this.props.loadCategories("babyFood", "childCommunication", "deliveryType")
+    }
+
+    render() {
+        const { handleSubmit, dateOfBirth, codesLoading, getCodes, updating } = this.props
+        return (
+            <div className="edit-history">
+                <header>
+                    <h1>Edit Medical History</h1>
+                    <Link to="." className="btn btn-secondary btn-wide">
+                        Close
+                    </Link>
+                </header>
+                <form onSubmit={handleSubmit(this.handleSubmit)} className="patient-form">
+                    <RenderForm
+                        dateOfBirth={dateOfBirth}
+                        babyFoods={getCodes("babyFood")}
+                        communicationTypes={getCodes("childCommunication")}
+                        deliveryTypes={getCodes("deliveryType")}
+                        codesLoading={codesLoading && !updating}
+                    />
+
+                    <div className="section">
+                        <div className="row buttons">
+                            <div className="col-sm-4">
+                                <button type="button" className="btn btn-secondary btn-block">
+                                    Close
+                                </button>
+                            </div>
+                            <div className="col-sm-4">
+                                <button type="submit" className="btn btn-primary btn-block" disabled={updating}>
+                                    {updating ? "Saving..." : "Save"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
-        </div>
-
-        <div className="section">
-            <h3>Allergies</h3>
-            <FieldArray name="allergies" component={renderAllergies} />
-        </div>
-
-        <div className="section">
-            <h3>Immunization</h3>
-            <FieldArray name="immunizations" component={renderImmunizations} />
-        </div>
-
-        <div className="section">
-            <h3>Chronic diseases</h3>
-            <FieldArray name="chronicDiseases" component={renderChronicDiseases} />
-        </div>
-
-        <div className="section">
-            <h3>Injuries &amp; handicaps</h3>
-            <FieldArray name="injuries" component={renderInjuries} />
-        </div>
-
-        <div className="section">
-            <h3>Surgeries</h3>
-            <FieldArray name="surgeries" component={renderSurgeries} />
-        </div>
-
-        <div className="section">
-            <h3>Additional medications</h3>
-            <FieldArray name="medications" component={renderMedications} />
-        </div>
-
-        <div className="section">
-            <h3>Habits</h3>
-
-            <Fields label="Are you a smoker?" names={["habits_smoking", "habits_smoking_comment"]} commentWhen="true" component={renderHabitFields} />
-            <Fields label="Are you taking drugs?" names={["habits_drugs", "habits_drugs_comment"]} commentWhen="true" component={renderHabitFields} />
-        </div>
-
-        <div className="section">
-            <h3>Conditions</h3>
-
-            <Fields
-                label="Do you have resources for basic hygiene?"
-                names={["conditions_basic_hygiene", "conditions_basic_hygiene_comment"]}
-                component={renderHabitFields}
-            />
-
-            <Fields
-                label="Do you have access to clean water?"
-                names={["conditions_clean_water", "conditions_clean_water_comment"]}
-                component={renderHabitFields}
-            />
-
-            <Fields
-                label="Do you have sufficient food supply?"
-                names={["conditions_food_supply", "conditions_food_supply_comment"]}
-                component={renderHabitFields}
-            />
-
-            <Fields
-                label="Do you have a good appetite?"
-                names={["conditions_good_appetite", "conditions_good_appetite_comment"]}
-                component={renderHabitFields}
-            />
-
-            <Fields label="Does your tent have heating?" names={["conditions_heating", "conditions_heating_comment"]} component={renderHabitFields} />
-
-            <Fields
-                label="Does your tent have electricity?"
-                names={["conditions_electricity", "conditions_electricity_comment"]}
-                component={renderHabitFields}
-            />
-        </div>
-    </div>
-)
+        )
+    }
+}
 
 EditHistory = reduxForm({
     form: "editMedicalHistory"
@@ -276,9 +202,16 @@ EditHistory = reduxForm({
 
 EditHistory = connect(
     state => ({
-        initialState: state.patient.patient
+        dateOfBirth: state.patient.patient.dateOfBirth,
+        codesLoading: state.codes.loading,
+        initialValues: state.patient.patient,
+        updating: state.patient.updating
     }),
-    {}
+    {
+        getCodes: getCodesAsOptions,
+        loadCategories: loadCategoriesImport,
+        updatePatient
+    }
 )(EditHistory)
 
 export default ({ match }) => (

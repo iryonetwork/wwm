@@ -3,7 +3,8 @@ import { connect } from "react-redux"
 import { Route, Link, NavLink, Switch } from "react-router-dom"
 import { reduxForm } from "redux-form"
 
-import { loadCategories, getCodes } from "shared/modules/codes"
+import { loadCategories, getCodes, getCodesAsOptions } from "shared/modules/codes"
+import { updatePatient } from "../../../modules/patient"
 
 import { joinPaths } from "shared/utils"
 import Spinner from "shared/containers/spinner"
@@ -269,27 +270,59 @@ const Edit = ({ match, location }) => (
     </div>
 )
 
-let EditPersonal = () => (
-    <div>
-        <form>
-            <PatientForm />
-            <div className="section">
-                <div className="row buttons">
-                    <div className="col-sm-4">
-                        <button type="button" className="btn btn-secondary btn-block">
-                            Close
-                        </button>
+class EditPersonal extends React.Component {
+    constructor(props) {
+        super(props)
+
+        this.handleSubmit = this.handleSubmit.bind(this)
+    }
+
+    handleSubmit(form) {
+        console.log(form)
+        this.props.updatePatient(form).then(() => {
+            this.props.history.push(this.props.location.pathname.replace("/edit", ""))
+        })
+    }
+
+    componentWillMount() {
+        this.props.loadCategories("gender", "maritalStatus", "countries", "documentTypes")
+    }
+
+    render() {
+        let { codesLoading, getCodes, handleSubmit, updating, location } = this.props
+
+        if (codesLoading && !updating) {
+            return <Spinner />
+        }
+
+        return (
+            <div>
+                <form onSubmit={handleSubmit(this.handleSubmit)}>
+                    <PatientForm
+                        countries={getCodes("countries")}
+                        maritalStatus={getCodes("maritalStatus")}
+                        genders={getCodes("gender")}
+                        documentTypes={getCodes("documentTypes")}
+                    />
+                    <div className="section">
+                        <div className="row buttons">
+                            <div className="col-sm-4">
+                                <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-block">
+                                    Close
+                                </Link>
+                            </div>
+                            <div className="col-sm-4">
+                                <button type="submit" className="btn btn-primary btn-block" disabled={updating}>
+                                    {updating ? "Saving..." : "Save"}
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div className="col-sm-4">
-                        <button type="submit" className="btn btn-primary btn-block">
-                            Save
-                        </button>
-                    </div>
-                </div>
+                </form>
             </div>
-        </form>
-    </div>
-)
+        )
+    }
+}
 
 EditPersonal = reduxForm({
     form: "personal",
@@ -298,16 +331,29 @@ EditPersonal = reduxForm({
     }
 })(EditPersonal)
 
-let EditFamily = () => (
+EditPersonal = connect(
+    state => ({
+        codesLoading: state.codes.loading,
+        initialValues: state.patient.patient,
+        updating: state.patient.updating
+    }),
+    {
+        getCodes: getCodesAsOptions,
+        loadCategories,
+        updatePatient
+    }
+)(EditPersonal)
+
+let EditFamily = ({ location }) => (
     <div>
         <form>
             <FamilyForm />
             <div className="section">
                 <div className="row buttons">
                     <div className="col-sm-4">
-                        <button type="button" className="btn btn-secondary btn-block">
+                        <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-block">
                             Close
-                        </button>
+                        </Link>
                     </div>
                     <div className="col-sm-4">
                         <button type="submit" className="btn btn-primary btn-block">
@@ -327,7 +373,7 @@ EditFamily = reduxForm({
 export default ({ match }) => (
     <div className="personal">
         <Switch>
-            <Route path={match.url + "/edit"} render={props => <Edit {...props} closeUrl={match.url} />} />
+            <Route path={match.url + "/edit"} component={Edit} />
             <Route path={match.url} component={View} />
         </Switch>
     </div>

@@ -38,6 +38,31 @@ export const uploadFile = (patientId, data, labels, archetype) => dispatch => {
         })
 }
 
+export const updateFile = (patientID, fileID, data, labels, archetype) => dispatch => {
+    const url = `${read(BASE_URL)}/storage/${patientID}/${fileID}`
+
+    let formData = new FormData()
+    formData.append("file", new Blob([JSON.stringify(data)], { type: "application/json" }))
+    formData.append("contentType", "application/json")
+    formData.append("archetype", archetype)
+    formData.append("labels", labels)
+
+    return fetch(url, {
+        method: "PUT",
+        headers: {
+            Authorization: dispatch(getToken())
+        },
+        body: formData
+    })
+        .then(response => Promise.all([response.status === 201, response.json()]))
+        .then(([ok, data]) => {
+            if (!ok) {
+                throw new Error("Failed to upload file to storage")
+            }
+            return data
+        })
+}
+
 export const readFile = (patientID, fileID) => dispatch => {
     const url = `${dispatch(read(BASE_URL))}/storage/${patientID}/${fileID}`
 
@@ -52,6 +77,7 @@ export const readFile = (patientID, fileID) => dispatch => {
             if (!ok) {
                 throw new Error("Failed to read file from storage")
             }
+            data.fileID = fileID
             return data
         })
 }

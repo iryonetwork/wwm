@@ -3,14 +3,18 @@ import { newPatient } from "./discovery"
 import produce from "immer"
 // insert into storage
 import { open, COLOR_DANGER } from "shared/modules/alert"
-import { createPatient as createPatientInStorage, readFileByLabel } from "./storage"
-import { extractPatientData } from "./ehr"
+import { createPatient as createPatientInStorage, readFileByLabel, updateFile } from "./storage"
+import { extractPatientData, composePatientData } from "./ehr"
 
 export const CREATE = "patient/CREATE"
 export const CREATED = "patient/CREATED"
 export const LOADING = "patient/LOADING"
 export const LOADED = "patient/LOADED"
 export const FAILED = "patient/FAILED"
+
+export const UPDATE = "patient/UPDATE"
+export const UDPATE_DONE = "patient/UDPATE_DONE"
+export const UDPATE_FAILED = "patient/UDPATE_FAILED"
 
 const newPatientFormData = {
     documents: [
@@ -172,6 +176,18 @@ export default (state = initialState, action) => {
                 draft.reason = action.reason
                 break
 
+            case UPDATE:
+                draft.updating = true
+                break
+
+            case UDPATE_DONE:
+                draft.updating = false
+                draft.patient = action.data
+                break
+
+            case UDPATE_FAILED:
+                draft.updating = false
+
             default:
         }
     })
@@ -194,14 +210,39 @@ export const createPatient = formData => (dispatch, getState) => {
         })
 }
 
+export const updatePatient = formData => (dispatch, getState) => {
+    dispatch({ type: UPDATE })
+
+    let patient = getState().patient.patient
+
+    return dispatch(composePatientData(formData))
+        .then(({ person, info }) => {
+            // upload user data to storage
+            return Promise.all([
+                dispatch(updateFile(patient.ID, patient.personFileID, person, "person", "openEHR-DEMOGRAPHIC-PERSON.person.v1")),
+                dispatch(updateFile(patient.ID, patient.infoFileID, info, "info", "openEHR-EHR-ITEM_TREE.patient_info.v0"))
+            ])
+        })
+        .then(result => {
+            dispatch({ type: UDPATE_DONE, data: formData })
+            return result
+        })
+        .catch(ex => {
+            dispatch({ type: UDPATE_FAILED })
+            dispatch(open(`Failed to update patient (${ex.message})`, "", COLOR_DANGER))
+        })
+}
+
 export const fetchPatient = patientID => dispatch => {
     dispatch({ type: LOADING })
 
     return Promise.all([dispatch(readFileByLabel(patientID, "person")), dispatch(readFileByLabel(patientID, "info"))])
-        .then(([person, info]) => dispatch(extractPatientData(person, info)))
-        .then(patient => {
+        .then(([person, info]) => Promise.all([dispatch(extractPatientData(person, info)), info.fileID, person.fileID]))
+        .then(([patient, infoFileID, personFileID]) => {
             // add patientID
             patient.ID = patientID
+            patient.infoFileID = infoFileID
+            patient.personFileID = personFileID
             dispatch({ type: LOADED, result: patient })
             return patient
         })

@@ -74,7 +74,14 @@ const renderRadio = ({ input, className, label, options, hideLabel, meta: { touc
         {!hideLabel && <span className="label">{label}</span>}
         {options.map((option, index) => (
             <div key={index} className="form-check form-check-inline">
-                <input {...input} className="form-check-input" type="radio" id={`${input.name}${index}`} value={option.value} />
+                <input
+                    {...input}
+                    className="form-check-input"
+                    type="radio"
+                    id={`${input.name}${index}`}
+                    checked={input.value === option.value}
+                    value={option.value}
+                />
                 <label className="form-check-label" htmlFor={`${input.name}${index}`}>
                     {option.label}
                 </label>
@@ -89,7 +96,14 @@ const renderHorizontalRadio = ({ input, className, label, options, hideLabel, me
         <div className="form-inline-container">
             {options.map((option, index) => (
                 <div key={index} className="form-check form-check-inline">
-                    <input {...input} className="form-check-input" type="radio" id={`${input.name}${index}`} value={option.value} />
+                    <input
+                        {...input}
+                        className="form-check-input"
+                        type="radio"
+                        id={`${input.name}${index}`}
+                        checked={input.value === option.value}
+                        value={option.value}
+                    />
                     <label className="form-check-label" htmlFor={`${input.name}${index}`}>
                         {option.label}
                     </label>
@@ -119,13 +133,27 @@ const renderHabitFields = fields => (
             <div className="label">{fields.label}</div>
             <div className="form-group col-sm-6">
                 <div className="form-check form-check-inline">
-                    <input {...fields[fields.names[0]].input} value={true} className="form-check-input" type="radio" id={fields.names[0] + "yes"} />
+                    <input
+                        {...fields[fields.names[0]].input}
+                        value="true"
+                        checked={fields[fields.names[0]].input.value === "true"}
+                        className="form-check-input"
+                        type="radio"
+                        id={fields.names[0] + "yes"}
+                    />
                     <label className="form-check-label" htmlFor={fields.names[0] + "yes"}>
                         Yes
                     </label>
                 </div>
                 <div className="form-check form-check-inline">
-                    <input {...fields[fields.names[0]].input} value={false} className="form-check-input" type="radio" id={fields.names[0] + "no"} />
+                    <input
+                        {...fields[fields.names[0]].input}
+                        value="false"
+                        checked={fields[fields.names[0]].input.value === "false"}
+                        className="form-check-input"
+                        type="radio"
+                        id={fields.names[0] + "no"}
+                    />
                     <label className="form-check-label" htmlFor={fields.names[0] + "no"}>
                         No
                     </label>

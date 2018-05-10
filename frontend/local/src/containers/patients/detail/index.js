@@ -23,19 +23,24 @@ import "./style.css"
 class PatientDetail extends React.Component {
     constructor(props) {
         super(props)
-        props
-            .getWaitlistItem(props.match.params.waitlistID, props.match.params.itemID)
-            .then(item => props.fetchPatient(item.patientID))
-            .catch(ex => console.warn("Failed to load patient", ex))
+
+        if (props.match.params.waitlistID && props.match.params.itemID) {
+            props
+                .getWaitlistItem(props.match.params.waitlistID, props.match.params.itemID)
+                .then(item => props.fetchPatient(item.patientID))
+                .catch(ex => console.warn("Failed to load patient", ex))
+        } else {
+            props.fetchPatient(props.match.params.patientID).catch(ex => console.warn("Failed to load patient", ex))
+        }
     }
 
     render() {
         const { waitlistFetching, patientLoading, patient, match } = this.props
 
-        const inConsultation = true
         const waitlistID = match.params.waitlistID
         const waitlistItemID = match.params.itemID
         const patientID = match.params.patientID
+        const inConsultation = waitlistID && waitlistItemID
 
         const baseURL = inConsultation ? `/waitlist/${waitlistID}/${waitlistItemID}/` : `/patients/${patientID}/`
 
@@ -46,7 +51,7 @@ class PatientDetail extends React.Component {
         return (
             <div className="waitlist-detail">
                 <div className="sidebar">
-                    <Patient big={true} />
+                    <Patient big={true} data={patient} />
                     <div className="row measurements">
                         <div className="col-sm-4">
                             <h5>Height</h5>
