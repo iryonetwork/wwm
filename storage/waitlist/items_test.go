@@ -243,8 +243,8 @@ func benchmarkListItems(i int, b *testing.B) {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	for j := 0; j < i; j++ {
 		item := &models.Item{
-			Complaint: "something",
-			Priority:  swag.Int64(int64(r.Intn(3) + 1)),
+			MainComplaint: &models.Complaint{"something", "comment"},
+			Priority:      swag.Int64(int64(r.Intn(3) + 1)),
 		}
 
 		storage.AddItem(id, item)
@@ -277,8 +277,8 @@ func benchmarkListItemsSort(i int, b *testing.B) {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	for j := 0; j < i; j++ {
 		item := &models.Item{
-			Complaint: "something",
-			Priority:  swag.Int64(int64(r.Intn(3) + 1)),
+			MainComplaint: &models.Complaint{"something", "comment"},
+			Priority:      swag.Int64(int64(r.Intn(3) + 1)),
 		}
 
 		storage.db.Update(func(tx *bolt.Tx) error {

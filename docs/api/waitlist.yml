@@ -373,14 +373,13 @@ definitions:
           - canceled
         default: waiting
         example: waiting
-      complaint:
-        type: string
-        description: Main complaint
-        example: Sore throat
-      complaintComment:
-        type: string
-        description: Comment to main complaint
-        example: Visible flushes on the skin.
+      mainComplaint:
+        $ref: '#/definitions/Complaint'
+        description: Patient's main complaint
+      diagnoses:
+        type: array
+        items:
+          $ref: '#/definitions/Diagnosis'
       vitalSigns:
         type: object
         additionalProperties:
@@ -409,6 +408,45 @@ definitions:
           type: string
         value:
           type: string
+
+  Complaint:
+    description: Object describing patient's complaint
+    type: object
+    properties:
+      complaint:
+        type: string
+        description: Patinet's complaint
+        example: Sore throat
+      comment:
+        type: string
+        description: Additional comment to patient's complaint
+        example: Visible flushes on the skin
+
+  Diagnosis:
+    description: Object describing diagnosis
+    type: object
+    properties:
+      diagnosis:
+        type: string
+        description: Diagnosis identifier
+      comment:
+        type: string
+        description: Additional diagnosis comment
+      therapies:
+        type: array
+        items:
+          $ref: '#/definitions/Therapy'
+
+  Therapy:
+    description: Object describing therapy
+    type: object
+    properties:
+      medicine:
+        type: string
+        description: Medicine identifier
+      instructions:
+        type: string
+        description: Instructions for the therapy
 
   Error:
     type: object
