@@ -303,7 +303,15 @@ INSERT INTO codes (category_id, code_id) VALUES
     ('babyFood', 'regularFood'),
 
     ('deliveryType', 'natural'),
-    ('deliveryType', 'ceasarean');
+    ('deliveryType', 'ceasarean'),
+
+    ('education', 'primary'),
+    ('education', 'terciary'),
+    ('education', 'secondary'),
+
+    ('diagnosis', 'SNOMED-123123'),
+    ('diagnosis', 'SNOMED-234234'),
+    ('diagnosis', 'SNOMED-345345');
 
 INSERT INTO code_titles (category_id, code_id, locale, title) VALUES
     ('countries', 'AF', 'en', 'Afghanistan'),
@@ -597,4 +605,12 @@ INSERT INTO code_titles (category_id, code_id, locale, title) VALUES
     ('babyFood', 'regularFood', 'en', 'Regular food'),
 
     ('deliveryType', 'natural', 'en', 'Natural'),
-    ('deliveryType', 'ceasarean', 'en', 'Ceasarean');
+    ('deliveryType', 'ceasarean', 'en', 'Ceasarean'),
+
+    ('education', 'primary', 'en', 'primary'),
+    ('education', 'terciary', 'en', 'terciary'),
+    ('education', 'secondary', 'en', 'secondary'),
+
+    ('diagnosis', 'SNOMED-123123', 'en', 'knee pain'),
+    ('diagnosis', 'SNOMED-234234', 'en', 'headache'),
+    ('diagnosis', 'SNOMED-345345', 'en', 'trombognosis');

@@ -1,5 +1,6 @@
 import React from "react"
 import classnames from "classnames"
+import Select from "react-select"
 
 const renderInput = ({ input, optional, label, type, meta: { touched, error } }) => (
     <label>
@@ -44,6 +45,14 @@ const renderSelect = ({ input, pristine, label, options, meta: { touched, error 
             ))}
         </select>
 
+        <span>{label}</span>
+        {touched && error && <div className="invalid-feedback">{error}</div>}
+    </label>
+)
+
+const renderReactSelect = ({ input, label, loadOptions, meta: { touched, error } }) => (
+    <label>
+        <Select.Async value={input.value} multi={false} loadOptions={loadOptions} onChange={input.onChange} />
         <span>{label}</span>
         {touched && error && <div className="invalid-feedback">{error}</div>}
     </label>
@@ -174,4 +183,14 @@ const renderHabitFields = fields => (
     </div>
 )
 
-export { renderInput, renderHorizontalInput, renderSelect, renderHorizontalSelect, renderRadio, renderHorizontalRadio, renderTextarea, renderHabitFields }
+export {
+    renderInput,
+    renderHorizontalInput,
+    renderSelect,
+    renderReactSelect,
+    renderHorizontalSelect,
+    renderRadio,
+    renderHorizontalRadio,
+    renderTextarea,
+    renderHabitFields
+}

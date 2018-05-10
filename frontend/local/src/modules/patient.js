@@ -10,11 +10,13 @@ export const CREATE = "patient/CREATE"
 export const CREATED = "patient/CREATED"
 export const LOADING = "patient/LOADING"
 export const LOADED = "patient/LOADED"
+export const SAVING = "patient/SAVING"
+export const SAVED = "patient/SAVED"
 export const FAILED = "patient/FAILED"
 
 export const UPDATE = "patient/UPDATE"
-export const UDPATE_DONE = "patient/UDPATE_DONE"
-export const UDPATE_FAILED = "patient/UDPATE_FAILED"
+export const UPDATE_DONE = "patient/UPDATE_DONE"
+export const UPDATE_FAILED = "patient/UPDATE_FAILED"
 
 const newPatientFormData = {
     documents: [
@@ -170,6 +172,16 @@ export default (state = initialState, action) => {
                 draft.patient = action.result
                 break
 
+            case SAVING:
+                draft.saving = true
+                draft.saved = false
+                break
+
+            case SAVED:
+                draft.saving = false
+                draft.saved = true
+                break
+
             case FAILED:
                 draft.creating = draft.created = false
                 draft.failed = true
@@ -180,12 +192,12 @@ export default (state = initialState, action) => {
                 draft.updating = true
                 break
 
-            case UDPATE_DONE:
+            case UPDATE_DONE:
                 draft.updating = false
                 draft.patient = action.data
                 break
 
-            case UDPATE_FAILED:
+            case UPDATE_FAILED:
                 draft.updating = false
                 break
 
@@ -225,11 +237,11 @@ export const updatePatient = formData => (dispatch, getState) => {
             ])
         })
         .then(result => {
-            dispatch({ type: UDPATE_DONE, data: formData })
+            dispatch({ type: UPDATE_DONE, data: formData })
             return result
         })
         .catch(ex => {
-            dispatch({ type: UDPATE_FAILED })
+            dispatch({ type: UPDATE_FAILED })
             dispatch(open(`Failed to update patient (${ex.message})`, "", COLOR_DANGER))
         })
 }
@@ -247,4 +259,9 @@ export const fetchPatient = patientID => dispatch => {
             dispatch({ type: LOADED, result: patient })
             return patient
         })
+}
+
+export const saveConsultation = (waitlistID, waitlistItemID) => dispatch => {
+    dispatch({ type: SAVING })
+    return Promise.resolve({ save: true })
 }

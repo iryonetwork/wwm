@@ -129,3 +129,26 @@
         }
     }
 }
+
+.add-diagnosis {
+    h2 {
+        margin: 0px 0 40px 0;
+    }
+
+    .Select-multi-value-wrapper,
+    .Select-arrow-zone,
+    .Select-arrow,
+    .Select-value-label,
+    .Select-clear-zone {
+        position: initial;
+        top: 0;
+    }
+
+    .Select-menu-outer {
+        z-index: 1000;
+    }
+}
+
+.btn-close {
+    margin-left: 10px;
+}

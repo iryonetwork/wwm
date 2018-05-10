@@ -18,7 +18,7 @@ let History = ({ match, patient, canSee, canEdit }) => {
                     <Link to={joinPaths(match.url, "edit")} className="btn btn-secondary btn-wide">
                         Edit
                     </Link>
-                ) : (null)}
+                ) : null}
             </header>
 
             {/* @TODO confirm if needed <div className="section">
@@ -135,14 +135,14 @@ let History = ({ match, patient, canSee, canEdit }) => {
                 </div>
             </div>
         </div>
-    ) : (null)
+    ) : null
 }
 
 History = connect(
     state => ({
         patient: state.patient.patient,
         canSee: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[READ],
-        canEdit: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[WRITE],
+        canEdit: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[WRITE]
     }),
     {}
 )(History)
@@ -199,7 +199,7 @@ class EditHistory extends React.Component {
                     </div>
                 </form>
             </div>
-        ) : (null)
+        ) : null
     }
 }
 
@@ -213,7 +213,7 @@ EditHistory = connect(
         codesLoading: state.codes.loading,
         initialValues: state.patient.patient,
         updating: state.patient.updating,
-        canEdit: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[WRITE],
+        canEdit: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[WRITE]
     }),
     {
         getCodes: getCodesAsOptions,
@@ -224,15 +224,15 @@ EditHistory = connect(
 
 let HistoryRoutes = ({ match, canSee, canEdit }) => (
     <div>
-        {canSee ? (<Route exact path={match.url} component={History} />) : (null)}
-        {canEdit ? (<Route exact path={match.url + "/edit"} component={EditHistory} />) : (null)}
+        {canSee ? <Route exact path={match.url} component={History} /> : null}
+        {canEdit ? <Route exact path={match.url + "/edit"} component={EditHistory} /> : null}
     </div>
 )
 
 export default connect(
     state => ({
         canSee: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[READ],
-        canEdit: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[WRITE],
+        canEdit: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[WRITE]
     }),
     {}
 )(HistoryRoutes)

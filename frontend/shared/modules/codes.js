@@ -6,6 +6,10 @@ import { getToken } from "./authentication"
 export const LOADING = "codes/LOADING"
 export const LOADED = "codes/LOADED"
 export const LOAD = "codes/LOAD"
+export const SEARCH = "codes/SEARCH"
+export const SEARCHED = "codes/SEARCHED"
+export const FETCH = "codes/FETCH"
+export const FETCHED = "codes/FETCHED"
 export const FAILED = "codes/FAILED"
 
 const initialState = {
@@ -38,6 +42,24 @@ export default (state = initialState, action) => {
                 }
                 break
 
+            case SEARCH:
+                draft.searching = true
+                break
+
+            case SEARCHED:
+                draft.searching = false
+                draft.searchResults = action.data
+                break
+
+            case FETCH:
+                draft.isFetching = true
+                break
+
+            case FETCHED:
+                draft.isFetching = false
+                draft.fetchResults = action.data
+                break
+
             case FAILED:
                 draft.fetching = draft.fetching.filter(cat => cat !== action.category)
 
@@ -63,6 +85,31 @@ export const getCodesAsOptions = category => {
     return (dispatch, getState) => {
         return (getState().codes.cache[category] || []).map(code => ({ label: code.title, value: code.id }))
     }
+}
+
+export const searchCodes = (category, query, parentId) => dispatch => {
+    dispatch({ type: SEARCH })
+    const locale = dispatch(read(LOCALE))
+    const url = `${dispatch(read(API_URL))}/discovery/codes/${category}?locale=${locale}`
+    return fetch(url, {
+        method: "GET",
+        headers: {
+            Authorization: dispatch(getToken()),
+            "Content-Type": "application/json"
+        }
+    })
+        .then(response => Promise.all([response.ok, response.json()]))
+        .then(([ok, data]) => {
+            if (!ok) {
+                throw new Error("Failed to load codes")
+            }
+            dispatch({ type: SEARCHED, data })
+            return data
+        })
+        .catch(ex => {
+            dispatch(open("Failed to fetch codes :: " + ex.message, COLOR_DANGER))
+            dispatch({ type: FAILED, category })
+        })
 }
 
 export const loadCategories = (...categories) => {
@@ -98,6 +145,32 @@ export const loadCategories = (...categories) => {
             dispatch({ type: LOADED })
         }
     }
+}
+
+export const fetchCode = (category, id) => dispatch => {
+    const locale = dispatch(read(LOCALE))
+    const url = `${dispatch(read(API_URL))}/discovery/codes/${category}/${id}?locale=${locale}`
+    dispatch({ type: FETCH })
+
+    return fetch(url, {
+        method: "GET",
+        headers: {
+            Authorization: dispatch(getToken()),
+            "Content-Type": "application/json"
+        }
+    })
+        .then(response => Promise.all([response.ok, response.json()]))
+        .then(([ok, data]) => {
+            if (!ok) {
+                throw new Error("Failed to fetch code")
+            }
+            dispatch({ type: FETCHED, data })
+            return data
+        })
+        .catch(ex => {
+            dispatch(open("Failed to fetch codes :: " + ex.message, COLOR_DANGER))
+            dispatch({ type: FAILED, category })
+        })
 }
 
 export const load = category => {

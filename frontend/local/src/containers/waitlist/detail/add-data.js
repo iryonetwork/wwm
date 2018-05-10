@@ -14,10 +14,10 @@ import { ReactComponent as MedicalDataIcon } from "shared/icons/vitalsigns.svg"
 import { ReactComponent as NegativeIcon } from "shared/icons/negative.svg"
 
 const lengthUnits = [
-    {
-        label: "m",
-        value: "m"
-    },
+    // {
+    //     label: "m",
+    //     value: "m"
+    // },
     {
         label: "cm",
         value: "cm"
@@ -28,22 +28,22 @@ const weigthUnits = [
     {
         label: "kg",
         value: "kg"
-    },
-    {
-        label: "lb",
-        value: "lb"
     }
+    // {
+    //     label: "lb",
+    //     value: "lb"
+    // }
 ]
 
 const temperatureUnits = [
     {
         value: "c",
         label: "°C"
-    },
-    {
-        value: "f",
-        label: "°F"
     }
+    // {
+    //     value: "f",
+    //     label: "°F"
+    // }
 ]
 
 class MedicalData extends React.Component {
@@ -64,15 +64,15 @@ class MedicalData extends React.Component {
     }
 
     handleSubmit(form) {
-        let vital_signs = {}
+        let vitalSigns = {}
         _.forEach(form, (value, key) => {
             if (key.indexOf("has_") === 0 && value) {
                 let sign = key.slice(4)
-                vital_signs[sign] = form[sign]
+                vitalSigns[sign] = form[sign]
             }
         })
 
-        this.props.item.vital_signs = vital_signs
+        this.props.item.vitalSigns = vitalSigns
         this.props.update(this.props.match.params.waitlistID, this.props.item)
     }
 
@@ -426,7 +426,7 @@ MedicalData = connect(
         let item = state.waitlist.items[props.match.params.itemID]
         let initialValues = {}
         if (item) {
-            _.forEach(item.vital_signs || {}, (value, key) => {
+            _.forEach(item.vitalSigns || {}, (value, key) => {
                 initialValues[key] = value
                 initialValues["has_" + key] = true
             })
