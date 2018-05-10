@@ -131,11 +131,19 @@ func (s *service) FileList(ctx context.Context, bucketID string) ([]*models.File
 }
 
 func (s *service) FileGet(ctx context.Context, bucketID, fileID string) (io.ReadCloser, *models.FileDescriptor, error) {
-	return s.s3.Read(ctx, bucketID, fileID, "")
+	start := time.Now()
+	rc, fd, err := s.s3.Read(ctx, bucketID, fileID, "")
+	s.logger.Info().Str("method", "FileGet").Msgf("s3 read time %s", time.Since(start))
+
+	return rc, fd, err
 }
 
 func (s *service) FileGetVersion(ctx context.Context, bucketID, fileID, version string) (io.ReadCloser, *models.FileDescriptor, error) {
-	return s.s3.Read(ctx, bucketID, fileID, version)
+	start := time.Now()
+	rc, fd, err := s.s3.Read(ctx, bucketID, fileID, version)
+	s.logger.Info().Str("method", "FileGetVersion").Msgf("s3 read time %s", time.Since(start))
+
+	return rc, fd, err
 }
 
 func (s *service) FileListVersions(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error) {
@@ -171,13 +179,17 @@ func (s *service) FileNew(ctx context.Context, bucketID string, r io.Reader, con
 		Labels:      labels,
 	}
 
+	start := time.Now()
 	fd, err := s.s3.Write(ctx, bucketID, no, &buf)
+	s.logger.Info().Str("method", "FileNew").Msgf("s3 write time %s", time.Since(start))
+
 	if err == nil {
 		s.publisher.PublishAsyncWithRetries(
-			ctx,
+			context.TODO(),
 			storageSync.FileNew,
 			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version, Created: fd.Created},
 		)
+
 		for _, label := range labels {
 			err := s.updateFilesCollection(ctx, s3.Write, bucketID, label, fd)
 			if err != nil {
@@ -191,7 +203,10 @@ func (s *service) FileNew(ctx context.Context, bucketID string, r io.Reader, con
 
 func (s *service) FileUpdate(ctx context.Context, bucketID, fileID string, r io.Reader, contentType string, archetype string, labels []string) (*models.FileDescriptor, error) {
 	// get the previous file
+	start := time.Now()
 	_, old, err := s.s3.Read(ctx, bucketID, fileID, "")
+	s.logger.Info().Str("method", "FileUpdate").Msgf("s3 read time %s", time.Since(start))
+
 	if err != nil {
 		return nil, err
 	}
@@ -218,10 +233,13 @@ func (s *service) FileUpdate(ctx context.Context, bucketID, fileID string, r io.
 		Labels:      labels,
 	}
 
+	start = time.Now()
 	fd, err := s.s3.Write(ctx, bucketID, no, &buf)
+	s.logger.Info().Str("method", "FileUpdate").Msgf("s3 write time %s", time.Since(start))
+
 	if err == nil {
 		s.publisher.PublishAsyncWithRetries(
-			ctx,
+			context.TODO(),
 			storageSync.FileUpdate,
 			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version, Created: fd.Created},
 		)
@@ -246,7 +264,10 @@ func (s *service) FileUpdate(ctx context.Context, bucketID, fileID string, r io.
 
 func (s *service) FileDelete(ctx context.Context, bucketID, fileID string) error {
 	// get the previous file
+	start := time.Now()
 	_, fd, err := s.s3.Read(ctx, bucketID, fileID, "")
+	s.logger.Info().Str("method", "FileDelete").Msgf("s3 read time %s", time.Since(start))
+
 	if err != nil {
 		return err
 	}
@@ -264,10 +285,13 @@ func (s *service) FileDelete(ctx context.Context, bucketID, fileID string) error
 		Labels:      fd.Labels,
 	}
 
+	start = time.Now()
 	fd, err = s.s3.Write(ctx, bucketID, no, &bytes.Buffer{})
+	s.logger.Info().Str("method", "FileDelete").Msgf("s3 write time %s", time.Since(start))
+
 	if err == nil {
 		s.publisher.PublishAsyncWithRetries(
-			ctx,
+			context.TODO(),
 			storageSync.FileDelete,
 			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version, Created: fd.Created},
 		)
@@ -330,7 +354,9 @@ func (s *service) SyncFile(ctx context.Context, bucketID, fileID, version string
 	}
 
 	// try to fetch
+	start := time.Now()
 	_, fd, err := s.s3.Read(ctx, bucketID, fileID, version)
+	s.logger.Info().Str("method", "SyncFile").Msgf("s3 read time %s", time.Since(start))
 
 	switch {
 	// Already exists and does not conflict
@@ -362,12 +388,19 @@ func (s *service) SyncFile(ctx context.Context, bucketID, fileID, version string
 		Labels:      labels,
 	}
 
-	return s.s3.Write(ctx, bucketID, no, &buf)
+	start = time.Now()
+	fd, err = s.s3.Write(ctx, bucketID, no, &buf)
+	s.logger.Info().Str("method", "SyncFile").Msgf("s3 write time %s", time.Since(start))
+
+	return fd, err
 }
 
 func (s *service) SyncFileDelete(ctx context.Context, bucketID, fileID, version string, created strfmt.DateTime) error {
 	// get the previous file
+	start := time.Now()
 	_, fd, err := s.s3.Read(ctx, bucketID, fileID, "")
+	s.logger.Info().Str("method", "SyncFileDelete").Msgf("s3 read time %s", time.Since(start))
+
 	if err != nil {
 		return err
 	}
@@ -397,7 +430,10 @@ func (s *service) SyncFileDelete(ctx context.Context, bucketID, fileID, version 
 		Labels:      fd.Labels,
 	}
 
+	start = time.Now()
 	_, err = s.s3.Write(ctx, bucketID, no, &bytes.Buffer{})
+	s.logger.Info().Str("method", "SyncFileDelete").Msgf("s3 write time %s", time.Since(start))
+
 	return err
 }
 
@@ -414,7 +450,10 @@ func (s *service) EnsureBucket(ctx context.Context, bucketID string) error {
 func (s *service) updateFilesCollection(ctx context.Context, operation s3.Operation, bucketID, label string, fd *models.FileDescriptor) error {
 	var c *filesCollection
 
+	start := time.Now()
 	r, _, err := s.s3.Read(ctx, bucketID, label, "")
+	s.logger.Info().Str("method", "updateFilesCollection").Msgf("s3 read time %s", time.Since(start))
+
 	if err != nil {
 		if err != s3.ErrNotFound {
 			return err
@@ -463,14 +502,17 @@ func (s *service) updateFilesCollection(ctx context.Context, operation s3.Operat
 		Labels:      []string{labelFilesCollection},
 	}
 
+	start = time.Now()
 	fd, err = s.s3.Write(ctx, bucketID, no, &buf)
+	s.logger.Info().Str("method", "updateFilesCollection").Msgf("s3 write time %s", time.Since(start))
+
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to write file collection file")
 		return err
 	}
 
 	s.publisher.PublishAsyncWithRetries(
-		ctx,
+		context.TODO(),
 		storageSync.FileUpdate,
 		&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: fd.Version, Created: fd.Created},
 	)
@@ -480,8 +522,9 @@ func (s *service) updateFilesCollection(ctx context.Context, operation s3.Operat
 
 // New returns a new instance of storage service
 func New(s3 s3.Storage, keyProvider s3.KeyProvider, publisher storageSync.Publisher, logger zerolog.Logger) Service {
+	logger.Error().Msg("test")
 	logger = logger.With().Str("component", "service/storage").Logger()
-
+	logger.Error().Msg("test")
 	return &service{s3: s3, keyProvider: keyProvider, publisher: publisher, logger: logger}
 }
 
