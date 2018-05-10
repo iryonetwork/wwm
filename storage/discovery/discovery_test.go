@@ -9,16 +9,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jinzhu/gorm"
-
 	"github.com/go-openapi/strfmt"
-	"github.com/rs/zerolog"
-
 	"github.com/golang/mock/gomock"
+	"github.com/jinzhu/gorm"
+	"github.com/rs/zerolog"
+	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
+
 	"github.com/iryonetwork/wwm/gen/discovery/models"
 	"github.com/iryonetwork/wwm/storage/discovery/db"
 	"github.com/iryonetwork/wwm/storage/discovery/db/mock"
-	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
+	"github.com/iryonetwork/wwm/utils"
 )
 
 var (
@@ -1025,6 +1025,128 @@ func TestGetCodes(t *testing.T) {
 
 			// call the method
 			out, err := s.CodesGet(tc.category, tc.query, tc.parentID, tc.locale)
+
+			// check expected results
+			if !reflect.DeepEqual(out, tc.expected) {
+				t.Errorf("Expected\n%s\nto equal\n\t\t%s", toJSON(out), toJSON(tc.expected))
+			}
+
+			// assert error
+			if tc.errorExpected && err == nil {
+				t.Error("Expected error, got nil")
+			} else if !tc.errorExpected && err != nil {
+				t.Errorf("Expected error to be nil, got %v", err)
+			}
+
+			// assert actual error
+			if tc.exactError != nil && tc.exactError != err {
+				t.Errorf("Expected error to equal '%v'; got %v", tc.exactError, err)
+			}
+		})
+	}
+}
+
+func TestGetCode(t *testing.T) {
+	cat := "CAT"
+	id := "ID"
+	title := "TITLE"
+	code := &models.Code{
+		Category: &cat,
+		ID:       &id,
+		Locale:   "LOC",
+		Title:    &title,
+	}
+	codeWithParent := &models.Code{
+		Category: &cat,
+		ID:       &id,
+		Locale:   "LOC",
+		Title:    &title,
+		ParentID: "PARENT",
+	}
+
+	testCases := []struct {
+		title         string
+		category      string
+		ID            string
+		locale        string
+		calls         func(sqlmock.Sqlmock)
+		expected      *models.Code
+		errorExpected bool
+		exactError    error
+	}{
+		{
+			"Success with basic call",
+			"CAT",
+			"ID",
+			"",
+			func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT .+ FROM codes AS c INNER JOIN code_titles AS ct .+ "+
+					"c\\.category_id = \\$1 AND ct\\.code_id = \\$2 AND ct\\.locale = \\$3").
+					WithArgs("CAT", "ID", "en").
+					WillReturnRows(sqlmock.NewRows([]string{"category_id", "code_id", "title", "locale", "parent_id"}).
+						AddRow("CAT", "ID", "TITLE", "LOC", nil))
+			},
+			code,
+			noErrors,
+			nil,
+		},
+		{
+			"Success with custom locale",
+			"CAT",
+			"ID",
+			"LOC",
+			func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT .+ FROM codes AS c INNER JOIN code_titles AS ct .+ "+
+					"c\\.category_id = \\$1 AND ct\\.code_id = \\$2 AND ct\\.locale = \\$3").
+					WithArgs("CAT", "ID", "LOC").
+					WillReturnRows(sqlmock.NewRows([]string{"category_id", "code_id", "title", "locale", "parent_id"}).
+						AddRow("CAT", "ID", "TITLE", "LOC", "PARENT"))
+			},
+			codeWithParent,
+			noErrors,
+			nil,
+		},
+		{
+			"Failed query",
+			"CAT",
+			"ID",
+			"",
+			func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT .+").
+					WillReturnError(fmt.Errorf("Error"))
+			},
+			nil,
+			withErrors,
+			nil,
+		},
+		{
+			"Code not found",
+			"CAT",
+			"ID",
+			"",
+			func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT .+ FROM codes AS c INNER JOIN code_titles AS ct .+ "+
+					"c\\.category_id = \\$1 AND ct\\.code_id = \\$2 AND ct\\.locale = \\$3").
+					WithArgs("CAT", "ID", "en").
+					WillReturnRows(sqlmock.NewRows([]string{"category_id", "code_id", "title", "locale", "parent_id"}))
+			},
+			nil,
+			withErrors,
+			utils.NewError(utils.ErrNotFound, "code_does_not_exist"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			// init storage
+			s, mock, c := getTestDB(t)
+			defer c()
+
+			// collect mocked calls
+			tc.calls(mock)
+
+			// call the method
+			out, err := s.CodeGet(tc.category, tc.ID, tc.locale)
 
 			// check expected results
 			if !reflect.DeepEqual(out, tc.expected) {

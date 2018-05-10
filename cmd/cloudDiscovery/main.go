@@ -95,6 +95,7 @@ func main() {
 	api.LinkHandler = discoveryHandlers.Link()
 	api.UnlinkHandler = discoveryHandlers.Unlink()
 	api.CodesGetHandler = discoveryHandlers.CodesGet()
+	api.CodeGetHandler = discoveryHandlers.CodeGet()
 
 	server := restapi.NewServer(api)
 	server.TLSHost = cfg.ServerHost

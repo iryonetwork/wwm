@@ -317,6 +317,50 @@ paths:
         500:
           $ref: '#/responses/500'
 
+  /codes/{category}/{id}:
+    get:
+      tags:
+       - discovery
+       - local
+       - cloud
+       - codes
+      summary: Returns code by category and ID.
+      operationId: codeGet
+
+      parameters:
+       - in: path
+         name: category
+         type: string
+         required: true
+         description: Name of the category
+       - in: path
+         name: id
+         type: string
+         required: true
+         description: ID of the code
+       - in: query
+         name: locale
+         type: string
+         description: Locale used for the results
+
+      responses:
+        200:
+          description: Code with given ID in given category
+          schema:
+            $ref: '#/definitions/Code'
+
+        400:
+          $ref: '#/responses/400'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
 definitions:
   Cards:
     type: array

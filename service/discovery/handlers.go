@@ -22,6 +22,7 @@ type Handlers interface {
 	Unlink() operations.UnlinkHandler
 	ProxyUnlink() operations.UnlinkHandler
 	CodesGet() operations.CodesGetHandler
+	CodeGet() operations.CodeGetHandler
 }
 
 type handlers struct {
@@ -225,6 +226,23 @@ func (h *handlers) CodesGet() operations.CodesGetHandler {
 		}
 
 		return operations.NewCodesGetOK().WithPayload(res)
+	})
+}
+
+func (h *handlers) CodeGet() operations.CodeGetHandler {
+	return operations.CodeGetHandlerFunc(func(params operations.CodeGetParams, principal *string) middleware.Responder {
+		locale := ""
+
+		if params.Locale != nil {
+			locale = *params.Locale
+		}
+
+		res, err := h.service.CodeGet(params.Category, params.ID, locale)
+		if err != nil {
+			return utils.NewErrorResponse(err)
+		}
+
+		return operations.NewCodeGetOK().WithPayload(res)
 	})
 }
 

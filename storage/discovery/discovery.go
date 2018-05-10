@@ -9,11 +9,13 @@ import (
 
 	"github.com/agext/uuid"
 	"github.com/go-openapi/strfmt"
-	"github.com/iryonetwork/wwm/gen/discovery/models"
-	"github.com/iryonetwork/wwm/storage/discovery/db"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
+
+	"github.com/iryonetwork/wwm/gen/discovery/models"
+	"github.com/iryonetwork/wwm/storage/discovery/db"
+	"github.com/iryonetwork/wwm/utils"
 )
 
 type (
@@ -42,6 +44,9 @@ type (
 
 		// CodesGet fetches matching codes
 		CodesGet(category, query, parentID, locale string) (models.Codes, error)
+
+		// CodeGet fetches code by ID
+		CodeGet(category, id, locale string) (*models.Code, error)
 
 		// Close closes the DB connection
 		Close() error
@@ -385,6 +390,41 @@ func (s *storage) CodesGet(category, query, parentID, locale string) (models.Cod
 	}
 
 	return res, nil
+}
+
+func (s *storage) CodeGet(category, id, locale string) (*models.Code, error) {
+	if locale == "" {
+		locale = "en"
+	}
+
+	// build the query
+
+	q := `SELECT ct.category_id, ct.code_id, ct.title, ct.locale, c.parent_id
+		  FROM codes AS c INNER JOIN code_titles AS ct ON ct.category_id = c.category_id AND ct.code_id = c.code_id
+		  WHERE c.category_id = ? AND ct.code_id = ? AND ct.locale = ?`
+	fmt.Println(q)
+	values := []interface{}{category, id, locale}
+
+	rows, err := s.gdb.Raw(q, values...).Rows()
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to get code")
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		var categoryID, codeID, title, locale, parentID string
+		rows.Scan(&categoryID, &codeID, &title, &locale, &parentID)
+
+		return &models.Code{
+			Category: &categoryID,
+			ID:       &codeID,
+			ParentID: parentID,
+			Locale:   locale,
+			Title:    &title,
+		}, nil
+	}
+
+	return nil, utils.NewError(utils.ErrNotFound, "code_does_not_exist")
 }
 
 func (s *storage) Close() error {

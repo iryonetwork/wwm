@@ -51,6 +51,9 @@ type (
 		// CodesGet returns matching codes
 		CodesGet(category, query, parentID, locale string) (models.Codes, error)
 
+		// CodeGet fetches code by ID
+		CodeGet(category, id, locale string) (*models.Code, error)
+
 		// Delete removes patient's card
 		Delete(patientID strfmt.UUID) error
 	}
@@ -161,4 +164,8 @@ func (svc *service) ProxyUnlink(patientID, locationID strfmt.UUID, authToken str
 
 func (svc *service) CodesGet(category, query, parentID, locale string) (models.Codes, error) {
 	return svc.storage.CodesGet(category, query, parentID, locale)
+}
+
+func (svc *service) CodeGet(category, id, locale string) (*models.Code, error) {
+	return svc.storage.CodeGet(category, id, locale)
 }
