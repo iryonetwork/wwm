@@ -13,20 +13,54 @@ clinics:
     location: 2d04b22e-1cc3-46b4-96dd-2bee5bad9ffa
     organization: a422f7f5-291b-4454-ae61-3d98c6091c3e
 roles:
+  - id: 338fae76-9859-4803-8441-c5c441319cfd
+    name: Everyone
+  - id: a422f7f5-291b-4454-ae61-3d98c6091c3e
+    name: Basic member
+  - id: 3720198b-74ed-40de-a45e-8756f22e67d2
+    name: Superadmin
   - id: b87c6866-7fb2-48ba-88c8-fe444a6a7f43
-    name: admin
+    name: Admin
+  - id: d91ff466-125b-4250-9dde-bbc282489430
+    name: Author
+  - id: e359d9ae-6a68-4283-8458-24043a179f48
+    name: Nurse
+  - id: 99aca094-fb08-4734-a0df-e50e66fa5531
+    name: Doctor
+  - id: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7
+    name: Pharmacist
 rules:
+  - id: f9820b5b-ad79-4c1e-9d7b-2f801c2c39be
+    subject: 338fae76-9859-4803-8441-c5c441319cfd # everyone role
+    resource: /auth/login
+    action: 2
+  - id: 7e2e876d-cb2a-4224-91ef-be38a2a8e080
+    subject: 338fae76-9859-4803-8441-c5c441319cfd # everyone role
+    resource: /api/auth/login
+    action: 3
+  - id: a0700c93-bea3-454e-bbe8-1dbf8e698b75
+    subject: 338fae76-9859-4803-8441-c5c441319cfd # everyone role
+    resource: /api/auth/validate
+    action: 3
+  - id: f736f0b6-0ed5-4f4d-bbb9-2dba1e73aa32
+    subject: 338fae76-9859-4803-8441-c5c441319cfd # everyone role
+    resource: /api/auth/users/me*
+    action: 23
+  - id: b1ffd817-4de0-4415-ab17-8d6b90d46a30
+    subject: 338fae76-9859-4803-8441-c5c441319cfd # everyone role
+    resource: /api/auth/users{self}
+    action: 23
+  - id: 7c8e58a4-f50b-4883-b59a-f426ebc1800c
+    subject: 338fae76-9859-4803-8441-c5c441319cfd # everyone role
+    resource: /api/auth/*
+    action: 1
+  - id: 9e8d6715-8b14-4d44-9009-a8fad111d05b
+    subject: 3720198b-74ed-40de-a45e-8756f22e67d2 # superadmin role (hardcoded id)
+    resource: '*'
+    action: 23
   - id: 074c587e-2791-4ee8-a9f0-29dae3d509ff
     subject: 3720198b-74ed-40de-a45e-8756f22e67d2 # superadmin role (hardcoded id)
-    resource: /frontend/dashboard/superadmin
-    action: 1
-  - id: f7027820-c6fc-4110-be9c-0a3cf2216739
-    subject: 3720198b-74ed-40de-a45e-8756f22e67d2 # superadmin role (hardcoded id)
-    resource: /frontend/dashboard/admin
-    action: 1
-  - id: ba20b768-f223-41ba-9b46-7a5d061f4875
-    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
-    resource: /frontend/dashboard/admin
+    resource: /frontend/dashboard/*
     action: 1
   - id: 060716ee-0151-49e8-92af-098974512c52
     subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
@@ -35,8 +69,12 @@ rules:
   - id: fd7eb345-0500-4122-bafe-2e0af32a61df
     subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
     resource: /frontend/dashboard/superadmin
-    action: 7
+    action: 1
     deny: true
+  - id: ba20b768-f223-41ba-9b46-7a5d061f4875
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: /frontend/dashboard/admin
+    action: 1
   - id: 498c9084-4a1b-4284-81b4-3e2267334e51
     subject: 338fae76-9859-4803-8441-c5c441319cfd # everyone role (hardcoded id)
     resource: /frontend/dashboard/self
@@ -60,23 +98,11 @@ users:
     email: user@iryo.io
 userroles:
   - userid: 518dedd8-69fa-4ebd-b87c-70bbaa83cfe6 # superadmin
-    roleid: 338fae76-9859-4803-8441-c5c441319cfd # everyone role (hardcoded id)
-    domaintype: global
-    domainid: '*'
-  - userid: 518dedd8-69fa-4ebd-b87c-70bbaa83cfe6 # superadmin
     roleid: 3720198b-74ed-40de-a45e-8756f22e67d2 # super admin role (hardcoded id)
     domaintype: global
     domainid: '*'
   - userid: 45163e62-8fcc-436e-8b21-2db615284d1d # admin
-    roleid: 338fae76-9859-4803-8441-c5c441319cfd # everyone role (hardcoded id)
-    domaintype: global
-    domainid: '*'
-  - userid: 45163e62-8fcc-436e-8b21-2db615284d1d # admin
     roleid: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
-    domaintype: global
-    domainid: '*'
-  - userid: 7e3ac78a-c164-4167-a3c4-be90c438217f # user
-    roleid: 338fae76-9859-4803-8441-c5c441319cfd # everyone role (hardcoded id)
     domaintype: global
     domainid: '*'
   - userid: 7e3ac78a-c164-4167-a3c4-be90c438217f # user

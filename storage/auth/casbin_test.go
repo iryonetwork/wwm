@@ -34,6 +34,11 @@ func TestRules(t *testing.T) {
 
 	// add rules
 	storage.AddRule(&models.Rule{
+		Subject:  &authCommon.EveryoneRole.ID,
+		Action:   swag.Int64(Write),
+		Resource: swag.String("/auth/login"),
+	})
+	storage.AddRule(&models.Rule{
 		Action:   swag.Int64(Write),
 		Subject:  swag.String(adminRole.ID),
 		Resource: swag.String("/clinic/login"),

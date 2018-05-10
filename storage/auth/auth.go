@@ -5,7 +5,6 @@ import (
 	"os"
 	"sync"
 
-	"github.com/go-openapi/swag"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 	uuid "github.com/satori/go.uuid"
@@ -154,13 +153,13 @@ func New(path string, key []byte, readOnly, refreshRules bool, logger zerolog.Lo
 	if readOnly {
 		e.LoadPolicy()
 	} else {
-		storage.initializeRolesAndRules()
+		storage.initializeRoles()
 	}
 
 	return storage, nil
 }
 
-func (s *Storage) initializeRolesAndRules() error {
+func (s *Storage) initializeRoles() error {
 	s.logger.Debug().Msg("Initialize roles and rules")
 	_, err := s.GetRole(authCommon.EveryoneRole.ID)
 	if err != nil {
@@ -213,54 +212,6 @@ func (s *Storage) initializeRolesAndRules() error {
 			return err
 		}
 	}
-
-	s.AddRule(&models.Rule{
-		Subject:  &authCommon.EveryoneRole.ID,
-		Action:   swag.Int64(Write),
-		Resource: swag.String("/auth/login"),
-	})
-
-	s.AddRule(&models.Rule{
-		Subject:  &authCommon.EveryoneRole.ID,
-		Action:   swag.Int64(Write),
-		Resource: swag.String("/api/auth/validate"),
-	})
-
-	s.AddRule(&models.Rule{
-		Subject:  &authCommon.EveryoneRole.ID,
-		Action:   swag.Int64(Read),
-		Resource: swag.String("/api/auth/*"),
-	})
-
-	s.AddRule(&models.Rule{
-		Subject:  &authCommon.EveryoneRole.ID,
-		Action:   swag.Int64(Read | Write),
-		Resource: swag.String("/api/auth/users/{self}*"),
-	})
-
-	s.AddRule(&models.Rule{
-		Subject:  &authCommon.EveryoneRole.ID,
-		Action:   swag.Int64(Read | Write),
-		Resource: swag.String("/api/auth/users/me*"),
-	})
-
-	s.AddRule(&models.Rule{
-		Subject:  &authCommon.SuperadminRole.ID,
-		Action:   swag.Int64(Read | Write | Update | Delete),
-		Resource: swag.String("*"),
-	})
-
-	s.AddRule(&models.Rule{
-		Subject:  &authCommon.SuperadminRole.ID,
-		Action:   swag.Int64(Read),
-		Resource: swag.String("/frontend/dashboard*"),
-	})
-
-	s.AddRule(&models.Rule{
-		Subject:  &authCommon.EveryoneRole.ID,
-		Action:   swag.Int64(Read),
-		Resource: swag.String("/frontend/dashboard/{self}"),
-	})
 
 	return nil
 }
