@@ -62,7 +62,7 @@ const renewInterval = 10 * 60 * 1000
 
 export const renewToken = () => {
     return (dispatch, getState) => {
-        return fetch(`${read(BASE_URL)}/auth/renew`, {
+        return fetch(`${dispatch(read(BASE_URL))}/auth/renew`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: getState().authentication.tokenString
@@ -120,7 +120,7 @@ export const login = () => {
             type: LOGIN
         })
 
-        return fetch(`${read(BASE_URL)}/auth/login`, {
+        return fetch(`${dispatch(read(BASE_URL))}/auth/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -194,7 +194,7 @@ export const getInitialState = dispatch => {
         if (token.exp - 30 > Date.now() / 1000) {
             setTimeout(() => {
                 dispatch(renewToken())
-            }, 1000)
+            }, 5000)
 
             state.tokenString = tokenString
             state.token = token

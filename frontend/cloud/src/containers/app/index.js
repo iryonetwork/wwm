@@ -18,6 +18,7 @@ import Clinics from "../clinics"
 import { SUPERADMIN_RIGHTS_RESOURCE, ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { close } from "shared/modules/alert"
 import Logo from "shared/containers/logo"
+import Spinner from "shared/containers/spinner"
 import { ReactComponent as LogoutIcon } from "shared/icons/logout.svg"
 import { ReactComponent as MoreIcon } from "shared/icons/more.svg"
 
@@ -42,6 +43,10 @@ class App extends React.Component {
     }
 
     render() {
+        if (this.props.configLoading) {
+            return <Spinner />
+        }
+
         return (
             <React.Fragment>
                 <nav>
@@ -129,7 +134,8 @@ const mapStateToProps = state => {
     return {
         isAdmin: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
         isSuperadmin: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
-        validationsLoading: state.validations.loading
+        validationsLoading: state.validations.loading,
+        configLoading: state.config.loading
     }
 }
 const mapDispatchToProps = dispatch =>

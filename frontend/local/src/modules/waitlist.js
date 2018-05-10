@@ -88,7 +88,7 @@ export default (state = initialState, action) => {
 
 // export const newPatient = (formData) => (
 //     (dispatch) => {
-//         const url = `${read(BASE_URL)}/discovery`
+//         const url = `${dispatch(read(BASE_URL))}/discovery`
 
 //         var data = {
 //             connections: [
@@ -100,7 +100,7 @@ export default (state = initialState, action) => {
 //                 {key: 'tent', value: formData.tent},
 //                 {key: 'camp', value: formData.camp},
 //             ],
-//             locations: [read(LOCATION_ID)],
+//             locations: [dispatch(read(LOCATION_ID))],
 //         };
 
 //         (formData.documents || []).forEach(doc => {
@@ -126,8 +126,8 @@ export default (state = initialState, action) => {
 // )
 
 export const add = (formData, patient) => dispatch => {
-    const waitlistID = read(DEFAULT_WAITLIST_ID)
-    const url = `${read(BASE_URL)}/waitlist/${waitlistID}`
+    const waitlistID = dispatch(read(DEFAULT_WAITLIST_ID))
+    const url = `${dispatch(read(BASE_URL))}/waitlist/${waitlistID}`
     dispatch({ type: ADD })
 
     const data = {
@@ -163,7 +163,7 @@ export const add = (formData, patient) => dispatch => {
 }
 
 export const listAll = listID => dispatch => {
-    const url = `${read(BASE_URL)}/waitlist/${listID}`
+    const url = `${dispatch(read(BASE_URL))}/waitlist/${listID}`
     dispatch({ type: LIST })
 
     return fetch(url, {
@@ -201,7 +201,7 @@ export const get = (waitlistID, itemID) => (dispatch, getState) => {
         dispatch(open("Waitlist item not found", "", COLOR_DANGER))
         throw new Error("waitlist item not found")
     })
-    // const url = `${read(BASE_URL)}/waitlist/${waitlistID}/${itemID}`
+    // const url = `${dispatch(read(BASE_URL))}/waitlist/${waitlistID}/${itemID}`
 
     // return fetch(url, {
     //     method: "GET",

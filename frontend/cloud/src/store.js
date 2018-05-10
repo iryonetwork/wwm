@@ -5,6 +5,7 @@ import createHistory from "history/createBrowserHistory"
 import rootReducer from "./modules"
 
 import { getInitialState } from "shared/modules/authentication"
+import { load as loadConfig } from "shared/modules/config"
 
 export const history = createHistory()
 
@@ -32,5 +33,7 @@ if (process.env.NODE_ENV === "development") {
 const composedEnhancers = compose(applyMiddleware(...middleware), ...enhancers)
 
 store = createStore(rootReducer, initialState, composedEnhancers)
+
+loadConfig(dispatch)
 
 export default store

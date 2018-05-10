@@ -22,8 +22,8 @@ export const extractPatientData = (person, info) => dispatch => {
 
 const buildContextForPatientData = formData => dispatch => {
     return Promise.all([
-        dispatch(loadClinic(read(CLINIC_ID))),
-        dispatch(loadLocation(read(LOCATION_ID))),
+        dispatch(loadClinic(dispatch(read(CLINIC_ID)))),
+        dispatch(loadLocation(dispatch(read(LOCATION_ID)))),
         dispatch(loadUser("me")) // doctor
     ]).then(([clinic, location, doctor]) => {
         return {

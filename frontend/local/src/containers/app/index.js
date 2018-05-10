@@ -6,6 +6,7 @@ import { bindActionCreators } from "redux"
 import { read, DEFAULT_WAITLIST_ID } from "shared/modules/config"
 import { close } from "shared/modules/alert"
 import Logo from "shared/containers/logo"
+import Spinner from "shared/containers/spinner"
 import Status from "shared/containers/status"
 import Alert from "shared/containers/alert"
 
@@ -31,6 +32,10 @@ class App extends React.Component {
     }
 
     render() {
+        if (this.props.configLoading) {
+            return <Spinner />
+        }
+
         return (
             <React.Fragment>
                 <nav>
@@ -44,7 +49,7 @@ class App extends React.Component {
                         Patients
                     </NavLink>
 
-                    <NavLink className="navigation" to={`/waitlist/${read(DEFAULT_WAITLIST_ID)}`}>
+                    <NavLink className="navigation" to={`/waitlist/${this.props.defaultWaitlist}`}>
                         <WaitlistIcon />
                         Waiting list
                     </NavLink>
@@ -73,7 +78,10 @@ class App extends React.Component {
     }
 }
 
-const mapStateToProps = state => ({})
+const mapStateToProps = state => ({
+    configLoading: state.config.loading,
+    defaultWaitlist: state.config[DEFAULT_WAITLIST_ID]
+})
 
 const mapDispatchToProps = dispatch =>
     bindActionCreators(

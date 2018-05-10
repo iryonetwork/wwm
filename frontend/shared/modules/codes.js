@@ -103,8 +103,8 @@ export const loadCategories = (...categories) => {
 export const load = category => {
     return dispatch => {
         dispatch({ type: LOADING, category })
-        const locale = read(LOCALE)
-        const url = `${read(BASE_URL)}/discovery/codes/${category}?locale=${locale}`
+        const locale = dispatch(read(LOCALE))
+        const url = `${dispatch(read(BASE_URL))}/discovery/codes/${category}?locale=${locale}`
 
         return fetch(url, {
             method: "GET",

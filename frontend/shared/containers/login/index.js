@@ -5,6 +5,7 @@ import get from "lodash/get"
 import { Redirect } from "react-router-dom"
 
 import Alert from "../../containers/alert"
+import Spinner from "../../containers/spinner"
 import { setUsername, setPassword, login } from "../../modules/authentication"
 
 import Logo from "../logo"
@@ -13,6 +14,9 @@ import Status from "../status"
 import "./style.css"
 
 const Login = props => {
+    if (props.configLoading) {
+        return <Spinner />
+    }
     if (props.redirectToReferrer) {
         return <Redirect to={props.from} />
     }
@@ -66,7 +70,8 @@ const mapStateToProps = state => ({
     pending: state.authentication.pending,
     error: state.authentication.error,
     redirectToReferrer: state.authentication.redirectToReferrer,
-    from: get(state, "router.location.state.from", { pathname: "/" })
+    from: get(state, "router.location.state.from", { pathname: "/" }),
+    configLoading: get(state, "config.loading")
 })
 
 const mapDispatchToProps = dispatch =>

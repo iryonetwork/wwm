@@ -14,7 +14,7 @@ export const createPatient = (patientId, formData) => dispatch => {
 }
 
 export const uploadFile = (patientId, data, labels, archetype) => dispatch => {
-    const url = `${read(BASE_URL)}/storage/${patientId}`
+    const url = `${dispatch(read(BASE_URL))}/storage/${patientId}`
 
     let formData = new FormData()
     formData.append("file", new Blob([JSON.stringify(data)], { type: "application/json" }))
@@ -39,7 +39,7 @@ export const uploadFile = (patientId, data, labels, archetype) => dispatch => {
 }
 
 export const readFile = (patientID, fileID) => dispatch => {
-    const url = `${read(BASE_URL)}/storage/${patientID}/${fileID}`
+    const url = `${dispatch(read(BASE_URL))}/storage/${patientID}/${fileID}`
 
     return fetch(url, {
         method: "GET",
@@ -57,7 +57,7 @@ export const readFile = (patientID, fileID) => dispatch => {
 }
 
 export const readFileByLabel = (patientID, label) => dispatch => {
-    const labelUrl = `${read(BASE_URL)}/storage/${patientID}/${label}`
+    const labelUrl = `${dispatch(read(BASE_URL))}/storage/${patientID}/${label}`
 
     return fetch(labelUrl, {
         method: "GET",

@@ -49,7 +49,7 @@ export const load = id => (dispatch, getState) => {
     }
 
     dispatch({ type: LOADING })
-    const url = `${read(BASE_URL)}/auth/clinics/${id}`
+    const url = `${dispatch(read(BASE_URL))}/auth/clinics/${id}`
 
     return fetch(url, {
         method: "GET",

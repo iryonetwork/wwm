@@ -48,21 +48,29 @@ class Step3 extends Component {
     }
 }
 
-const RenderForm = ({ dateOfBirth, babyFoods, communicationTypes, deliveryTypes, codesLoading }) => {
+let RenderForm = ({ dateOfBirth, babyFoods, communicationTypes, deliveryTypes, codesLoading, maxBabyAge, maxChildAge }) => {
     if (codesLoading) {
         return null
     }
 
     const age = (Date.now() - new Date(dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365)
 
-    if (age <= read(BABY_MAX_AGE)) {
+    if (age <= maxBabyAge) {
         return renderBabyForm({ babyFoods, deliveryTypes, communicationTypes })
-    } else if (age <= read(CHILD_MAX_AGE)) {
+    } else if (age <= maxChildAge) {
         return renderChildForm()
     } else {
         return renderAdultForm()
     }
 }
+
+RenderForm = connect(
+    state => ({
+        maxBabyAge: state.config[BABY_MAX_AGE],
+        maxChildAge: state.config[CHILD_MAX_AGE]
+    }),
+    {}
+)(RenderForm)
 
 const renderAdultForm = props => (
     <div className="modal-body">

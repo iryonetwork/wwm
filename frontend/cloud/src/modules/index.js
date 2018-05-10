@@ -3,6 +3,7 @@ import { routerReducer } from "react-router-redux"
 
 import authentication from "shared/modules/authentication"
 import alert from "shared/modules/alert"
+import config from "shared/modules/config"
 import users from "./users"
 import roles from "./roles"
 import rules from "./rules"
@@ -17,6 +18,7 @@ export default combineReducers({
     router: routerReducer,
     authentication,
     alert,
+    config,
     users,
     roles,
     rules,

@@ -48,7 +48,7 @@ export default (state = initialState, action) => {
 }
 
 export const newPatient = formData => dispatch => {
-    const url = `${read(BASE_URL)}/discovery`
+    const url = `${dispatch(read(BASE_URL))}/discovery`
 
     var data = {
         connections: [
@@ -60,9 +60,8 @@ export const newPatient = formData => dispatch => {
             { key: "tent", value: formData.tent },
             { key: "camp", value: formData.camp }
         ],
-        locations: [read(LOCATION_ID)]
+        locations: [dispatch(read(LOCATION_ID))]
     }
-
     ;(formData.documents || []).forEach(doc => {
         data.connections.push({ key: doc.type, value: doc.number })
     })
@@ -85,7 +84,7 @@ export const newPatient = formData => dispatch => {
 }
 
 export const search = query => dispatch => {
-    const url = `${read(BASE_URL)}/discovery?query=${query}`
+    const url = `${dispatch(read(BASE_URL))}/discovery?query=${query}`
     dispatch({ type: SEARCH })
 
     return fetch(url, {
@@ -110,7 +109,7 @@ export const search = query => dispatch => {
 }
 
 export const get = patientID => dispatch => {
-    const url = `${read(BASE_URL)}/discovery/${patientID}`
+    const url = `${dispatch(read(BASE_URL))}/discovery/${patientID}`
     dispatch({ type: FETCH })
 
     return fetch(url, {
