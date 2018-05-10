@@ -38,7 +38,7 @@ class Status extends React.Component {
                     </span>
                 ) : (null)}
             </div>
-            <Popover modifiers="" placement="bottom-start" className="statusPopover" isOpen={this.state.statusPopoverOpen} target="statusPopover" toggle={this.toggleStatusPopover}>
+            <Popover placement="bottom-start" className="statusPopover" isOpen={this.state.statusPopoverOpen} target="statusPopover" toggle={this.toggleStatusPopover}>
                     <PopoverBody>
                     <ul>
                     <h4>Status details</h4>

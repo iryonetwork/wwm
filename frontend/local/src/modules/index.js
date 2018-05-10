@@ -11,6 +11,7 @@ import discovery from "./discovery"
 import locations from "./locations"
 import patient from "./patient"
 import users from "./users"
+import status from "shared/modules/status"
 import waitlist from "./waitlist"
 
 export default combineReducers({
@@ -25,5 +26,6 @@ export default combineReducers({
     locations,
     patient,
     users,
+    status,
     waitlist
 })
