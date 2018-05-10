@@ -19,6 +19,7 @@ import { SUPERADMIN_RIGHTS_RESOURCE, ADMIN_RIGHTS_RESOURCE, loadUserRights } fro
 import { close } from "shared/modules/alert"
 import Logo from "shared/containers/logo"
 import Spinner from "shared/containers/spinner"
+import Status from "shared/containers/status"
 import { ReactComponent as LogoutIcon } from "shared/icons/logout.svg"
 import { ReactComponent as MoreIcon } from "shared/icons/more.svg"
 
@@ -54,6 +55,7 @@ class App extends React.Component {
                         <Link to="/">
                             <Logo style={{ width: "100px" }} />
                         </Link>
+                        <Status />
                     </div>
 
                     {this.props.isAdmin ? (

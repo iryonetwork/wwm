@@ -1,8 +1,12 @@
 @import "../../styles/variables.scss";
 
-.status {
+.statusInfo {
     margin: 4px 0;
-
+    &.clickable {
+        cursor: pointer;
+        margin-top: 10px;
+        margin-bottom:10px
+    }
     .light {
         display: inline-block;
         width: 8px;
@@ -10,8 +14,63 @@
         border-radius: 4px;
         margin-right: 8px;
 
-        &.success {
+        &.ok {
             background: $success;
         }
+        &.warning {
+            background: $warning;
+        }
+        &.error {
+            background: $danger;
+        }
     }
+}
+
+.popover {
+  top: 10px !important;
+  left: -15px !important;
+}
+
+.popover .popover-inner {
+  border-radius: 4px;
+  background-color: $white;
+  border: solid 1px $grey3;
+  padding-bottom:20px;
+  padding-top:20px;
+  padding-right:70px;
+  box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.12);
+
+  ul {
+    list-style: none;
+  }
+}
+
+.arrow {
+    position: absolute;
+    bottom:calc(100% - 1px);
+    background: #ffffff;
+    left: 18px !important;
+}
+.arrow:after, .arrow:before {
+    bottom: 100%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+.arrow:after {
+    border-color: rgba(255, 255, 255, 0);
+    border-bottom-color: #ffffff;
+    border-width: 8px;
+    margin-left: -8px;
+}
+
+.arrow:before {
+    border-color: rgba(228, 228, 237, 0);
+    border-bottom-color: $grey3;
+    border-width: 9px;
+    margin-left: -9px;
 }

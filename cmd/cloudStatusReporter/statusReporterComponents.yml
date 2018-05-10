@@ -1,0 +1,17 @@
+Cloud:
+  storage:
+    urlType: Internal
+    url: https://cloudStorage:4433/status
+  auth:
+    urlType: Internal
+    url: https://cloudAuth:4433/status
+  discovery:
+    urlType: Internal
+    url: https://cloudDiscovery:4433/status
+External:
+  Lebanese National News Agency:
+    urlType: External
+    url: http://nna-leb.gov.lb
+  Google:
+    urlType: External
+    url: https://www.google.com
