@@ -167,17 +167,22 @@ func (a *service) Authorizer() runtime.Authorizer {
 		if strings.HasPrefix(*userID, servicePrincipal) {
 			keyID := (*userID)[len(servicePrincipal):]
 			s, ok := a.syncServices[keyID]
-			if ok && (request.URL.EscapedPath() == "/auth/validate" || s.glob.Match("/api" + request.URL.EscapedPath())) {
+			if ok && (request.URL.EscapedPath() == "/auth/validate" || s.glob.Match("/api"+request.URL.EscapedPath())) {
 				return nil
 			}
 			return utils.NewError(utils.ErrForbidden, "You do not have permissions for this resource")
 		}
 
-		var action int64 = auth.Read
-		if request.Method == http.MethodPost || request.Method == http.MethodPut {
+		var action int64
+		switch request.Method {
+		case http.MethodPost:
 			action = auth.Write
-		} else if request.Method == http.MethodDelete {
+		case http.MethodPut:
+			action = auth.Update
+		case http.MethodDelete:
 			action = auth.Delete
+		default:
+			action = auth.Read
 		}
 
 		result := a.storage.FindACL(*userID, []*models.ValidationPair{{

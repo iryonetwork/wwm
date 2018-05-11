@@ -24,9 +24,9 @@ import (
 // Persmissions
 const (
 	Read   = 1
-	Update = 1 << 1
-	Write  = 1 << 2
-	Delete = 1 << 3
+	Write  = 1 << 1
+	Delete = 1 << 2
+	Update = 1 << 3
 )
 
 const loadPolicySeconds metrics.ID = "load_policy_seconds"
