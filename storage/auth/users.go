@@ -154,6 +154,18 @@ func (s *Storage) addUser(user *models.User) (*models.User, error) {
 	if err != nil {
 		return addedUser, err
 	}
+
+	// give every new user member role for cloud
+	_, err = s.AddUserRole(&models.UserRole{
+		UserID:     swag.String(user.ID),
+		RoleID:     swag.String(authCommon.MemberRole.ID),
+		DomainType: swag.String(authCommon.DomainTypeCloud),
+		DomainID:   swag.String(authCommon.DomainIDWildcard),
+	})
+	if err != nil {
+		return addedUser, err
+	}
+
 	// give every new user author over own user domain
 	_, err = s.AddUserRole(&models.UserRole{
 		UserID:     swag.String(user.ID),

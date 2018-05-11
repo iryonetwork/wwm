@@ -81,7 +81,7 @@ services:
     - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
     environment:
-    - DOMAIN_TYPE=global
+    - DOMAIN_TYPE=cloud
     - DOMAIN_ID=*
     - KEY_PATH=/certs/cloudStorage-key.pem
     - CERT_PATH=/certs/cloudStorage.pem
@@ -115,7 +115,7 @@ services:
     - ./cmd/cloudAuth/serviceCertsAndPaths.yml:/serviceCertsAndPaths.yml:ro
     - ./cmd/cloudAuth/storageInitData.yml:/storageInitData.yml:ro
     environment:
-    - DOMAIN_TYPE=global
+    - DOMAIN_TYPE=cloud
     - DOMAIN_ID=*
     - KEY_PATH=/certs/cloudAuth-key.pem
     - CERT_PATH=/certs/cloudAuth.pem
@@ -238,7 +238,7 @@ services:
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
     - ./cmd/cloudStatusReporter/statusReporterComponents.yml:/components.yml:ro
     environment:
-    - DOMAIN_TYPE=global
+    - DOMAIN_TYPE=cloud
     - DOMAIN_ID=*
     - KEY_PATH=/certs/cloudStatusReporter-key.pem
     - CERT_PATH=/certs/cloudStatusReporter.pem
@@ -286,7 +286,7 @@ services:
     - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
     environment:
-    - DOMAIN_TYPE=global
+    - DOMAIN_TYPE=cloud
     - DOMAIN_ID=*
     - VAULT_TOKEN=CLOUD-DISCOVERY-TOKEN
     - VAULT_DB_ROLE=cloudDiscoveryService

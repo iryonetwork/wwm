@@ -7,6 +7,7 @@ import (
 	"github.com/iryonetwork/wwm/gen/auth/models"
 )
 
+var DomainTypeCloud = "cloud"
 var DomainTypeClinic = "clinic"
 var DomainTypeLocation = "location"
 var DomainTypeOrganization = "organization"

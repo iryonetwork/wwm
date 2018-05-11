@@ -1598,7 +1598,7 @@ definitions:
         type: string
       domainType:
         type: string
-        enum: [global, organization, clinic, location, user]
+        enum: [global, cloud, organization, clinic, location, user]
       domainID:
         type: string
       actions:
@@ -1664,7 +1664,7 @@ definitions:
         type: string
       domainType:
         type: string
-        enum: [global, organization, clinic, user]
+        enum: [global, cloud, organization, clinic, user]
       domainID:
         type: string
       roleID:

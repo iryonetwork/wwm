@@ -56,19 +56,19 @@ export const loadUserRights = userID => {
             {
                 resource: SELF_RIGHTS_RESOURCE,
                 actions: 1,
-                domainType: "global",
+                domainType: "cloud",
                 domainID: "*"
             },
             {
                 resource: ADMIN_RIGHTS_RESOURCE,
                 actions: 1,
-                domainType: "global",
+                domainType: "cloud",
                 domainID: "*"
             },
             {
                 resource: SUPERADMIN_RIGHTS_RESOURCE,
                 actions: 1,
-                domainType: "global",
+                domainType: "cloud",
                 domainID: "*"
             }
         ]

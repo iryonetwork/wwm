@@ -250,6 +250,7 @@ class UserRoles extends React.Component {
                         <option value="*">*</option>
                     </select>
                 )
+            case "cloud":
             case "global":
                 return (
                     <select className="form-control form-control-sm" value={domainID} onChange={this.editDomainID(index)}>
@@ -329,6 +330,9 @@ class UserRoles extends React.Component {
                                             <option>Select domain type</option>
                                             <option key="global" value="global">
                                                 global
+                                            </option>
+                                            <option key="cloud" value="cloud">
+                                                cloud
                                             </option>
                                             <option key="organization" value="organization">
                                                 organization

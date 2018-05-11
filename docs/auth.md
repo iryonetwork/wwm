@@ -106,7 +106,7 @@ User role is an object defining user as belonging to specific *role* within spec
 - id (*string*)
 - userID (*string, user ID*)
 - roleID (*string, role ID*)
-- domainType (*string, one of: global, organization, clinic, location, user*)
+- domainType (*string, one of: global, cloud, organization, clinic, location, user*)
 - domainID (*string, either ID of organization/clinic/location/user or \* wildcard*)
 
 ### Additional information about auth storage 
@@ -118,7 +118,6 @@ User role is an object defining user as belonging to specific *role* within spec
 * Assinging to user *role* at *organization*/*clinic* can be in intuitive way described as making him part of *organization*/*clinic*. 
 * *User role* entity can assign *user* any *role* in any *domain* and it can be done using *User roles* section of dashboard. Nevertheless to make basic management more intuitive there is relationship between adding user to *organization* and to *clinic*. User needs to first belong to clinic's *organization* (*have a role in organization domain*) for *clinic* to be listed in adding *user* to *clinic* form.
 
-
 ## Casbin configuration
 
 Data from authorization storage is reloaded to *casbin* on every update of the authorization storage data.
@@ -127,19 +126,20 @@ Data from authorization storage is reloaded to *casbin* on every update of the a
 * Roles are constrained by *domain* for which they are assigned to user. Domain is constructed by combining *domain type* and *domain ID*. 
      * Domain types:
         - global [*global for whole platform*]
+        - cloud [*for cloud part of platform*]
         - organization 
         - clinic
         - location
         - user
 
     Domain ID identifies specific entity of type domain type that domain refers to. It's possible to set domain ID as *\** wildcard which makes role valid for every domain of given type.
-    All the rules for domain type *global* should be assinged with wildcard as this domain type on default refers to whole platform. 
+    All the rules for domain types *global* and *cloud* should be assinged with wildcard as this domain type on default refers to whole platform. 
 * Matchers for resources apply to allow for using wildcards *\** and *{self}* keyword (replaced with subject ID from token upon validation) in the rule's resource definition. 
 * Actions supported in rules are following:
-    - Read
-    - Write
-    - Update
-    - Delete
+    - Read (*binary 1*)
+    - Write (*binary 2*)
+    - Delete (*binary 4*)
+    - Update (*binary 8*)
 * One rule can be applied to multiple actions (through binary matching). 
 * Deny-override: both allow and deny authorization rules are supported, deny overrides the allow.
 
@@ -166,14 +166,16 @@ m = (g(r.sub, p.sub, r.dom) ||  g(r.sub, p.sub, "*")) && (wildcardMatch(r.obj, p
 
 #### Example 1
 New user A is added at the same time assigned with member role to organisation XYZ; following *user roles* are created in auth storage:
-   - user A's everyoneRole on domain `domainType: global; domainID: *`
+   - user A's everyoneRole on domain `domainType: global; domainID: *` [*automatically when user is created*]
+   - user A's memberRole on domain `domainType: cloud; domainID: *` [*automatically when user is created*]
    - user A's authorRole on domain `domainType: user; domainID: A_ID`
    - user A's memberRole on domain `domainType: organization; domainID: XYZ_ID`
 Later user A is added as a doctor to clinic ZYX run by organization XYZ in location YXZ and how we store this relationship is creating new *user roles* in the system:
    - user A's doctorRole on domain `domainType: user; domainID: ZYX_ID`
 
 When Casbin policy is reloaded in rection for those changes following roles are loaded:
-- `A_ID, everyoneRole.ID, global.*`
+- `A_ID, everyoneRole.ID, *` [*global*]
+- `A_ID, memberRole.ID, cloud.*`
 - `A_ID, authorRole.ID, user.A_ID`
 - `A_ID, memberRole.ID, organization.XYZ_ID`
 - `A_ID, doctorRole.ID, clinic.XYZ_ID`
@@ -182,18 +184,21 @@ When Casbin policy is reloaded in rection for those changes following roles are 
 
 #### Example 2
 New user B is setup that should be able to access & modify everything. Following *user roles* will be created:
-   - user B's everyoneRole on domain `domainType: global; domainID: *`
+   - user B's everyoneRole on domain `domainType: global; domainID: *` [*automatically when user is created*]
+   - user B's memberRole on domain `domainType: cloud; domainID: *` [*automatically when user is created*]
    - user B's authorRole on domain `domainType: user; domainID: B_ID`
    - user B's superadminRole on domain `domainType: global; domainID: *` [*manually assinged*]
 
 When Casbin policy is reloaded in rection for those changes following roles are loaded:
-- `B_ID, everyoneRole.ID, global.*`
+- `B_ID, everyoneRole.ID, *`
+- `B_ID, cloudRole.ID, cloud.*`
 - `B_ID, authorRole.ID, user.A_ID`
 - `B_ID, superadminRole.ID, global.*`
 
 #### Example 3
 New user C is a doctor working as supervisor for all the doctors and therefore should be able to access & modify all clinical data as he's taking responsiblity for correctness of it. Following *user roles* will be created:
-   - user C's everyoneRole on domain `domainType: global; domainID: *`
+   - user C's everyoneRole on domain `domainType: global; domainID: *` [*automatically when user is created*]
+   - user C's memberRole on domain `domainType: cloud; domainID: *` [*automatically when user is created*]
    - user C's authorRole on domain `domainType: user; domainID: C_ID`
    - user C's authorRole on domain `domainType: user; domainID: *` [*manually assinged*] 
    - user C's doctorRole on domain `domainType: clinic; domainID: *` [*manually assinged*] 
@@ -201,6 +206,7 @@ New user C is a doctor working as supervisor for all the doctors and therefore s
 
 When Casbin policy is reloaded in rection for those changes following roles are loaded:
 - `C_ID, everyoneRole.ID, global.*`
+- `C_ID, memberRole.ID, cloud.*`
 - `C_ID, authorRole.ID, user.C_ID`
 - `C_ID, authorRole.ID, user.[...for each user existing in the system]`
 - `C_ID, doctorRole.ID, clinic.[...for each clinic existing in the system]`
@@ -218,7 +224,7 @@ Biggest part of authorization API is REST (CRUD) API for management of auth stor
 
 #### Token endpoint
 * `POST /login` endpoint authenticates user and returns a token based on `username` and `password`. User will be authenticated succesfully only if the user belongs to *domain* that given *auth* service instance is configured for. 
-`CloudAuth` runs configured with `domainType: global, domainID: *` so every user in the system can login. `LocalAuth` instances are meant to be run per clinic so they are configured with `domainType: clinic, domainID: {clinicID}`. 
+`CloudAuth` runs configured with `domainType: cloud, domainID: *` so every user in the system can login. `LocalAuth` instances are meant to be run per clinic so they are configured with `domainType: clinic, domainID: {clinicID}`. 
 * `POST /renew` renews authentication token.
 
 #### Validation endpoint

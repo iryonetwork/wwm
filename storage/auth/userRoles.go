@@ -459,6 +459,8 @@ func (s *Storage) addUserRole(userRole *models.UserRole) (*models.UserRole, erro
 			}
 		case authCommon.DomainTypeGlobal:
 			// do nothing
+		case authCommon.DomainTypeCloud:
+			// do nothing
 		default:
 			return utils.NewError(
 				utils.ErrBadRequest,

@@ -331,7 +331,8 @@ class UserDetail extends React.Component {
                 user.personalData.dateOfBirth = dateOfBirth.local().format("YYYY-MM-DD")
             }
         }
-        if (user.personalData.passport) {
+        if (this.state.personalData.passport) {
+            user.personalData.passport = _.clone(this.state.personalData.passport)
             if (user.personalData.passport.expiryDate === "" || user.personalData.passport.expiryDate === undefined) {
                 delete user.personalData.passport.expiryDate
             } else {

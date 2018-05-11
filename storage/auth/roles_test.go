@@ -157,9 +157,9 @@ func TestRemoveRole(t *testing.T) {
 	}
 	// check if user roles were removed
 	userRoles, _ := storage.GetUserRoles()
-	if len(userRoles) != 4 {
+	if len(userRoles) != 6 {
 		if err == nil {
-			t.Fatalf("Expected 4 user roles; got %d", len(userRoles))
+			t.Fatalf("Expected 6 user roles; got %d", len(userRoles))
 		}
 	}
 	userRoles, _ = storage.FindUserRoles(nil, swag.String(testRole.ID), nil, nil)

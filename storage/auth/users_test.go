@@ -282,9 +282,9 @@ func TestRemoveUser(t *testing.T) {
 	}
 	// check if user roles were properly removed
 	userRoles, _ := storage.GetUserRoles()
-	if len(userRoles) != 3 {
+	if len(userRoles) != 4 {
 		if err == nil {
-			t.Fatalf("Expected 1 user role; got %d", len(userRoles))
+			t.Fatalf("Expected 4 user role; got %d", len(userRoles))
 		}
 	}
 	userRoles, _ = storage.FindUserRoles(swag.String(testUser.ID), nil, nil, nil)
@@ -300,9 +300,9 @@ func TestRemoveUser(t *testing.T) {
 		}
 	}
 	userRoles, _ = storage.FindUserRoles(swag.String(testUser2.ID), nil, nil, nil)
-	if len(userRoles) != 3 {
+	if len(userRoles) != 4 {
 		if err == nil {
-			t.Fatalf("Expected 3 user role; got %d", len(userRoles))
+			t.Fatalf("Expected 4 user role; got %d", len(userRoles))
 		}
 	}
 

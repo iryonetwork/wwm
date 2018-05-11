@@ -10,9 +10,9 @@ import (
 	"github.com/go-openapi/swag"
 	uuid "github.com/satori/go.uuid"
 
+	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/iryonetwork/wwm/utils"
-	authCommon "github.com/iryonetwork/wwm/auth"
 )
 
 func getTestUserRole(userID, roleID, domainType, domainID string) *models.UserRole {
@@ -298,9 +298,9 @@ func TestGetUserRoles(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
-	// expect 6 user roles as 2 user roles per user are added on adding user
-	if len(userRoles) != 6 {
-		t.Fatalf("Expected 6 user roles; got %d", len(userRoles))
+
+	if len(userRoles) != 8 {
+		t.Fatalf("Expected 8 user roles; got %d", len(userRoles))
 	}
 
 	userRolesMap := map[string]*models.UserRole{}
@@ -429,7 +429,7 @@ func TestFindUserRoles(t *testing.T) {
 			nil,
 			nil,
 			nil,
-			14,
+			16,
 			map[string]*models.UserRole{
 				userRole1.ID:  userRole1,
 				userRole2.ID:  userRole2,
@@ -475,7 +475,7 @@ func TestFindUserRoles(t *testing.T) {
 			nil,
 			nil,
 			nil,
-			6,
+			7,
 			map[string]*models.UserRole{
 				userRole1.ID: userRole1,
 				userRole2.ID: userRole2,

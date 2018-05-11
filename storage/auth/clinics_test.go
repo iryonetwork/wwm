@@ -6,9 +6,9 @@ import (
 
 	"github.com/go-openapi/swag"
 
+	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/iryonetwork/wwm/utils"
-	authCommon "github.com/iryonetwork/wwm/auth"
 )
 
 // method to ensure that clinics used for tests are always fresh
@@ -392,9 +392,9 @@ func TestRemoveClinic(t *testing.T) {
 	}
 	// check if user roles were removed
 	userRoles, _ := storage.GetUserRoles()
-	if len(userRoles) != 7 {
+	if len(userRoles) != 9 {
 		if err == nil {
-			t.Fatalf("Expected 7 user roles; got %d", len(userRoles))
+			t.Fatalf("Expected 9 user roles; got %d", len(userRoles))
 		}
 	}
 	userRoles, _ = storage.FindUserRoles(nil, nil, swag.String(authCommon.DomainTypeClinic), swag.String(testClinic.ID))
