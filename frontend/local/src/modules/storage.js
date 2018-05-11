@@ -39,7 +39,7 @@ export const uploadFile = (patientId, data, labels, archetype) => dispatch => {
 }
 
 export const updateFile = (patientID, fileID, data, labels, archetype) => dispatch => {
-    const url = `${read(BASE_URL)}/storage/${patientID}/${fileID}`
+    const url = `${dispatch(read(BASE_URL))}/storage/${patientID}/${fileID}`
 
     let formData = new FormData()
     formData.append("file", new Blob([JSON.stringify(data)], { type: "application/json" }))
