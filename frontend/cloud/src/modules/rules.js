@@ -1,6 +1,6 @@
 import _ from "lodash"
 
-import api from "./api"
+import api from "shared/modules/api"
 import { open, close, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 
 const LOAD_RULES = "rules/LOAD_RULES"
@@ -110,7 +110,7 @@ export const loadRules = () => {
         })
         dispatch(close())
 
-        return api(`/auth/rules`, "GET")
+        return dispatch(api(`/auth/rules`, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_RULES_SUCCESS,
@@ -141,7 +141,7 @@ export const saveRule = rule => {
             method = "PUT"
         }
 
-        return api(url, method, rule)
+        return dispatch(api(url, method, rule))
             .then(response => {
                 if (rule.id) {
                     response = rule
@@ -169,7 +169,7 @@ export const deleteRule = ruleID => {
     return dispatch => {
         dispatch(close())
 
-        return api(`/auth/rules/${ruleID}`, "DELETE")
+        return dispatch(api(`/auth/rules/${ruleID}`, "DELETE"))
             .then(response => {
                 dispatch({
                     type: DELETE_RULE_SUCCESS,

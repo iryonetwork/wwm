@@ -1,7 +1,7 @@
 import _ from "lodash"
 import store from "../store"
 
-import api from "./api"
+import api from "shared/modules/api"
 import { open, close, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 
 const LOAD_ALL_USERROLES = "userRole/LOAD_ALL_USERROLES"
@@ -239,7 +239,7 @@ export const loadAllUserRoles = () => {
             type: LOAD_ALL_USERROLES
         })
 
-        return api(`/auth/userRoles`, "GET")
+        return dispatch(api(`/auth/userRoles`, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_ALL_USERROLES_SUCCESS,
@@ -268,7 +268,7 @@ export const loadUserUserRoles = userID => {
 
         let url = "/auth/userRoles?userID=" + userID
 
-        return api(url, "GET")
+        return dispatch(api(url, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_USER_USERROLES_SUCCESS,
@@ -294,7 +294,7 @@ export const loadRoleUserRoles = roleID => {
 
         let url = "/auth/userRoles?roleID=" + roleID
 
-        return api(url, "GET")
+        return dispatch(api(url, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_ROLE_USERROLES_SUCCESS,
@@ -320,7 +320,7 @@ export const loadDomainUserRoles = (domainType, domainID) => {
 
         let url = "/auth/userRoles?domainType=" + domainType + "&domainID=" + domainID
 
-        return api(url, "GET")
+        return dispatch(api(url, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_DOMAIN_USERROLES_SUCCESS,
@@ -343,7 +343,7 @@ export const deleteUserRole = userRoleID => {
     return dispatch => {
         dispatch(close())
 
-        return api(`/auth/userRoles/${userRoleID}`, "DELETE")
+        return dispatch(api(`/auth/userRoles/${userRoleID}`, "DELETE"))
             .then(response => {
                 dispatch({
                     type: DELETE_USERROLE_SUCCESS,
@@ -365,7 +365,7 @@ export const deleteUserRoleNoAlert = userRoleID => {
     return dispatch => {
         dispatch(close())
 
-        return api(`/auth/userRoles/${userRoleID}`, "DELETE")
+        return dispatch(api(`/auth/userRoles/${userRoleID}`, "DELETE"))
             .then(response => {
                 dispatch({
                     type: DELETE_USERROLE_SUCCESS,
@@ -393,7 +393,7 @@ export const saveUserRole = userRole => {
             method = "PUT"
         }
 
-        return api(url, method, userRole)
+        return dispatch(api(url, method, userRole))
             .then(response => {
                 if (userRole.id) {
                     response = userRole
@@ -427,7 +427,7 @@ export const saveUserRoleCustomMsg = (userRole, msg) => {
             method = "PUT"
         }
 
-        return api(url, method, userRole)
+        return dispatch(api(url, method, userRole))
             .then(response => {
                 if (userRole.id) {
                     response = userRole

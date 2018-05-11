@@ -6,19 +6,19 @@ function APIError(error) {
     this.code = error.code
     this.name = "API Error"
 }
+export default (endpoint, method, body) => dispatch =>  {
+    const url = `${dispatch(read(BASE_URL))}${endpoint}`
 
-export default (url, method, body) => {
-
-    let fullUrl = read(BASE_URL) + url
-    return fetch(fullUrl, {
+    return fetch(url, {
         method: method,
         headers: {
-            Authorization: getToken(),
+            Authorization: dispatch(getToken()),
             "Content-Type": "application/json"
         },
         body: JSON.stringify(body)
     })
         .catch(error => {
+            console.log(error)
             throw new Error("Failed to connect to server")
         })
         .then(response => {

@@ -1,7 +1,7 @@
 import _ from "lodash"
 import store from "../store"
 
-import api from "./api"
+import api from "shared/modules/api"
 import { loadDomainUserRoles, deleteUserRoleNoAlert, clearUserRoles } from "./userRoles"
 import { clearLocations } from "./locations"
 import { clearOrganizations } from "./organizations"
@@ -101,7 +101,7 @@ export const loadClinic = clinicID => {
             type: LOAD_CLINIC
         })
 
-        return api(`/auth/clinics/${clinicID}`, "GET")
+        return dispatch(api(`/auth/clinics/${clinicID}`, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_CLINIC_SUCCESS,
@@ -123,7 +123,7 @@ export const loadClinics = () => {
             type: LOAD_CLINICS
         })
 
-        return api(`/auth/clinics`, "GET")
+        return dispatch(api(`/auth/clinics`, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_CLINICS_SUCCESS,
@@ -144,7 +144,7 @@ export const deleteClinic = clinicID => {
     return dispatch => {
         dispatch(close())
 
-        return api(`/auth/clinics/${clinicID}`, "DELETE")
+        return dispatch(api(`/auth/clinics/${clinicID}`, "DELETE"))
             .then(response => {
                 dispatch(clearOrganizations())
                 dispatch(clearUserRoles())
@@ -176,7 +176,7 @@ export const saveClinic = clinic => {
             method = "PUT"
         }
 
-        return api(url, method, clinic)
+        return dispatch(api(url, method, clinic))
             .then(response => {
                 dispatch(clearOrganizations())
                 if (clinic.id) {

@@ -1,7 +1,7 @@
 import _ from "lodash"
 import store from "../store"
 
-import api from "./api"
+import api from "shared/modules/api"
 import { loadDomainUserRoles, deleteUserRoleNoAlert, clearUserRoles } from "./userRoles"
 import { deleteUserFromClinic, clearClinics } from "./clinics"
 import { open, close, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
@@ -121,7 +121,7 @@ export const loadOrganization = organizationID => {
             type: LOAD_ORGANIZATION
         })
 
-        return api(`/auth/organizations/${organizationID}`, "GET")
+        return dispatch(api(`/auth/organizations/${organizationID}`, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_ORGANIZATION_SUCCESS,
@@ -145,7 +145,7 @@ export const loadOrganizationLocationIDs = organizationID => {
             type: LOAD_ORGANIZATION_LOCATION_IDS
         })
 
-        return api(`/auth/organizations/${organizationID}/locations`, "GET")
+        return dispatch(api(`/auth/organizations/${organizationID}/locations`, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_ORGANIZATION_LOCATION_IDS_SUCCESS,
@@ -168,7 +168,7 @@ export const loadOrganizations = () => {
             type: LOAD_ORGANIZATIONS
         })
 
-        return api(`/auth/organizations`, "GET")
+        return dispatch(api(`/auth/organizations`, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_ORGANIZATIONS_SUCCESS,
@@ -191,7 +191,7 @@ export const deleteOrganization = organizationID => {
     return dispatch => {
         dispatch(close())
 
-        return api(`/auth/organizations/${organizationID}`, "DELETE")
+        return dispatch(api(`/auth/organizations/${organizationID}`, "DELETE"))
             .then(response => {
                 dispatch(clearUserRoles())
                 dispatch(clearClinics())
@@ -222,7 +222,7 @@ export const saveOrganization = organization => {
             method = "PUT"
         }
 
-        return api(url, method, organization)
+        return dispatch(api(url, method, organization))
             .then(response => {
                 if (organization.id) {
                     response = organization

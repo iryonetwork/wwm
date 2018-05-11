@@ -1,6 +1,6 @@
 import _ from "lodash"
 
-import api from "./api"
+import api from "shared/modules/api"
 import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 
 const LOAD_ROLES = "roles/LOAD_ROLES"
@@ -82,7 +82,7 @@ export const loadRoles = () => {
             type: LOAD_ROLES
         })
 
-        return api(`/auth/roles`, "GET")
+        return dispatch(api(`/auth/roles`, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_ROLES_SUCCESS,
@@ -105,7 +105,7 @@ export const addRole = name => {
             name
         }
 
-        return api(`/auth/roles`, "POST", role)
+        return dispatch(api(`/auth/roles`, "POST", role))
             .then(response => {
                 dispatch({
                     type: CREATE_ROLE_SUCCESS,
@@ -123,7 +123,7 @@ export const addRole = name => {
 
 export const deleteRole = roleID => {
     return dispatch => {
-        return api(`/auth/roles/${roleID}`, "DELETE")
+        return dispatch(api(`/auth/roles/${roleID}`, "DELETE"))
             .then(response => {
                 dispatch({
                     type: DELETE_ROLE_SUCCESS,

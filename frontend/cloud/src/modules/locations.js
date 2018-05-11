@@ -1,6 +1,6 @@
 import _ from "lodash"
 
-import api from "./api"
+import api from "shared/modules/api"
 import { clearUserRoles } from "./userRoles"
 import { clearClinics } from "./clinics"
 import { open, close, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
@@ -120,7 +120,7 @@ export const loadLocation = locationID => {
             type: LOAD_LOCATION
         })
 
-        return api(`/auth/locations/${locationID}`, "GET")
+        return dispatch(api(`/auth/locations/${locationID}`, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_LOCATION_SUCCESS,
@@ -142,7 +142,7 @@ export const loadLocationOrganizationIDs = locationID => {
             type: LOAD_LOCATION_ORGANIZATION_IDS
         })
 
-        return api(`/auth/locations/${locationID}/organizations`, "GET")
+        return dispatch(api(`/auth/locations/${locationID}/organizations`, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_LOCATION_ORGANIZATION_IDS_SUCCESS,
@@ -165,7 +165,7 @@ export const loadLocations = () => {
             type: LOAD_LOCATIONS
         })
 
-        return api(`/auth/locations`, "GET")
+        return dispatch(api(`/auth/locations`, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_LOCATIONS_SUCCESS,
@@ -186,7 +186,7 @@ export const deleteLocation = locationID => {
     return dispatch => {
         dispatch(close())
 
-        return api(`/auth/locations/${locationID}`, "DELETE")
+        return dispatch(api(`/auth/locations/${locationID}`, "DELETE"))
             .then(response => {
                 dispatch(clearUserRoles())
                 dispatch(clearClinics())
@@ -217,7 +217,7 @@ export const saveLocation = location => {
             method = "PUT"
         }
 
-        return api(url, method, location)
+        return dispatch(api(url, method, location))
             .then(response => {
                 if (location.id) {
                     response = location

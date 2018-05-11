@@ -1,6 +1,6 @@
 import _ from "lodash"
 
-import api from "./api"
+import api from "shared/modules/api"
 import { open, COLOR_DANGER } from "shared/modules/alert"
 
 const LOAD_USER_RIGHTS = "user/LOAD_USER_RIGHTS"
@@ -73,7 +73,7 @@ export const loadUserRights = userID => {
             }
         ]
 
-        return api("/auth/validate", "POST", validations)
+        return dispatch(api("/auth/validate", "POST", validations))
             .then(response => {
                 dispatch({
                     type: LOAD_USER_RIGHTS_SUCCESS,

@@ -1,7 +1,7 @@
 import _ from "lodash"
 import store from "../store"
 
-import api from "./api"
+import api from "shared/modules/api"
 import { open, COLOR_DANGER } from "shared/modules/alert"
 
 const LOAD_CODES = "rules/LOAD_CODES"
@@ -53,9 +53,9 @@ export const loadCodes = category => {
         })
 
         let locale = store.getState().locale || "en"
-
         let url = "/discovery/codes/" + category + "?locale=" + locale
-        return api(url, "GET")
+
+        return dispatch(api(url, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_CODES_SUCCESS,

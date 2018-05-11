@@ -25,17 +25,21 @@ import { ReactComponent as MoreIcon } from "shared/icons/more.svg"
 
 class App extends React.Component {
     componentDidMount() {
-        if (this.props.isAdmin === undefined || this.props.isSuperadmin === undefined) {
-            this.props.loadUserRights()
+        if (!this.props.configLoading) {
+            if (this.props.isAdmin === undefined || this.props.isSuperadmin === undefined) {
+                this.props.loadUserRights()
+            }
         }
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.location.pathname !== this.props.location.pathname) {
-            this.props.close()
-        }
-        if ((nextProps.isAdmin === undefined || nextProps.isSuperadmin === undefined) && !nextProps.validationsLoading) {
-            this.props.loadUserRights()
+        if (!this.props.configLoading) {
+            if (nextProps.location.pathname !== this.props.location.pathname) {
+                this.props.close()
+            }
+            if ((nextProps.isAdmin === undefined || nextProps.isSuperadmin === undefined) && !nextProps.validationsLoading) {
+                this.props.loadUserRights()
+            }
         }
     }
 

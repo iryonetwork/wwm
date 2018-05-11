@@ -82,7 +82,6 @@ class UserDetail extends React.Component {
             !props.licenses ||
             props.codesLoading
         this.setState({ loading: loading })
-        console.log("determine state user")
 
         if (props.user) {
             let personalData = _.clone(props.user.personalData) || {}

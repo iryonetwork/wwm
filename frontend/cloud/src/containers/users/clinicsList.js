@@ -83,7 +83,6 @@ class ClinicsList extends React.Component {
             props.canEdit === undefined ||
             props.canSee === undefined ||
             props.validationsLoading
-        console.log("determine clinic list")
 
         let selectedClinicID = props.clinicID
         if (!selectedClinicID) {

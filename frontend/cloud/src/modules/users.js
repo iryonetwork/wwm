@@ -1,6 +1,6 @@
 import _ from "lodash"
 
-import api from "./api"
+import api from "shared/modules/api"
 import { clearUserRoles } from "./userRoles"
 import { open, close, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 
@@ -88,7 +88,7 @@ export const loadUser = userID => {
             type: LOAD_USER
         })
 
-        return api(`/auth/users/${userID}`, "GET")
+        return dispatch(api(`/auth/users/${userID}`, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_USER_SUCCESS,
@@ -110,7 +110,7 @@ export const loadUsers = () => {
             type: LOAD_USERS
         })
 
-        return api(`/auth/users`, "GET")
+        return dispatch(api(`/auth/users`, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_USERS_SUCCESS,
@@ -131,7 +131,7 @@ export const deleteUser = userID => {
     return dispatch => {
         dispatch(close())
 
-        return api(`/auth/users/${userID}`, "DELETE")
+        return dispatch(api(`/auth/users/${userID}`, "DELETE"))
             .then(response => {
                 dispatch(clearUserRoles())
                 dispatch({
@@ -161,7 +161,7 @@ export const saveUser = user => {
             method = "PUT"
         }
 
-        return api(url, method, user)
+        return dispatch(api(url, method, user))
             .then(response => {
                 if (user.id) {
                     response = user
