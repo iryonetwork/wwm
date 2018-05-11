@@ -18,9 +18,11 @@ let View = ({ patient, match, location, canSeeDemographicInformation, canEditDem
             <header>
                 <h1>Personal Info</h1>
                 {canEditDemographicInformation && (
+                    <div>
                     <Link to={joinPaths(match.url, "edit", location.pathname.indexOf("family") !== -1 ? "family" : "")} className="btn btn-secondary btn-wide">
                         Edit
                     </Link>
+                    </div>
                 )}
             </header>
 
@@ -169,92 +171,86 @@ ViewPersonal = connect(
     }
 )(ViewPersonal)
 
-let ViewFamily = (canSeeDemographicInformation) => {
+let ViewFamily = (patient, canSeeDemographicInformation) => {
     return canSeeDemographicInformation ? (
         <div>
             <div className="section">
                 <h3>Summary</h3>
                 <div className="content">
                     <div className="row">
-                        <div className="col-sm-4">
-                            <div className="label">No. of people in the family</div>
-                            <div className="value">3</div>
+                        <Column width="4" label="No. of people in the family" value={patient.peopleInFamily} key="peopleInFamily" />
+                        <Column width="4" label="No. of people living together" value={patient.peopleLivingTogether} key="peopleLivingTogether" />
+                    </div>
+                </div>
+
+                <div className="section">
+                    <h3>Husband</h3>
+                    <div className="content">
+                        <div className="row">
+                            <div className="col-sm-4">
+                                <div className="label">Name</div>
+                                <div className="value">
+                                    <Link to={`/patients/asddsa`}>Michael Graves &middot; A-</Link>
+                                </div>
+                            </div>
+                            <div className="col-sm-4">
+                                <div className="label">Date of birth</div>
+                                <div className="value">21 May 1986</div>
+                            </div>
+                            <div className="col-sm-4">
+                                <div className="label">Living together</div>
+                                <div className="value">Yes</div>
+                            </div>
                         </div>
-                        <div className="col-sm-4">
-                            <div className="label">No. of people living together</div>
-                            <div className="value">5</div>
+                        <div className="row">
+                            <div className="col-sm-4">
+                                <div className="label">Phone number</div>
+                                <div className="value">+963 29 2939 2919</div>
+                            </div>
+                            <div className="col-sm-4">
+                                <div className="label">Email address</div>
+                                <div className="value">alma@gmail.com</div>
+                            </div>
+                            <div className="col-sm-4">
+                                <div className="label">Whatsapp</div>
+                                <div className="value">+963 29 2939 2919</div>
+                            </div>
+                        </div>
+
+                        <div className="row">
+                            <div className="col-sm-4">
+                                <div className="label">UN ID</div>
+                                <div className="value">453ds4a56w4d8</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div className="section">
-                <h3>Husband</h3>
-                <div className="content">
-                    <div className="row">
-                        <div className="col-sm-4">
-                            <div className="label">Name</div>
-                            <div className="value">
-                                <Link to={`/patients/asddsa`}>Michael Graves &middot; A-</Link>
+                <div className="section">
+                    <h3>Child</h3>
+                    <div className="content">
+                        <div className="row">
+                            <div className="col-sm-4">
+                                <div className="label">Name</div>
+                                <div className="value">
+                                    <Link to={`/patients/asdsaefw`}>Michael Graves &middot; A-</Link>
+                                </div>
+                            </div>
+                            <div className="col-sm-4">
+                                <div className="label">Date of birth</div>
+                                <div className="value">21 May 1986</div>
+                            </div>
+                            <div className="col-sm-4">
+                                <div className="label">Living together</div>
+                                <div className="value">Yes</div>
                             </div>
                         </div>
-                        <div className="col-sm-4">
-                            <div className="label">Date of birth</div>
-                            <div className="value">21 May 1986</div>
-                        </div>
-                        <div className="col-sm-4">
-                            <div className="label">Living together</div>
-                            <div className="value">Yes</div>
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-sm-4">
-                            <div className="label">Phone number</div>
-                            <div className="value">+963 29 2939 2919</div>
-                        </div>
-                        <div className="col-sm-4">
-                            <div className="label">Email address</div>
-                            <div className="value">alma@gmail.com</div>
-                        </div>
-                        <div className="col-sm-4">
-                            <div className="label">Whatsapp</div>
-                            <div className="value">+963 29 2939 2919</div>
-                        </div>
-                    </div>
 
-                    <div className="row">
-                        <div className="col-sm-4">
-                            <div className="label">UN ID</div>
-                            <div className="value">453ds4a56w4d8</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="section">
-                <h3>Child</h3>
-                <div className="content">
-                    <div className="row">
-                        <div className="col-sm-4">
-                            <div className="label">Name</div>
-                            <div className="value">
-                                <Link to={`/patients/asdsaefw`}>Michael Graves &middot; A-</Link>
+                        <div className="row">
+                            <div className="col-sm-4">
+                                <div className="label">UN ID</div>
+                                <div className="value">453ds4a56w4d8</div>
                             </div>
-                        </div>
-                        <div className="col-sm-4">
-                            <div className="label">Date of birth</div>
-                            <div className="value">21 May 1986</div>
-                        </div>
-                        <div className="col-sm-4">
-                            <div className="label">Living together</div>
-                            <div className="value">Yes</div>
-                        </div>
-                    </div>
-
-                    <div className="row">
-                        <div className="col-sm-4">
-                            <div className="label">UN ID</div>
-                            <div className="value">453ds4a56w4d8</div>
                         </div>
                     </div>
                 </div>
@@ -265,6 +261,7 @@ let ViewFamily = (canSeeDemographicInformation) => {
 
 ViewFamily = connect(
     state => ({
+        patient: state.patient.patient,
         canSeeDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[READ],
     }),
     {}
@@ -310,7 +307,6 @@ class EditPersonal extends React.Component {
     }
 
     handleSubmit(form) {
-        console.log(form)
         this.props.updatePatient(form).then(() => {
             this.props.history.push(this.props.location.pathname.replace("/edit", ""))
         })
@@ -378,28 +374,44 @@ EditPersonal = connect(
     }
 )(EditPersonal)
 
-let EditFamily = ({ location, canEditDemographicInformation }) => {
-    return canEditDemographicInformation ? (
-        <div>
-            <form>
-                <FamilyForm />
-                <div className="section">
-                    <div className="row buttons">
-                        <div className="col-sm-4">
-                            <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-block">
-                                Close
-                            </Link>
-                        </div>
-                        <div className="col-sm-4">
-                            <button type="submit" className="btn btn-primary btn-block">
-                                Save
-                            </button>
+
+class EditFamily extends React.Component {
+    constructor(props) {
+        super(props)
+
+        this.handleSubmit = this.handleSubmit.bind(this)
+    }
+
+    handleSubmit(form) {
+        this.props.updatePatient(form).then(() => {
+            this.props.history.push(this.props.location.pathname.replace("/edit", ""))
+        })
+    }
+
+    render() {
+        let { location, updating, handleSubmit } = this.props
+        return this.props.canEditDemographicInformation ? (
+            <div>
+                <form onSubmit={handleSubmit(this.handleSubmit)}>
+                    <FamilyForm />
+                    <div className="section">
+                        <div className="row buttons">
+                            <div className="col-sm-4">
+                                <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-block">
+                                    Close
+                                </Link>
+                            </div>
+                            <div className="col-sm-4">
+                                <button type="submit" className="btn btn-primary btn-block" disabled={updating}>
+                                    {updating ? "Saving..." : "Save"}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </form>
-        </div>
-    ) : (null)
+                </form>
+            </div>
+        ) : (null)
+    }
 }
 
 EditFamily = reduxForm({
@@ -408,9 +420,13 @@ EditFamily = reduxForm({
 
 EditFamily = connect(
     state => ({
+        initialValues: state.patient.patient,
+        updating: state.patient.updating,
         canEditDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[UPDATE],
     }),
-    {}
+    {
+        updatePatient
+    }
 )(EditFamily)
 
 

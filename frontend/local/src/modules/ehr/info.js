@@ -1,7 +1,12 @@
 import { load as loadCode } from "shared/modules/codes"
 
 export default dispatch => {
-    return Promise.all([dispatch(loadCode("countries"))]).then(([countries]) => [
+    return Promise.all([
+        dispatch(loadCode("countries")),
+        dispatch(loadCode("babyFood")),
+        dispatch(loadCode("childCommunication")),
+        dispatch(loadCode("deliveryType"))
+    ]).then(([countries, babyFoods, communicationTypes, deliveryTypes]) => [
         /* Chronic diseases (array) */
         {
             type: "array",
@@ -196,6 +201,19 @@ export default dispatch => {
         },
         // ])
 
+        // Number of people living together
+        {
+            type: "integer",
+            ehrPath: "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0100]",
+            formPath: "peopleLivingTogether"
+        },
+        // Number of people in the family
+        {
+            type: "integer",
+            ehrPath: "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0108]",
+            formPath: "peopleInFamily"
+        },
+
         // Habits and conditions
 
         // Are you smoking
@@ -306,10 +324,10 @@ export default dispatch => {
 
         // // /* BABY SCREENING */
 
-        // Delivery type ( // @TODO code)
+        // Delivery type
         {
             type: "code",
-            codes: [],
+            codes: deliveryTypes,
             ehrPath: "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0074]/items[at0075]",
             formPath: "deliveryType"
         },
@@ -351,10 +369,10 @@ export default dispatch => {
             ehrPath: "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0087]/items[at0082]",
             formPath: "breastfeedingDuration"
         },
-        // What does baby eat or drink ( // @TODO code)
+        // What does baby eat or drink
         {
             type: "code",
-            codes: [],
+            codes: babyFoods,
             ehrPath: "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0083]",
             formPath: "babyEatsAndDrinks"
         },
@@ -373,7 +391,7 @@ export default dispatch => {
         },
         // Describe bowl movement
         {
-            type: "integer",
+            type: "value",
             ehrPath: "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0086]",
             formPath: "babyBowelMovementsComment"
         },

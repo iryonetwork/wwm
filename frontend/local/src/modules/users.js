@@ -67,7 +67,7 @@ export const load = id => (dispatch, getState) => {
             return data
         })
         .catch(ex => {
-            dispatch(open("Failed to fetch user data :: " + ex.message, COLOR_DANGER))
+            dispatch(open("Failed to fetch user data :: " + ex.message, "", COLOR_DANGER))
             dispatch({ type: FAILED, id })
         })
 }
