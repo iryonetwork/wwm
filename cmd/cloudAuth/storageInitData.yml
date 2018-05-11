@@ -28,16 +28,12 @@ roles:
   - id: 99aca094-fb08-4734-a0df-e50e66fa5531
     name: Doctor
   - id: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7
-    name: Pharmacist
+    name: Pharmacy
 rules:
-  - id: f9820b5b-ad79-4c1e-9d7b-2f801c2c39be
-    subject: 338fae76-9859-4803-8441-c5c441319cfd # everyone role
-    resource: /auth/login
-    action: 2
-  - id: 7e2e876d-cb2a-4224-91ef-be38a2a8e080
-    subject: 338fae76-9859-4803-8441-c5c441319cfd # everyone role
-    resource: /api/auth/login
-    action: 3
+  - id: 9e8d6715-8b14-4d44-9009-a8fad111d05b
+    subject: 3720198b-74ed-40de-a45e-8756f22e67d2 # superadmin role
+    resource: '*'
+    action: 15
   - id: a0700c93-bea3-454e-bbe8-1dbf8e698b75
     subject: 338fae76-9859-4803-8441-c5c441319cfd # everyone role
     resource: /api/auth/validate
@@ -45,43 +41,278 @@ rules:
   - id: f736f0b6-0ed5-4f4d-bbb9-2dba1e73aa32
     subject: 338fae76-9859-4803-8441-c5c441319cfd # everyone role
     resource: /api/auth/users/me*
-    action: 23
+    action: 15
   - id: b1ffd817-4de0-4415-ab17-8d6b90d46a30
     subject: 338fae76-9859-4803-8441-c5c441319cfd # everyone role
-    resource: /api/auth/users{self}
-    action: 23
+    resource: /api/auth/users/{self}*
+    action: 15
   - id: 7c8e58a4-f50b-4883-b59a-f426ebc1800c
     subject: 338fae76-9859-4803-8441-c5c441319cfd # everyone role
     resource: /api/auth/*
     action: 1
-  - id: 9e8d6715-8b14-4d44-9009-a8fad111d05b
-    subject: 3720198b-74ed-40de-a45e-8756f22e67d2 # superadmin role (hardcoded id)
-    resource: '*'
-    action: 23
-  - id: 074c587e-2791-4ee8-a9f0-29dae3d509ff
-    subject: 3720198b-74ed-40de-a45e-8756f22e67d2 # superadmin role (hardcoded id)
-    resource: /frontend/dashboard/*
-    action: 1
-  - id: 060716ee-0151-49e8-92af-098974512c52
-    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
-    resource: '*'
-    action: 7
-  - id: fd7eb345-0500-4122-bafe-2e0af32a61df
-    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
-    resource: /frontend/dashboard/superadmin
-    action: 1
-    deny: true
-  - id: ba20b768-f223-41ba-9b46-7a5d061f4875
-    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
-    resource: /frontend/dashboard/admin
-    action: 1
-  - id: 498c9084-4a1b-4284-81b4-3e2267334e51
-    subject: 338fae76-9859-4803-8441-c5c441319cfd # everyone role (hardcoded id)
-    resource: /frontend/dashboard/self
-    action: 1
   - id: b4657985-8b74-4485-b84c-e1059a8904a0
     subject: 338fae76-9859-4803-8441-c5c441319cfd # everyone role (hardcoded id)
     resource: '/api/discovery/codes*'
+    action: 1
+  - id: 76ac1177-0f7d-4491-81a2-62ae33b5da76
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: /auth/login
+    action: 2
+  - id: 2fed3b6b-bcdf-4d18-bbff-d113041e3104
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: /api/auth/validate
+    action: 3
+  - id: ef294a1c-f070-4b4d-ad59-d5c3343809b3
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: /api/auth/*
+    action: 15
+  - id: 37da0a55-4f9c-4d3e-8ca8-c0159bb7e14a
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: '/api/discovery*'
+    action: 15
+  - id: 7e189310-d6a4-4034-8b5e-41c63a4996f1
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: '/api/waitlist*'
+    action: 15
+  - id: 172afd1e-8243-4846-9650-a0d0d4efdb60
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: '/api/storage*'
+    action: 15
+  - id: d8ff1782-afaa-4066-9a49-c26a29f71acd
+    subject: a422f7f5-291b-4454-ae61-3d98c6091c3e # basic member role
+    resource: /auth/login
+    action: 2
+  - id: afee1c49-4ce8-4089-982a-187f541f0bca
+    subject: a422f7f5-291b-4454-ae61-3d98c6091c3e # basic member role
+    resource: /api/auth/validate
+    action: 3
+  - id: 99dcd9ab-e391-4753-b0b8-31b7aede0343
+    subject: a422f7f5-291b-4454-ae61-3d98c6091c3e # basic member role
+    resource: /api/auth/users/me*
+    action: 15
+  - id: 5476f3c6-bbb7-4665-9eda-26a509953d62
+    subject: a422f7f5-291b-4454-ae61-3d98c6091c3e # basic member role
+    resource: /api/auth/users/{self}*
+    action: 15
+  - id: f9a77985-c394-4d74-b4c0-7b5cba35e4fd
+    subject: a422f7f5-291b-4454-ae61-3d98c6091c3e # basic member role
+    resource: /api/auth/*
+    action: 1
+  - id: 4bfe09cd-cc01-4949-a59e-efe5bc8f338b
+    subject: a422f7f5-291b-4454-ae61-3d98c6091c3e # basic member role
+    resource: '/api/discovery*'
+    action: 15
+  - id: 2ce11551-1873-4b74-a37a-4db7f9cd94a7
+    subject: a422f7f5-291b-4454-ae61-3d98c6091c3e # basic member role
+    resource: '/api/waitlist*'
+    action: 15
+  - id: d1c6dab8-c88d-4f52-acbd-002228f52000
+    subject: a422f7f5-291b-4454-ae61-3d98c6091c3e # basic member role
+    resource: '/api/storage*'
+    action: 15
+  - id: 932152c0-499c-45a4-a5af-4251b4c1d2e1
+    subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
+    resource: /auth/login
+    action: 2
+  - id: bcf7fa24-a0b1-42aa-9f1a-8ecd1906e272
+    subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
+    resource: /api/auth/validate
+    action: 3
+  - id: 407effc1-1956-4d00-82fc-3def5d849e12
+    subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
+    resource: /api/auth/users/me*
+    action: 15
+  - id: 4184221c-b2f5-43d2-95cd-62cedda8cb19
+    subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
+    resource: /api/auth/users/{self}*
+    action: 15
+  - id: b7d2e731-07a1-4b29-8c47-91e06ff2ec89
+    subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
+    resource: /api/auth/*
+    action: 1
+  - id: 5b245767-a6a3-4e69-857f-6cc59734f993
+    subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
+    resource: '/api/discovery*'
+    action: 15
+  - id: 125e3082-1297-4dd7-aeba-6cc293f8eca6
+    subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
+    resource: '/api/waitlist*'
+    action: 15
+  - id: 35a0c640-0b56-4718-a939-7555bbe9e4f0
+    subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
+    resource: '/api/storage*'
+    action: 15
+  - id: a483d56f-cb22-4391-ab3b-e2f1573bad2b
+    subject: 99aca094-fb08-4734-a0df-e50e66fa5531 # doctor role
+    resource: /auth/login
+    action: 2
+  - id: fa4714ba-8dcd-4845-a84a-91552a64a1a8
+    subject: 99aca094-fb08-4734-a0df-e50e66fa5531 # doctor role
+    resource: /api/auth/validate
+    action: 3
+  - id: ad0196c4-31d7-4ee3-b374-abce207c2a55
+    subject: 99aca094-fb08-4734-a0df-e50e66fa5531 # doctor role
+    resource: /api/auth/users/me*
+    action: 15
+  - id: 9ce5095a-4f1c-436e-bbb2-2fcf6d66301b
+    subject: 99aca094-fb08-4734-a0df-e50e66fa5531 # doctor role
+    resource: /api/auth/users/{self}*
+    action: 15
+  - id: 26168be1-9099-4475-bf74-b80eb265ea12
+    subject: 99aca094-fb08-4734-a0df-e50e66fa5531 # doctor role
+    resource: /api/auth/*
+    action: 1
+  - id: 567c0585-ad9e-45fb-abdf-8b8671657732
+    subject: 99aca094-fb08-4734-a0df-e50e66fa5531 # doctor role
+    resource: '/api/discovery*'
+    action: 15
+  - id: a3494b08-7b94-4ee3-b8df-fc3f1f0adf84
+    subject: 99aca094-fb08-4734-a0df-e50e66fa5531 # doctor role
+    resource: '/api/waitlist*'
+    action: 15
+  - id: cf4293ff-ce63-40bc-a96d-bbe7e6377544
+    subject: 99aca094-fb08-4734-a0df-e50e66fa5531 # doctor role
+    resource: '/api/storage*'
+    action: 15
+  - id: dd0a0fec-1bcc-4962-8482-29ac6b0e16a4
+    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
+    resource: /auth/login
+    action: 2
+  - id: 1eda8ba5-d1cf-4be7-ac42-d4e22b7826fe
+    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
+    resource: /api/auth/validate
+    action: 3
+  - id: fcf798af-b24b-4c71-99fe-2a2a63803350
+    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
+    resource: /api/auth/users/me*
+    action: 15
+  - id: e18d6ee0-283c-49ba-af99-6503b3a96369
+    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
+    resource: /api/auth/users/{self}*
+    action: 15
+  - id: 4d3b905a-6ca3-4f63-9b1e-15a06dd97a4a
+    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
+    resource: /api/auth/*
+    action: 15
+  - id: c15a4dfe-c212-4e3d-8d48-e9ec106cf563
+    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
+    resource: '/api/discovery*'
+    action: 15
+  - id: 70ac50b6-ee75-4795-a158-44e2d129ece0
+    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
+    resource: '/api/waitlist*'
+    action: 15
+  - id: 0f68ac98-03bf-4b1b-87f5-b26701a6ce98
+    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
+    resource: '/api/storage*'
+    action: 15
+  - id: 6899ba67-2009-4fff-9940-788890b4baa8
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: /api/auth/users/me*
+    action: 15
+  - id: 5dc6008d-3a94-44f8-b9da-67c39a2d511f
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: /api/auth/users/{self}*
+    action: 15
+  - id: 9ba007c6-2475-4a3d-9a7f-c80716045904
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: /api/auth/*
+    action: 15
+  - id: 4bc1274c-f5d3-43a3-bba4-a2e645183c0e
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: '/api/discovery*'
+    action: 15
+  - id: ef5cbefc-b4ca-498d-b50f-22f56fe80c29
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: '/api/waitlist*'
+    action: 15
+  - id: ef31558a-9722-4984-bbe2-003393f19539
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: '/api/storage*'
+    action: 15
+  - id: ba20b768-f215-41ba-9b46-7a5d061f4875
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: /frontend/dashboard/admin
+    action: 15
+  - id: 498c9084-4a1b-4284-81b4-3e2267334e51
+    subject: 338fae76-9859-4803-8441-c5c441319cfd # everyone role
+    resource: /frontend/dashboard/self
+    action: 15
+  - id: 675482bb-4bff-486f-ab1e-6e4baee3b590
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: /frontend/patientID*
+    action: 15
+  - id: 1c7b4673-c48d-40c5-bfb3-8daaa0ed92fe
+    subject: 99aca094-fb08-4734-a0df-e50e66fa5531 # doctor role
+    resource: /frontend/patientID*
+    action: 15
+  - id: 1075e80a-7bd5-4e1c-be8c-e442453e9740
+    subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
+    resource: /frontend/patientID*
+    action: 15
+  - id: b1097064-6557-4276-8d1c-f021d1f1d33a
+    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
+    resource: /frontend/patientID/id
+    action: 1
+  - id: 4aeda13d-1b15-40bf-b4ef-3b38488b100b
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: /frontend/testsAndHistory*
+    action: 1
+  - id: b21814bd-3fa1-4b2f-aa05-4224358a286b
+    subject: 99aca094-fb08-4734-a0df-e50e66fa5531 # doctor role
+    resource: /frontend/testsAndHistory*
+    action: 15
+  - id: 97191740-42d5-4e43-90e4-26ea1b221d2b
+    subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
+    resource: /frontend/testsAndHistory*
+    action: 15
+  - id: a199594c-bed4-4a36-aa58-22f41bcf1bcf
+    subject: 99aca094-fb08-4734-a0df-e50e66fa5531 # doctor role
+    resource: /frontend/examination*
+    action: 15
+  - id: f28e8552-308d-4e1d-9071-3878e5c73258
+    subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
+    resource: /frontend/examination*
+    action: 1
+  - id: a8b9a675-420f-462e-8cab-40a289b95019
+    subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
+    resource: /frontend/examination/medication
+    action: 3
+  - id: 5b1349d3-09e3-4ece-9518-2c1e51fec4ca
+    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
+    resource: /frontend/examination/medication
+    action: 3
+  - id: 10b5cede-3e54-4af0-97ee-fe8f13f8348c
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: /frontend/role/admin
+    action: 1
+  - id: b9d41a99-daf9-4612-ae14-cff242bcc000
+    subject: 99aca094-fb08-4734-a0df-e50e66fa5531 # doctor role
+    resource: /frontend/role/doctor
+    action: 1
+  - id: 15e4e977-893d-4a94-a7c1-e0f33b71008d
+    subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
+    resource: /frontend/role/nurse
+    action: 1
+  - id: 4aa893ec-8902-49b1-a66a-cece015e24d7
+    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
+    resource: /frontend/role/pharmacy
+    action: 1
+  - id: 731dd83f-06ca-43b6-b045-bb18de4a33f8
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: /frontend/waitlist
+    action: 15
+  - id: 82423f20-0864-49a9-a776-ff42b6982807
+    subject: 99aca094-fb08-4734-a0df-e50e66fa5531 # doctor role
+    resource: /frontend/waitlist
+    action: 15
+  - id: 15e4e977-893d-4a94-a7c1-e0f33b71008d
+    subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
+    resource: /frontend/waitlist
+    action: 15
+  - id: 4aa893ec-8902-49b1-a66a-cece015e24d7
+    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
+    resource: /frontend/waitlist
     action: 1
 users:
   - id: 518dedd8-69fa-4ebd-b87c-70bbaa83cfe6
