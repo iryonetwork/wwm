@@ -61,6 +61,7 @@ class ClinicsList extends React.Component {
             props.canSee === undefined ||
             props.validationsLoading
         this.setState({ loading: loading })
+        console.log("determine state")
 
         if (!loading) {
             this.setState({

@@ -4,6 +4,7 @@ import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
 import _ from "lodash"
 
+import { ADVANCED_ROLE_IDS } from "shared/modules/config"
 import { loadRoles } from "../../modules/roles"
 import { loadOrganizations, clearOrganizations, deleteUserFromOrganization } from "../../modules/organizations"
 import { makeGetUserOrganizationIDs } from "../../selectors/userRolesSelectors"
@@ -190,7 +191,7 @@ class OrganizationsList extends React.Component {
                                             {props.canEdit && userOrganization.edit ? (
                                                 <select className="form-control form-control-sm" value={userOrganization.roleID} onChange={this.editRoleID(i)}>
                                                     <option value="">Select role</option>
-                                                    {_.map(props.roles, role => (
+                                                    {_.map(_.pickBy(props.roles, role => !_.includes(props.advancedRoleIDs, role.id)), role => (
                                                         <option key={role.id} value={role.id}>
                                                             {role.name}
                                                         </option>
@@ -272,11 +273,13 @@ const makeMapStateToProps = () => {
         if (!selectedOrganizationID) {
             selectedOrganizationID = ownProps.match.params.organizationID
         }
+
         return {
             userID: userID,
             selectedOrganizationID: selectedOrganizationID,
             organizations: state.organizations.allLoaded ? state.organizations.organizations : undefined,
             organizationsLoading: state.organizations.loading,
+            advancedRoleIDs: state.config[ADVANCED_ROLE_IDS],
             roles: state.roles.allLoaded ? state.roles.roles : undefined,
             rolesLoading: state.roles.loading,
             userRoles: state.userRoles.userUserRoles ? (state.userRoles.userUserRoles[userID] ? state.userRoles.userUserRoles[userID] : undefined) : undefined,

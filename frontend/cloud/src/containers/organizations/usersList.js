@@ -4,6 +4,7 @@ import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
 import _ from "lodash"
 
+import { ADVANCED_ROLE_IDS } from "shared/modules/config"
 import { loadUsers } from "../../modules/users"
 import { loadRoles } from "../../modules/roles"
 import { loadOrganization, deleteUserFromOrganization } from "../../modules/organizations"
@@ -170,7 +171,7 @@ class UsersList extends React.Component {
                                             <td colSpan="2">
                                                 <select className="form-control form-control-sm" value={user.roleID} onChange={this.editRoleID(i)}>
                                                     <option>Select role</option>
-                                                    {_.map(props.roles, role => (
+                                                    {_.map(_.pickBy(props.roles, role => !_.includes(props.advancedRoleIDs, role.id)), role => (
                                                         <option key={role.id} value={role.id}>
                                                             {role.name}
                                                         </option>
@@ -273,6 +274,7 @@ const makeMapStateToProps = () => {
             userRolesLoading: state.userRoles.loading,
             users: state.users.allLoaded ? state.users.users : undefined,
             usersLoading: state.users.loading,
+            advancedRoleIDs: state.config[ADVANCED_ROLE_IDS],
             roles: state.roles.allLoaded ? state.roles.roles : undefined,
             rolesLoading: state.roles.loading,
             organizationUserIDs: getOrganizationUserIDs(state, { organizationID: organizationID }),

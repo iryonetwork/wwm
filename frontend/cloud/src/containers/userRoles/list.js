@@ -10,7 +10,7 @@ import { loadLocations } from "../../modules/locations"
 import { loadOrganizations } from "../../modules/organizations"
 import { loadClinics } from "../../modules/clinics"
 import { loadAllUserRoles, saveUserRole, deleteUserRole } from "../../modules/userRoles"
-import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
+import { SUPERADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { getName } from "../../utils/user"
 
 class UserRoles extends React.Component {
@@ -415,8 +415,8 @@ const mapStateToProps = (state, ownProps) => ({
     organizationsLoading: state.organizations.loading,
     clinics: state.clinics.allLoaded ? state.clinics.clinics : undefined,
     clinicsLoading: state.clinics.loading,
-    canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
-    canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+    canEdit: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
+    canSee: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
     validationsLoading: state.validations.loading,
     forbidden:
         state.userRoles.forbidden ||

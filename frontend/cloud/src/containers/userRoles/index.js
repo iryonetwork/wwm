@@ -4,7 +4,7 @@ import { bindActionCreators } from "redux"
 import { withRouter } from "react-router-dom"
 
 import UserRoles from "./list"
-import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
+import { SUPERADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 
 class UserRolesIndex extends React.Component {
     constructor(props) {
@@ -58,8 +58,8 @@ class UserRolesIndex extends React.Component {
 }
 
 const mapStateToProps = state => ({
-    canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
-    canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+    canEdit: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
+    canSee: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
     validationsLoading: state.validations.loading,
     forbidden: false
 })

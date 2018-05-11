@@ -7,11 +7,12 @@ import _ from "lodash"
 import { loadUsers } from "../../modules/users"
 import { loadRules, saveRule, deleteRule } from "../../modules/rules"
 import { loadRoles } from "../../modules/roles"
-import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
+import { SUPERADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 
 const Read = 1
 const Write = 2
 const Delete = 4
+const Update = 16
 
 class Rules extends React.Component {
     constructor(props) {
@@ -207,6 +208,9 @@ class Rules extends React.Component {
                             <th scope="col" className="text-center">
                                 Delete
                             </th>
+                            <th scope="col" className="text-center">
+                                Update
+                            </th>
                             <th scope="col" />
                         </tr>
                     </thead>
@@ -292,6 +296,14 @@ class Rules extends React.Component {
                                               checked={(rule.action & Delete) === Delete}
                                           />
                                       </td>
+                                      <td className="text-center">
+                                          <input
+                                              type="checkbox"
+                                              disabled={!props.canEdit || !rule.edit}
+                                              onChange={this.editAction(i, Update)}
+                                              checked={(rule.action & Update) === Update}
+                                          />
+                                      </td>
                                       <td className="text-right">
                                           {props.canEdit ? (
                                               rule.edit ? (
@@ -341,8 +353,8 @@ const mapStateToProps = (state, ownProps) => {
         embedded: ownProps.rules ? true : false,
         allRules: state.rules.rules,
         subjectID: ownProps.subject,
-        canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
-        canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+        canEdit: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
+        canSee: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
         validationsLoading: state.validations.loading,
         forbidden: state.rules.forbidden
     }

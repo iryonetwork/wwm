@@ -4,7 +4,7 @@ import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
 
 import { loadRules } from "../../modules/rules"
-import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
+import { SUPERADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { open } from "shared/modules/alert"
 import Rules from "../rules"
 
@@ -67,8 +67,8 @@ const mapStateToProps = (state, ownProps) => {
         roleID: ownProps.match.params.id,
         rules: state.rules.subjects ? (state.rules.subjects[id] ? state.rules.subjects[id] : {}) : undefined,
         rulesLoading: state.rules.loading,
-        canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
-        canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+        canEdit: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
+        canSee: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
         validationsLoading: state.validations.loading,
         forbidden: state.roles.forbidden || state.rules.forbidden
     }

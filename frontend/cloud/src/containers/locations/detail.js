@@ -155,11 +155,11 @@ class LocationDetail extends React.Component {
                             placeholder="Location name"
                             required="true"
                         />
-                        {this.state.validationErrors["name"] ? (
+                        {props.canEdit ? (this.state.validationErrors["name"] ? (
                             <div className="invalid-feedback">{this.state.validationErrors["name"]}</div>
                         ) : (
                             <small className="form-text text-muted">Required</small>
-                        )}
+                        )) : (null)}
                     </div>
                     <div className="form-group">
                         <label htmlFor="capacity">Capacity</label>

@@ -6,7 +6,7 @@ import map from "lodash/map"
 import _ from "lodash"
 
 import { loadRoles, addRole, deleteRole } from "../../modules/roles"
-import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
+import { SUPERADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { open, COLOR_DANGER } from "shared/modules/alert"
 import RoleDetail from "./detail"
 
@@ -157,8 +157,8 @@ const mapStateToProps = (state, ownProps) => {
         rolesLoading: state.roles.loading,
         withDetail: !ownProps.match.isExact,
         path: ownProps.location.pathname,
-        canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
-        canSee: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+        canEdit: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
+        canSee: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
         validationsLoading: state.validations.loading,
         forbidden: state.roles.forbidden
     }

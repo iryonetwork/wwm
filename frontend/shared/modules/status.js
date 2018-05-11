@@ -11,6 +11,7 @@ const initialState = {
 }
 
 export default (state = initialState, action) => {
+        console.log(action.type)
     switch (action.type) {
         case LOAD_STATUS:
             return {
@@ -35,6 +36,7 @@ export default (state = initialState, action) => {
 
 export const loadStatus = () => {
     return dispatch => {
+        console.log("loadStatus")
         dispatch({
             type: LOAD_STATUS
         })

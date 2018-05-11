@@ -4,6 +4,7 @@ import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
 import _ from "lodash"
 
+import { ADVANCED_ROLE_IDS } from "shared/modules/config"
 import { loadRoles } from "../../modules/roles"
 import { loadOrganizations } from "../../modules/organizations"
 import { loadLocations } from "../../modules/locations"
@@ -82,6 +83,7 @@ class ClinicsList extends React.Component {
             props.canEdit === undefined ||
             props.canSee === undefined ||
             props.validationsLoading
+        console.log("determine clinic list")
 
         let selectedClinicID = props.clinicID
         if (!selectedClinicID) {
@@ -199,7 +201,7 @@ class ClinicsList extends React.Component {
                                                 <td>
                                                     <select className="form-control form-control-sm" value={userClinic.roleID} onChange={this.editRoleID(i)}>
                                                         <option value="">Select role</option>
-                                                        {_.map(props.roles, role => (
+                                                        {_.map(_.pickBy(props.roles, role => !_.includes(props.advancedRoleIDs, role.id)), role => (
                                                             <option key={role.id} value={role.id}>
                                                                 {role.name}
                                                             </option>
@@ -305,6 +307,7 @@ const makeMapStateToProps = () => {
             locationsLoading: state.locations.loading,
             roles: state.roles.allLoaded ? state.roles.roles : undefined,
             rolesLoading: state.roles.loading,
+            advancedRoleIDs: state.config[ADVANCED_ROLE_IDS],
             userRoles: state.userRoles.userUserRoles ? (state.userRoles.userUserRoles[userID] ? state.userRoles.userUserRoles[userID] : undefined) : undefined,
             userRolesLoading: state.userRoles.loading,
             userClinicIDs: getUserClinicIDs(state, { userID: userID }),

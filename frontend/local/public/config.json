@@ -5,5 +5,10 @@
     "locationId": "2d04b22e-1cc3-46b4-96dd-2bee5bad9ffa",
     "babyMaxAge": 1,
     "childMaxAge": 7,
-    "waitlistId": "22afd921-0630-49f4-89a8-d1ad7639ee83"
+    "waitlistId": "22afd921-0630-49f4-89a8-d1ad7639ee83",
+    "advancedRoleIDs": [
+        "338fae76-9859-4803-8441-c5c441319cfd",
+        "d91ff466-125b-4250-9dde-bbc282489430",
+        "3720198b-74ed-40de-a45e-8756f22e67d2"
+    ]
 }

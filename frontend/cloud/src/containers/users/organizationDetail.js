@@ -4,11 +4,12 @@ import { connect } from "react-redux"
 import { Link, withRouter } from "react-router-dom"
 import _ from "lodash"
 
+import { ADVANCED_ROLE_IDS } from "shared/modules/config"
 import { loadRoles } from "../../modules/roles"
 import { makeGetOrganizationUserUserRoles } from "../../selectors/userRolesSelectors"
 import { deleteUserFromOrganization } from "../../modules/organizations"
 import { loadUserUserRoles, saveUserRole, deleteUserRole } from "../../modules/userRoles"
-import { ADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
+import { SUPERADMIN_RIGHTS_RESOURCE, ADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { open } from "shared/modules/alert"
 
 class OrganizationDetail extends React.Component {
@@ -132,7 +133,7 @@ class OrganizationDetail extends React.Component {
                                             <option value="">Select role</option>
                                             {_.map(
                                                 _.difference(
-                                                    _.map(_.values(props.roles), role => role.id),
+                                                    _.map(_.values(_.pickBy(props.roles, role => !_.includes(props.advancedRoleIDs, role.id))), role => role.id),
                                                     _.map(_.values(props.organizationUserRoles), userRole => userRole.roleID)
                                                 ),
                                                 roleID => (
@@ -142,7 +143,7 @@ class OrganizationDetail extends React.Component {
                                                 )
                                             )}
                                         </select>
-                                    ) : props.canEdit ? (
+                                    ) : props.canAccessRoles ? (
                                         <Link to={`/roles/${userRole.roleID}`}>{props.roles[userRole.roleID].name}</Link>
                                     ) : (
                                         props.roles[userRole.roleID].name
@@ -212,6 +213,7 @@ const makeMapStateToProps = () => {
         return {
             userID: userID,
             organizationID: organizationID,
+            advancedRoleIDs: state.config[ADVANCED_ROLE_IDS],
             roles: state.roles.allLoaded ? state.roles.roles : undefined,
             rolesLoading: state.roles.loading,
             userRoles: state.userRoles.userUserRoles ? (state.userRoles.userUserRoles[userID] ? state.userRoles.userUserRoles[userID] : undefined) : undefined,
@@ -219,6 +221,7 @@ const makeMapStateToProps = () => {
             organizationUserRoles: getOrganizationUserUserRoles(state, { userID: userID, organizationID: organizationID }),
             canSee: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
             canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,
+            canAccessRoles: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
             validationsLoading: state.validations.loading,
             forbidden: state.userRoles.forbidden || state.users.forbidden || state.roles.forbidden
         }

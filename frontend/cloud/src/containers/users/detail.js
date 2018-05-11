@@ -7,7 +7,7 @@ import _ from "lodash"
 
 import { loadUser, saveUser } from "../../modules/users"
 import { CATEGORY_COUNTRIES, CATEGORY_LANGUAGES, CATEGORY_LICENSES, loadCodes } from "../../modules/codes"
-import { SELF_RIGHTS_RESOURCE, SUPERADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
+import { ADMIN_RIGHTS_RESOURCE, SUPERADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { open, close, COLOR_DANGER } from "shared/modules/alert"
 import OrganizationsList from "./organizationsList"
 import ClinicsList from "./clinicsList"
@@ -82,6 +82,7 @@ class UserDetail extends React.Component {
             !props.licenses ||
             props.codesLoading
         this.setState({ loading: loading })
+        console.log("determine state user")
 
         if (props.user) {
             let personalData = _.clone(props.user.personalData) || {}
@@ -559,7 +560,7 @@ class UserDetail extends React.Component {
                                     <tbody>
                                         {_.map(this.state.personalData.languages ? this.state.personalData.languages : [], (language, i) => (
                                             <tr key={i}>
-                                                <td class="col-6">
+                                                <td className="col-6">
                                                     {language.edit ? (
                                                         <select
                                                             className="form-control form-control-sm"
@@ -610,7 +611,7 @@ class UserDetail extends React.Component {
                                     <tbody>
                                         {_.map(this.state.personalData.licenses ? this.state.personalData.licenses : [], (license, i) => (
                                             <tr key={i}>
-                                                <td class="col-6">
+                                                <td className="col-6">
                                                     {license.edit ? (
                                                         <select
                                                             className="form-control form-control-sm"
@@ -780,8 +781,10 @@ const mapStateToProps = (state, ownProps) => {
         licenses: state.codes.codes[CATEGORY_LICENSES],
         codesLoading: state.codes.loading,
         isHome: ownProps.home,
-        canSee: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
-        canEdit: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
+        canSee:
+            state.authentication.token.sub === id || (state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined),
+        canEdit:
+            state.authentication.token.sub === id || (state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined),
         canEditPassword:
             state.authentication.token.sub === id || (state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined),
         validationsLoading: state.validations.loading,

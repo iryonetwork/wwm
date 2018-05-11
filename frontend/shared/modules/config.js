@@ -13,6 +13,7 @@ export const LOCATION_ID = "locationId"
 export const BABY_MAX_AGE = "babyMaxAge"
 export const CHILD_MAX_AGE = "childMaxAge"
 export const DEFAULT_WAITLIST_ID = "waitlistId"
+export const ADVANCED_ROLE_IDS = "advancedRoleIDs"
 
 const initialState = {
     loading: true
