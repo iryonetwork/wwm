@@ -227,7 +227,7 @@ export const get = (waitlistID, itemID) => (dispatch, getState) => {
 }
 
 export const update = (listID, data) => dispatch => {
-    const url = `${read(BASE_URL)}/waitlist/${listID}/${data.id}`
+    const url = `${dispatch(read(BASE_URL))}/waitlist/${listID}/${data.id}`
     dispatch({
         type: UPDATE_ITEM,
         itemID: data.id
