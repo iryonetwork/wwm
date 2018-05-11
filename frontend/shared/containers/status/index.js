@@ -9,14 +9,20 @@ import "./style.css"
 
 class Status extends React.Component {
     constructor(props) {
-        super(props)
-        props.loadStatus()
-        this.state = { loading: true }
+        super(props);
+        props.loadStatus();
+        this.state = { loading: true };
     }
 
     componentDidMount() {
-        clearInterval(this.interval)
-        this.interval = setInterval(this.props.loadStatus, 5000);
+        let interval = setInterval(this.props.loadStatus, 5000);
+        this.setState({
+            interval: interval
+        });
+    }
+
+    componentWillUnmount() {
+       clearInterval(this.state.interval);
     }
 
     toggleStatusPopover = () => {
