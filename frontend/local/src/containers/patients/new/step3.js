@@ -31,7 +31,7 @@ class Step3 extends Component {
     }
 
     render() {
-        const { handleSubmit, reset, previousPage, dateOfBirth, codesLoading, getCodes } = this.props
+        const { handleSubmit, reset, previousPage, dateOfBirth, codesLoading, getCodes, creating } = this.props
         return (
             <form onSubmit={handleSubmit} className="patient-form">
                 <div className="modal-body">
@@ -40,11 +40,11 @@ class Step3 extends Component {
                         babyFoods={getCodes("babyFood")}
                         communicationTypes={getCodes("childCommunication")}
                         deliveryTypes={getCodes("deliveryType")}
-                        codesLoading={codesLoading}
+                        codesLoading={codesLoading && !creating}
                     />
                 </div>
 
-                <Footer reset={reset} previousPage={previousPage} />
+                <Footer reset={reset} previousPage={previousPage} creating={creating} />
             </form>
         )
     }
@@ -467,7 +467,8 @@ const selector = formValueSelector("newPatient")
 Step3 = connect(
     state => ({
         dateOfBirth: selector(state, "dateOfBirth"),
-        codesLoading: state.codes.loading
+        codesLoading: state.codes.loading,
+        creating: state.patient.creating
     }),
     {
         getCodes: getCodesAsOptions,
