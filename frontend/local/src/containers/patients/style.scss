@@ -2,26 +2,34 @@
 
 .patients {
     .search {
-        width: 100%;
         margin: 35px 0;
-        padding: 8px 45px;
-        border: 0;
-        border-bottom: 1px solid $gray-300;
-        background-repeat: no-repeat;
-        background-position: 5px 3px;
-        background-image: url("~shared/icons/search.svg");
+        width: 100%;
 
-        transition: border-color 0.1s;
-        transition-timing-function: ease-in-out;
+        input {
+            padding: 8px 45px;
+            background-repeat: no-repeat;
+            background-position: 5px 3px;
+            background-image: url("~shared/icons/search.svg");
 
-        &:focus {
-            caret-color: $primary;
-            outline: none;
-            border-bottom-color: $primary;
+            transition: border-color 0.1s;
+            transition-timing-function: ease-in-out;
+            border-right: 0;
+            border-bottom: 1px solid $gray-300;
+
+            &:focus {
+                caret-color: $primary;
+                outline: none;
+                border-bottom-color: $primary;
+            }
+
+            &::placeholder {
+                color: $input-placeholder-color;
+            }
         }
 
-        &::placeholder {
-            color: $input-placeholder-color;
+        button {
+             border-left: 0px;
+             border: 1px solid $gray-300;
         }
     }
 }

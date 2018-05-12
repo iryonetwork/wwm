@@ -35,7 +35,19 @@ const ListRow = ({ patient, canAddToWaitlist }) => {
 class PatientList extends React.Component {
     constructor(props) {
         super(props)
+        this.state = {
+            searchQuery: ""
+        }
         this.props.search("")
+    }
+
+    updateSearchQuery = e => {
+        this.setState({searchQuery: e.target.value})
+    }
+
+    search = e => {
+        e.preventDefault();
+        this.props.search(this.state.searchQuery);
     }
 
     render() {
@@ -54,7 +66,16 @@ class PatientList extends React.Component {
 
                 {this.props.canSeePatients ? (
                     <div>
-                        <input name="search" placeholder="Search" className="search" />
+                        <form onSubmit={this.search}>
+                            <div className="input-group search">
+                                <input name="search" placeholder="Search" className="form-control" value={this.state.searchQuery} onChange={this.updateSearchQuery} />
+                                <span className="input-group-append">
+                                    <button type="submit" className="btn btn-secondary">
+                                        Search
+                                    </button>
+                                </span>
+                            </div>
+                        </form>
                         {this.props.searching ? (
                             <Spinner />
                         ) : (
