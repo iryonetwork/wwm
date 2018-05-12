@@ -196,7 +196,7 @@ func (s *Storage) addClinic(clinic *models.Clinic) (*models.Clinic, error) {
 	}
 
 	if s.refreshRules {
-		go s.enforcer.LoadPolicy()
+		go s.loadPolicy()
 	}
 
 	return addedClinic, nil
@@ -280,7 +280,7 @@ func (s *Storage) UpdateClinic(clinic *models.Clinic) (*models.Clinic, error) {
 	}
 
 	if s.refreshRules {
-		go s.enforcer.LoadPolicy()
+		go s.loadPolicy()
 	}
 
 	return updatedClinic, nil
@@ -358,7 +358,7 @@ func (s *Storage) RemoveClinic(id string) error {
 	})
 
 	if err == nil && s.refreshRules {
-		go s.enforcer.LoadPolicy()
+		go s.loadPolicy()
 	}
 
 	return err

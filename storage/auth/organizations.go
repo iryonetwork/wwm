@@ -207,7 +207,7 @@ func (s *Storage) addOrganization(organization *models.Organization) (*models.Or
 	}
 
 	if s.refreshRules {
-		go s.enforcer.LoadPolicy()
+		go s.loadPolicy()
 	}
 
 	return addedOrganization, nil
@@ -267,7 +267,7 @@ func (s *Storage) UpdateOrganization(organization *models.Organization) (*models
 	}
 
 	if s.refreshRules {
-		go s.enforcer.LoadPolicy()
+		go s.loadPolicy()
 	}
 
 	return updatedOrganization, nil
@@ -383,7 +383,7 @@ func (s *Storage) RemoveOrganization(id string) error {
 	})
 
 	if err == nil && s.refreshRules {
-		go s.enforcer.LoadPolicy()
+		go s.loadPolicy()
 	}
 
 	return err

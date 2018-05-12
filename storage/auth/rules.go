@@ -140,7 +140,7 @@ func (s *Storage) addRule(rule *models.Rule) (*models.Rule, error) {
 
 	// refresh policy
 	if err == nil && s.refreshRules {
-		go s.enforcer.LoadPolicy()
+		go s.loadPolicy()
 	}
 
 	return rule, err
@@ -171,7 +171,7 @@ func (s *Storage) UpdateRule(rule *models.Rule) (*models.Rule, error) {
 
 	// refresh policy
 	if err == nil && s.refreshRules {
-		go s.enforcer.LoadPolicy()
+		go s.loadPolicy()
 	}
 
 	return rule, err
@@ -214,7 +214,7 @@ func (s *Storage) RemoveRule(id string) error {
 	})
 
 	if err == nil && s.refreshRules {
-		go s.enforcer.LoadPolicy()
+		go s.loadPolicy()
 	}
 
 	return err

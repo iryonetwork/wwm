@@ -215,7 +215,7 @@ func (s *Storage) addLocation(location *models.Location) (*models.Location, erro
 	}
 
 	if s.refreshRules {
-		go s.enforcer.LoadPolicy()
+		go s.loadPolicy()
 	}
 
 	return addedLocation, nil
@@ -273,7 +273,7 @@ func (s *Storage) UpdateLocation(location *models.Location) (*models.Location, e
 	}
 
 	if s.refreshRules {
-		go s.enforcer.LoadPolicy()
+		go s.loadPolicy()
 	}
 
 	return updatedLocation, nil
@@ -389,7 +389,7 @@ func (s *Storage) RemoveLocation(id string) error {
 	})
 
 	if err == nil && s.refreshRules {
-		go s.enforcer.LoadPolicy()
+		go s.loadPolicy()
 	}
 
 	return err

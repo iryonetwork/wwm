@@ -16,12 +16,13 @@ import (
 )
 
 type Storage struct {
-	db            *bolt.DB
-	enforcer      Enforcer
-	encryptionKey []byte
-	dbSync        *sync.RWMutex
-	refreshRules  bool
-	logger        zerolog.Logger
+	db             *bolt.DB
+	enforcer       Enforcer
+	encryptionKey  []byte
+	dbSync         *sync.RWMutex
+	refreshRules   bool
+	logger         zerolog.Logger
+	loadPolicyLock *sync.Mutex
 }
 
 type Enforcer interface {
@@ -137,11 +138,12 @@ func New(path string, key []byte, readOnly, refreshRules bool, logger zerolog.Lo
 	}
 
 	storage := &Storage{
-		db:            db,
-		encryptionKey: key,
-		dbSync:        &sync.RWMutex{},
-		refreshRules:  refreshRules,
-		logger:        logger,
+		db:             db,
+		encryptionKey:  key,
+		dbSync:         &sync.RWMutex{},
+		refreshRules:   refreshRules,
+		logger:         logger,
+		loadPolicyLock: &sync.Mutex{},
 	}
 
 	e, err := NewEnforcer(storage)
@@ -157,6 +159,12 @@ func New(path string, key []byte, readOnly, refreshRules bool, logger zerolog.Lo
 	}
 
 	return storage, nil
+}
+
+func (s *Storage) loadPolicy() {
+	s.loadPolicyLock.Lock()
+	s.enforcer.LoadPolicy()
+	s.loadPolicyLock.Unlock()
 }
 
 func (s *Storage) initializeRoles() error {

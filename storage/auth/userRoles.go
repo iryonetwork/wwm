@@ -504,7 +504,7 @@ func (s *Storage) addUserRole(userRole *models.UserRole) (*models.UserRole, erro
 	}
 
 	if s.refreshRules {
-		go s.enforcer.LoadPolicy()
+		go s.loadPolicy()
 	}
 
 	return addedUserRole, err
@@ -600,7 +600,7 @@ func (s *Storage) RemoveUserRole(id string) error {
 	})
 
 	if err == nil && s.refreshRules {
-		go s.enforcer.LoadPolicy()
+		go s.loadPolicy()
 	}
 
 	return err
