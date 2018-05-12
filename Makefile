@@ -66,6 +66,7 @@ buildFrontend/%:
 
 package: $(addprefix package/,$(COMMANDS)) localFrontend cloudFrontend
 
+package/cloudAuth: INCLUDE_FILES = cmd/cloudAuth/storageInitData.yml
 package/localFrontend: buildFrontend/local
 package/localFrontend: DOCKERFILE = frontend/Dockerfile
 package/localFrontend: INCLUDE_FILES = frontend/Caddyfile
