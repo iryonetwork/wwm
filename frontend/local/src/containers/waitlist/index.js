@@ -139,7 +139,7 @@ const Section = ({ list, title, waitlistID, canRemoveFromWaitlist, canSeePatient
                             </td>
                             {canSeeVitalSigns && (<VitalSigns signs={el.vital_signs || {}} />)}
                             {(canEditMainComplaint || canAddVitalSigns || canRemoveFromWaitlist) && (
-                                <Tools waitlistID={waitlistID} itemID={el.id} canEditMainComplaint={canEditMainComplaint} canAddVitalSigns={canAddVitalSigns} canRemoveFromWaitlist={canRemoveFromWaitlist} />
+                                <Tools waitlistID={waitlistID} itemID={el.id} canEditMainComplaint={canEditMainComplaint} canSeeVitalSigns={canSeeVitalSigns} canAddVitalSigns={canAddVitalSigns} canRemoveFromWaitlist={canRemoveFromWaitlist} />
                             )}
                         </tr>
                     ))}
@@ -149,13 +149,18 @@ const Section = ({ list, title, waitlistID, canRemoveFromWaitlist, canSeePatient
     ) : (null)
 }
 
-const Tools = ({ waitlistID, itemID, canEditMainComplaint, canAddVitalSigns, canRemoveFromWaitlist }) => (
+const Tools = ({ waitlistID, itemID, canEditMainComplaint, canSeeVitalSigns, canAddVitalSigns, canRemoveFromWaitlist }) => (
     <td className="tools">
         <UncontrolledDropdown>
             <DropdownToggle color="link">
                 <span className="meatballs" />
             </DropdownToggle>
             <DropdownMenu right>
+                {canSeeVitalSigns && (
+                    <DropdownItem>
+                        <Link to={`/waitlist/${waitlistID}/${itemID}/consultation`}>Consultation</Link>
+                    </DropdownItem>
+                )}
                 {canEditMainComplaint && (
                     <DropdownItem>
                         <Link to={`/waitlist/${waitlistID}/${itemID}/consultation/edit-complaint`}>Edit main complaint</Link>
