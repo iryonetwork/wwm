@@ -153,7 +153,7 @@ class PatientDetail extends React.Component {
                 </div>
                 <div className="container">
                     {this.props.canSeePatientId && (<Route exact path={match.url} render={() => <Redirect to={inConsultation ? baseURL + "consultation" : baseURL + "personal"} />} />)}
-                    {this.props.canSeePatientId  && (<Route path="/patients/:patientID" render={() => <Redirect to={baseURL + "consultation"} />} />)}
+                    {this.props.canSeePatientId  && (<Route path="/patients/:patientID" render={() => <Redirect to={baseURL + "personal"} />} />)}
                     {this.props.canSeeVitalSigns && (<Route path={match.path + "/consultation"} component={Consultation} />)}
                     {this.props.canSeeVitalSigns && (<Route path={match.path + "/data"} component={Data} />)}
                     {this.props.canSeeDemographicInformation && (<Route path={match.path + "/personal"} component={Personal} />)}

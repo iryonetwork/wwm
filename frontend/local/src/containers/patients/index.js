@@ -16,7 +16,7 @@ const ListRow = ({ patient, canAddToWaitlist }) => {
     return (
         <tr>
             <th scope="row">
-                <Patient data={p} />
+                <Link className="patientLink" to={`/patients/${patient.patientID}`}><Patient data={p} /></Link>
             </th>
             <td>{p.nationality}</td>
             <td>{id}</td>

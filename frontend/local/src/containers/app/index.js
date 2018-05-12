@@ -86,7 +86,7 @@ class App extends React.Component {
                         {this.props.canSeeWaitlist && (<Route exact path="/waitlist/:waitlistID" component={Waitlist} />)}
                     </div>
                    {this.props.canSeeWaitlist && (<Route path="/waitlist/:waitlistID/:itemID" component={WaitlistDetail} />)}
-                   {this.props.canSeeWaitlist && (<Route path="/patients/:patientID" component={WaitlistDetail} />)}
+                   {this.props.canSeePatients && (<Route path="/patients/:patientID" component={WaitlistDetail} />)}
                 </main>
             </React.Fragment>
         )

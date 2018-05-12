@@ -1,5 +1,13 @@
 @import "shared/styles/variables.scss";
 
+.patientLink {
+    color: $black;
+    &:hover {
+      text-decoration: none;
+      color: $grey5;
+    }
+ }
+
 .patients {
     .search {
         margin: 35px 0;
