@@ -366,7 +366,7 @@ class UserDetail extends React.Component {
         }
 
         this.props.saveUser(user).then(response => {
-            if (!user.id && response.id) {
+            if (!user.id && response && response.id) {
                 this.props.history.push(`/users/${response.id}`)
             }
         })

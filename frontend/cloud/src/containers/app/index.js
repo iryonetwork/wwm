@@ -33,10 +33,11 @@ class App extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
+        if (nextProps.location.pathname !== this.props.location.pathname) {
+            this.props.close()
+        }
+
         if (!this.props.configLoading) {
-            if (nextProps.location.pathname !== this.props.location.pathname) {
-                this.props.close()
-            }
             if ((nextProps.isAdmin === undefined || nextProps.isSuperadmin === undefined) && !nextProps.validationsLoading) {
                 this.props.loadUserRights()
             }
