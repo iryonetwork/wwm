@@ -110,7 +110,7 @@ func main() {
 	c.StartSubscription(storageSync.FileDelete)
 
 	// Start servers
-	// create exit channel that is used to wait for all servers goroutines to exit orederly and carry the errors
+	// create exit channel that is used to wait for all servers goroutines to exit orderly and carry the errors
 	exitCh := make(chan error, 2)
 
 	// start serving metrics

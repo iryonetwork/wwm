@@ -141,9 +141,11 @@ func main() {
 	api := operations.NewStorageAPI(swaggerSpec)
 	api.ServeError = utils.ServeError
 	server := restapi.NewServer(api)
+	server.Host = cfg.ServerHost
+	server.Port = cfg.ServerPortHTTP
 	server.TLSHost = cfg.ServerHost
-	server.TLSPort = cfg.ServerPort
-	server.EnabledListeners = []string{"https"}
+	server.TLSPort = cfg.ServerPortHTTPS
+	server.EnabledListeners = []string{"http", "https"}
 	server.TLSCertificateKey = flags.Filename(cfg.KeyPath)
 	server.TLSCertificate = flags.Filename(cfg.CertPath)
 

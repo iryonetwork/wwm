@@ -72,11 +72,13 @@ func main() {
 	api.APIAuthorizer = auth.Authorizer()
 
 	server := restapi.NewServer(api)
+	server.Host = cfg.ServerHost
+	server.Port = cfg.ServerPortHTTP
 	server.TLSHost = cfg.ServerHost
-	server.TLSPort = cfg.ServerPort
+	server.TLSPort = cfg.ServerPortHTTPS
 	server.TLSCertificate = flags.Filename(cfg.CertPath)
 	server.TLSCertificateKey = flags.Filename(cfg.KeyPath)
-	server.EnabledListeners = []string{"https"}
+	server.EnabledListeners = []string{"http", "https"}
 	defer server.Shutdown()
 
 	h := &handlers{s: storage}

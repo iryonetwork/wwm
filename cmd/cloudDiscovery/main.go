@@ -98,11 +98,13 @@ func main() {
 	api.CodeGetHandler = discoveryHandlers.CodeGet()
 
 	server := restapi.NewServer(api)
+	server.Host = cfg.ServerHost
+	server.Port = cfg.ServerPortHTTP
 	server.TLSHost = cfg.ServerHost
-	server.TLSPort = cfg.ServerPort
+	server.TLSPort = cfg.ServerPortHTTPS
 	server.TLSCertificate = flags.Filename(cfg.CertPath)
 	server.TLSCertificateKey = flags.Filename(cfg.KeyPath)
-	server.EnabledListeners = []string{"https"}
+	server.EnabledListeners = []string{"http", "https"}
 
 	// initialize metrics middleware
 	m := APIMetrics.NewMetrics("api", "").

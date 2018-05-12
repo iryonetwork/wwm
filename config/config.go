@@ -10,6 +10,8 @@ type Config struct {
 	DomainID         string `env:"DOMAIN_ID" envDefault:"*"`
 	ServerHost       string `env:"SERVER_HOST" envDefault:"0.0.0.0"`
 	ServerPort       int    `env:"SERVER_PORT" envDefault:"443"`
+	ServerPortHTTPS  int    `env:"SERVER_PORT_HTTPS" envDefault:"443"`
+	ServerPortHTTP   int    `env:"SERVER_PORT_HTTP" envDefault:"80"`
 	KeyPath          string `env:"KEY_PATH,required"`
 	CertPath         string `env:"CERT_PATH,required"`
 	MetricsPort      int    `env:"METRICS_PORT" envDefault:"9090"`

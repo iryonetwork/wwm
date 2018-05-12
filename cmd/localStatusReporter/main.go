@@ -99,31 +99,46 @@ func main() {
 		AllowedHeaders: []string{"Authorization", "Content-Type"},
 	}).Handler(m.Middleware(log.APILogMiddleware(r.Handler("status"), logger)))
 
-	server := &http.Server{
-		Addr:    fmt.Sprintf("%s:%d", cfg.ServerHost, cfg.ServerPort),
+	httpServer := &http.Server{
+		Addr:    fmt.Sprintf("%s:%d", cfg.ServerHost, cfg.ServerPortHTTP),
+		Handler: handler,
+	}
+
+	httpsServer := &http.Server{
+		Addr:    fmt.Sprintf("%s:%d", cfg.ServerHost, cfg.ServerPortHTTPS),
 		Handler: handler,
 	}
 
 	// Start servers
-	// create exit channel that is used to wait for all servers goroutines to exit orederly and carry the errors
-	exitCh := make(chan error, 2)
+	// create exit channel that is used to wait for all servers goroutines to exit orderly and carry the errors
+	exitCh := make(chan error, 3)
 
 	// start serving metrics
 	go func() {
 		exitCh <- metricsServer.ServePrometheusMetrics(ctx, fmt.Sprintf("%s:%d", cfg.ServerHost, cfg.MetricsPort), cfg.MetricsNamespace, logger)
 	}()
 	go func() {
-		defer server.Close()
+		defer httpServer.Close()
+		defer httpsServer.Close()
 
-		errCh := make(chan error)
+		errHttpCh := make(chan error)
 		go func() {
-			logger.Info().Msgf("Starting status reporter server at %s", server.Addr)
-			errCh <- server.ListenAndServeTLS(cfg.CertPath, cfg.KeyPath)
+			logger.Info().Msgf("Starting HTTP status reporter server at %s", httpServer.Addr)
+			errHttpCh <- httpServer.ListenAndServe()
+		}()
+
+		errHttpsCh := make(chan error)
+		go func() {
+			logger.Info().Msgf("Starting HTTPS status reporter server at %s", httpsServer.Addr)
+			errHttpsCh <- httpsServer.ListenAndServeTLS(cfg.CertPath, cfg.KeyPath)
 		}()
 
 		for {
 			select {
-			case err := <-errCh:
+			case err := <-errHttpCh:
+				exitCh <- err
+				return
+			case err := <-errHttpsCh:
 				exitCh <- err
 				return
 			case <-ctx.Done():
@@ -155,7 +170,7 @@ func main() {
 	}()
 
 	<-ctx.Done()
-	for i := 0; i < 2; i++ {
+	for i := 0; i < 3; i++ {
 		err := <-exitCh
 		if err != nil {
 			logger.Debug().Err(err).Msg("gouroutine exit message")

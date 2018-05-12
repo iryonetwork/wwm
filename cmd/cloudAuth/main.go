@@ -109,12 +109,13 @@ func main() {
 	api := operations.NewCloudAuthAPI(swaggerSpec)
 	api.ServeError = utils.ServeError
 	server := restapi.NewServer(api)
+	server.Host = cfg.ServerHost
+	server.Port = cfg.ServerPortHTTP
 	server.TLSHost = cfg.ServerHost
-	server.TLSPort = cfg.ServerPort
+	server.TLSPort = cfg.ServerPortHTTPS
 	server.TLSCertificate = flags.Filename(cfg.CertPath)
 	server.TLSCertificateKey = flags.Filename(cfg.KeyPath)
-	server.EnabledListeners = []string{"https"}
-	defer server.Shutdown()
+	server.EnabledListeners = []string{"https", "http"}
 
 	authHandlers := authenticator.NewHandlers(auth)
 	authDataHandlers := authDataManager.NewHandlers(authData)
