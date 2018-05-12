@@ -32,6 +32,7 @@ class AddToWaitlist extends Component {
 
     onSubmit(formData) {
         this.props.add(formData, this.props.patient)
+        document.body.classList.remove("has-modal")
     }
 
     render() {
@@ -57,11 +58,8 @@ class AddToWaitlist extends Component {
                                                     type="button"
                                                     tabIndex="-1"
                                                     className="btn btn-link btn-block"
-                                                    datadismiss="modal"
+                                                    data-dismiss="has-modal"
                                                     disabled
-                                                    onClick={() => {
-                                                        push("/")
-                                                    }}
                                                 >
                                                     Cancel
                                                 </button>
