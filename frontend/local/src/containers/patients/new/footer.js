@@ -1,7 +1,7 @@
 import React from "react"
 import { withRouter } from "react-router-dom"
 
-const Footer = ({ history, reset, previousPage }) => (
+const Footer = ({ history, reset, previousPage, creating }) => (
     <div className="modal-footer">
         <div className="form-row">
             <div className="col-sm-4">
@@ -26,8 +26,8 @@ const Footer = ({ history, reset, previousPage }) => (
                 )}
             </div>
             <div className="col-sm-4">
-                <button type="submit" className="float-right btn btn-primary btn-block">
-                    Next
+                <button type="submit" className="float-right btn btn-primary btn-block" disabled={creating}>
+                    {creating ? "Saving..." : "Next"}
                 </button>
             </div>
         </div>

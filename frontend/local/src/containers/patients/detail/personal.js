@@ -155,20 +155,14 @@ ViewPersonal = connect(
     }
 )(ViewPersonal)
 
-const ViewFamily = () => (
+let ViewFamily = ({ patient }) => (
     <div>
         <div className="section">
             <h3>Summary</h3>
             <div className="content">
                 <div className="row">
-                    <div className="col-sm-4">
-                        <div className="label">No. of people in the family</div>
-                        <div className="value">3</div>
-                    </div>
-                    <div className="col-sm-4">
-                        <div className="label">No. of people living together</div>
-                        <div className="value">5</div>
-                    </div>
+                    <Column width="4" label="No. of people in the family" value={patient.peopleInFamily} key="peopleInFamily" />
+                    <Column width="4" label="No. of people living together" value={patient.peopleLivingTogether} key="peopleLivingTogether" />
                 </div>
             </div>
         </div>
@@ -247,6 +241,10 @@ const ViewFamily = () => (
     </div>
 )
 
+ViewFamily = connect(state => ({
+    patient: state.patient.patient
+}))(ViewFamily)
+
 const Edit = ({ match, location }) => (
     <div>
         <header>
@@ -278,7 +276,6 @@ class EditPersonal extends React.Component {
     }
 
     handleSubmit(form) {
-        console.log(form)
         this.props.updatePatient(form).then(() => {
             this.props.history.push(this.props.location.pathname.replace("/edit", ""))
         })
@@ -344,31 +341,59 @@ EditPersonal = connect(
     }
 )(EditPersonal)
 
-let EditFamily = ({ location }) => (
-    <div>
-        <form>
-            <FamilyForm />
-            <div className="section">
-                <div className="row buttons">
-                    <div className="col-sm-4">
-                        <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-block">
-                            Close
-                        </Link>
+class EditFamily extends React.Component {
+    constructor(props) {
+        super(props)
+
+        this.handleSubmit = this.handleSubmit.bind(this)
+    }
+
+    handleSubmit(form) {
+        this.props.updatePatient(form).then(() => {
+            this.props.history.push(this.props.location.pathname.replace("/edit", ""))
+        })
+    }
+
+    render() {
+        let { location, updating, handleSubmit } = this.props
+
+        return (
+            <div>
+                <form onSubmit={handleSubmit(this.handleSubmit)}>
+                    <FamilyForm />
+                    <div className="section">
+                        <div className="row buttons">
+                            <div className="col-sm-4">
+                                <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-block">
+                                    Close
+                                </Link>
+                            </div>
+                            <div className="col-sm-4">
+                                <button type="submit" className="btn btn-primary btn-block" disabled={updating}>
+                                    {updating ? "Saving..." : "Save"}
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div className="col-sm-4">
-                        <button type="submit" className="btn btn-primary btn-block">
-                            Save
-                        </button>
-                    </div>
-                </div>
+                </form>
             </div>
-        </form>
-    </div>
-)
+        )
+    }
+}
 
 EditFamily = reduxForm({
     form: "family"
 })(EditFamily)
+
+EditFamily = connect(
+    state => ({
+        initialValues: state.patient.patient,
+        updating: state.patient.updating
+    }),
+    {
+        updatePatient
+    }
+)(EditFamily)
 
 export default ({ match }) => (
     <div className="personal">

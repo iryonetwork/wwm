@@ -4,7 +4,6 @@ import { connect } from "react-redux"
 import classnames from "classnames"
 
 import { createPatient } from "../../../modules/patient"
-import Alert from "shared/containers/alert"
 
 import Step1 from "./step1"
 import Step2 from "./step2"
@@ -44,7 +43,9 @@ class NewPatientForm extends Component {
     onSubmit(data) {
         return this.props
             .dispatch(createPatient(data))
-            .then(patientId => {})
+            .then(patientID => {
+                this.props.history.push(`/to-waitlist/${patientID}`)
+            })
             .catch(ex => {})
     }
 
@@ -78,8 +79,6 @@ class NewPatientForm extends Component {
                                     </li>
                                 </ol>
                             </div>
-
-                            <Alert />
 
                             <div>
                                 {page === 1 && <Step1 onSubmit={this.nextPage} />}

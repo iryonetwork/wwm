@@ -27,10 +27,10 @@ const Form = () => (
 
         <div className="form-row">
             <div className="form-group col-sm-4">
-                <Field name="people_in_family" type="number" min="0" component={renderInput} label="No. of people in the family" />
+                <Field name="peopleInFamily" type="number" min="0" component={renderInput} label="No. of people in the family" />
             </div>
             <div className="form-group col-sm-4">
-                <Field name="people_living_together" type="number" min="0" component={renderInput} label="No. of people living together" />
+                <Field name="peopleLivingTogether" type="number" min="0" component={renderInput} label="No. of people living together" />
             </div>
         </div>
 

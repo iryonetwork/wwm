@@ -255,17 +255,22 @@
         }
 
         .habits {
-            margin-top: 40px;
+            margin-top: 50px;
             padding: 20px 0 0;
             border-top: 1px solid $grey2;
             border-bottom: none;
 
             .label {
+                padding: 0 5px;
+            }
+
+            /*
+            .label {
                 @include media-breakpoint-up(sm) {
                     @include make-col(4);
                 }
             }
-
+            */
             .comment {
                 margin-top: 20px;
             }

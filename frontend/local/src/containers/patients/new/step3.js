@@ -15,7 +15,7 @@ import {
     renderHorizontalRadio
 } from "shared/forms/renderField"
 import { yesNoOptions, positiveNegativeOptions } from "shared/forms/options"
-import { read, BABY_MAX_AGE, CHILD_MAX_AGE } from "shared/modules/config"
+import { BABY_MAX_AGE, CHILD_MAX_AGE } from "shared/modules/config"
 import { getCodesAsOptions, loadCategories as loadCategoriesImport } from "shared/modules/codes"
 
 import { ReactComponent as RemoveIcon } from "shared/icons/negative.svg"
@@ -31,7 +31,7 @@ class Step3 extends Component {
     }
 
     render() {
-        const { handleSubmit, reset, previousPage, dateOfBirth, codesLoading, getCodes } = this.props
+        const { handleSubmit, reset, previousPage, dateOfBirth, codesLoading, getCodes, creating } = this.props
         return (
             <form onSubmit={handleSubmit} className="patient-form">
                 <div className="modal-body">
@@ -40,11 +40,11 @@ class Step3 extends Component {
                         babyFoods={getCodes("babyFood")}
                         communicationTypes={getCodes("childCommunication")}
                         deliveryTypes={getCodes("deliveryType")}
-                        codesLoading={codesLoading}
+                        codesLoading={codesLoading && !creating}
                     />
                 </div>
 
-                <Footer reset={reset} previousPage={previousPage} />
+                <Footer reset={reset} previousPage={previousPage} creating={creating} />
             </form>
         )
     }
@@ -96,15 +96,15 @@ const renderBabyForm = ({ babyFoods, deliveryTypes, communicationTypes }) => (
 
             <div className="form-row">
                 <div className="form-group col-sm-2">
-                    <Field name="weeksAtBirth" component={renderInput} label="Weeks at birth" />
+                    <Field name="weeksAtBirth" type="number" component={renderInput} label="Weeks at birth" />
                 </div>
                 <div className="col-sm-2 unit">weeks</div>
                 <div className="form-group col-sm-2">
-                    <Field name="weightAtBirth" component={renderInput} label="Weight at birth" />
+                    <Field name="weightAtBirth" type="number" component={renderInput} label="Weight at birth" />
                 </div>
                 <div className="col-sm-2 unit">grams</div>
                 <div className="form-group col-sm-2">
-                    <Field name="heightAtBirth" component={renderInput} label="Height at birth" />
+                    <Field name="heightAtBirth" type="number" component={renderInput} label="Height at birth" />
                 </div>
                 <div className="col-sm-2 unit">cm</div>
             </div>
@@ -112,7 +112,7 @@ const renderBabyForm = ({ babyFoods, deliveryTypes, communicationTypes }) => (
         <HealthAttributes />
         <h3>Habits and living conditions</h3>
         <Field name="breastfeeding" component={renderHorizontalRadio} options={yesNoOptions} label="Breastfeeding?" />
-        <Field name="breastfeedingDuration" component={renderHorizontalInput} label="For how long?" />
+        <Field name="breastfeedingDuration" type="number" component={renderHorizontalInput} label="For how long?" />
         <Field name="babyEatsAndDrinks" component={renderHorizontalSelect} options={babyFoods} label="What does your baby eat and drink?" /> {/*@TODO codes */}
         <Field name="babyWetDiapers" component={renderHorizontalSelect} options={numberOptions} label="How many diapers does your child wet in 24h?" />
         <Field
@@ -123,18 +123,21 @@ const renderBabyForm = ({ babyFoods, deliveryTypes, communicationTypes }) => (
         />{" "}
         {/*@ TODO codes */}
         <Field name="babyBowelMovementsComment" component={renderHorizontalInput} label="Describe baby's bowel movements" />
-        <Field name="babySleep" component={renderHorizontalRadio} options={yesNoOptions} label="Are you satisfied with child's sleep?" />
-        <Field name="babySleepComment" component={renderHorizontalInput} label="Comment" hideLabel={true} />
+        <Fields label="Are you satisfied with child's sleep?" names={["babySleep", "babySleepComment"]} component={renderHabitFields} />
         <Field name="babyVitaminD" component={renderHorizontalRadio} options={yesNoOptions} label="Do you or your baby take vitamin D?" />
         <Field name="babySleepOnBack" component={renderHorizontalRadio} options={yesNoOptions} label="Does your baby sleep on her back?" />
         <Field name="babyAnyoneSmokes" component={renderHorizontalRadio} options={yesNoOptions} label="Does anyone at your house smoke?" />
         <Field name="babyNumberOfSmokers" component={renderHorizontalSelect} options={numberOptions} label="How many smokers?" />
         <Field name="babyGetsAround" component={renderHorizontalInput} label="How does your child get around?" />
         <Field name="babyCommunicates" component={renderHorizontalSelect} options={communicationTypes} label="How does your child communicate?" />
-        <Field name="conditions_clean_water" component={renderHorizontalRadio} options={yesNoOptions} label="Do you have access to clean water?" />
-        <Field name="conditions_food_supply" component={renderHorizontalRadio} options={yesNoOptions} label="Do you have sufficient food supply?" />
-        <Field name="conditions_heating" component={renderHorizontalRadio} options={yesNoOptions} label="Does your tent have heating?" />
-        <Field name="conditions_electricity" component={renderHorizontalRadio} options={yesNoOptions} label="Does your tent have electricity?" />
+        <Fields label="Do you have access to clean water?" names={["conditions_clean_water", "conditions_clean_water_comment"]} component={renderHabitFields} />
+        <Fields
+            label="Do you have sufficient food supply?"
+            names={["conditions_food_supply", "conditions_food_supply_comment"]}
+            component={renderHabitFields}
+        />
+        <Fields label="Does your tent have heating?" names={["conditions_heating", "conditions_heating_comment"]} component={renderHabitFields} />
+        <Fields label="Does your tent have electricity?" names={["conditions_electricity", "conditions_electricity_comment"]} component={renderHabitFields} />
     </div>
 )
 
@@ -142,16 +145,14 @@ const renderChildForm = () => (
     <div>
         <h3>Vaccine information</h3>
 
-        <Field
-            name="vaccinationUpToDate"
-            component={renderHorizontalRadio}
-            options={yesNoOptions}
+        <Fields
+            names={["vaccinationUpToDate", "vaccinationUpToDateComment"]}
+            component={renderHabitFields}
             label="Was this child up to date with the home country vaccination schedule?"
         />
-        <Field
-            name="vaccinationCertificates"
-            component={renderHorizontalRadio}
-            options={yesNoOptions}
+        <Fields
+            names={["vaccinationCertificates", "vaccinationCertificatesComment"]}
+            component={renderHabitFields}
             label="Do you have this child's immunization certificates?"
         />
         <Field name="tuberculosisTested" component={renderHorizontalRadio} options={yesNoOptions} label="Has this child been tested for tuberculosis?" />
@@ -466,7 +467,8 @@ const selector = formValueSelector("newPatient")
 Step3 = connect(
     state => ({
         dateOfBirth: selector(state, "dateOfBirth"),
-        codesLoading: state.codes.loading
+        codesLoading: state.codes.loading,
+        creating: state.patient.creating
     }),
     {
         getCodes: getCodesAsOptions,
