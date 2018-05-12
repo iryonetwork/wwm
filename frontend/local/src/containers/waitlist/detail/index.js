@@ -150,7 +150,7 @@ class InConsultation extends React.Component {
                                 <LaboratoryIcon />
                                 Laboratory Tests
                             </h2>
-                            {this.props.canSeeLaboratoryTests && (
+                            {this.props.canAddLaboratoryTests && (
                                 <Link to={joinPaths(match.url, "add-lab-test")} className="btn btn-link">
                                     Add laboratory test
                                 </Link>
