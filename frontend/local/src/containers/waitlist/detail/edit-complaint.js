@@ -31,8 +31,8 @@ class EditComplaint extends React.Component {
 
     handleSubmit(form) {
         let item = this.props.item
-        item.complaint = form.mainComplaint
-        item.complaintComment = form.mainComplaintDetails
+        item.mainComplaint.complaint = form.mainComplaint
+        item.mainComplaint.comment = form.mainComplaintDetails
 
         this.props.update(this.props.match.params.waitlistID, item)
     }

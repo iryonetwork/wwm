@@ -3,6 +3,7 @@ import { connect } from "react-redux"
 import { Route, Link, NavLink, Switch } from "react-router-dom"
 import { reduxForm } from "redux-form"
 
+import { RESOURCE_DEMOGRAPHIC_INFORMATION, READ, UPDATE } from "../../../modules/validations"
 import { loadCategories, getCodes, getCodesAsOptions } from "shared/modules/codes"
 import { updatePatient } from "../../../modules/patient"
 
@@ -11,28 +12,40 @@ import Spinner from "shared/containers/spinner"
 import { Form as PatientForm } from "../new/step1"
 import { Form as FamilyForm } from "../new/step2"
 
-const View = ({ patient, match, location }) => (
-    <div>
-        <header>
-            <h1>Personal Info</h1>
-            <Link to={joinPaths(match.url, "edit", location.pathname.indexOf("family") !== -1 ? "family" : "")} className="btn btn-secondary btn-wide">
-                Edit
-            </Link>
-        </header>
+let View = ({ patient, match, location, canSeeDemographicInformation, canEditDemographicInformation }) => {
+    return canSeeDemographicInformation ? (
+        <div>
+            <header>
+                <h1>Personal Info</h1>
+                {canEditDemographicInformation && (
+                    <Link to={joinPaths(match.url, "edit", location.pathname.indexOf("family") !== -1 ? "family" : "")} className="btn btn-secondary btn-wide">
+                        Edit
+                    </Link>
+                )}
+            </header>
 
-        <div className="navigation">
-            <NavLink exact to={match.url}>
-                Patient
-            </NavLink>
-            <NavLink to={joinPaths(match.url, "family")}>Family details</NavLink>
+            <div className="navigation">
+                <NavLink exact to={match.url}>
+                    Patient
+                </NavLink>
+                <NavLink to={joinPaths(match.url, "family")}>Family details</NavLink>
+            </div>
+
+            <Switch>
+                <Route path={match.url + "/family"} component={ViewFamily} />
+                <Route path={match.url} component={ViewPersonal} />
+            </Switch>
         </div>
+    ) : (null)
+}
 
-        <Switch>
-            <Route path={match.url + "/family"} component={ViewFamily} />
-            <Route path={match.url} component={ViewPersonal} />
-        </Switch>
-    </div>
-)
+View = connect(
+    state => ({
+        canSeeDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[READ],
+        canEditDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[UPDATE],
+    }),
+    {}
+)(View)
 
 const Column = ({ value, label, codes, width }) => {
     // don't render if empty
@@ -73,13 +86,13 @@ class ViewPersonal extends React.Component {
     }
 
     render() {
-        const { codesLoading, patient, fetchCodes } = this.props
+        const { codesLoading, patient, fetchCodes, canSeeDemographicInformation } = this.props
 
         if (codesLoading) {
             return <Spinner />
         }
 
-        return (
+        return canSeeDemographicInformation ? (
             <div>
                 <div className="section">
                     <h3>Identification</h3>
@@ -140,14 +153,15 @@ class ViewPersonal extends React.Component {
                     </div>
                 </div>
             </div>
-        )
+        ) : (null)
     }
 }
 
 ViewPersonal = connect(
     state => ({
         patient: state.patient.patient,
-        codesLoading: state.codes.loading
+        codesLoading: state.codes.loading,
+        canSeeDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[READ],
     }),
     {
         loadCategories,
@@ -155,120 +169,138 @@ ViewPersonal = connect(
     }
 )(ViewPersonal)
 
-const ViewFamily = () => (
-    <div>
-        <div className="section">
-            <h3>Summary</h3>
-            <div className="content">
-                <div className="row">
-                    <div className="col-sm-4">
-                        <div className="label">No. of people in the family</div>
-                        <div className="value">3</div>
-                    </div>
-                    <div className="col-sm-4">
-                        <div className="label">No. of people living together</div>
-                        <div className="value">5</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div className="section">
-            <h3>Husband</h3>
-            <div className="content">
-                <div className="row">
-                    <div className="col-sm-4">
-                        <div className="label">Name</div>
-                        <div className="value">
-                            <Link to={`/patients/asddsa`}>Michael Graves &middot; A-</Link>
+let ViewFamily = (canSeeDemographicInformation) => {
+    return canSeeDemographicInformation ? (
+        <div>
+            <div className="section">
+                <h3>Summary</h3>
+                <div className="content">
+                    <div className="row">
+                        <div className="col-sm-4">
+                            <div className="label">No. of people in the family</div>
+                            <div className="value">3</div>
+                        </div>
+                        <div className="col-sm-4">
+                            <div className="label">No. of people living together</div>
+                            <div className="value">5</div>
                         </div>
                     </div>
-                    <div className="col-sm-4">
-                        <div className="label">Date of birth</div>
-                        <div className="value">21 May 1986</div>
-                    </div>
-                    <div className="col-sm-4">
-                        <div className="label">Living together</div>
-                        <div className="value">Yes</div>
-                    </div>
-                </div>
-                <div className="row">
-                    <div className="col-sm-4">
-                        <div className="label">Phone number</div>
-                        <div className="value">+963 29 2939 2919</div>
-                    </div>
-                    <div className="col-sm-4">
-                        <div className="label">Email address</div>
-                        <div className="value">alma@gmail.com</div>
-                    </div>
-                    <div className="col-sm-4">
-                        <div className="label">Whatsapp</div>
-                        <div className="value">+963 29 2939 2919</div>
-                    </div>
-                </div>
-
-                <div className="row">
-                    <div className="col-sm-4">
-                        <div className="label">UN ID</div>
-                        <div className="value">453ds4a56w4d8</div>
-                    </div>
                 </div>
             </div>
-        </div>
 
-        <div className="section">
-            <h3>Child</h3>
-            <div className="content">
-                <div className="row">
-                    <div className="col-sm-4">
-                        <div className="label">Name</div>
-                        <div className="value">
-                            <Link to={`/patients/asdsaefw`}>Michael Graves &middot; A-</Link>
+            <div className="section">
+                <h3>Husband</h3>
+                <div className="content">
+                    <div className="row">
+                        <div className="col-sm-4">
+                            <div className="label">Name</div>
+                            <div className="value">
+                                <Link to={`/patients/asddsa`}>Michael Graves &middot; A-</Link>
+                            </div>
+                        </div>
+                        <div className="col-sm-4">
+                            <div className="label">Date of birth</div>
+                            <div className="value">21 May 1986</div>
+                        </div>
+                        <div className="col-sm-4">
+                            <div className="label">Living together</div>
+                            <div className="value">Yes</div>
                         </div>
                     </div>
-                    <div className="col-sm-4">
-                        <div className="label">Date of birth</div>
-                        <div className="value">21 May 1986</div>
+                    <div className="row">
+                        <div className="col-sm-4">
+                            <div className="label">Phone number</div>
+                            <div className="value">+963 29 2939 2919</div>
+                        </div>
+                        <div className="col-sm-4">
+                            <div className="label">Email address</div>
+                            <div className="value">alma@gmail.com</div>
+                        </div>
+                        <div className="col-sm-4">
+                            <div className="label">Whatsapp</div>
+                            <div className="value">+963 29 2939 2919</div>
+                        </div>
                     </div>
-                    <div className="col-sm-4">
-                        <div className="label">Living together</div>
-                        <div className="value">Yes</div>
+
+                    <div className="row">
+                        <div className="col-sm-4">
+                            <div className="label">UN ID</div>
+                            <div className="value">453ds4a56w4d8</div>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <div className="row">
-                    <div className="col-sm-4">
-                        <div className="label">UN ID</div>
-                        <div className="value">453ds4a56w4d8</div>
+            <div className="section">
+                <h3>Child</h3>
+                <div className="content">
+                    <div className="row">
+                        <div className="col-sm-4">
+                            <div className="label">Name</div>
+                            <div className="value">
+                                <Link to={`/patients/asdsaefw`}>Michael Graves &middot; A-</Link>
+                            </div>
+                        </div>
+                        <div className="col-sm-4">
+                            <div className="label">Date of birth</div>
+                            <div className="value">21 May 1986</div>
+                        </div>
+                        <div className="col-sm-4">
+                            <div className="label">Living together</div>
+                            <div className="value">Yes</div>
+                        </div>
+                    </div>
+
+                    <div className="row">
+                        <div className="col-sm-4">
+                            <div className="label">UN ID</div>
+                            <div className="value">453ds4a56w4d8</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-)
+    ) : (null)
+}
 
-const Edit = ({ match, location }) => (
-    <div>
-        <header>
-            <h1>Personal Info</h1>
-            <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-wide">
-                Close
-            </Link>
-        </header>
+ViewFamily = connect(
+    state => ({
+        canSeeDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[READ],
+    }),
+    {}
+)(ViewFamily)
 
-        <div className="navigation">
-            <NavLink exact to={match.url}>
-                Patient
-            </NavLink>
-            <NavLink to={joinPaths(match.url, "family")}>Family details</NavLink>
+let Edit = ({ match, location, canEditDemographicInformation }) => {
+    return canEditDemographicInformation ? (
+        <div>
+            <header>
+                <h1>Personal Info</h1>
+                <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-wide">
+                    Close
+                </Link>
+            </header>
+
+            <div className="navigation">
+                <NavLink exact to={match.url}>
+                    Patient
+                </NavLink>
+                <NavLink to={joinPaths(match.url, "family")}>Family details</NavLink>
+            </div>
+
+            <Switch>
+                <Route path={match.url + "/family"} component={EditFamily} />
+                <Route path={match.url} component={EditPersonal} />
+            </Switch>
         </div>
+    ) : (null)
+}
 
-        <Switch>
-            <Route path={match.url + "/family"} component={EditFamily} />
-            <Route path={match.url} component={EditPersonal} />
-        </Switch>
-    </div>
-)
+Edit = connect(
+    state => ({
+        canEditDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[UPDATE],
+    }),
+    {}
+)(Edit)
 
 class EditPersonal extends React.Component {
     constructor(props) {
@@ -295,7 +327,7 @@ class EditPersonal extends React.Component {
             return <Spinner />
         }
 
-        return (
+        return this.props.canEditDemographicInformation ? (
             <div>
                 <form onSubmit={handleSubmit(this.handleSubmit)}>
                     <PatientForm
@@ -320,7 +352,7 @@ class EditPersonal extends React.Component {
                     </div>
                 </form>
             </div>
-        )
+        ) : (null)
     }
 }
 
@@ -335,7 +367,9 @@ EditPersonal = connect(
     state => ({
         codesLoading: state.codes.loading,
         initialValues: state.patient.patient,
-        updating: state.patient.updating
+        updating: state.patient.updating,
+        canSeeDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[READ],
+        canEditDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[UPDATE],
     }),
     {
         getCodes: getCodesAsOptions,
@@ -344,37 +378,55 @@ EditPersonal = connect(
     }
 )(EditPersonal)
 
-let EditFamily = ({ location }) => (
-    <div>
-        <form>
-            <FamilyForm />
-            <div className="section">
-                <div className="row buttons">
-                    <div className="col-sm-4">
-                        <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-block">
-                            Close
-                        </Link>
-                    </div>
-                    <div className="col-sm-4">
-                        <button type="submit" className="btn btn-primary btn-block">
-                            Save
-                        </button>
+let EditFamily = ({ location, canEditDemographicInformation }) => {
+    return canEditDemographicInformation ? (
+        <div>
+            <form>
+                <FamilyForm />
+                <div className="section">
+                    <div className="row buttons">
+                        <div className="col-sm-4">
+                            <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-block">
+                                Close
+                            </Link>
+                        </div>
+                        <div className="col-sm-4">
+                            <button type="submit" className="btn btn-primary btn-block">
+                                Save
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </form>
-    </div>
-)
+            </form>
+        </div>
+    ) : (null)
+}
 
 EditFamily = reduxForm({
     form: "family"
 })(EditFamily)
 
-export default ({ match }) => (
+EditFamily = connect(
+    state => ({
+        canEditDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[UPDATE],
+    }),
+    {}
+)(EditFamily)
+
+
+let PersonalInfoRoutes = ({ match, canSeeDemographicInformation, canEditDemographicInformation }) => (
     <div className="personal">
         <Switch>
-            <Route path={match.url + "/edit"} component={Edit} />
-            <Route path={match.url} component={View} />
+            {canEditDemographicInformation && (<Route path={match.url + "/edit"} component={Edit} />)}
+            {canSeeDemographicInformation && (<Route path={match.url} component={View} />)}
         </Switch>
     </div>
 )
+
+export default connect(
+    state => ({
+        canSeeDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[READ],
+        canEditDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[UPDATE],
+    }),
+    {}
+)(PersonalInfoRoutes)

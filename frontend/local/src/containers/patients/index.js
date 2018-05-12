@@ -3,12 +3,13 @@ import { connect } from "react-redux"
 import { Link } from "react-router-dom"
 import { push } from "react-router-redux"
 
+import { RESOURCE_PATIENT_IDENTIFICATION, READ, WRITE } from "../../modules/validations"
 import { search, cardToObject } from "../../modules/discovery"
 import Patient from "shared/containers/patient"
 import Spinner from "shared/containers/spinner"
 import "./style.css"
 
-const ListRow = ({ patient }) => {
+const ListRow = ({ patient, canAddToWaitlist }) => {
     const p = cardToObject(patient)
     const id = p["syrian-id"] ? `Syrian ID: ${p["syrian-id"]}` : p["un-id"] ? `UN ID: ${p["un-id"]}` : ""
 
@@ -23,7 +24,9 @@ const ListRow = ({ patient }) => {
                 Camp {p.camp}, Tent {p.tent}
             </td>
             <td>
-                <Link to={`/to-waitlist/${patient.patientID}`}>Add to Waiting List</Link>
+                {canAddToWaitlist && (
+                    <Link to={`/to-waitlist/${patient.patientID}`}>Add to Waiting List</Link>
+                )}
             </td>
         </tr>
     )
@@ -42,20 +45,25 @@ class PatientList extends React.Component {
             <div className="patients">
                 <header>
                     <h1>Patients</h1>
-                    <button onClick={() => push("/new-patient")} className="btn btn-secondary btn-wide" type="submit">
-                        Add New Patient
-                    </button>
+                    {this.props.canAddPatient ? (
+                        <button onClick={() => push("/new-patient")} className="btn btn-secondary btn-wide" type="submit">
+                            Add New Patient
+                        </button>
+                    ) : (null)}
                 </header>
 
-                <input name="search" placeholder="Search" className="search" />
-
-                {this.props.searching ? (
-                    <Spinner />
-                ) : (
-                    <table className="table patients">
-                        <tbody>{this.props.patients.map(patient => <ListRow patient={patient} key={patient.patientID} />)}</tbody>
-                    </table>
-                )}
+                {this.props.canSeePatients ? (
+                    <div>
+                        <input name="search" placeholder="Search" className="search" />
+                        {this.props.searching ? (
+                            <Spinner />
+                        ) : (
+                            <table className="table patients">
+                                <tbody>{this.props.patients.map(patient => <ListRow patient={patient} key={patient.patientID} canAddToWaitlist={this.props.canAddToWaitlist} />)}</tbody>
+                            </table>
+                        )}
+                    </div>
+                ) : (null)}
             </div>
         )
     }
@@ -64,7 +72,10 @@ class PatientList extends React.Component {
 PatientList = connect(
     state => ({
         searching: state.discovery.searching || false,
-        patients: state.discovery.patients || []
+        patients: state.discovery.patients || [],
+        canAddPatient: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[WRITE],
+        canSeePatients: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[READ],
+        canAddToWaitlist: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[WRITE],
     }),
     { search, push }
 )(PatientList)

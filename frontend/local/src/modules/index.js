@@ -13,6 +13,7 @@ import patient from "./patient"
 import users from "./users"
 import status from "shared/modules/status"
 import waitlist from "./waitlist"
+import validations from "./validations"
 
 export default combineReducers({
     router: routerReducer,
@@ -27,5 +28,6 @@ export default combineReducers({
     patient,
     users,
     status,
-    waitlist
+    waitlist,
+    validations
 })

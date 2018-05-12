@@ -9,6 +9,7 @@ import Logo from "shared/containers/logo"
 import Spinner from "shared/containers/spinner"
 import Status from "shared/containers/status"
 import Alert from "shared/containers/alert"
+import { RESOURCE_PATIENT_IDENTIFICATION, RESOURCE_WAITLIST, READ, WRITE, loadUserRights } from "../../modules/validations"
 
 import Patients from "../patients"
 import NewPatient from "../patients/new"
@@ -21,9 +22,23 @@ import { ReactComponent as WaitlistIcon } from "shared/icons/waiting-list.svg"
 import { ReactComponent as LogoutIcon } from "shared/icons/logout.svg"
 
 class App extends React.Component {
+    componentDidMount() {
+        if (!this.props.configLoading) {
+            if (!this.props.userRights && !this.props.userRightsLoading) {
+                this.props.loadUserRights()
+            }
+        }
+    }
+
     componentWillReceiveProps(nextProps) {
         if (nextProps.location.pathname !== this.props.location.pathname) {
             this.props.close()
+        }
+
+        if (!nextProps.configLoading) {
+            if (!nextProps.userRights && !nextProps.userRightsLoading) {
+                this.props.loadUserRights()
+            }
         }
     }
 
@@ -32,7 +47,7 @@ class App extends React.Component {
     }
 
     render() {
-        if (this.props.configLoading) {
+        if (this.props.configLoading || this.props.userRightsLoading) {
             return <Spinner />
         }
 
@@ -64,14 +79,14 @@ class App extends React.Component {
                 <main>
                     <div className="container">
                         <Alert />
-                        <Route exact path="/" render={() => <Redirect to="/patients" />} />
-                        <Route exact path="/patients" component={Patients} />
-                        <Route exact path="/new-patient" component={NewPatient} />
-                        <Route path="/to-waitlist/:patientID" component={AddToWaitlist} meta={{ modal: true }} />
-                        <Route exact path="/waitlist/:waitlistID" component={Waitlist} />
+                        {this.props.canSeePatients && (<Route exact path="/" render={() => <Redirect to="/patients" />} />)}
+                        {this.props.canSeePatients && (<Route exact path="/patients" component={Patients} />)}
+                        {this.props.canAddPatient && (<Route exact path="/new-patient" component={NewPatient} />)}
+                        {this.props.canAddToWaitlist && (<Route path="/to-waitlist/:patientID" component={AddToWaitlist} meta={{ modal: true }} />)}
+                        {this.props.canSeeWaitlist && (<Route exact path="/waitlist/:waitlistID" component={Waitlist} />)}
                     </div>
-                    <Route path="/waitlist/:waitlistID/:itemID" component={WaitlistDetail} />
-                    <Route path="/patients/:patientID" component={WaitlistDetail} />
+                   {this.props.canSeeWaitlist && (<Route path="/waitlist/:waitlistID/:itemID" component={WaitlistDetail} />)}
+                   {this.props.canSeeWaitlist && (<Route path="/patients/:patientID" component={WaitlistDetail} />)}
                 </main>
             </React.Fragment>
         )
@@ -80,13 +95,20 @@ class App extends React.Component {
 
 const mapStateToProps = state => ({
     configLoading: state.config.loading,
-    defaultWaitlist: state.config[DEFAULT_WAITLIST_ID]
+    defaultWaitlist: state.config[DEFAULT_WAITLIST_ID],
+    userRights: state.validations.userRights ? state.validations.userRights : undefined,
+    userRightsLoading: state.validations.loading,
+    canSeePatients: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[READ],
+    canAddPatient: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[WRITE],
+    canSeeWaitlist: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[READ],
+    canAddToWaitlist: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[WRITE],
 })
 
 const mapDispatchToProps = dispatch =>
     bindActionCreators(
         {
-            close
+            close,
+            loadUserRights
         },
         dispatch
     )

@@ -5,137 +5,144 @@ import { reduxForm } from "redux-form"
 
 import { RenderForm } from "../new/step3"
 import { joinPaths } from "shared/utils"
+import { RESOURCE_HEALTH_HISTORY, READ, WRITE } from "../../../modules/validations"
 import { getCodesAsOptions, loadCategories as loadCategoriesImport } from "shared/modules/codes"
 import { updatePatient } from "../../../modules/patient"
 
-let History = ({ match, patient }) => (
-    <div className="history">
-        <header>
-            <h1>Medical History</h1>
-            <Link to={joinPaths(match.url, "edit")} className="btn btn-secondary btn-wide">
-                Edit
-            </Link>
-        </header>
+let History = ({ match, patient, canSee, canEdit }) => {
+    return canSee ? (
+        <div className="history">
+            <header>
+                <h1>Medical History</h1>
+                {canEdit ? (
+                    <Link to={joinPaths(match.url, "edit")} className="btn btn-secondary btn-wide">
+                        Edit
+                    </Link>
+                ) : (null)}
+            </header>
 
-        {/* @TODO confirm if needed <div className="section">
-            <div className="name">Blood type</div>
-            <div className="values">A+</div>
-        </div> */}
+            {/* @TODO confirm if needed <div className="section">
+                <div className="name">Blood type</div>
+                <div className="values">A+</div>
+            </div> */}
 
-        <div className="section">
-            <div className="name">Allergies</div>
-            <div className="values">
-                <dl>
-                    {(patient.allergies || []).map((item, i) => (
-                        <React.Fragment key={i}>
-                            <dt>{item.allergy}</dt>
-                            {(item.critical === "true" || item.comment) && (
-                                <dd>
-                                    {item.critical === "true" && <div>High risk</div>}
-                                    {item.comment && <div>{item.comment}</div>}
-                                </dd>
-                            )}
-                        </React.Fragment>
-                    ))}
-                    {(patient.allergies || []).length === 0 && <dd>None</dd>}
-                </dl>
+            <div className="section">
+                <div className="name">Allergies</div>
+                <div className="values">
+                    <dl>
+                        {(patient.allergies || []).map((item, i) => (
+                            <React.Fragment key={i}>
+                                <dt>{item.allergy}</dt>
+                                {(item.critical === "true" || item.comment) && (
+                                    <dd>
+                                        {item.critical === "true" && <div>High risk</div>}
+                                        {item.comment && <div>{item.comment}</div>}
+                                    </dd>
+                                )}
+                            </React.Fragment>
+                        ))}
+                        {(patient.allergies || []).length === 0 && <dd>None</dd>}
+                    </dl>
+                </div>
+            </div>
+
+            <div className="section">
+                <div className="name">Immunization</div>
+                <div className="values">
+                    <dl>
+                        {(patient.immunizations || []).map((item, i) => (
+                            <React.Fragment key={i}>
+                                <dt>{item.immunization}</dt>
+                                {/* @TODO format date */}
+                                {item.date && <dd>{item.date}</dd>}
+                            </React.Fragment>
+                        ))}
+                        {(patient.immunizations || []).length === 0 && <dd>None</dd>}
+                    </dl>
+                </div>
+            </div>
+
+            <div className="section">
+                <div className="name">Chronic diseases</div>
+                <div className="values">
+                    <dl>
+                        {(patient.chronicDiseases || []).map((item, i) => (
+                            <React.Fragment key={i}>
+                                <dt>{item.disease}</dt>
+                                {/* @TODO format date */}
+                                {item.date && <dd>{item.date}</dd>}
+                            </React.Fragment>
+                        ))}
+                        {(patient.chronicDiseases || []).length === 0 && <dd>None</dd>}
+                    </dl>
+                </div>
+            </div>
+
+            <div className="section">
+                <div className="name">Injuries &amp; handicaps</div>
+                <div className="values">
+                    <dl>
+                        {(patient.injuries || []).map((item, i) => (
+                            <React.Fragment key={i}>
+                                <dt>{item.injury}</dt>
+                                {/* @TODO format date */}
+                                {item.date && <dd>{item.date}</dd>}
+                            </React.Fragment>
+                        ))}
+                        {(patient.injuries || []).length === 0 && <dd>None</dd>}
+                    </dl>
+                </div>
+            </div>
+
+            <div className="section">
+                <div className="name">Surgeries</div>
+                <div className="values">
+                    <dl>
+                        {(patient.surgeries || []).map((item, i) => (
+                            <React.Fragment key={i}>
+                                <dt>{item.injury}</dt>
+                                {/* @TODO format date */}
+                                {item.date && <dd>{item.date}</dd>}
+                            </React.Fragment>
+                        ))}
+                        {(patient.surgeries || []).length === 0 && <dd>None</dd>}
+                    </dl>
+                </div>
+            </div>
+
+            <div className="section">
+                <div className="name">Additional medications</div>
+                <div className="values">
+                    <dl>
+                        {(patient.medications || []).map((item, i) => (
+                            <React.Fragment key={i}>
+                                <dt>{item.medication}</dt>
+                                {item.comment && <dd>{item.comment}</dd>}
+                            </React.Fragment>
+                        ))}
+                        {(patient.medications || []).length === 0 && <dd>None</dd>}
+                    </dl>
+                </div>
+            </div>
+
+            <div className="section">
+                <div className="name">Additional medications</div>
+                <div className="values">
+                    <dl>
+                        <dt>medication</dt>
+                        <dd>comment</dd>
+                    </dl>
+                </div>
             </div>
         </div>
-
-        <div className="section">
-            <div className="name">Immunization</div>
-            <div className="values">
-                <dl>
-                    {(patient.immunizations || []).map((item, i) => (
-                        <React.Fragment key={i}>
-                            <dt>{item.immunization}</dt>
-                            {/* @TODO format date */}
-                            {item.date && <dd>{item.date}</dd>}
-                        </React.Fragment>
-                    ))}
-                    {(patient.immunizations || []).length === 0 && <dd>None</dd>}
-                </dl>
-            </div>
-        </div>
-
-        <div className="section">
-            <div className="name">Chronic diseases</div>
-            <div className="values">
-                <dl>
-                    {(patient.chronicDiseases || []).map((item, i) => (
-                        <React.Fragment key={i}>
-                            <dt>{item.disease}</dt>
-                            {/* @TODO format date */}
-                            {item.date && <dd>{item.date}</dd>}
-                        </React.Fragment>
-                    ))}
-                    {(patient.chronicDiseases || []).length === 0 && <dd>None</dd>}
-                </dl>
-            </div>
-        </div>
-
-        <div className="section">
-            <div className="name">Injuries &amp; handicaps</div>
-            <div className="values">
-                <dl>
-                    {(patient.injuries || []).map((item, i) => (
-                        <React.Fragment key={i}>
-                            <dt>{item.injury}</dt>
-                            {/* @TODO format date */}
-                            {item.date && <dd>{item.date}</dd>}
-                        </React.Fragment>
-                    ))}
-                    {(patient.injuries || []).length === 0 && <dd>None</dd>}
-                </dl>
-            </div>
-        </div>
-
-        <div className="section">
-            <div className="name">Surgeries</div>
-            <div className="values">
-                <dl>
-                    {(patient.surgeries || []).map((item, i) => (
-                        <React.Fragment key={i}>
-                            <dt>{item.injury}</dt>
-                            {/* @TODO format date */}
-                            {item.date && <dd>{item.date}</dd>}
-                        </React.Fragment>
-                    ))}
-                    {(patient.surgeries || []).length === 0 && <dd>None</dd>}
-                </dl>
-            </div>
-        </div>
-
-        <div className="section">
-            <div className="name">Additional medications</div>
-            <div className="values">
-                <dl>
-                    {(patient.medications || []).map((item, i) => (
-                        <React.Fragment key={i}>
-                            <dt>{item.medication}</dt>
-                            {item.comment && <dd>{item.comment}</dd>}
-                        </React.Fragment>
-                    ))}
-                    {(patient.medications || []).length === 0 && <dd>None</dd>}
-                </dl>
-            </div>
-        </div>
-
-        <div className="section">
-            <div className="name">Additional medications</div>
-            <div className="values">
-                <dl>
-                    <dt>medication</dt>
-                    <dd>comment</dd>
-                </dl>
-            </div>
-        </div>
-    </div>
-)
+    ) : (null)
+}
 
 History = connect(
     state => ({
-        patient: state.patient.patient
+        patient: state.patient.patient,
+        canSee: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[READ],
+        canEdit: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[WRITE],
     }),
     {}
 )(History)
@@ -159,7 +166,7 @@ class EditHistory extends React.Component {
 
     render() {
         const { handleSubmit, dateOfBirth, codesLoading, getCodes, updating } = this.props
-        return (
+        return this.props.canEdit ? (
             <div className="edit-history">
                 <header>
                     <h1>Edit Medical History</h1>
@@ -192,7 +199,7 @@ class EditHistory extends React.Component {
                     </div>
                 </form>
             </div>
-        )
+        ) : (null)
     }
 }
 
@@ -205,7 +212,8 @@ EditHistory = connect(
         dateOfBirth: state.patient.patient.dateOfBirth,
         codesLoading: state.codes.loading,
         initialValues: state.patient.patient,
-        updating: state.patient.updating
+        updating: state.patient.updating,
+        canEdit: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[WRITE],
     }),
     {
         getCodes: getCodesAsOptions,
@@ -214,9 +222,17 @@ EditHistory = connect(
     }
 )(EditHistory)
 
-export default ({ match }) => (
+let HistoryRoutes = ({ match, canSee, canEdit }) => (
     <div>
-        <Route exact path={match.url} component={History} />
-        <Route exact path={match.url + "/edit"} component={EditHistory} />
+        {canSee ? (<Route exact path={match.url} component={History} />) : (null)}
+        {canEdit ? (<Route exact path={match.url + "/edit"} component={EditHistory} />) : (null)}
     </div>
 )
+
+export default connect(
+    state => ({
+        canSee: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[READ],
+        canEdit: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[WRITE],
+    }),
+    {}
+)(HistoryRoutes)
