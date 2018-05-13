@@ -36,6 +36,9 @@ type Storage interface {
 	// UpdateItem updates an item in a waitlist
 	UpdateItem(waitlistID []byte, item *models.Item) (*models.Item, error)
 
+	// MoveItemToTop moves item to the top of the list diregarding priority
+	MoveItemToTop(waitlistID, itemID []byte) (*models.Item, error)
+
 	// DeleteItem removes an item from a waitlist and moves it to history
 	DeleteItem(waitlistID, itemID []byte, reason string) error
 

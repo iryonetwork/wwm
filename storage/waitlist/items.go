@@ -57,6 +57,8 @@ func (s *storage) AddItem(waitlistID []byte, item *models.Item) (*models.Item, e
 		return nil, utils.NewError(utils.ErrBadRequest, "invalid priority level")
 	}
 
+	item.PriorityQueue = *item.Priority
+
 	err := s.db.Update(func(tx *bolt.Tx) error {
 		bCurrent := tx.Bucket(bucketCurrent).Bucket(waitlistID)
 		if bCurrent == nil {
@@ -80,7 +82,7 @@ func (s *storage) AddItem(waitlistID []byte, item *models.Item) (*models.Item, e
 			return err
 		}
 
-		return s.addToQueue(bCurrent, byte(*item.Priority), id.Bytes())
+		return s.addToQueue(bCurrent, byte(item.PriorityQueue), id.Bytes())
 	})
 
 	return item, err
@@ -110,15 +112,22 @@ func (s *storage) UpdateItem(waitlistID []byte, item *models.Item) (*models.Item
 		var currentItem models.Item
 		currentItem.UnmarshalBinary(currentItemData)
 
-		if *currentItem.Priority != *item.Priority {
-			err := s.removeFromQueue(bCurrent, byte(*currentItem.Priority), id.Bytes())
-			if err != nil {
-				return err
-			}
+		item.PriorityQueue = currentItem.PriorityQueue
 
-			err = s.addToQueue(bCurrent, byte(*item.Priority), id.Bytes())
-			if err != nil {
-				return err
+		if *currentItem.Priority != *item.Priority {
+			if *item.Priority < currentItem.PriorityQueue {
+				item.PriorityQueue = *item.Priority
+				err := s.removeFromQueue(bCurrent, byte(currentItem.PriorityQueue), id.Bytes())
+				if err != nil {
+					s.logger.Error().Err(err).Msg("failed to remove from queue")
+					return err
+				}
+
+				err = s.addToQueue(bCurrent, byte(item.PriorityQueue), id.Bytes())
+				if err != nil {
+					s.logger.Error().Err(err).Msg("failed to add to queue")
+					return err
+				}
 			}
 		}
 
@@ -131,6 +140,49 @@ func (s *storage) UpdateItem(waitlistID []byte, item *models.Item) (*models.Item
 	})
 
 	return item, err
+}
+
+// MoveItemToTop moves item to the top of the list diregarding priority
+func (s *storage) MoveItemToTop(waitlistID, itemID []byte) (*models.Item, error) {
+	var item models.Item
+
+	err := s.db.Update(func(tx *bolt.Tx) error {
+		bCurrent := tx.Bucket(bucketCurrent).Bucket(waitlistID)
+		if bCurrent == nil {
+			return utils.NewError(utils.ErrNotFound, "waitlist not found")
+		}
+		itemData := bCurrent.Get(itemID)
+		if itemData == nil {
+			return utils.NewError(utils.ErrNotFound, "item not found")
+		}
+
+		item.UnmarshalBinary(itemData)
+		if item.PriorityQueue == 0 {
+			item.PriorityQueue = *item.Priority
+		}
+
+		err := s.removeFromQueue(bCurrent, byte(item.PriorityQueue), itemID)
+		if err != nil {
+			s.logger.Error().Err(err).Msg("failed to remove from queue")
+			return err
+		}
+
+		item.PriorityQueue = 1
+		err = s.addToQueueOnTop(bCurrent, byte(item.PriorityQueue), itemID)
+		if err != nil {
+			s.logger.Error().Err(err).Msg("failed to add to queue on top")
+			return err
+		}
+
+		data, err := item.MarshalBinary()
+		if err != nil {
+			return err
+		}
+
+		return bCurrent.Put(itemID, data)
+	})
+
+	return &item, err
 }
 
 // DeleteItem removes an item from a waitlist and moves it to history
@@ -166,7 +218,7 @@ func (s *storage) DeleteItem(waitlistID, itemID []byte, reason string) error {
 			return err
 		}
 
-		return s.removeFromQueue(bCurrent, byte(*item.Priority), itemID)
+		return s.removeFromQueue(bCurrent, byte(item.PriorityQueue), itemID)
 	})
 
 	return nil
@@ -203,6 +255,19 @@ func (s *storage) addToQueue(bCurrent *bolt.Bucket, priority byte, id []byte) er
 	}
 
 	return errors.Wrap(bCurrent.Put(qKey, currentQueue), "addToQueue put failed")
+}
+
+func (s *storage) addToQueueOnTop(bCurrent *bolt.Bucket, priority byte, id []byte) error {
+	qKey := append(keyQueue, priority)
+
+	currentQueue := bCurrent.Get(qKey)
+	if currentQueue == nil {
+		currentQueue = id
+	} else {
+		currentQueue = append(id, currentQueue...)
+	}
+
+	return errors.Wrap(bCurrent.Put(qKey, currentQueue), "addToQueueOnTop put failed")
 }
 
 func (s *storage) removeFromQueue(bCurrent *bolt.Bucket, priority byte, id []byte) error {

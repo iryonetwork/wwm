@@ -149,8 +149,53 @@ func TestUpdateItem(t *testing.T) {
 		}
 
 		q = tx.Bucket(bucketCurrent).Bucket(waitlistID).Get(append(keyQueue, byte(1)))
+		if !bytes.Equal(q[:16], id1.Bytes()) {
+			t.Fatalf("Expected queue 1 to have '%v' on top; got '%v'", id1.Bytes(), q[:16])
+		}
 		if !bytes.Equal(q, id1.Bytes()) {
-			t.Fatalf("Expected queue 1 to be have '%v'; got '%v'", id1.Bytes(), q)
+			t.Fatalf("Expected queue 1 to have '%v'; got '%v'", id1.Bytes(), q)
+		}
+
+		return nil
+	})
+}
+
+func TestMoveItemToTop(t *testing.T) {
+	waitlistID, storage := initWaitlist("room 1")
+	defer storage.Close()
+
+	// add priority 1 item
+	_, _ = storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(1)})
+
+	item1, _ := storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(4)})
+	id1, _ := uuid.FromString(item1.ID)
+
+	storage.db.View(func(tx *bolt.Tx) error {
+		q := tx.Bucket(bucketCurrent).Bucket(waitlistID).Get(append(keyQueue, byte(4)))
+		if !bytes.Equal(q, id1.Bytes()) {
+			t.Fatalf("Expected queue 4 to be have '%v'; got '%v'", id1.Bytes(), q)
+		}
+
+		return nil
+	})
+
+	updatedItem, err := storage.MoveItemToTop(waitlistID, id1.Bytes())
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	if updatedItem.PriorityQueue != 1 {
+		t.Fatalf("Expected item priorityQueue to be 1, got %d", updatedItem.PriorityQueue)
+	}
+
+	storage.db.View(func(tx *bolt.Tx) error {
+		q := tx.Bucket(bucketCurrent).Bucket(waitlistID).Get(append(keyQueue, byte(4)))
+		if len(q) != 0 {
+			t.Fatalf("Expected queue 4 to be empty; got '%v'", q)
+		}
+
+		q = tx.Bucket(bucketCurrent).Bucket(waitlistID).Get(append(keyQueue, byte(1)))
+		if !bytes.Equal(q[:16], id1.Bytes()) {
+			t.Fatalf("Expected queue 1 to have '%v' on top; got '%v'", id1.Bytes(), q[:16])
 		}
 
 		return nil
@@ -161,7 +206,6 @@ func TestUpdateItem(t *testing.T) {
 	if err == nil {
 		t.Fatalf("Expected error; got nil")
 	}
-
 }
 
 func TestDeleteItem(t *testing.T) {

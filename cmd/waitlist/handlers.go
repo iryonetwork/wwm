@@ -118,3 +118,17 @@ func (h *handlers) ItemPutListIDItemID() item.PutListIDItemIDHandler {
 		return item.NewPutListIDItemIDNoContent()
 	})
 }
+
+func (h *handlers) ItemPutListIDItemIDTop() item.PutListIDItemIDTopHandler {
+	return item.PutListIDItemIDTopHandlerFunc(func(params item.PutListIDItemIDTopParams, principal *string) middleware.Responder {
+		listID, _ := utils.UUIDToBytes(params.ListID)
+		itemID, _ := utils.UUIDToBytes(params.ItemID)
+
+		_, err := h.s.MoveItemToTop(listID, itemID)
+		if err != nil {
+			return utils.NewErrorResponse(err)
+		}
+
+		return item.NewPutListIDItemIDTopNoContent()
+	})
+}

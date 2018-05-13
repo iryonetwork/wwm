@@ -312,6 +312,43 @@ paths:
         500:
           $ref: '#/responses/500'
 
+  /{listID}/{itemID}/top:
+    put:
+      summary: Puts item on the top of the waitlist
+      tags:
+        - item
+
+      parameters:
+        - in: path
+          name: listID
+          required: true
+          type: string
+          format: uuid
+
+        - in: path
+          name: itemID
+          required: true
+          type: string
+          format: uuid
+
+      responses:
+        204:
+          description: Item was updated
+
+        400:
+          $ref: '#/responses/400'
+
+        401:
+          $ref: '#/responses/401'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
 
 definitions:
   List:
@@ -361,6 +398,12 @@ definitions:
       priority:
         type: integer
         description: Priority to treat patient (1=urgent, 2, 3, 4=normal)
+        default: 4
+        example: 4
+      priorityQueue:
+        type: integer
+        readOnly: true
+        description: Priority quueue on which item is, the same as priority unless item was moved to be on top.
         default: 4
         example: 4
       status:

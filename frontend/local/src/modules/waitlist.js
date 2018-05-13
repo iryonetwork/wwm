@@ -250,7 +250,7 @@ export const update = (listID, data) => dispatch => {
                 type: UPDATE_ITEM_DONE,
                 itemID: data.id
             })
-            dispatch(goBack())
+            dispatch(listAll(listID))
             setTimeout(() => dispatch(open("Waiting list was updated ", "", COLOR_SUCCESS, 5)), 100)
         })
         .catch(ex => {
@@ -261,6 +261,42 @@ export const update = (listID, data) => dispatch => {
             })
         })
 }
+
+export const moveToTop = (listID, itemID) => dispatch => {
+    const url = `${dispatch(read(BASE_URL))}/waitlist/${listID}/${itemID}/top`
+    dispatch({
+        type: UPDATE_ITEM,
+        itemID: itemID
+    })
+
+    return fetch(url, {
+        method: "PUT",
+        headers: {
+            Authorization: dispatch(getToken()),
+            "Content-Type": "application/json"
+        }
+    })
+        .then(response => Promise.all([response.status === 204, response.status]))
+        .then(([ok, status]) => {
+            if (!ok) {
+                throw new Error(`Failed to update waiting list item (${status})`)
+            }
+            dispatch({
+                type: UPDATE_ITEM_DONE,
+                itemID: itemID
+            })
+            dispatch(listAll(listID))
+            setTimeout(() => dispatch(open("Waiting list was updated ", "", COLOR_SUCCESS, 5)), 100)
+        })
+        .catch(ex => {
+            dispatch(open(ex.message, "", COLOR_DANGER))
+            dispatch({
+                type: UPDATE_ITEM_FAILED,
+                itemID: itemID
+            })
+        })
+}
+
 
 export const remove = (listID, itemID, reason) => dispatch => {
     const url = `${read(BASE_URL)}/waitlist/${listID}/${itemID}?reason=${reason}`

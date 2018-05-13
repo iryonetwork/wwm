@@ -90,6 +90,7 @@ func main() {
 	api.ItemGetListIDHandler = h.ItemGetListID()
 	api.ItemPostListIDHandler = h.ItemPostListID()
 	api.ItemPutListIDItemIDHandler = h.ItemPutListIDItemID()
+	api.ItemPutListIDItemIDTopHandler = h.ItemPutListIDItemIDTop()
 
 	// initialize metrics middleware
 	apiMetrics := APIMetrics.NewMetrics("api", "").WithURLSanitize(utils.WhitelistURLSanitize([]string{}))
