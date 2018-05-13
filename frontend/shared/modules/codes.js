@@ -1,5 +1,5 @@
 import produce from "immer"
-import { read, LOCALE, BASE_URL } from "./config"
+import { read, LOCALE, API_URL } from "./config"
 import { open, COLOR_DANGER } from "./alert"
 import { getToken } from "./authentication"
 
@@ -104,7 +104,7 @@ export const load = category => {
     return dispatch => {
         dispatch({ type: LOADING, category })
         const locale = dispatch(read(LOCALE))
-        const url = `${dispatch(read(BASE_URL))}/discovery/codes/${category}?locale=${locale}`
+        const url = `${dispatch(read(API_URL))}/discovery/codes/${category}?locale=${locale}`
 
         return fetch(url, {
             method: "GET",

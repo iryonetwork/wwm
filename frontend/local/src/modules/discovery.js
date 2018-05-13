@@ -1,6 +1,6 @@
 import produce from "immer"
 import { open, COLOR_DANGER } from "shared/modules/alert"
-import { read, BASE_URL, LOCATION_ID } from "shared/modules/config"
+import { read, API_URL, LOCATION_ID } from "shared/modules/config"
 import { getToken } from "shared/modules/authentication"
 
 export const SEARCH = "patient/SEARCH"
@@ -48,7 +48,7 @@ export default (state = initialState, action) => {
 }
 
 export const newPatient = formData => dispatch => {
-    const url = `${dispatch(read(BASE_URL))}/discovery`
+    const url = `${dispatch(read(API_URL))}/discovery`
 
     var data = {
         connections: [
@@ -84,7 +84,7 @@ export const newPatient = formData => dispatch => {
 }
 
 export const search = query => dispatch => {
-    const url = `${dispatch(read(BASE_URL))}/discovery?query=${query}`
+    const url = `${dispatch(read(API_URL))}/discovery?query=${query}`
     dispatch({ type: SEARCH })
 
     return fetch(url, {
@@ -109,7 +109,7 @@ export const search = query => dispatch => {
 }
 
 export const get = patientID => dispatch => {
-    const url = `${dispatch(read(BASE_URL))}/discovery/${patientID}`
+    const url = `${dispatch(read(API_URL))}/discovery/${patientID}`
     dispatch({ type: FETCH })
 
     return fetch(url, {

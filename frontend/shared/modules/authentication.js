@@ -1,7 +1,7 @@
 import produce from "immer"
 import { push } from "react-router-redux"
 import jwtDecode from "jwt-decode"
-import { read, BASE_URL } from "./config"
+import { read, API_URL } from "./config"
 
 import { open, close, COLOR_DANGER } from "./alert"
 
@@ -62,7 +62,7 @@ const renewInterval = 10 * 60 * 1000
 
 export const renewToken = () => {
     return (dispatch, getState) => {
-        return fetch(`${dispatch(read(BASE_URL))}/auth/renew`, {
+        return fetch(`${dispatch(read(API_URL))}/auth/renew`, {
             headers: {
                 "Content-Type": "application/json",
                 Authorization: getState().authentication.tokenString
@@ -120,7 +120,7 @@ export const login = () => {
             type: LOGIN
         })
 
-        return fetch(`${dispatch(read(BASE_URL))}/auth/login`, {
+        return fetch(`${dispatch(read(API_URL))}/auth/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

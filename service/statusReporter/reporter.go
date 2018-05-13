@@ -117,9 +117,13 @@ func (r *StatusReporter) AddComponent(env Environment, id string, c status.Compo
 func (r *StatusReporter) Handler(prefix string) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc(fmt.Sprintf("/%s", prefix), handlerFunc(func() interface{} { return r.Status() }))
+	mux.HandleFunc(fmt.Sprintf("/%s/", prefix), handlerFunc(func() interface{} { return r.Status() }))
 	mux.HandleFunc(fmt.Sprintf("/%s/%s", prefix, Local), handlerFunc(func() interface{} { return r.EnvironmentStatus(Local) }))
+	mux.HandleFunc(fmt.Sprintf("/%s/%s/", prefix, Local), handlerFunc(func() interface{} { return r.EnvironmentStatus(Local) }))
 	mux.HandleFunc(fmt.Sprintf("/%s/%s", prefix, Cloud), handlerFunc(func() interface{} { return r.EnvironmentStatus(Cloud) }))
+	mux.HandleFunc(fmt.Sprintf("/%s/%s/", prefix, Cloud), handlerFunc(func() interface{} { return r.EnvironmentStatus(Cloud) }))
 	mux.HandleFunc(fmt.Sprintf("/%s/%s", prefix, External), handlerFunc(func() interface{} { return r.EnvironmentStatus(External) }))
+	mux.HandleFunc(fmt.Sprintf("/%s/%s/", prefix, External), handlerFunc(func() interface{} { return r.EnvironmentStatus(External) }))
 
 	return mux
 }

@@ -1,6 +1,7 @@
 {
     "locale": "en",
     "baseUrl": "https://iryo.local",
+    "apiUrl": "https://iryo.local/api/v1",
     "clinicId": "e4ebb41b-7c62-4db7-9e1c-f47058b96dd0",
     "locationId": "2d04b22e-1cc3-46b4-96dd-2bee5bad9ffa",
     "babyMaxAge": 1,

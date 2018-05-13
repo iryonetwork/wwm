@@ -2,7 +2,7 @@ import produce from "immer"
 import { goBack, push } from "react-router-redux"
 import _ from "lodash"
 import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
-import { read, BASE_URL, DEFAULT_WAITLIST_ID } from "shared/modules/config"
+import { read, API_URL, DEFAULT_WAITLIST_ID } from "shared/modules/config"
 import { getToken } from "shared/modules/authentication"
 
 export const LIST = "waitlist/LIST"
@@ -86,48 +86,9 @@ export default (state = initialState, action) => {
     })
 }
 
-// export const newPatient = (formData) => (
-//     (dispatch) => {
-//         const url = `${dispatch(read(BASE_URL))}/discovery`
-
-//         var data = {
-//             connections: [
-//                 {key: 'firstName', value: formData.firstName},
-//                 {key: 'lastName', value: formData.lastName},
-//                 {key: 'dateOfBirth', value: formData.dateOfBirth},
-//                 {key: 'nationality', value: formData.nationality},
-//                 {key: 'gender', value: formData.gender},
-//                 {key: 'tent', value: formData.tent},
-//                 {key: 'camp', value: formData.camp},
-//             ],
-//             locations: [dispatch(read(LOCATION_ID))],
-//         };
-
-//         (formData.documents || []).forEach(doc => {
-//             data.connections.push({key: doc.type, value: doc.number})
-//         });
-
-//         return fetch(url, {
-//             method: 'POST',
-//             headers: {
-//                 Authorization: dispatch(getToken()),
-//                 "Content-Type": "application/json"
-//             },
-//             body: JSON.stringify(data),
-//         })
-//             .then(response => Promise.all([response.status === 201, response.json()]))
-//             .then(([ok, data]) => {
-//                 if (!ok) {
-//                     throw new Error('Failed to load insert new card / patient')
-//                 }
-//                 return data
-//             })
-//     }
-// )
-
 export const add = (formData, patient) => dispatch => {
     const waitlistID = dispatch(read(DEFAULT_WAITLIST_ID))
-    const url = `${dispatch(read(BASE_URL))}/waitlist/${waitlistID}`
+    const url = `${dispatch(read(API_URL))}/waitlist/${waitlistID}`
     dispatch({ type: ADD })
 
     const data = {
@@ -165,7 +126,7 @@ export const add = (formData, patient) => dispatch => {
 }
 
 export const listAll = listID => dispatch => {
-    const url = `${dispatch(read(BASE_URL))}/waitlist/${listID}`
+    const url = `${dispatch(read(API_URL))}/waitlist/${listID}`
     dispatch({ type: LIST })
 
     return fetch(url, {
@@ -203,31 +164,10 @@ export const get = (waitlistID, itemID) => (dispatch, getState) => {
         dispatch(open("Waitlist item not found", "", COLOR_DANGER))
         throw new Error("waitlist item not found")
     })
-    // const url = `${dispatch(read(BASE_URL))}/waitlist/${waitlistID}/${itemID}`
-
-    // return fetch(url, {
-    //     method: "GET",
-    //     headers: {
-    //         Authorization: dispatch(getToken()),
-    //         "Content-Type": "application/json"
-    //     }
-    // })
-    //     .then(response => Promise.all([response.status === 200, response.json(), response.status]))
-    //     .then(([ok, data, status]) => {
-    //         if (!ok) {
-    //             throw new Error(`Failed to fetch waitlist item (${status})`)
-    //         }
-    //         dispatch({ type: FETCHED, result: data })
-    //         return data
-    //     })
-    //     .catch(ex => {
-    //         dispatch(open(ex.message, "", COLOR_DANGER))
-    //         dispatch({ type: FAILED })
-    //     })
 }
 
 export const update = (listID, data) => dispatch => {
-    const url = `${dispatch(read(BASE_URL))}/waitlist/${listID}/${data.id}`
+    const url = `${dispatch(read(API_URL))}/waitlist/${listID}/${data.id}`
     dispatch({
         type: UPDATE_ITEM,
         itemID: data.id
@@ -263,7 +203,7 @@ export const update = (listID, data) => dispatch => {
 }
 
 export const moveToTop = (listID, itemID) => dispatch => {
-    const url = `${dispatch(read(BASE_URL))}/waitlist/${listID}/${itemID}/top`
+    const url = `${dispatch(read(API_URL))}/waitlist/${listID}/${itemID}/top`
     dispatch({
         type: UPDATE_ITEM,
         itemID: itemID
@@ -297,9 +237,8 @@ export const moveToTop = (listID, itemID) => dispatch => {
         })
 }
 
-
 export const remove = (listID, itemID, reason) => dispatch => {
-    const url = `${read(BASE_URL)}/waitlist/${listID}/${itemID}?reason=${reason}`
+    const url = `${dispatch(read(API_URL))}/waitlist/${listID}/${itemID}?reason=${reason}`
 
     return fetch(url, {
         method: "DELETE",

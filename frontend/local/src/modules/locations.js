@@ -1,5 +1,5 @@
 import produce from "immer"
-import { read, BASE_URL } from "shared/modules/config"
+import { read, API_URL } from "shared/modules/config"
 import { open, COLOR_DANGER } from "shared/modules/alert"
 import { getToken } from "shared/modules/authentication"
 
@@ -49,7 +49,7 @@ export const load = id => (dispatch, getState) => {
     }
 
     dispatch({ type: LOADING })
-    const url = `${dispatch(read(BASE_URL))}/auth/locations/${id}`
+    const url = `${dispatch(read(API_URL))}/auth/locations/${id}`
 
     return fetch(url, {
         method: "GET",

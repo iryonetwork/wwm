@@ -1,5 +1,5 @@
 import { composePatientData } from "./ehr"
-import { read, BASE_URL } from "shared/modules/config"
+import { read, API_URL } from "shared/modules/config"
 import { getToken } from "shared/modules/authentication"
 
 export const createPatient = (patientId, formData) => dispatch => {
@@ -14,7 +14,7 @@ export const createPatient = (patientId, formData) => dispatch => {
 }
 
 export const uploadFile = (patientId, data, labels, archetype) => dispatch => {
-    const url = `${dispatch(read(BASE_URL))}/storage/${patientId}`
+    const url = `${dispatch(read(API_URL))}/storage/${patientId}`
 
     let formData = new FormData()
     formData.append("file", new Blob([JSON.stringify(data)], { type: "application/json" }))
@@ -39,7 +39,7 @@ export const uploadFile = (patientId, data, labels, archetype) => dispatch => {
 }
 
 export const updateFile = (patientID, fileID, data, labels, archetype) => dispatch => {
-    const url = `${dispatch(read(BASE_URL))}/storage/${patientID}/${fileID}`
+    const url = `${dispatch(read(API_URL))}/storage/${patientID}/${fileID}`
 
     let formData = new FormData()
     formData.append("file", new Blob([JSON.stringify(data)], { type: "application/json" }))
@@ -64,7 +64,7 @@ export const updateFile = (patientID, fileID, data, labels, archetype) => dispat
 }
 
 export const readFile = (patientID, fileID) => dispatch => {
-    const url = `${dispatch(read(BASE_URL))}/storage/${patientID}/${fileID}`
+    const url = `${dispatch(read(API_URL))}/storage/${patientID}/${fileID}`
 
     return fetch(url, {
         method: "GET",
@@ -83,7 +83,7 @@ export const readFile = (patientID, fileID) => dispatch => {
 }
 
 export const readFileByLabel = (patientID, label) => dispatch => {
-    const labelUrl = `${dispatch(read(BASE_URL))}/storage/${patientID}/${label}`
+    const labelUrl = `${dispatch(read(API_URL))}/storage/${patientID}/${label}`
 
     return fetch(labelUrl, {
         method: "GET",

@@ -164,27 +164,27 @@ address = ":8080"
   [frontends.localauth]
   backend = "localauth"
     [frontends.localauth.routes.route1]
-    rule = "Host:iryo.local;PathPrefix:/auth"
+    rule = "Host:iryo.local;PathPrefixStrip:/api/v1/auth;AddPrefix:/auth"
 
   [frontends.localstorage]
   backend = "localstorage"
     [frontends.localstorage.routes.route1]
-    rule = "Host:iryo.local;PathPrefix:/storage"
+    rule = "Host:iryo.local;PathPrefixStrip:/api/v1/storage;AddPrefix:/storage"
 
   [frontends.cloudauth]
   backend = "cloudauth"
     [frontends.cloudauth.routes.route1]
-    rule = "Host:iryo.cloud;PathPrefix:/auth"
+    rule = "Host:iryo.cloud;PathPrefixStrip:/api/v1/auth;AddPrefix:/auth"
 
   [frontends.localstorageMetrics]
   backend = "localstorageMetrics"
     [frontends.localstorageMetrics.routes.route1]
-    rule = "Host:iryo.local;PathPrefix:/storage/metrics"
+    rule = "Host:iryo.local;PathPrefix:/apStripi/v1/storage;AddPrefix:/e/metricstorage"
 
   [frontends.waitlist]
   backend = "waitlist"
     [frontends.waitlist.routes.route1]
-    rule = "Host:iryo.local;PathPrefix:/waitlist"
+    rule = "Host:iryo.local;PathPrefixStrip:/api/v1/waitlist;AddPrefix:/waitlist"
 
   [frontends.localMinio]
   backend = "localMinio"
@@ -194,7 +194,7 @@ address = ":8080"
   [frontends.cloudstorage]
   backend = "cloudstorage"
     [frontends.cloudstorage.routes.route1]
-    rule = "Host:iryo.cloud;PathPrefix:/storage"
+    rule = "Host:iryo.cloud;PathPrefix:/api/v1/storage;AddPrefix:/e;ReplacePathRegexStrip: ^/api/v1/(.*)$ /$storage"
 
   [frontends.cloudMinio]
   backend = "cloudMinio"
@@ -229,22 +229,22 @@ address = ":8080"
   [frontends.localStatus]
   backend = "localStatusReporter"
     [frontends.localStatus.routes.route1]
-    rule = "Host:iryo.local;PathPrefix:/status"
+    rule = "Host:iryo.local;PathPrefixStrip:/api/v1/status;AddPrefix:/status"
 
   [frontends.cloudStatus]
   backend = "cloudStatusReporter"
     [frontends.cloudStatus.routes.route1]
-    rule = "Host:iryo.cloud;PathPrefix:/status"
+    rule = "Host:iryo.cloud;PathPrefixStrip:/api/v1/status;AddPrefix:/status"
 
   [frontends.localdiscovery]
   backend = "localdiscovery"
     [frontends.localdiscovery.routes.route1]
-    rule = "Host:iryo.local;PathPrefix:/discovery"
+    rule = "Host:iryo.local;PathPrefixStrip:/api/v1/discovery;AddPrefix:/discovery"
 
   [frontends.clouddiscovery]
   backend = "clouddiscovery"
     [frontends.clouddiscovery.routes.route1]
-    rule = "Host:iryo.cloud;PathPrefix:/discovery"
+    rule = "Host:iryo.cloud;PathPrefixStrip:/api/v1/discovery;AddPrefix:/discovery"
 
   [frontends.pgweb]
   backend = "pgweb"

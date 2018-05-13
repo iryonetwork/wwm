@@ -1,11 +1,11 @@
-import { read, BASE_URL } from "./config"
+import { read, API_URL } from "./config"
 
 const LOAD_STATUS = "user/LOAD_STATUS"
 const LOAD_STATUS_SUCCESS = "user/LOAD_STATUS_SUCCESS"
 const LOAD_STATUS_FAIL = "user/LOAD_STATUS_FAIL"
 
 const initialState = {
-    status: {status: "warning"},
+    status: { status: "warning" },
     loading: false,
     forbidden: false
 }
@@ -39,18 +39,18 @@ export const loadStatus = () => {
             type: LOAD_STATUS
         })
 
-        const url = `${dispatch(read(BASE_URL))}/status`
+        const url = `${dispatch(read(API_URL))}/status`
 
         return fetch(url, {
             method: "GET",
-            headers: {"Content-Type": "application/json"}
+            headers: { "Content-Type": "application/json" }
         })
             .then(response => Promise.all([response.ok, response.json()]))
             .then(([ok, data]) => {
                 if (!ok) {
                     dispatch({
                         type: LOAD_STATUS_FAIL,
-                        status: {status: "error"},
+                        status: { status: "error" }
                     })
                 }
                 dispatch({

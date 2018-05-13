@@ -1,4 +1,4 @@
-import { read, BASE_URL } from "./config"
+import { read, API_URL } from "./config"
 import { getToken } from "./authentication"
 
 function APIError(error) {
@@ -6,8 +6,8 @@ function APIError(error) {
     this.code = error.code
     this.name = "API Error"
 }
-export default (endpoint, method, body) => dispatch =>  {
-    const url = `${dispatch(read(BASE_URL))}${endpoint}`
+export default (endpoint, method, body) => dispatch => {
+    const url = `${dispatch(read(API_URL))}${endpoint}`
 
     return fetch(url, {
         method: method,

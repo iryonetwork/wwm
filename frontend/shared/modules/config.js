@@ -8,6 +8,7 @@ export const FAILED = "config/FAILED"
 
 export const LOCALE = "locale"
 export const BASE_URL = "baseUrl"
+export const API_URL = "apiUrl"
 export const CLINIC_ID = "clinicId"
 export const LOCATION_ID = "locationId"
 export const BABY_MAX_AGE = "babyMaxAge"
