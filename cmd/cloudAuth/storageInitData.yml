@@ -306,11 +306,11 @@ rules:
     subject: 99aca094-fb08-4734-a0df-e50e66fa5531 # doctor role
     resource: /frontend/waitlist
     action: 15
-  - id: 15e4e977-893d-4a94-a7c1-e0f33b71008d
+  - id: 885d045b-2f06-4059-a228-d7c0635358a4
     subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
     resource: /frontend/waitlist
     action: 15
-  - id: 4aa893ec-8902-49b1-a66a-cece015e24d7
+  - id: c3489c3b-55c8-485d-a79f-d900e986d772
     subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
     resource: /frontend/waitlist
     action: 1
