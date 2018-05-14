@@ -115,7 +115,6 @@ export const add = (formData, patient) => dispatch => {
                 throw new Error(`Failed to add patient to waitlist (${status})`)
             }
             dispatch({ type: ADDED, result: data })
-            dispatch(goBack())
             setTimeout(() => dispatch(open("Patient was added to waiting list", "", COLOR_SUCCESS, 5)), 100)
             return data
         })

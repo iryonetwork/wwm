@@ -2,6 +2,7 @@ import React, { Component } from "react"
 import { connect } from "react-redux"
 //import PropTypes from "prop-types"
 import classnames from "classnames"
+import { push } from "react-router-redux"
 
 import { createPatient } from "../../../modules/patient"
 
@@ -41,10 +42,9 @@ class NewPatientForm extends Component {
     }
 
     onSubmit(data) {
-        return this.props
-            .dispatch(createPatient(data))
+        return this.props.createPatient(data)
             .then(patientID => {
-                this.props.history.push(`/to-waitlist/${patientID}`)
+                this.props.push(`/to-waitlist/${patientID}`)
             })
             .catch(ex => {})
     }
@@ -99,6 +99,12 @@ NewPatientForm.propTypes = {
     //onSubmit: PropTypes.func.isRequired
 }
 
-NewPatientForm = connect()(NewPatientForm)
+NewPatientForm = connect(
+    state => ({}),
+    {
+        push,
+        createPatient,
+    }
+)(NewPatientForm)
 
 export default NewPatientForm

@@ -1,5 +1,6 @@
 import React from "react"
 import { withRouter } from "react-router-dom"
+import { push } from "react-router-redux"
 
 const Footer = ({ history, reset, previousPage, creating }) => (
     <div className="modal-footer">
@@ -9,7 +10,7 @@ const Footer = ({ history, reset, previousPage, creating }) => (
                     type="button"
                     tabIndex="-1"
                     className="btn btn-link btn-block"
-                    datadismiss="modal"
+                    data-dismiss="has-modal"
                     onClick={() => {
                         reset()
                         history.push("/")
@@ -26,7 +27,7 @@ const Footer = ({ history, reset, previousPage, creating }) => (
                 )}
             </div>
             <div className="col-sm-4">
-                <button type="submit" className="float-right btn btn-primary btn-block" disabled={creating}>
+                <button type="submit" data-dismiss="has-modal" className="float-right btn btn-primary btn-block" disabled={creating}>
                     {creating ? "Saving..." : "Next"}
                 </button>
             </div>

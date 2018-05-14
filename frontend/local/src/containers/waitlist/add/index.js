@@ -31,7 +31,10 @@ class AddToWaitlist extends Component {
 
     onSubmit(formData) {
         this.props.add(formData, this.props.patient)
-        document.body.classList.remove("has-modal")
+            .then(data => {
+                this.props.push("/")
+            })
+            .catch(ex => {})
     }
 
     render() {
@@ -65,7 +68,7 @@ class AddToWaitlist extends Component {
                                             </div>
                                             <div className="col-sm-4" />
                                             <div className="col-sm-4">
-                                                <button type="submit" className="float-right btn btn-primary btn-block" disabled>
+                                                <button type="submit" data-dismiss="has-modal" className="float-right btn btn-primary btn-block" disabled>
                                                     Add
                                                 </button>
                                             </div>
@@ -119,9 +122,9 @@ class AddToWaitlist extends Component {
                                                 type="button"
                                                 tabIndex="-1"
                                                 className="btn btn-link btn-block"
-                                                datadismiss="modal"
+                                                data-dismiss="has-modal"
                                                 onClick={() => {
-                                                    push("/")
+                                                    this.props.push("/")
                                                 }}
                                             >
                                                 Cancel
@@ -129,7 +132,7 @@ class AddToWaitlist extends Component {
                                         </div>
                                         <div className="col-sm-4" />
                                         <div className="col-sm-4">
-                                            <button type="submit" className="float-right btn btn-primary btn-block">
+                                            <button type="submit" data-dismiss="has-modal" className="float-right btn btn-primary btn-block">
                                                 Add
                                             </button>
                                         </div>
