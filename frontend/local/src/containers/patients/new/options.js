@@ -1,14 +1,3 @@
-const yesNoOptions = [
-    {
-        value: true,
-        label: "Yes"
-    },
-    {
-        value: false,
-        label: "No"
-    }
-]
-
 const documentTypeOptions = [
     {
         label: "Syrian ID",
@@ -20,4 +9,4 @@ const documentTypeOptions = [
     }
 ]
 
-export { yesNoOptions, documentTypeOptions }
+export { documentTypeOptions }

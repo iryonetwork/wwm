@@ -1,4 +1,4 @@
-import { newPatient } from "./discovery"
+import { newPatient, get, cardToObject } from "./discovery"
 // DEV ONLY MODULE
 import produce from "immer"
 import { push } from "react-router-redux"
@@ -208,15 +208,47 @@ export default (state = initialState, action) => {
     })
 }
 
+const getNewMembers = formData => {
+    return formData.familyMembers.filter(member => member.patientID === undefined).map(member => {
+        if (member.livingTogether === "true") {
+            member.tent = formData.tent
+            member.camp = formData.camp
+        }
+        if (member.documentType) {
+            member.documents = [
+                {
+                    type: member.documentType,
+                    number: member.documentNumber
+                }
+            ]
+        }
+        console.log(member)
+        return member
+    })
+}
+
 export const createPatient = formData => (dispatch, getState) => {
     dispatch({ type: CREATE })
     // insert into discovery
-    return dispatch(newPatient(formData))
-        .then(newPatientCard => {
-            // insert into storage
-            return dispatch(createPatientInStorage(newPatientCard.patientID, formData)).then(result => {
-                dispatch({ type: CREATED })
-                return newPatientCard.patientID
+
+    let familyMembers = getNewMembers(formData)
+
+    return Promise.all(familyMembers.map(member => Promise.all([member, dispatch(newPatient(member))])))
+        .then(members => {
+            return Promise.all(
+                members.map(([member, newPatient]) => {
+                    member.patientID = newPatient.patientID
+                    return dispatch(uploadFile(newPatient.patientID, member, "person", "openEHR-DEMOGRAPHIC-PERSON.person.v1"))
+                })
+            )
+        })
+        .then(() => {
+            return dispatch(newPatient(formData)).then(newPatientCard => {
+                // insert into storage
+                return dispatch(createPatientInStorage(newPatientCard.patientID, formData)).then(result => {
+                    dispatch({ type: CREATED })
+                    return newPatientCard.patientID
+                })
             })
         })
         .catch(ex => {
@@ -229,18 +261,32 @@ export const updatePatient = formData => (dispatch, getState) => {
     dispatch({ type: UPDATE })
 
     let patient = getState().patient.patient
+    let familyMembers = getNewMembers(formData)
 
-    return dispatch(composePatientData(formData))
-        .then(({ person, info }) => {
-            // upload user data to storage
-            return Promise.all([
-                dispatch(updateFile(patient.ID, patient.personFileID, person, "person", "openEHR-DEMOGRAPHIC-PERSON.person.v1")),
-                dispatch(updateFile(patient.ID, patient.infoFileID, info, "info", "openEHR-EHR-ITEM_TREE.patient_info.v0"))
-            ])
+    return Promise.all(familyMembers.map(member => Promise.all([member, dispatch(newPatient(member))])))
+        .then(members => {
+            return Promise.all(
+                members.map(([member, newPatient]) => {
+                    member.patientID = newPatient.patientID
+                    return dispatch(uploadFile(newPatient.patientID, member, "person", "openEHR-DEMOGRAPHIC-PERSON.person.v1"))
+                })
+            )
         })
-        .then(result => {
-            dispatch({ type: UPDATE_DONE, data: formData })
-            return result
+        .then(() => {
+            return dispatch(composePatientData(formData))
+                .then(({ person, info }) => {
+                    console.log(formData)
+                    console.log(person, info)
+                    // upload user data to storage
+                    return Promise.all([
+                        dispatch(updateFile(patient.ID, patient.personFileID, person, "person", "openEHR-DEMOGRAPHIC-PERSON.person.v1")),
+                        dispatch(updateFile(patient.ID, patient.infoFileID, info, "info", "openEHR-EHR-ITEM_TREE.patient_info.v0"))
+                    ])
+                })
+                .then(result => {
+                    dispatch({ type: UPDATE_DONE, data: formData })
+                    return result
+                })
         })
         .catch(ex => {
             dispatch({ type: UPDATE_FAILED })
@@ -258,8 +304,30 @@ export const fetchPatient = patientID => dispatch => {
             patient.ID = patientID
             patient.infoFileID = infoFileID
             patient.personFileID = personFileID
-            dispatch({ type: LOADED, result: patient })
-            return patient
+
+            return Promise.all(
+                patient.familyMembers.map((member, index) => {
+                    return dispatch(get(member.patientID)).then(card => {
+                        let obj = cardToObject(card)
+
+                        if (obj["syrian-id"]) {
+                            obj.documentType = "syrian_id"
+                            obj.documentNumber = obj["syrian-id"]
+                        } else if (obj["un-id"]) {
+                            obj.documentType = "un_id"
+                            obj.documentNumber = obj["un-id"]
+                        }
+
+                        patient.familyMembers[index] = {
+                            ...member,
+                            ...obj
+                        }
+                    })
+                })
+            ).then(() => {
+                dispatch({ type: LOADED, result: patient })
+                return patient
+            })
         })
 }
 

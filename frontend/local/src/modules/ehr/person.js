@@ -143,6 +143,30 @@ export default dispatch => {
                         formPath: "type"
                     }
                 ]
+            },
+
+            /* Relationships (array) */
+            {
+                type: "array",
+                ehrPath: "content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/relationships[at0004]",
+                formPath: "familyMembers",
+                items: [
+                    {
+                        type: "value",
+                        ehrPath: "|id",
+                        formPath: "patientID"
+                    },
+                    {
+                        type: "value",
+                        ehrPath: "|namespace",
+                        formPath: "livingTogether"
+                    },
+                    {
+                        type: "value",
+                        ehrPath: "|type",
+                        formPath: "relation"
+                    }
+                ]
             }
         ]
     )

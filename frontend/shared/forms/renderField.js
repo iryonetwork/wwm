@@ -2,10 +2,11 @@ import React from "react"
 import classnames from "classnames"
 import Select from "react-select"
 
-const renderInput = ({ input, optional, label, type, meta: { touched, error } }) => (
+const renderInput = ({ input, optional, disabled, label, type, meta: { touched, error } }) => (
     <label>
         <input
             {...input}
+            disabled={disabled}
             className={classnames("form-control", { "is-invalid": touched && error })}
             placeholder={classnames(label, { "(optional)": optional })}
             type={type || "text"}
@@ -32,9 +33,9 @@ const renderHorizontalInput = ({ input, optional, label, unit, hideLabel, type, 
     </div>
 )
 
-const renderSelect = ({ input, pristine, label, options, meta: { touched, error } }) => (
+const renderSelect = ({ input, disabled, pristine, label, options, meta: { touched, error } }) => (
     <label>
-        <select {...input} className={classnames("form-control", { "is-invalid": touched && error, selected: input.value !== "" })}>
+        <select {...input} disabled={disabled} className={classnames("form-control", { "is-invalid": touched && error, selected: input.value !== "" })}>
             <option value="" disabled>
                 {label}
             </option>

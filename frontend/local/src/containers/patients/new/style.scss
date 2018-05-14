@@ -1,12 +1,5 @@
 @import "shared/styles/variables.scss";
 
-.new-patient {
-    .alert {
-        top: 0;
-        margin-bottom: -10px;
-    }
-}
-
 .patient-form {
     h3 {
         font-size: 18px;
@@ -40,6 +33,27 @@
     .form-row {
         margin-top: 20px;
         margin-bottom: 20px;
+    }
+
+    .search {
+        margin-bottom: 50px;
+
+        .Select-menu-outer {
+            z-index: 1000;
+        }
+
+        .patientCard {
+            margin: 0;
+        }
+
+        .table.patients th,
+        .table.patients td {
+            border-bottom: 0;
+        }
+    }
+
+    .remove {
+        margin-top: -80px;
     }
 
     .habits {

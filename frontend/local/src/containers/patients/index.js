@@ -16,18 +16,16 @@ const ListRow = ({ patient, canAddToWaitlist }) => {
     return (
         <tr>
             <th scope="row">
-                <Link className="patientLink" to={`/patients/${patient.patientID}`}><Patient data={p} /></Link>
+                <Link className="patientLink" to={`/patients/${patient.patientID}`}>
+                    <Patient data={p} />
+                </Link>
             </th>
             <td>{p.nationality}</td>
             <td>{id}</td>
             <td>
                 Camp {p.camp}, Tent {p.tent}
             </td>
-            <td>
-                {canAddToWaitlist && (
-                    <Link to={`/to-waitlist/${patient.patientID}`}>Add to Waiting List</Link>
-                )}
-            </td>
+            <td>{canAddToWaitlist && <Link to={`/to-waitlist/${patient.patientID}`}>Add to Waiting List</Link>}</td>
         </tr>
     )
 }
@@ -42,12 +40,12 @@ class PatientList extends React.Component {
     }
 
     updateSearchQuery = e => {
-        this.setState({searchQuery: e.target.value})
+        this.setState({ searchQuery: e.target.value })
     }
 
     search = e => {
-        e.preventDefault();
-        this.props.search(this.state.searchQuery);
+        e.preventDefault()
+        this.props.search(this.state.searchQuery)
     }
 
     render() {
@@ -61,14 +59,20 @@ class PatientList extends React.Component {
                         <button onClick={() => push("/new-patient")} className="btn btn-secondary btn-wide" type="submit">
                             Add New Patient
                         </button>
-                    ) : (null)}
+                    ) : null}
                 </header>
 
                 {this.props.canSeePatients ? (
                     <div>
                         <form onSubmit={this.search}>
                             <div className="input-group search">
-                                <input name="search" placeholder="Search" className="form-control" value={this.state.searchQuery} onChange={this.updateSearchQuery} />
+                                <input
+                                    name="search"
+                                    placeholder="Search"
+                                    className="form-control"
+                                    value={this.state.searchQuery}
+                                    onChange={this.updateSearchQuery}
+                                />
                                 <span className="input-group-append">
                                     <button type="submit" className="btn btn-secondary">
                                         Search
@@ -80,11 +84,15 @@ class PatientList extends React.Component {
                             <Spinner />
                         ) : (
                             <table className="table patients">
-                                <tbody>{this.props.patients.map(patient => <ListRow patient={patient} key={patient.patientID} canAddToWaitlist={this.props.canAddToWaitlist} />)}</tbody>
+                                <tbody>
+                                    {this.props.patients.map(patient => (
+                                        <ListRow patient={patient} key={patient.patientID} canAddToWaitlist={this.props.canAddToWaitlist} />
+                                    ))}
+                                </tbody>
                             </table>
                         )}
                     </div>
-                ) : (null)}
+                ) : null}
             </div>
         )
     }
@@ -96,9 +104,11 @@ PatientList = connect(
         patients: state.discovery.patients || [],
         canAddPatient: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[WRITE],
         canSeePatients: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[READ],
-        canAddToWaitlist: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[WRITE],
+        canAddToWaitlist: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[WRITE]
     }),
     { search, push }
 )(PatientList)
 
 export default PatientList
+
+export { ListRow }

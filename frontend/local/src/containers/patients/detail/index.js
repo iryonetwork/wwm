@@ -41,6 +41,17 @@ class PatientDetail extends React.Component {
         }
     }
 
+    componentDidUpdate(prevProps) {
+        if (this.props.match.params.waitlistID && this.props.match.params.itemID && this.props.match.params.itemID !== prevProps.match.params.itemID) {
+            this.props
+                .getWaitlistItem(this.props.match.params.waitlistID, this.props.match.params.itemID)
+                .then(item => this.props.fetchPatient(item.patientID))
+                .catch(ex => console.warn("Failed to load patient", ex))
+        } else if (this.props.match.params.patientID !== prevProps.match.params.patientID) {
+            this.props.fetchPatient(this.props.match.params.patientID).catch(ex => console.warn("Failed to load patient", ex))
+        }
+    }
+
     render() {
         const { waitlistFetching, patientLoading, waitlistItem, patient, match } = this.props
 
