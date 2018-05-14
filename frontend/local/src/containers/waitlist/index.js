@@ -1,7 +1,7 @@
 import React from "react"
 import classnames from "classnames"
 import { connect } from "react-redux"
-import { Link } from "react-router-dom"
+import { Route, Link } from "react-router-dom"
 import { UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap"
 import { listAll, moveToTop } from "../../modules/waitlist"
 import { cardToObject } from "../../modules/discovery"
@@ -16,6 +16,8 @@ import {
     DELETE
 } from "../../modules/validations"
 
+import MedicalData from "./detail/add-data"
+import EditComplaint from "./detail/edit-complaint"
 import Patient from "shared/containers/patient"
 import Spinner from "shared/containers/spinner"
 
@@ -45,6 +47,10 @@ class Waitlist extends React.Component {
                 </div>
             )
         }
+
+        const waitlistID = match.params.waitlistID
+        const waitlistItemID = match.params.itemID
+        const baseMatchURL = (waitlistID && waitlistItemID) ? "/waitlist/:waitlistID/:itemID" : "/waitlist/:waitlistID"
 
         return (
             <div className="waitlist">
@@ -94,6 +100,8 @@ class Waitlist extends React.Component {
                     canSeeVitalSigns={this.props.canSeeVitalSigns}
                     canAddVitalSigns={this.props.canAddVitalSigns}
                 />
+                {this.props.canEditMainComplaint && <Route path={baseMatchURL + "/edit-complaint"} component={EditComplaint} />}
+                {this.props.canAddVitalSigns && <Route path={baseMatchURL + "/add-data"} component={MedicalData} />}
             </div>
         )
     }
@@ -199,12 +207,12 @@ class Tools extends React.Component {
                             )}
                         {canEditMainComplaint && (
                             <DropdownItem>
-                                <Link to={`/waitlist/${waitlistID}/${itemID}/consultation/edit-complaint`}>Edit main complaint</Link>
+                                <Link to={`/waitlist/${waitlistID}/${itemID}/edit-complaint`}>Edit main complaint</Link>
                             </DropdownItem>
                         )}
                         {canAddVitalSigns && (
                             <DropdownItem>
-                                <Link to={`/waitlist/${waitlistID}/${itemID}/consultation/add-data`}>Add vital signs</Link>
+                                <Link to={`/waitlist/${waitlistID}/${itemID}/add-data`}>Add vital signs</Link>
                             </DropdownItem>
                         )}
                         {canSeeExamination && (
@@ -256,8 +264,8 @@ Waitlist = connect(
         canSeePatients: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[READ],
         canSeeVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[READ],
         canAddVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[WRITE],
-        canSeeMainComplaint: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[READ],
-        canEditMainComplaint: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[UPDATE]
+        canSeeMainComplaint: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[READ],
+        canEditMainComplaint: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[UPDATE]
     }),
     {
         listAll

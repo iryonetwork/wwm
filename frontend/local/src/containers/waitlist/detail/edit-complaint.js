@@ -6,6 +6,7 @@ import { goBack } from "react-router-redux"
 
 import Modal from "shared/containers/modal"
 import Patient from "shared/containers/patient"
+import Spinner from "shared/containers/spinner"
 import { renderInput, renderTextarea } from "shared/forms/renderField"
 import { open, COLOR_DANGER } from "shared/modules/alert"
 import { listAll, update } from "../../../modules/waitlist"
@@ -45,7 +46,7 @@ class EditComplaint extends React.Component {
 
     render() {
         let { item, history, handleSubmit } = this.props
-        return (
+        return item ? (
             <Modal>
                 <div className="add-to-waitlist">
                     <form onSubmit={handleSubmit(this.handleSubmit)}>
@@ -85,7 +86,7 @@ class EditComplaint extends React.Component {
                     </form>
                 </div>
             </Modal>
-        )
+        ) : (<Spinner />)
     }
 }
 

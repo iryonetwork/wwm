@@ -1,5 +1,5 @@
 import React from "react"
-import { Route, NavLink, Redirect } from "react-router-dom"
+import { Switch, Route, NavLink, Redirect } from "react-router-dom"
 import { connect } from "react-redux"
 import { bindActionCreators } from "redux"
 
@@ -81,12 +81,20 @@ class App extends React.Component {
                         <Alert />
                         {this.props.canSeePatients && (<Route exact path="/" render={() => <Redirect to="/patients" />} />)}
                         {this.props.canSeePatients && (<Route exact path="/patients" component={Patients} />)}
+                        {this.props.canSeePatients && (<Route path="/patients/:patientID" component={WaitlistDetail} />)}
                         {this.props.canAddPatient && (<Route exact path="/new-patient" component={NewPatient} />)}
                         {this.props.canAddToWaitlist && (<Route path="/to-waitlist/:patientID" component={AddToWaitlist} meta={{ modal: true }} />)}
-                        {this.props.canSeeWaitlist && (<Route exact path="/waitlist/:waitlistID" component={Waitlist} />)}
+                        {this.props.canSeeWaitlist && (
+                            <div className="container">
+                                <Route exact path="/waitlist/:waitlistID" component={Waitlist} />
+                                <Switch>
+                                    <Route path="/waitlist/:waitlistID/:itemID/edit-complaint" component={Waitlist} />
+                                    <Route path="/waitlist/:waitlistID/:itemID/add-data" component={Waitlist} />
+                                    <Route path="/waitlist/:waitlistID/:itemID" component={WaitlistDetail} />
+                                </Switch>
+                            </div>
+                        )}
                     </div>
-                   {this.props.canSeeWaitlist && (<Route path="/waitlist/:waitlistID/:itemID" component={WaitlistDetail} />)}
-                   {this.props.canSeePatients && (<Route path="/patients/:patientID" component={WaitlistDetail} />)}
                 </main>
             </React.Fragment>
         )

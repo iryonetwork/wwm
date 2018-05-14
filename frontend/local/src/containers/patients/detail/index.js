@@ -15,7 +15,7 @@ import {
     RESOURCE_DEMOGRAPHIC_INFORMATION,
     RESOURCE_VITAL_SIGNS,
     RESOURCE_HEALTH_HISTORY,
-    RESOURCE_EXAMINATION,
+    RESOURCE_WAITLIST,
     READ
 } from "../../../modules/validations"
 import { fetchPatient } from "../../../modules/patient"
@@ -172,11 +172,8 @@ class PatientDetail extends React.Component {
                     ) : null}
                 </div>
                 <div className="container">
-                    {this.props.canSeePatientId && (
-                        <Route exact path={match.url} render={() => <Redirect to={inConsultation ? baseURL + "consultation" : baseURL + "personal"} />} />
-                    )}
                     {this.props.canSeePatientId && <Route exact path="/patients/:patientID" render={() => <Redirect to={baseURL + "personal"} />} />}
-                    {this.props.canSeeVitalSigns && <Route path={match.path + "/consultation"} component={Consultation} />}
+                    {this.props.canSeeWaitlist && <Route path="/waitlist/:waitlistID/:itemID/consultation" component={Consultation} />}
                     {this.props.canSeeVitalSigns && <Route path={match.path + "/data"} component={Data} />}
                     {this.props.canSeeDemographicInformation && <Route path={match.path + "/personal"} component={Personal} />}
                     {this.props.canSeeHealthHistory && <Route path={match.path + "/history"} component={History} />}
@@ -196,7 +193,7 @@ PatientDetail = connect(
         canSeeDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[READ],
         canSeeVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[READ],
         canSeeHealthHistory: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[READ],
-        canSeeExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[READ]
+        canSeeWaitlist: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[READ]
     }),
     {
         fetchPatient,
