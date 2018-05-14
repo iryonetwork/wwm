@@ -1,6 +1,5 @@
 import React from "react"
 import { withRouter } from "react-router-dom"
-import { push } from "react-router-redux"
 
 const Footer = ({ history, reset, previousPage, creating }) => (
     <div className="modal-footer">

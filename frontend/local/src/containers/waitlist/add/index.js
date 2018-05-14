@@ -124,7 +124,7 @@ class AddToWaitlist extends Component {
                                                 className="btn btn-link btn-block"
                                                 data-dismiss="has-modal"
                                                 onClick={() => {
-                                                    this.props.push("/")
+                                                    push("/")
                                                 }}
                                             >
                                                 Cancel

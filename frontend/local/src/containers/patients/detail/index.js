@@ -15,14 +15,13 @@ import {
     RESOURCE_DEMOGRAPHIC_INFORMATION,
     RESOURCE_VITAL_SIGNS,
     RESOURCE_HEALTH_HISTORY,
-    RESOURCE_WAITLIST,
+    RESOURCE_EXAMINATION,
     READ
 } from "../../../modules/validations"
 import { fetchPatient } from "../../../modules/patient"
 import { get as getWaitlistItem } from "../../../modules/waitlist"
 
 import { ReactComponent as InConsultationIcon } from "shared/icons/in-consultation-active.svg"
-import { ReactComponent as MedicalDataIcon } from "shared/icons/medical-data-active.svg"
 import { ReactComponent as MedicalHistoryIcon } from "shared/icons/medical-history-active.svg"
 import { ReactComponent as PersonalInfoIcon } from "shared/icons/personal-info-active.svg"
 
@@ -173,7 +172,7 @@ class PatientDetail extends React.Component {
                 </div>
                 <div className="container">
                     {this.props.canSeePatientId && <Route exact path="/patients/:patientID" render={() => <Redirect to={baseURL + "personal"} />} />}
-                    {this.props.canSeeWaitlist && <Route path="/waitlist/:waitlistID/:itemID/consultation" component={Consultation} />}
+                    {this.props.canSeeExamination && <Route path="/waitlist/:waitlistID/:itemID/consultation" component={Consultation} />}
                     {this.props.canSeeVitalSigns && <Route path={match.path + "/data"} component={Data} />}
                     {this.props.canSeeDemographicInformation && <Route path={match.path + "/personal"} component={Personal} />}
                     {this.props.canSeeHealthHistory && <Route path={match.path + "/history"} component={History} />}
@@ -193,7 +192,7 @@ PatientDetail = connect(
         canSeeDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[READ],
         canSeeVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[READ],
         canSeeHealthHistory: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[READ],
-        canSeeWaitlist: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[READ]
+        canSeeExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[READ]
     }),
     {
         fetchPatient,

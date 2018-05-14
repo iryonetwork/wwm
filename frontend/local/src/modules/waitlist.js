@@ -1,5 +1,5 @@
 import produce from "immer"
-import { goBack, push } from "react-router-redux"
+import { push } from "react-router-redux"
 import _ from "lodash"
 import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 import { read, API_URL, DEFAULT_WAITLIST_ID } from "shared/modules/config"

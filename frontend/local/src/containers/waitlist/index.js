@@ -30,7 +30,12 @@ const TYPE_WAITLIST = "waitlist"
 class Waitlist extends React.Component {
     constructor(props) {
         super(props)
-        props.listAll(props.match.params.waitlistID)
+
+        const waitlistItemID = props.match.params.itemID
+
+        if (!waitlistItemID || !props.listed) {
+            props.listAll(props.match.params.waitlistID)
+        }
     }
 
     render() {
@@ -257,6 +262,7 @@ Waitlist = connect(
         listNext: state.waitlist.list.length > 1 ? [state.waitlist.list[1]] : [],
         list: state.waitlist.list.length > 2 ? state.waitlist.list.slice(2) : [],
         listing: state.waitlist.listing,
+        listed: state.waitlist.listed,
         canSeeExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[READ],
         canAddExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[WRITE],
         canSeeWaitlist: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[READ],
