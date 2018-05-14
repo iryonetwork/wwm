@@ -2,6 +2,7 @@ import React from "react"
 import { Field, reduxForm } from "redux-form"
 import { connect } from "react-redux"
 import { withRouter } from "react-router"
+import { goBack } from "react-router-redux"
 
 import Modal from "shared/containers/modal"
 import Patient from "shared/containers/patient"
@@ -35,6 +36,11 @@ class EditComplaint extends React.Component {
         item.mainComplaint.comment = form.mainComplaintDetails
 
         this.props.update(this.props.match.params.waitlistID, item)
+            .then(data => {
+                this.props.goBack()
+                this.props.listAll(this.props.match.params.waitlistID)
+            })
+            .catch(ex => {})
     }
 
     render() {
@@ -107,7 +113,8 @@ EditComplaint = connect(
     {
         listAll,
         update,
-        open
+        open,
+        goBack
     }
 )(EditComplaint)
 
