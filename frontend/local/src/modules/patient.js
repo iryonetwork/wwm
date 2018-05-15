@@ -1,10 +1,12 @@
 import { newPatient } from "./discovery"
 // DEV ONLY MODULE
 import produce from "immer"
+import { push } from "react-router-redux"
 // insert into storage
-import { open, COLOR_DANGER } from "shared/modules/alert"
-import { createPatient as createPatientInStorage, readFileByLabel, updateFile } from "./storage"
-import { extractPatientData, composePatientData } from "./ehr"
+import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
+import { createPatient as createPatientInStorage, readFileByLabel, updateFile, uploadFile } from "./storage"
+import { extractPatientData, composePatientData, buildEncounterData, extractEncounterData } from "./ehr"
+import { get as waitlistGet, remove as waitlistRemove } from "./waitlist"
 
 export const CREATE = "patient/CREATE"
 export const CREATED = "patient/CREATED"
@@ -261,7 +263,53 @@ export const fetchPatient = patientID => dispatch => {
         })
 }
 
-export const saveConsultation = (waitlistID, waitlistItemID) => dispatch => {
+export const saveConsultation = (waitlistID, itemID) => dispatch => {
     dispatch({ type: SAVING })
-    return Promise.resolve({ save: true })
+
+    // get waitlist item
+    return (
+        dispatch(waitlistGet(waitlistID, itemID))
+            .then(item => {
+                let data = {
+                    patientID: item.patientID,
+                    vitalSigns: item.vitalSigns || {},
+                    mainComplaint: item.mainComplaint || {},
+                    diagnoses: [],
+                    therapies: []
+                }
+                ;(item.diagnoses || []).forEach((el, i) => {
+                    // extract diagnoses
+                    data.diagnoses.push({
+                        diagnosis: el.diagnosis,
+                        comment: el.comment
+                    })
+                    // extract therapies
+                    ;(data.therapies || []).forEach(therapy =>
+                        data.therapies.push({
+                            medication: therapy.medication,
+                            instructions: therapy.instructions,
+                            diagnosis: i
+                        })
+                    )
+                })
+
+                return data
+            })
+            // create the document
+            .then(data => Promise.all([Promise.resolve(data.patientID), dispatch(buildEncounterData({}, data))]))
+            // upload the file
+            .then(([patientID, doc]) => dispatch(uploadFile(patientID, doc, "encounter", "openEHR-EHR-COMPOSITION.encounter.v1")))
+            // remove from waitlist
+            .then(() => dispatch(waitlistRemove(waitlistID, itemID)))
+            .then(() => {
+                dispatch(push(`/waitlist/${waitlistID}`))
+                dispatch(open("Consultation closed", "", COLOR_SUCCESS))
+            })
+            .catch(ex => {
+                console.log("failed to close", ex)
+                dispatch({ type: FAILED })
+                dispatch(open(`Failed to close consultation: {ex.message}`, "", COLOR_DANGER))
+                throw ex
+            })
+    )
 }

@@ -28,7 +28,8 @@ class Remove extends React.Component {
     handleSubmit(e) {
         e.preventDefault()
 
-        this.props.remove(this.props.match.params.waitlistID, this.props.match.params.itemID, "canceled")
+        this.props
+            .remove(this.props.match.params.waitlistID, this.props.match.params.itemID, "canceled")
             .then(data => {
                 this.props.listAll(this.props.match.params.waitlistID)
                 this.props.goBack()
@@ -38,41 +39,44 @@ class Remove extends React.Component {
 
     render() {
         let { item, history } = this.props
-        return item ? (
-            <Modal>
-                <div className="add-to-waitlist">
-                    <form onSubmit={this.handleSubmit}>
-                        <div className="modal-header">
-                            <Patient data={item.patient && cardToObject({ connections: item.patient })} />
-                            <h1>Remove from Waiting list</h1>
-                        </div>
 
-                        {item && item.id ? (
-                            <div className="modal-body">Do you really want to remove patient from waiting list?</div>
-                        ) : (
-                            <div className="modal-body">Loading...</div>
-                        )}
+        if (!item) {
+            return null
+        }
 
-                        <div className="modal-footer">
-                            <div className="form-row">
-                                <div className="col-sm-4" />
-                                <div className="col-sm-4">
-                                    <button type="button" tabIndex="-1" className="btn btn-link btn-block" datadismiss="modal" onClick={() => history.goBack()}>
-                                        No
-                                    </button>
-                                </div>
+        ;<Modal>
+            <div className="add-to-waitlist">
+                <form onSubmit={this.handleSubmit}>
+                    <div className="modal-header">
+                        <Patient data={item.patient && cardToObject({ connections: item.patient })} />
+                        <h1>Remove from Waiting list</h1>
+                    </div>
 
-                                <div className="col-sm-4">
-                                    <button type="submit" className="float-right btn btn-primary btn-block">
-                                        Yes
-                                    </button>
-                                </div>
+                    {item && item.id ? (
+                        <div className="modal-body">Do you really want to remove patient from waiting list?</div>
+                    ) : (
+                        <div className="modal-body">Loading...</div>
+                    )}
+
+                    <div className="modal-footer">
+                        <div className="form-row">
+                            <div className="col-sm-4" />
+                            <div className="col-sm-4">
+                                <button type="button" tabIndex="-1" className="btn btn-link btn-block" datadismiss="modal" onClick={() => history.goBack()}>
+                                    No
+                                </button>
+                            </div>
+
+                            <div className="col-sm-4">
+                                <button type="submit" className="float-right btn btn-primary btn-block">
+                                    Yes
+                                </button>
                             </div>
                         </div>
-                    </form>
-                </div>
-            </Modal>
-        ) : (null)
+                    </div>
+                </form>
+            </div>
+        </Modal>
     }
 }
 

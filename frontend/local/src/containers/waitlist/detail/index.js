@@ -11,6 +11,8 @@ import { ReactComponent as LaboratoryIcon } from "shared/icons/laboratory.svg"
 import { ReactComponent as NegativeIcon } from "shared/icons/negative.svg"
 import { ReactComponent as PositiveIcon } from "shared/icons/positive.svg"
 
+import { joinPaths } from "shared/utils"
+import { fetchCode } from "shared/modules/codes"
 import {
     RESOURCE_PATIENT_IDENTIFICATION,
     RESOURCE_VITAL_SIGNS,
@@ -22,8 +24,7 @@ import {
     UPDATE,
     DELETE
 } from "../../../modules/validations"
-import { joinPaths } from "shared/utils"
-import { fetchCode } from "shared/modules/codes"
+import { saveConsultation } from "../../../modules/patient"
 
 import MedicalData from "./add-data"
 import LaboratoryTest from "./add-lab-test"
@@ -36,8 +37,9 @@ class CodeTitle extends React.Component {
     constructor(props) {
         super(props)
         this.loadCode = this.loadCode.bind(this)
-        console.log(props.categoryId, props.codeId)
-        this.loadCode(props.categoryId, props.codeId)
+        if (props.codeId) {
+            this.loadCode(props.categoryId, props.codeId)
+        }
         this.componentWillUnmount = this.componentWillUnmount.bind(this)
         this.state = { loading: true, title: "" }
     }
@@ -51,7 +53,6 @@ class CodeTitle extends React.Component {
                 }
             })
             .catch(ex => {
-                console.log("Failed to load code", ex)
                 this.setState({ loading: false, failed: true })
             })
     }
@@ -76,6 +77,17 @@ class CodeTitle extends React.Component {
 CodeTitle = connect(state => ({}), { fetchCode })(CodeTitle)
 
 class InConsultation extends React.Component {
+    constructor(props) {
+        super(props)
+        this.closeConsultation = this.closeConsultation.bind(this)
+    }
+
+    closeConsultation(ev) {
+        ev.preventDefault()
+
+        this.props.saveConsultation(this.props.match.params.waitlistID, this.props.match.params.itemID)
+    }
+
     render() {
         const { match, waitlistItem, waitlistFetching } = this.props
         if (waitlistFetching) {
@@ -86,16 +98,18 @@ class InConsultation extends React.Component {
                 <header>
                     <h1>In consultation</h1>
                     {this.props.canAddDiagnosis && (
-                        <Link to={joinPaths(match.url, "add-diagnosis")} className="btn btn-primary btn-wide">
-                            Add diagnosis
-                        </Link>
+                        <React.Fragment>
+                            {(!waitlistItem.diagnoses && (
+                                <Link to={joinPaths(match.url, "add-diagnosis")} className="btn btn-success btn-wide">
+                                    Add diagnosis
+                                </Link>
+                            )) || (
+                                <a href="#" onClick={this.closeConsultation} className="btn btn-success btn-wide btn-close">
+                                    Close
+                                </a>
+                            )}
+                        </React.Fragment>
                     )}
-                    {this.props.canAddDiagnosis &&
-                        waitlistItem.diagnoses && (
-                            <Link to={joinPaths(match.url, "close")} className="btn btn-success btn-wide btn-close">
-                                Close
-                            </Link>
-                        )}
                 </header>
 
                 {this.props.canSeeMainComplaint && (
@@ -284,7 +298,9 @@ InConsultation = connect(
         canEditMainComplaint: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[UPDATE],
         canRemoveFromWaitlist: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[DELETE]
     }),
-    {}
+    {
+        saveConsultation
+    }
 )(InConsultation)
 
 export default InConsultation

@@ -5,6 +5,8 @@ import { load as loadLocation } from "./locations"
 import { load as loadUser } from "./users"
 import personSpec from "./ehr/person"
 import infoSpec from "./ehr/info"
+import encounterSpec from "./ehr/encounter"
+import encounter from "./ehr/encounter"
 
 // Converts form data into two separate documents
 export const composePatientData = formData => dispatch => {
@@ -59,7 +61,12 @@ const buildInfoData = (ctx, formData) => dispatch => {
     })
 }
 
-const extractPersonData = doc => dispatch => {
+export const buildEncounterData = (ctx, formData) => dispatch =>
+    dispatch(encounterSpec).then(spec => {
+        return specToDocument(spec, Object.assign({}, ctx), formData, "")
+    })
+
+export const extractPersonData = doc => dispatch => {
     return dispatch(personSpec).then(spec => {
         return specToObject(spec, {}, doc, "")
     })
@@ -67,6 +74,12 @@ const extractPersonData = doc => dispatch => {
 
 const extractInfoData = doc => dispatch => {
     return dispatch(infoSpec).then(spec => {
+        return specToObject(spec, {}, doc, "")
+    })
+}
+
+const extractEncounterData = doc => dispatch => {
+    return dispatch(encounterSpec).then(spec => {
         return specToObject(spec, {}, doc, "")
     })
 }
