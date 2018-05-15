@@ -69,6 +69,8 @@ class MedicalData extends React.Component {
         _.forEach(form, (value, key) => {
             if (key.indexOf("has_") === 0 && value) {
                 let sign = key.slice(4)
+                console.log(sign)
+                console.log(form)
                 vitalSigns[sign] = form[sign]
             }
         })
@@ -142,7 +144,7 @@ class MedicalData extends React.Component {
                                     change={props.change}
                                 />
 
-                                <Fields
+                                {/*<Fields
                                     label="Hearing screaning"
                                     names={[
                                         "has_hearing",
@@ -163,9 +165,9 @@ class MedicalData extends React.Component {
                                     ]}
                                     component={renderHearingScreening}
                                     change={props.change}
-                                />
+                                />*/}
 
-                                <Fields
+                                {/*<Fields
                                     label="Visual screening"
                                     names={[
                                         "has_visual_screening",
@@ -177,7 +179,7 @@ class MedicalData extends React.Component {
                                     unit="%"
                                     component={renderVisualScreening}
                                     change={props.change}
-                                />
+                                />*/}
 
                                 <Fields
                                     label="Oxygen saturation"
