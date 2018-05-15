@@ -44,39 +44,41 @@ class Remove extends React.Component {
             return null
         }
 
-        ;<Modal>
-            <div className="add-to-waitlist">
-                <form onSubmit={this.handleSubmit}>
-                    <div className="modal-header">
-                        <Patient data={item.patient && cardToObject({ connections: item.patient })} />
-                        <h1>Remove from Waiting list</h1>
-                    </div>
+        return (
+            <Modal>
+                <div className="add-to-waitlist">
+                    <form onSubmit={this.handleSubmit}>
+                        <div className="modal-header">
+                            <Patient data={item.patient && cardToObject({ connections: item.patient })} />
+                            <h1>Remove from Waiting list</h1>
+                        </div>
 
-                    {item && item.id ? (
-                        <div className="modal-body">Do you really want to remove patient from waiting list?</div>
-                    ) : (
-                        <div className="modal-body">Loading...</div>
-                    )}
+                        {item && item.id ? (
+                            <div className="modal-body">Do you really want to remove patient from waiting list?</div>
+                        ) : (
+                            <div className="modal-body">Loading...</div>
+                        )}
 
-                    <div className="modal-footer">
-                        <div className="form-row">
-                            <div className="col-sm-4" />
-                            <div className="col-sm-4">
-                                <button type="button" tabIndex="-1" className="btn btn-link btn-block" datadismiss="modal" onClick={() => history.goBack()}>
-                                    No
-                                </button>
-                            </div>
+                        <div className="modal-footer">
+                            <div className="form-row">
+                                <div className="col-sm-4" />
+                                <div className="col-sm-4">
+                                    <button type="button" tabIndex="-1" className="btn btn-link btn-block" datadismiss="modal" onClick={() => history.goBack()}>
+                                        No
+                                    </button>
+                                </div>
 
-                            <div className="col-sm-4">
-                                <button type="submit" className="float-right btn btn-primary btn-block">
-                                    Yes
-                                </button>
+                                <div className="col-sm-4">
+                                    <button type="submit" className="float-right btn btn-primary btn-block">
+                                        Yes
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </form>
-            </div>
-        </Modal>
+                    </form>
+                </div>
+            </Modal>
+        )
     }
 }
 
