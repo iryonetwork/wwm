@@ -113,13 +113,15 @@ services:
     - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
     - ./cmd/cloudAuth/serviceCertsAndPaths.yml:/serviceCertsAndPaths.yml:ro
-    - ./cmd/cloudAuth/storageInitData.yml:/storageInitData.yml:ro
+    - ./cmd/cloudAuth/rolesAndRules.yml:/rolesAndRules.yml:ro
+    - ./cmd/cloudAuth/instanceInitData.yml:/instanceInitData.yml:ro
     environment:
     - DOMAIN_TYPE=cloud
     - DOMAIN_ID=*
     - KEY_PATH=/certs/cloudAuth-key.pem
     - CERT_PATH=/certs/cloudAuth.pem
     - STORAGE_ENCRYPTION_KEY=6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
+    - STORAGE_INIT_DATA_FILEPATHS=/rolesAndRules.yml,/instanceInitData.yml
 
   localNats:
     image: nats-streaming
