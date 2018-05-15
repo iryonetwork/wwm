@@ -50,6 +50,19 @@
         .table.patients td {
             border-bottom: 0;
         }
+
+        .Select-control {
+            background: url("~shared/icons/search.svg") 5px 1px no-repeat !important;
+
+            border-radius: 3px;
+            border-color: $gray-300;
+        }
+
+        .Select-placeholder,
+        .Select-input,
+        .Select-value {
+            padding-left: 40px !important;
+        }
     }
 
     .remove {

@@ -222,7 +222,6 @@ const getNewMembers = formData => {
                 }
             ]
         }
-        console.log(member)
         return member
     })
 }
@@ -237,8 +236,13 @@ export const createPatient = formData => (dispatch, getState) => {
         .then(members => {
             return Promise.all(
                 members.map(([member, newPatient]) => {
-                    member.patientID = newPatient.patientID
-                    return dispatch(uploadFile(newPatient.patientID, member, "person", "openEHR-DEMOGRAPHIC-PERSON.person.v1"))
+                    return dispatch(composePatientData(member)).then(({ person }) => {
+                        member.patientID = newPatient.patientID
+                        return Promise.all([
+                            dispatch(uploadFile(newPatient.patientID, person, "person", "openEHR-DEMOGRAPHIC-PERSON.person.v1")),
+                            dispatch(uploadFile(newPatient.patientID, {}, "info", "openEHR-EHR-ITEM_TREE.patient_info.v0"))
+                        ])
+                    })
                 })
             )
         })
@@ -267,16 +271,19 @@ export const updatePatient = formData => (dispatch, getState) => {
         .then(members => {
             return Promise.all(
                 members.map(([member, newPatient]) => {
-                    member.patientID = newPatient.patientID
-                    return dispatch(uploadFile(newPatient.patientID, member, "person", "openEHR-DEMOGRAPHIC-PERSON.person.v1"))
+                    return dispatch(composePatientData(member)).then(({ person }) => {
+                        member.patientID = newPatient.patientID
+                        return Promise.all([
+                            dispatch(uploadFile(newPatient.patientID, person, "person", "openEHR-DEMOGRAPHIC-PERSON.person.v1")),
+                            dispatch(uploadFile(newPatient.patientID, {}, "info", "openEHR-EHR-ITEM_TREE.patient_info.v0"))
+                        ])
+                    })
                 })
             )
         })
         .then(() => {
             return dispatch(composePatientData(formData))
                 .then(({ person, info }) => {
-                    console.log(formData)
-                    console.log(person, info)
                     // upload user data to storage
                     return Promise.all([
                         dispatch(updateFile(patient.ID, patient.personFileID, person, "person", "openEHR-DEMOGRAPHIC-PERSON.person.v1")),
@@ -297,7 +304,7 @@ export const updatePatient = formData => (dispatch, getState) => {
 export const fetchPatient = patientID => dispatch => {
     dispatch({ type: LOADING })
 
-    return Promise.all([dispatch(readFileByLabel(patientID, "person")), dispatch(readFileByLabel(patientID, "info"))])
+    return Promise.all([dispatch(readFileByLabel(patientID, "person")), dispatch(readFileByLabel(patientID, "info")).catch(err => ({}))])
         .then(([person, info]) => Promise.all([dispatch(extractPatientData(person, info)), info.fileID, person.fileID]))
         .then(([patient, infoFileID, personFileID]) => {
             // add patientID
@@ -310,12 +317,18 @@ export const fetchPatient = patientID => dispatch => {
                     return dispatch(get(member.patientID)).then(card => {
                         let obj = cardToObject(card)
 
+                        obj.documents = []
                         if (obj["syrian-id"]) {
-                            obj.documentType = "syrian_id"
-                            obj.documentNumber = obj["syrian-id"]
-                        } else if (obj["un-id"]) {
-                            obj.documentType = "un_id"
-                            obj.documentNumber = obj["un-id"]
+                            obj.documents.push({
+                                type: "syrian-id",
+                                number: obj["syrian-id"]
+                            })
+                        }
+                        if (obj["un-id"]) {
+                            obj.documents.push({
+                                type: "un-id",
+                                number: obj["un-id"]
+                            })
                         }
 
                         patient.familyMembers[index] = {

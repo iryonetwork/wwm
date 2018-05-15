@@ -9,7 +9,7 @@ import { renderInput, renderSelect, renderRadio } from "shared/forms/renderField
 import { yesNoOptions, livingTogetherOptions, relationOptions } from "shared/forms/options"
 import { search, cardToObject } from "../../../modules/discovery"
 import { ListRow } from "../index"
-import { getCodesAsOptions } from "shared/modules/codes"
+import { getCodesAsOptions, loadCategories } from "shared/modules/codes"
 
 import { ReactComponent as RemoveIcon } from "shared/icons/negative.svg"
 
@@ -50,6 +50,7 @@ class familyMembers extends React.Component {
         super(props)
 
         this.getPatients = this.getPatients.bind(this)
+        this.props.loadCategories("documentTypes")
     }
 
     onChange = index => patient => {
@@ -197,6 +198,7 @@ class familyMembers extends React.Component {
 
 familyMembers = connect(state => ({}), {
     getCodes: getCodesAsOptions,
+    loadCategories,
     search
 })(familyMembers)
 

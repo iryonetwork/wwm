@@ -210,10 +210,10 @@ let ViewFamily = ({ patient, canSeeDemographicInformation }) => {
                             />
                         </div>
 
-                        <div className="row">
-                            <Column width="4" label="Syrian ID" value={member["syrian-id"]} />
-                            <Column width="4" label="UN ID" value={member["un-id"]} />
-                        </div>
+                        {member.documents &&
+                            member.documents.length > 0 && (
+                                <div className="row">{member.documents.map((el, i) => <Column width="4" label={el.type} value={el.number} key={i} />)}</div>
+                            )}
                     </div>
                 </div>
             ))}
