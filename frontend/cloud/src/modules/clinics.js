@@ -153,7 +153,7 @@ export const deleteClinic = clinicID => {
                     type: DELETE_CLINIC_SUCCESS,
                     clinicID: clinicID
                 })
-                dispatch(open("Deleted clinic", "", COLOR_SUCCESS, 5))
+                setTimeout(() => dispatch(open("Deleted clinic", "", COLOR_SUCCESS, 5)), 100)
             })
             .catch(error => {
                 dispatch({
@@ -186,7 +186,7 @@ export const saveClinic = clinic => {
                     type: SAVE_CLINIC_SUCCESS,
                     clinic: response
                 })
-                dispatch(open("Saved clinic", "", COLOR_SUCCESS, 5))
+                setTimeout(() => dispatch(open("Saved clinic", "", COLOR_SUCCESS, 5)), 100)
 
                 return response
             })

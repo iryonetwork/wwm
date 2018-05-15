@@ -151,7 +151,7 @@ export const saveRule = rule => {
                     index: rule.index,
                     rule: response
                 })
-                dispatch(open("Saved ACL rule", "", COLOR_SUCCESS, 5))
+                setTimeout(() => dispatch(open("Saved ACL rule", "", COLOR_SUCCESS, 5)), 100)
 
                 return response
             })
@@ -175,7 +175,7 @@ export const deleteRule = ruleID => {
                     type: DELETE_RULE_SUCCESS,
                     id: ruleID
                 })
-                dispatch(open("Deleted ACL rule", "", COLOR_SUCCESS, 5))
+                setTimeout(() => dispatch(open("Deleted ACL rule", "", COLOR_SUCCESS, 5)), 100)
             })
             .catch(error => {
                 dispatch(open(error.message, error.code, COLOR_DANGER))

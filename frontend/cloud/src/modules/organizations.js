@@ -199,7 +199,7 @@ export const deleteOrganization = organizationID => {
                     type: DELETE_ORGANIZATION_SUCCESS,
                     organizationID: organizationID
                 })
-                dispatch(open("Deleted organization", "", COLOR_SUCCESS, 5))
+                setTimeout(() => dispatch(open("Deleted organization", "", COLOR_SUCCESS, 5)), 100)
             })
             .catch(error => {
                 dispatch({
@@ -231,7 +231,7 @@ export const saveOrganization = organization => {
                     type: SAVE_ORGANIZATION_SUCCESS,
                     organization: response
                 })
-                dispatch(open("Saved organization", "", COLOR_SUCCESS, 5))
+                setTimeout(() => dispatch(open("Saved organization", "", COLOR_SUCCESS, 5)), 100)
 
                 return response
             })

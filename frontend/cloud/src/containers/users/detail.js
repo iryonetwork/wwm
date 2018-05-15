@@ -2,6 +2,7 @@ import React from "react"
 import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
 import { withRouter } from "react-router-dom"
+import { push } from "react-router-redux"
 import moment from "moment"
 import _ from "lodash"
 
@@ -367,7 +368,7 @@ class UserDetail extends React.Component {
 
         this.props.saveUser(user).then(response => {
             if (!user.id && response && response.id) {
-                this.props.history.push(`/users/${response.id}`)
+                this.props.push(`/users/${response.id}`)
             }
         })
     }
@@ -800,7 +801,8 @@ const mapDispatchToProps = dispatch =>
             loadCodes,
             loadUserRights,
             open,
-            close
+            close,
+            push
         },
         dispatch
     )

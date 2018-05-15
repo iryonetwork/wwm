@@ -111,7 +111,7 @@ export const addRole = name => {
                     type: CREATE_ROLE_SUCCESS,
                     role: response
                 })
-                dispatch(open(`Created role ${name}`, "", COLOR_SUCCESS, 5))
+                setTimeout(() => dispatch(open(`Created role ${name}`, "", COLOR_SUCCESS, 5)), 100)
 
                 return response
             })
@@ -129,7 +129,7 @@ export const deleteRole = roleID => {
                     type: DELETE_ROLE_SUCCESS,
                     roleID: roleID
                 })
-                dispatch(open(`Deleted role`, "", COLOR_SUCCESS, 5))
+                setTimeout(() => dispatch(open("Deleted role", "", COLOR_SUCCESS, 5)), 100)
             })
             .catch(error => {
                 dispatch(open(error.message, error.code, COLOR_DANGER))

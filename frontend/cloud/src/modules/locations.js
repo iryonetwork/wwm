@@ -194,7 +194,7 @@ export const deleteLocation = locationID => {
                     type: DELETE_LOCATION_SUCCESS,
                     locationID: locationID
                 })
-                dispatch(open("Deleted location", "", COLOR_SUCCESS, 5))
+                setTimeout(() => dispatch(open("Deleted location", "", COLOR_SUCCESS, 5)), 100)
             })
             .catch(error => {
                 dispatch({
@@ -226,7 +226,7 @@ export const saveLocation = location => {
                     type: SAVE_LOCATION_SUCCESS,
                     location: response
                 })
-                dispatch(open("Saved location", "", COLOR_SUCCESS, 5))
+                setTimeout(() => dispatch(open("Saved location", "", COLOR_SUCCESS, 5)), 100)
 
                 return response
             })

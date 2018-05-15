@@ -138,7 +138,7 @@ export const deleteUser = userID => {
                     type: DELETE_USER_SUCCESS,
                     userID: userID
                 })
-                dispatch(open("Deleted user", "", COLOR_SUCCESS, 5))
+                setTimeout(() => dispatch(open("Deleted user", "", COLOR_SUCCESS, 5)), 100)
             })
             .catch(error => {
                 dispatch({
@@ -170,7 +170,7 @@ export const saveUser = user => {
                     type: SAVE_USER_SUCCESS,
                     user: response
                 })
-                dispatch(open("Saved user", "", COLOR_SUCCESS, 5))
+                setTimeout(() => dispatch(open("Saved user", "", COLOR_SUCCESS, 5)), 100)
 
                 return response
             })
