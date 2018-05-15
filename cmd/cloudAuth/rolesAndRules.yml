@@ -17,8 +17,6 @@ roles:
     name: Nurse
   - id: 99aca094-fb08-4734-a0df-e50e66fa5531
     name: Doctor
-  - id: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7
-    name: Pharmacy
 rules:
   - id: 9e8d6715-8b14-4d44-9009-a8fad111d05b
     subject: 3720198b-74ed-40de-a45e-8756f22e67d2 # superadmin role
@@ -164,38 +162,6 @@ rules:
     subject: 99aca094-fb08-4734-a0df-e50e66fa5531 # doctor role
     resource: '/api/storage*'
     action: 15
-  - id: dd0a0fec-1bcc-4962-8482-29ac6b0e16a4
-    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
-    resource: /auth/login
-    action: 2
-  - id: 1eda8ba5-d1cf-4be7-ac42-d4e22b7826fe
-    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
-    resource: /api/auth/validate
-    action: 3
-  - id: fcf798af-b24b-4c71-99fe-2a2a63803350
-    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
-    resource: /api/auth/users/me*
-    action: 15
-  - id: e18d6ee0-283c-49ba-af99-6503b3a96369
-    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
-    resource: /api/auth/users/{self}*
-    action: 15
-  - id: 4d3b905a-6ca3-4f63-9b1e-15a06dd97a4a
-    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
-    resource: /api/auth/*
-    action: 15
-  - id: c15a4dfe-c212-4e3d-8d48-e9ec106cf563
-    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
-    resource: '/api/discovery*'
-    action: 15
-  - id: 70ac50b6-ee75-4795-a158-44e2d129ece0
-    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
-    resource: '/api/waitlist*'
-    action: 15
-  - id: 0f68ac98-03bf-4b1b-87f5-b26701a6ce98
-    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
-    resource: '/api/storage*'
-    action: 15
   - id: 6899ba67-2009-4fff-9940-788890b4baa8
     subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
     resource: /api/auth/users/me*
@@ -240,10 +206,6 @@ rules:
     subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
     resource: /frontend/patientID*
     action: 15
-  - id: b1097064-6557-4276-8d1c-f021d1f1d33a
-    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
-    resource: /frontend/patientID/id
-    action: 1
   - id: 4aeda13d-1b15-40bf-b4ef-3b38488b100b
     subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
     resource: /frontend/testsAndHistory*
@@ -268,10 +230,6 @@ rules:
     subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
     resource: /frontend/examination/medication
     action: 3
-  - id: 5b1349d3-09e3-4ece-9518-2c1e51fec4ca
-    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
-    resource: /frontend/examination/medication
-    action: 3
   - id: 10b5cede-3e54-4af0-97ee-fe8f13f8348c
     subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
     resource: /frontend/role/admin
@@ -283,10 +241,6 @@ rules:
   - id: 15e4e977-893d-4a94-a7c1-e0f33b71008d
     subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
     resource: /frontend/role/nurse
-    action: 1
-  - id: 4aa893ec-8902-49b1-a66a-cece015e24d7
-    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
-    resource: /frontend/role/pharmacy
     action: 1
   - id: 731dd83f-06ca-43b6-b045-bb18de4a33f8
     subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
@@ -300,9 +254,5 @@ rules:
     subject: e359d9ae-6a68-4283-8458-24043a179f48 # nurse role
     resource: /frontend/waitlist
     action: 15
-  - id: c3489c3b-55c8-485d-a79f-d900e986d772
-    subject: 052cb74f-e89d-4ebc-b036-8b99abb1d5f7 # pharmacy role
-    resource: /frontend/waitlist
-    action: 1
 users:
 userroles:
