@@ -143,7 +143,7 @@ const Section = ({
                     {(list || []).map(el => (
                         <tr key={el.id}>
                             <th scope="row">
-                                <Patient data={el.patient && cardToObject({ connections: el.patient })} />
+                                <Link className="patientLink" to={`/patients/${el.patientID}`}><Patient data={el.patient && cardToObject({ connections: el.patient })} /></Link>
                             </th>
                             <td>
                                 {canSeeMainComplaint && (
