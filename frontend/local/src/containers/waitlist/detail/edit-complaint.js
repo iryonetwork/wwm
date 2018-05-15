@@ -38,8 +38,8 @@ class EditComplaint extends React.Component {
 
         this.props.update(this.props.match.params.waitlistID, item)
             .then(data => {
-                this.props.goBack()
                 this.props.listAll(this.props.match.params.waitlistID)
+                this.props.goBack()
             })
             .catch(ex => {})
     }

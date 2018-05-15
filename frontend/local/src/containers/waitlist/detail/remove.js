@@ -1,5 +1,6 @@
 import React from "react"
 import { connect } from "react-redux"
+import { goBack } from "react-router-redux"
 
 import Modal from "shared/containers/modal"
 import Patient from "shared/containers/patient"
@@ -28,11 +29,16 @@ class Remove extends React.Component {
         e.preventDefault()
 
         this.props.remove(this.props.match.params.waitlistID, this.props.match.params.itemID, "canceled")
+            .then(data => {
+                this.props.listAll(this.props.match.params.waitlistID)
+                this.props.goBack()
+            })
+            .catch(ex => {})
     }
 
     render() {
         let { item, history } = this.props
-        return (
+        return item ? (
             <Modal>
                 <div className="add-to-waitlist">
                     <form onSubmit={this.handleSubmit}>
@@ -66,7 +72,7 @@ class Remove extends React.Component {
                     </form>
                 </div>
             </Modal>
-        )
+        ) : (null)
     }
 }
 
@@ -80,7 +86,8 @@ Remove = connect(
     {
         listAll,
         remove,
-        open
+        open,
+        goBack
     }
 )(Remove)
 

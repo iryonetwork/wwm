@@ -18,6 +18,7 @@ import {
 
 import MedicalData from "./detail/add-data"
 import EditComplaint from "./detail/edit-complaint"
+import RemoveFromWaitlist from "./detail/remove"
 import Patient from "shared/containers/patient"
 import Spinner from "shared/containers/spinner"
 
@@ -107,6 +108,7 @@ class Waitlist extends React.Component {
                 />
                 {this.props.canEditMainComplaint && <Route path={baseMatchURL + "/edit-complaint"} component={EditComplaint} />}
                 {this.props.canAddVitalSigns && <Route path={baseMatchURL + "/add-data"} component={MedicalData} />}
+                {this.props.canRemoveFromWaitlist && <Route path={baseMatchURL + "/remove"} component={RemoveFromWaitlist} />}
             </div>
         )
     }
@@ -227,7 +229,7 @@ class Tools extends React.Component {
                         )}
                         {canRemoveFromWaitlist && (
                             <DropdownItem>
-                                <Link to={`/waitlist/${waitlistID}/${itemID}/consultation/remove`}>Remove from Waiting list</Link>
+                                <Link to={`/waitlist/${waitlistID}/${itemID}/remove`}>Remove from Waiting list</Link>
                             </DropdownItem>
                         )}
                     </DropdownMenu>

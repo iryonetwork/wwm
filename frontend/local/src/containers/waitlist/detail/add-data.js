@@ -3,6 +3,7 @@ import _ from "lodash"
 import { connect } from "react-redux"
 import { Fields, reduxForm } from "redux-form"
 import classnames from "classnames"
+import { goBack } from "react-router-redux"
 
 import Modal from "shared/containers/modal"
 import Patient from "shared/containers/patient"
@@ -74,6 +75,11 @@ class MedicalData extends React.Component {
 
         this.props.item.vitalSigns = vitalSigns
         this.props.update(this.props.match.params.waitlistID, this.props.item)
+            .then(data => {
+                this.props.listAll(this.props.match.params.waitlistID)
+                this.props.goBack()
+            })
+            .catch(ex => {})
     }
 
     render() {
@@ -441,7 +447,8 @@ MedicalData = connect(
     {
         listAll,
         update,
-        open
+        open,
+        goBack
     }
 )(MedicalData)
 
