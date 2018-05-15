@@ -157,7 +157,7 @@ const Section = ({
                                     </div>
                                 )}
                             </td>
-                            {canSeeVitalSigns && <VitalSigns signs={el.vital_signs || {}} />}
+                            {canSeeVitalSigns && <VitalSigns signs={el.vitalSigns || {}} />}
                             {(canEditMainComplaint || canAddVitalSigns || canRemoveFromWaitlist) && (
                                 <Tools
                                     listType={type}
