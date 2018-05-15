@@ -238,7 +238,7 @@ class InConsultation extends React.Component {
                     </div>
                 )}
 
-                {this.props.canSeeLaboratoryTests && (
+                {/*this.props.canSeeLaboratoryTests && (
                     <div className="section">
                         <header>
                             <h2>
@@ -270,7 +270,7 @@ class InConsultation extends React.Component {
                             </dd>
                         </dl>
                     </div>
-                )}
+                )*/}
 
                 {this.props.canAddDiagnosis && <Route path={match.path + "/add-diagnosis"} component={AddDiagnosis} />}
                 {this.props.canAddDiagnosis && <Route path={match.path + "/close"} component={Close} />}
