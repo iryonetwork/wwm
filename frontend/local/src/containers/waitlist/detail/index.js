@@ -7,9 +7,9 @@ import "./style.css"
 import { ReactComponent as ComplaintIcon } from "shared/icons/complaint.svg"
 import { ReactComponent as DiagnosisIcon } from "shared/icons/diagnosis.svg"
 import { ReactComponent as MedicalDataIcon } from "shared/icons/vitalsigns.svg"
-import { ReactComponent as LaboratoryIcon } from "shared/icons/laboratory.svg"
-import { ReactComponent as NegativeIcon } from "shared/icons/negative.svg"
-import { ReactComponent as PositiveIcon } from "shared/icons/positive.svg"
+//import { ReactComponent as LaboratoryIcon } from "shared/icons/laboratory.svg"
+//import { ReactComponent as NegativeIcon } from "shared/icons/negative.svg"
+//import { ReactComponent as PositiveIcon } from "shared/icons/positive.svg"
 
 import { joinPaths } from "shared/utils"
 import { fetchCode } from "shared/modules/codes"
@@ -107,7 +107,7 @@ x
                                     Add diagnosis
                                 </Link>
                             )) || (
-                                <a onClick={this.closeConsultation} className="btn btn-success btn-wide btn-close">
+                                <a href={`/waitlist/${match.params.waitlistID}`} onClick={this.closeConsultation} className="btn btn-success btn-wide btn-close">
                                     Close
                                 </a>
                             )}

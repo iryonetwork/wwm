@@ -48,11 +48,8 @@ class AddDiagnosis extends React.Component {
 
         this.props.updateWaitlistItem(this.props.match.params.waitlistID, newItem)
 
-        if (!this.props.diagnosisIndes) {
-            let {waitlistID, itemID} = this.props.match.params
-            let diagnosisIndex = newItem.diagnoses.length - 1
-            this.props.push(`/waitlist/${waitlistID}/${itemID}/consultation`)
-        }
+        let {waitlistID, itemID} = this.props.match.params
+        this.props.push(`/waitlist/${waitlistID}/${itemID}/consultation`)
     }
 
     render() {

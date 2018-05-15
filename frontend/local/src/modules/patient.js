@@ -5,8 +5,8 @@ import { push } from "react-router-redux"
 // insert into storage
 import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 import { createPatient as createPatientInStorage, readFileByLabel, updateFile, uploadFile } from "./storage"
-import { extractPatientData, composePatientData, buildEncounterData, extractEncounterData } from "./ehr"
-import { get as waitlistGet, remove as waitlistRemove, listAll as refreshWaitlist } from "./waitlist"
+import { extractPatientData, composePatientData, buildEncounterData } from "./ehr"
+import { get as waitlistGet, remove as waitlistRemove } from "./waitlist"
 
 export const CREATE = "patient/CREATE"
 export const CREATED = "patient/CREATED"

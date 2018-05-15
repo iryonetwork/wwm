@@ -6,7 +6,7 @@ import Select from "react-select"
 import Footer from "./footer"
 import validate from "./validate"
 import { renderInput, renderSelect, renderRadio } from "shared/forms/renderField"
-import { yesNoOptions, livingTogetherOptions, relationOptions } from "shared/forms/options"
+import { livingTogetherOptions, relationOptions } from "shared/forms/options"
 import { search, cardToObject } from "../../../modules/discovery"
 import { ListRow } from "../index"
 import { getCodesAsOptions, loadCategories } from "shared/modules/codes"
@@ -104,7 +104,6 @@ class familyMembers extends React.Component {
         let {
             fields,
             getCodes,
-            meta: { error, submitFailed }
         } = this.props
 
         return (
