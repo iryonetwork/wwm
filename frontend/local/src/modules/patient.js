@@ -6,7 +6,7 @@ import { push } from "react-router-redux"
 import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 import { createPatient as createPatientInStorage, readFileByLabel, updateFile, uploadFile } from "./storage"
 import { extractPatientData, composePatientData, buildEncounterData, extractEncounterData } from "./ehr"
-import { get as waitlistGet, remove as waitlistRemove } from "./waitlist"
+import { get as waitlistGet, remove as waitlistRemove, listAll as refreshWaitlist } from "./waitlist"
 
 export const CREATE = "patient/CREATE"
 export const CREATED = "patient/CREATED"
@@ -381,7 +381,7 @@ export const saveConsultation = (waitlistID, itemID) => dispatch => {
             // upload the file
             .then(([patientID, doc]) => dispatch(uploadFile(patientID, doc, "encounter", "openEHR-EHR-COMPOSITION.encounter.v1")))
             // remove from waitlist
-            .then(() => dispatch(waitlistRemove(waitlistID, itemID)))
+            .then(() => dispatch(waitlistRemove(waitlistID, itemID, "finished")))
             .then(() => {
                 dispatch(push(`/waitlist/${waitlistID}`))
                 dispatch(open("Consultation closed", "", COLOR_SUCCESS))

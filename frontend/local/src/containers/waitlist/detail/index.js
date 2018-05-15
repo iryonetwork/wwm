@@ -31,7 +31,7 @@ import LaboratoryTest from "./add-lab-test"
 import EditComplaint from "./edit-complaint"
 import AddDiagnosis from "./add-diagnosis"
 import Remove from "./remove"
-import Close from "./close"
+import Spinner from "shared/containers/spinner"
 
 class CodeTitle extends React.Component {
     constructor(props) {
@@ -40,6 +40,7 @@ class CodeTitle extends React.Component {
         if (props.codeId) {
             this.loadCode(props.categoryId, props.codeId)
         }
+
         this.componentWillUnmount = this.componentWillUnmount.bind(this)
         this.state = { loading: true, title: "" }
     }
@@ -63,14 +64,14 @@ class CodeTitle extends React.Component {
 
     render() {
         if (this.state.loading) {
-            return <div>...</div>
+            return <span>...</span>
         }
 
         if (this.state.failed) {
-            return <div>Failed to fetch title!</div>
+            return <span>Failed to fetch title!</span>
         }
 
-        return <div>{this.state.title}</div>
+        return <span>{this.state.title}</span>
     }
 }
 
@@ -80,20 +81,22 @@ class InConsultation extends React.Component {
     constructor(props) {
         super(props)
         this.closeConsultation = this.closeConsultation.bind(this)
+        this.state = {saving: false}
     }
-
+x
     closeConsultation(ev) {
         ev.preventDefault()
-
+        this.setState({saving: true})
         this.props.saveConsultation(this.props.match.params.waitlistID, this.props.match.params.itemID)
     }
 
     render() {
         const { match, waitlistItem, waitlistFetching } = this.props
-        if (waitlistFetching) {
-            return null
+
+        if (this.state.saving || waitlistFetching) {
+            return <Spinner />
         }
-        return (
+        return waitlistItem ? (
             <div>
                 <header>
                     <h1>In consultation</h1>
@@ -104,7 +107,7 @@ class InConsultation extends React.Component {
                                     Add diagnosis
                                 </Link>
                             )) || (
-                                <a href="#" onClick={this.closeConsultation} className="btn btn-success btn-wide btn-close">
+                                <a onClick={this.closeConsultation} className="btn btn-success btn-wide btn-close">
                                     Close
                                 </a>
                             )}
@@ -138,6 +141,11 @@ class InConsultation extends React.Component {
                                     <DiagnosisIcon />
                                     Diagnoses
                                 </h2>
+                                {this.props.canAddDiagnosis && (
+                                    <Link to={joinPaths(match.url, "add-diagnosis")} className="btn btn-link">
+                                        Add complementary diagnosis
+                                    </Link>
+                                )}
                             </header>
 
                             {waitlistItem.diagnoses.map((el, key) => (
@@ -154,6 +162,11 @@ class InConsultation extends React.Component {
                                             {tel.instructions && <p>{tel.instructions}</p>}
                                         </React.Fragment>
                                     ))}
+                                    {this.props.canAddDiagnosis && (
+                                        <Link to={joinPaths(match.url, `diagnoses/${key}/edit`)} className="btn btn-link">
+                                            Edit diagnosis
+                                        </Link>
+                                    )}
                                 </React.Fragment>
                             ))}
                         </div>
@@ -273,31 +286,35 @@ class InConsultation extends React.Component {
                 )*/}
 
                 {this.props.canAddDiagnosis && <Route path={match.path + "/add-diagnosis"} component={AddDiagnosis} />}
-                {this.props.canAddDiagnosis && <Route path={match.path + "/close"} component={Close} />}
+                {this.props.canAddDiagnosis && <Route path={match.path + "/diagnoses/:diagnosisIndex/edit"} component={AddDiagnosis} />}
                 {this.props.canAddVitalSigns && <Route path={match.path + "/add-data"} component={MedicalData} />}
                 {this.props.canAddLaboratoryTests && <Route path={match.path + "/add-lab-test"} component={LaboratoryTest} />}
                 {this.props.canEditMainComplaint && <Route path={match.path + "/edit-complaint"} component={EditComplaint} />}
                 {this.props.canRemoveFromWaitlist && <Route path={match.path + "/remove"} component={Remove} />}
             </div>
-        )
+        ) : (null)
     }
 }
 
 InConsultation = connect(
-    state => ({
-        patient: state.patient.patient,
-        waitlistItem: state.waitlist.item,
-        waitlistFetching: state.waitlist.fetching,
-        canSeeDiagnosis: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[READ],
-        canAddDiagnosis: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[WRITE],
-        canSeeVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[READ],
-        canAddVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[WRITE],
-        canSeeLaboratoryTests: ((state.validations.userRights || {})[RESOURCE_LABORATORY_TEST] || {})[READ],
-        canAddLaboratoryTests: ((state.validations.userRights || {})[RESOURCE_LABORATORY_TEST] || {})[WRITE],
-        canSeeMainComplaint: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[READ],
-        canEditMainComplaint: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[UPDATE],
-        canRemoveFromWaitlist: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[DELETE]
-    }),
+    (state, props) => {
+        let item = state.waitlist.items[props.match.params.itemID]
+
+        return {
+            patient: state.patient.patient,
+            waitlistItem: item,
+            waitlistFetching: state.waitlist.fetching || state.waitlist.listing,
+            canSeeDiagnosis: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[READ],
+            canAddDiagnosis: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[WRITE],
+            canSeeVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[READ],
+            canAddVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[WRITE],
+            canSeeLaboratoryTests: ((state.validations.userRights || {})[RESOURCE_LABORATORY_TEST] || {})[READ],
+            canAddLaboratoryTests: ((state.validations.userRights || {})[RESOURCE_LABORATORY_TEST] || {})[WRITE],
+            canSeeMainComplaint: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[READ],
+            canEditMainComplaint: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[UPDATE],
+            canRemoveFromWaitlist: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[DELETE]
+        }
+    },
     {
         saveConsultation
     }

@@ -72,7 +72,11 @@ export default (state = initialState, action) => {
                 break
 
             case UPDATE_ITEM_FAILED:
+                draft.items[action.itemID].updating = false
+                break
             case UPDATE_ITEM_DONE:
+                draft.items[action.itemID] = action.updated ? action.updated : draft.items[action.itemID]
+                draft.item = action.updated
                 draft.items[action.itemID].updating = false
                 break
 
@@ -187,16 +191,16 @@ export const update = (listID, data) => dispatch => {
             }
             dispatch({
                 type: UPDATE_ITEM_DONE,
-                itemID: data.id
+                itemID: data.id,
+                updated: data
             })
-            dispatch(listAll(listID))
-            setTimeout(() => dispatch(open("Waiting list was updated ", "", COLOR_SUCCESS, 5)), 100)
+            return dispatch(listAll(listID))
         })
         .catch(ex => {
             dispatch(open(ex.message, "", COLOR_DANGER))
             dispatch({
                 type: UPDATE_ITEM_FAILED,
-                itemID: data.id
+                itemID: data.id,
             })
         })
 }
@@ -222,7 +226,7 @@ export const moveToTop = (listID, itemID) => dispatch => {
             }
             dispatch({
                 type: UPDATE_ITEM_DONE,
-                itemID: itemID
+                itemID: itemID,
             })
             dispatch(listAll(listID))
             setTimeout(() => dispatch(open("Waiting list was updated ", "", COLOR_SUCCESS, 5)), 100)
@@ -238,7 +242,6 @@ export const moveToTop = (listID, itemID) => dispatch => {
 
 export const remove = (listID, itemID, reason) => dispatch => {
     const url = `${dispatch(read(API_URL))}/waitlist/${listID}/${itemID}?reason=${reason}`
-
     return fetch(url, {
         method: "DELETE",
         headers: {

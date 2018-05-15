@@ -1,7 +1,8 @@
 import React from "react"
 import { connect } from "react-redux"
 import { Field, FieldArray, reduxForm } from "redux-form"
-import { get } from "lodash"
+import { push } from "react-router-redux"
+import _ from "lodash"
 
 import { searchCodes } from "shared/modules/codes"
 import { update as updateWaitlistItem } from "../../../modules/waitlist"
@@ -12,6 +13,8 @@ import { renderInput, renderTextarea, renderReactSelect } from "shared/forms/ren
 import { ReactComponent as MedicalHistoryIcon } from "shared/icons/medical-history-active.svg"
 
 import "react-select/dist/react-select.css"
+
+const required = value => (value ? undefined : 'Required')
 
 class AddDiagnosis extends React.Component {
     constructor(props) {
@@ -30,33 +33,45 @@ class AddDiagnosis extends React.Component {
 
     onSubmit(formData) {
         // convert diagnosis from object to string
-        formData.diagnosis = formData.diagnosis.value
+        if (_.isObject(formData.diagnosis)) {
+            formData.diagnosis = formData.diagnosis.value
+        }
 
         // add it to waitlist item
         let newItem = Object.assign({}, this.props.waitlistItem)
         newItem.diagnoses = newItem.diagnoses || []
-        newItem.diagnoses.push(formData)
+        if (this.props.diagnosisIndex) {
+            newItem.diagnoses[this.props.diagnosisIndex] = formData
+        } else {
+            newItem.diagnoses.push(formData)
+        }
 
-        return this.props.updateWaitlistItem(this.props.match.params.waitlistID, newItem)
+        this.props.updateWaitlistItem(this.props.match.params.waitlistID, newItem)
+
+        if (!this.props.diagnosisIndes) {
+            let {waitlistID, itemID} = this.props.match.params
+            let diagnosisIndex = newItem.diagnoses.length - 1
+            this.props.push(`/waitlist/${waitlistID}/${itemID}/consultation`)
+        }
     }
 
     render() {
         const { history, handleSubmit } = this.props
-        return (
+        return !this.props.loading && this.props.waitlistItem ? (
             <Modal>
                 <form className="add-diagnosis" onSubmit={handleSubmit(this.onSubmit)}>
                     <div className="modal-header">
                         <Patient />
                         <h1>
                             <MedicalHistoryIcon />
-                            Add diagnosis
+                            {this.props.diagnosisIndex ? "Edit diagnosis" : "Add diagnosis"}
                         </h1>
                     </div>
 
                     <div className="modal-body">
                         <div className="form-row">
                             <div className="form-group col-sm-12">
-                                <Field name="diagnosis" required={true} component={renderReactSelect} label="Diagnosis" loadOptions={this.fetchCodes} />
+                                <Field name="diagnosis" validate={required} component={renderReactSelect} label="Diagnosis" loadOptions={(value) => this.fetchCodes( value ? value : this.props.initialValues.diagnosis)} />
                             </div>
                         </div>
 
@@ -89,7 +104,7 @@ class AddDiagnosis extends React.Component {
                     </div>
                 </form>
             </Modal>
-        )
+        ) : (null)
     }
 }
 
@@ -98,46 +113,66 @@ AddDiagnosis = reduxForm({
 })(AddDiagnosis)
 
 AddDiagnosis = connect(
-    state => ({
-        waitlistItem: state.waitlist.item,
-        waitlistItems: state.waitlist.items,
-        initialValues: get(state, "waitlist.item.diagnosis", {}),
-        searchingCodes: state.codes.searching,
-        searchingResults: state.codes.searchResults
-    }),
+    (state, props) => {
+        let loading = state.waitlist.listing || state.waitlist.fetching || state.waitlist.items[props.match.params.itemID].updating
+        let item = state.waitlist.items[props.match.params.itemID]
+
+        return ({
+            loading: loading,
+            diagnosisIndex: props.match.params.diagnosisIndex,
+            waitlistItem: item,
+            initialValues: (!loading && props.match.params.diagnosisIndex) ? item.diagnoses[props.match.params.diagnosisIndex] : {},
+            searchingCodes: state.codes.searching,
+            searchingResults: state.codes.searchResults,
+        })
+    },
     {
         searchCodes,
-        updateWaitlistItem
+        updateWaitlistItem,
+        push
     }
 )(AddDiagnosis)
 
 export default AddDiagnosis
 
-const renderTherapies = props => {
-    const { fields } = props
-    return (
-        <React.Fragment>
-            {(fields || []).map((therapy, index) => (
-                <React.Fragment key={index}>
-                    <div className="form-row">
-                        <div className="form-group col-sm-12">
-                            <Field name={`${therapy}.medicine`} component={renderInput} label="Medicine" />
+
+class renderTherapies extends React.Component {
+    constructor(props) {
+        super(props)
+        this.pushNewFields = this.pushNewFields.bind(this)
+    }
+
+    pushNewFields(e) {
+        e.preventDefault()
+        this.props.fields.push({})
+    }
+
+    render() {
+        const { fields } = this.props
+        return (
+            <React.Fragment>
+                {(fields || []).map((therapy, index) => (
+                    <React.Fragment key={index}>
+                        <div className="form-row">
+                            <div className="form-group col-sm-12">
+                                <Field name={`${therapy}.medicine`} component={renderInput} label="Medicine" />
+                            </div>
                         </div>
-                    </div>
-                    <div className="form-row">
-                        <div className="form-group col-sm-12">
-                            <Field name={`${therapy}.instructions`} component={renderTextarea} label="Instructions" />
+                        <div className="form-row">
+                            <div className="form-group col-sm-12">
+                                <Field name={`${therapy}.instructions`} component={renderTextarea} label="Instructions" />
+                            </div>
                         </div>
+                    </React.Fragment>
+                ))}
+                <div className="form-row">
+                    <div className="form-group">
+                        <button className="btn btn-link addTherapy" onClick={this.pushNewFields}>
+                            Add therapy
+                        </button>
                     </div>
-                </React.Fragment>
-            ))}
-            <div className="form-row">
-                <div className="form-group">
-                    <button className="btn btn-link addTherapy" onClick={() => fields.push({})}>
-                        Add therapy
-                    </button>
                 </div>
-            </div>
-        </React.Fragment>
-    )
+            </React.Fragment>
+        )
+    }
 }

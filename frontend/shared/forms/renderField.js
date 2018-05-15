@@ -51,13 +51,13 @@ const renderSelect = ({ input, disabled, pristine, label, options, meta: { touch
     </label>
 )
 
-const renderReactSelect = ({ input, label, loadOptions, meta: { touched, error } }) => (
-    <label>
-        <Select.Async value={input.value} multi={false} loadOptions={loadOptions} onChange={input.onChange} />
+const renderReactSelect = ({ input, label, loadOptions, meta: { touched, error } }) => {
+    return (<label>
+        <Select.Async value={input.value} className={classnames("form-control", { "is-invalid": touched && error })} multi={false} loadOptions={loadOptions} onChange={input.onChange} />
         <span>{label}</span>
         {touched && error && <div className="invalid-feedback">{error}</div>}
-    </label>
-)
+    </label>)
+}
 
 const renderHorizontalSelect = ({ input, pristine, label, unit, options, meta: { touched, error } }) => (
     <div className="form-row">
