@@ -72,9 +72,6 @@ const Form = props => (
             <div className="form-group col-sm-2">
                 <Field name="tent" component={renderInput} label="Tent" />
             </div>
-            <div className="form-group col-sm-4">
-                <Field name="clinic" component={renderInput} label="Clinic" />
-            </div>
         </div>
 
         <div className="form-row">
