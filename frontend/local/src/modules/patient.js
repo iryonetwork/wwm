@@ -209,7 +209,7 @@ export default (state = initialState, action) => {
 }
 
 const getNewMembers = formData => {
-    return formData.familyMembers.filter(member => member.patientID === undefined).map(member => {
+    return (formData.familyMembers || []).filter(member => member.patientID === undefined).map(member => {
         if (member.livingTogether === "true") {
             member.tent = formData.tent
             member.camp = formData.camp
@@ -313,7 +313,7 @@ export const fetchPatient = patientID => dispatch => {
             patient.personFileID = personFileID
 
             return Promise.all(
-                patient.familyMembers.map((member, index) => {
+                (patient.familyMembers || []).map((member, index) => {
                     return dispatch(get(member.patientID)).then(card => {
                         let obj = cardToObject(card)
 
