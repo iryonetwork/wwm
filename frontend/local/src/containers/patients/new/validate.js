@@ -1,16 +1,4 @@
-const requiredFields = [
-    "firstName",
-    "lastName",
-    "dateOfBirth",
-    "gender",
-    "maritalStatus",
-    "numberOfKids",
-    "nationality",
-    "countryOfOrigin",
-    "country",
-    "camp",
-    "tent"
-]
+const requiredFields = ["firstName", "lastName", "dateOfBirth", "gender", "maritalStatus", "numberOfKids", "nationality", "countryOfOrigin", "country", "camp"]
 
 const validate = values => {
     const errors = {}

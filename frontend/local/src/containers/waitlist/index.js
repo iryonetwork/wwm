@@ -56,7 +56,7 @@ class Waitlist extends React.Component {
 
         const waitlistID = match.params.waitlistID
         const waitlistItemID = match.params.itemID
-        const baseMatchURL = (waitlistID && waitlistItemID) ? "/waitlist/:waitlistID/:itemID" : "/waitlist/:waitlistID"
+        const baseMatchURL = waitlistID && waitlistItemID ? "/waitlist/:waitlistID/:itemID" : "/waitlist/:waitlistID"
 
         return (
             <div className="waitlist">
@@ -65,7 +65,7 @@ class Waitlist extends React.Component {
                 <Section
                     type={TYPE_ENCOUNTER}
                     list={listEncounter}
-                    title="Encounter"
+                    title="Consultation"
                     waitlistID={match.params.waitlistID}
                     canAddExamination={this.props.canAddExamination}
                     canSeeExamination={this.props.canSeeExamination}
@@ -143,7 +143,9 @@ const Section = ({
                     {(list || []).map(el => (
                         <tr key={el.id}>
                             <th scope="row">
-                                <Link className="patientLink" to={`/patients/${el.patientID}`}><Patient data={el.patient && cardToObject({ connections: el.patient })} /></Link>
+                                <Link className="patientLink" to={`/patients/${el.patientID}`}>
+                                    <Patient data={el.patient && cardToObject({ connections: el.patient })} />
+                                </Link>
                             </th>
                             <td>
                                 {canSeeMainComplaint && (

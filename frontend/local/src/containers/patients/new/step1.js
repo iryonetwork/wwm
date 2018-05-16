@@ -13,6 +13,21 @@ const numberOfKidsOptions = Array.from(Array(9), (x, i) => ({
     value: i
 }))
 
+const educationOptions = [
+    {
+        label: "Primary",
+        value: "primary"
+    },
+    {
+        label: "Secondary",
+        value: "secondary"
+    },
+    {
+        label: "Tertiary",
+        value: "tertiary"
+    }
+]
+
 const Form = props => (
     <div className="patient-form">
         <h3>Identification</h3>
@@ -52,7 +67,7 @@ const Form = props => (
 
         <div className="form-row">
             <div className="form-group col-sm-4">
-                <Field name="education" optional={true} component={renderInput} label="Education" />
+                <Field name="education" optional={true} component={renderSelect} options={educationOptions} label="Education" />
             </div>
             <div className="form-group col-sm-4">
                 <Field name="profession" optional={true} component={renderInput} label="Profession" />
