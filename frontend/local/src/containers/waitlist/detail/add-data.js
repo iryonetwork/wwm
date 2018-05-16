@@ -76,7 +76,8 @@ class MedicalData extends React.Component {
         })
 
         this.props.item.vitalSigns = vitalSigns
-        this.props.update(this.props.match.params.waitlistID, this.props.item)
+        this.props
+            .update(this.props.match.params.waitlistID, this.props.item)
             .then(data => {
                 this.props.listAll(this.props.match.params.waitlistID)
                 this.props.goBack()
@@ -332,98 +333,98 @@ const renderBloodPressure = fields => (
     </div>
 )
 
-const renderHearingScreening = fields => {
-    let frequencies = [500, 1000, 2000, 3000, 4000, 6000, 8000]
-    return (
-        <div className={classnames("section", { open: fields[fields.names[0]].input.value })}>
-            {fields[fields.names[0]].input.value && (
-                <div>
-                    <h4>{fields.label}</h4>
-                    <div className="hearing-row">
-                        <div className="label">Left ear</div>
-                        {frequencies.map(f => (
-                            <div className="col-sm-1" key={`left-${f}`}>
-                                <label>
-                                    <input {...fields.hearing.left[f].input} type="number" className="form-control" placeholder={f} />
-                                    <span>{`${f} Hz`}</span>
-                                </label>
-                            </div>
-                        ))}
-                        <div className="col-sm-1 unit">dB</div>
+// const renderHearingScreening = fields => {
+//     let frequencies = [500, 1000, 2000, 3000, 4000, 6000, 8000]
+//     return (
+//         <div className={classnames("section", { open: fields[fields.names[0]].input.value })}>
+//             {fields[fields.names[0]].input.value && (
+//                 <div>
+//                     <h4>{fields.label}</h4>
+//                     <div className="hearing-row">
+//                         <div className="label">Left ear</div>
+//                         {frequencies.map(f => (
+//                             <div className="col-sm-1" key={`left-${f}`}>
+//                                 <label>
+//                                     <input {...fields.hearing.left[f].input} type="number" className="form-control" placeholder={f} />
+//                                     <span>{`${f} Hz`}</span>
+//                                 </label>
+//                             </div>
+//                         ))}
+//                         <div className="col-sm-1 unit">dB</div>
 
-                        <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
-                            <NegativeIcon />
-                            Remove
-                        </button>
-                    </div>
+//                         <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
+//                             <NegativeIcon />
+//                             Remove
+//                         </button>
+//                     </div>
 
-                    <div className="hearing-row">
-                        <div className="label">Right ear</div>
-                        {frequencies.map(f => (
-                            <div className="col-sm-1" key={`right-${f}`}>
-                                <label>
-                                    <input {...fields.hearing.right[f].input} type="number" className="form-control" placeholder={f} />
-                                    <span>{`${f} Hz`}</span>
-                                </label>
-                            </div>
-                        ))}
-                        <div className="col-sm-1 unit">dB</div>
-                    </div>
-                </div>
-            )}
-            {!fields[fields.names[0]].input.value && (
-                <button className="btn btn-link" onClick={() => fields.change(fields.names[0], true)}>
-                    Add {fields.label}
-                </button>
-            )}
-        </div>
-    )
-}
+//                     <div className="hearing-row">
+//                         <div className="label">Right ear</div>
+//                         {frequencies.map(f => (
+//                             <div className="col-sm-1" key={`right-${f}`}>
+//                                 <label>
+//                                     <input {...fields.hearing.right[f].input} type="number" className="form-control" placeholder={f} />
+//                                     <span>{`${f} Hz`}</span>
+//                                 </label>
+//                             </div>
+//                         ))}
+//                         <div className="col-sm-1 unit">dB</div>
+//                     </div>
+//                 </div>
+//             )}
+//             {!fields[fields.names[0]].input.value && (
+//                 <button className="btn btn-link" onClick={() => fields.change(fields.names[0], true)}>
+//                     Add {fields.label}
+//                 </button>
+//             )}
+//         </div>
+//     )
+// }
 
-const renderVisualScreening = fields => (
-    <div className={classnames("section", { open: fields[fields.names[0]].input.value })}>
-        {fields[fields.names[0]].input.value && (
-            <div className="form-row title">
-                <h4>{fields.label}</h4>
-                <div className="col-sm-2 visual">
-                    <label>
-                        <input {...fields.visual_screening.left.distance} type="number" className="form-control" placeholder="Left eye" />
-                        <span>OS - left eye</span>
-                    </label>
-                </div>
-                <div className="col-sm-2">
-                    <label>
-                        <input {...fields.visual_screening.left.value} type="number" className="form-control" />
-                    </label>
-                </div>
+// const renderVisualScreening = fields => (
+//     <div className={classnames("section", { open: fields[fields.names[0]].input.value })}>
+//         {fields[fields.names[0]].input.value && (
+//             <div className="form-row title">
+//                 <h4>{fields.label}</h4>
+//                 <div className="col-sm-2 visual">
+//                     <label>
+//                         <input {...fields.visual_screening.left.distance} type="number" className="form-control" placeholder="Left eye" />
+//                         <span>OS - left eye</span>
+//                     </label>
+//                 </div>
+//                 <div className="col-sm-2">
+//                     <label>
+//                         <input {...fields.visual_screening.left.value} type="number" className="form-control" />
+//                     </label>
+//                 </div>
 
-                <div className="col-sm-1" />
+//                 <div className="col-sm-1" />
 
-                <div className="col-sm-2 visual">
-                    <label>
-                        <input {...fields.visual_screening.right.distance} type="number" className="form-control" placeholder="Right eye" />
-                        <span>OS - right eye</span>
-                    </label>
-                </div>
-                <div className="col-sm-2">
-                    <label>
-                        <input {...fields.visual_screening.right.value} type="number" className="form-control" />
-                    </label>
-                </div>
+//                 <div className="col-sm-2 visual">
+//                     <label>
+//                         <input {...fields.visual_screening.right.distance} type="number" className="form-control" placeholder="Right eye" />
+//                         <span>OS - right eye</span>
+//                     </label>
+//                 </div>
+//                 <div className="col-sm-2">
+//                     <label>
+//                         <input {...fields.visual_screening.right.value} type="number" className="form-control" />
+//                     </label>
+//                 </div>
 
-                <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
-                    <NegativeIcon />
-                    Remove
-                </button>
-            </div>
-        )}
-        {!fields[fields.names[0]].input.value && (
-            <button className="btn btn-link" onClick={() => fields.change(fields.names[0], true)}>
-                Add {fields.label}
-            </button>
-        )}
-    </div>
-)
+//                 <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
+//                     <NegativeIcon />
+//                     Remove
+//                 </button>
+//             </div>
+//         )}
+//         {!fields[fields.names[0]].input.value && (
+//             <button className="btn btn-link" onClick={() => fields.change(fields.names[0], true)}>
+//                 Add {fields.label}
+//             </button>
+//         )}
+//     </div>
+// )
 
 MedicalData = reduxForm({
     form: "medical-data"
