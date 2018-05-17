@@ -81,11 +81,11 @@ const Form = props => (
             <div className="form-group col-sm-4">
                 <Field name="country" component={renderSelect} options={props.countries} label="Country" />
             </div>
-            <div className="form-group col-sm-2">
-                <Field name="camp" component={renderInput} label="Camp" />
+            <div className="form-group col-sm-4">
+                <Field name="region" component={renderInput} label="Region" />
             </div>
-            <div className="form-group col-sm-2">
-                <Field name="tent" component={renderInput} label="Tent" />
+            <div className="form-group col-sm-4">
+                <Field name="address" component={renderInput} label="Address" />
             </div>
         </div>
 

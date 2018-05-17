@@ -66,21 +66,20 @@ export default dispatch => {
                 formPath: "country",
                 codes: countries
             },
-            // Camp (stored under "Address site name")
+            // Region (stored under "district")
             {
                 type: "value",
                 ehrPath:
-                    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.address.v1]:0/details[at0001]/items[at0002]/items[at00014]",
-                formPath: "camp"
+                    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.address.v1]:0/details[at0001]/items[at0003]",
+                formPath: "region"
             },
-            // Tent (stored under "Building/Complex sub-unit number")
+            // Address (stored under "street")
             {
                 type: "value",
                 ehrPath:
-                    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.address.v1]:0/details[at0001]/items[at0002]/items[at00013]",
-                formPath: "tent"
+                    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.address.v1]:0/details[at0001]/items[at0003]/items[at00019]",
+                formPath: "address"
             },
-
             /* Phone number */
             // Type of address (phone)
             {
