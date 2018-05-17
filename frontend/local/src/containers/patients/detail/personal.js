@@ -141,9 +141,9 @@ class ViewPersonal extends React.Component {
                     <h3>Contact</h3>
                     <div className="content">
                         <div className="row">
-                            <Column width="2" label="Country" value={patient.country} key="country" codes={fetchCodes("countries")} />
-                            <Column width="2" label="Camp" value={patient.camp} key="camp" />
-                            <Column width="2" label="Tent" value={patient.tent} key="tent" />
+                            <Column width="4" label="Country" value={patient.country} key="country" codes={fetchCodes("countries")} />
+                            <Column width="4" label="Region" value={patient.region} key="region" />
+                            <Column width="4" label="Address" value={patient.address} key="address" />
                         </div>
 
                         <div className="row">
