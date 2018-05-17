@@ -42,8 +42,11 @@ class NewPatientForm extends Component {
     }
 
     onSubmit(data) {
-        return this.props.createPatient(data)
+        return this.props
+            .createPatient(data)
             .then(patientID => {
+                // reset the form
+                this.props.reset()
                 this.props.push(`/to-waitlist/${patientID}`)
             })
             .catch(ex => {})
@@ -99,12 +102,9 @@ NewPatientForm.propTypes = {
     //onSubmit: PropTypes.func.isRequired
 }
 
-NewPatientForm = connect(
-    state => ({}),
-    {
-        push,
-        createPatient,
-    }
-)(NewPatientForm)
+NewPatientForm = connect(state => ({}), {
+    push,
+    createPatient
+})(NewPatientForm)
 
 export default NewPatientForm
