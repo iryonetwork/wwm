@@ -79,6 +79,27 @@ const renderHorizontalSelect = ({ input, pristine, label, unit, options, meta: {
     </div>
 )
 
+const renderNumericalValuesRadio = ({ input, className, label, options, hideLabel, meta: { touched, error } }) => (
+    <div className={classnames("form-inline-container", className)}>
+        {!hideLabel && <span className="label">{label}</span>}
+        {options.map((option, index) => (
+            <div key={index} className="form-check form-check-inline">
+                <input
+                    {...input}
+                    className="form-check-input"
+                    type="radio"
+                    id={`${input.name}${index}`}
+                    checked={Number(input.value) === option.value}
+                    value={option.value}
+                />
+                <label className="form-check-label" htmlFor={`${input.name}${index}`}>
+                    {option.label}
+                </label>
+            </div>
+        ))}
+    </div>
+)
+
 const renderRadio = ({ input, className, label, options, hideLabel, meta: { touched, error } }) => (
     <div className={classnames("form-inline-container", className)}>
         {!hideLabel && <span className="label">{label}</span>}
@@ -191,6 +212,7 @@ export {
     renderReactSelect,
     renderHorizontalSelect,
     renderRadio,
+    renderNumericalValuesRadio,
     renderHorizontalRadio,
     renderTextarea,
     renderHabitFields

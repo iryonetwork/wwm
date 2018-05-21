@@ -7,7 +7,7 @@ import { Field, reduxForm } from "redux-form"
 
 import { get, cardToObject } from "../../../modules/discovery"
 import { add } from "../../../modules/waitlist"
-import { renderInput, renderRadio, renderTextarea } from "shared/forms/renderField"
+import { renderInput, renderNumericalValuesRadio, renderTextarea } from "shared/forms/renderField"
 import Patient from "shared/containers/patient"
 import Spinner from "shared/containers/spinner"
 import "./style.css"
@@ -99,7 +99,7 @@ class AddToWaitlist extends Component {
                             <form onSubmit={handleSubmit(this.onSubmit)}>
                                 <div className="modal-body">
                                     <div className="form-row">
-                                        <Field name="priority" component={renderRadio} label="Urgent?" options={priorityOptions} />
+                                        <Field name="priority" component={renderNumericalValuesRadio} label="Urgent?" options={priorityOptions} />
                                     </div>
 
                                     <div className="form-row">
