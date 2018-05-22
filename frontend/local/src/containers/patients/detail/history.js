@@ -124,16 +124,6 @@ let History = ({ match, patient, canSee, canEdit }) => {
                     </dl>
                 </div>
             </div>
-
-            <div className="section">
-                <div className="name">Additional medications</div>
-                <div className="values">
-                    <dl>
-                        <dt>medication</dt>
-                        <dd>comment</dd>
-                    </dl>
-                </div>
-            </div>
         </div>
     ) : null
 }
