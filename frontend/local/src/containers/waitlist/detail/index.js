@@ -1,6 +1,7 @@
 import React from "react"
 import { connect } from "react-redux"
 import { Route, Link } from "react-router-dom"
+import moment from "moment"
 
 import "./style.css"
 
@@ -83,7 +84,7 @@ class InConsultation extends React.Component {
         this.closeConsultation = this.closeConsultation.bind(this)
         this.state = {saving: false}
     }
-x
+
     closeConsultation(ev) {
         ev.preventDefault()
         this.setState({saving: true})
@@ -194,12 +195,12 @@ x
                                             <div className="card-body">
                                                 <div className="card-text">
                                                     <p>
-                                                        <span className="big">{waitlistItem.vitalSigns.height}</span>cm
+                                                        <span className="big">{waitlistItem.vitalSigns.height.value}</span>cm
                                                     </p>
                                                     {/* <p>5ft 1in</p> */}
                                                 </div>
                                             </div>
-                                            {/* <div className="card-footer">5 feb 2018</div> */}
+                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.height.timestamp, "X").format("Do MMM Y")}</div>
                                         </div>
                                     </div>
                                 )}
@@ -212,12 +213,12 @@ x
                                             <div className="card-body">
                                                 <div className="card-text">
                                                     <p>
-                                                        <span className="big">{waitlistItem.vitalSigns.weight}</span>kg
+                                                        <span className="big">{waitlistItem.vitalSigns.weight.value}</span>kg
                                                     </p>
                                                     {/* <p>1008.8 lb</p> */}
                                                 </div>
                                             </div>
-                                            {/* <div className="card-footer">5 feb 2018</div> */}
+                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.weight.timestamp, "X").format("Do MMM Y")}</div>
                                         </div>
                                     </div>
                                 )}
@@ -233,9 +234,9 @@ x
                                                     <p>
                                                         <span className="big">
                                                             {round(
-                                                                waitlistItem.vitalSigns.weight /
-                                                                    waitlistItem.vitalSigns.height /
-                                                                    waitlistItem.vitalSigns.height *
+                                                                waitlistItem.vitalSigns.weight.value /
+                                                                    waitlistItem.vitalSigns.height.value /
+                                                                    waitlistItem.vitalSigns.height.value *
                                                                     10000,
                                                                 2
                                                             )}
@@ -243,7 +244,78 @@ x
                                                     </p>
                                                 </div>
                                             </div>
-                                            {/* <div className="card-footer">5 feb 2018</div> */}
+                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.height.timestamp, "X").isAfter(moment(waitlistItem.vitalSigns.weight.timestamp, "X")) ? moment(waitlistItem.vitalSigns.height.timestamp, "X").format("Do MMM Y") : moment(waitlistItem.vitalSigns.weight.timestamp, "X").format("Do MMM Y") }</div>
+                                        </div>
+                                    </div>
+                                )}
+
+                            {waitlistItem.vitalSigns &&
+                                waitlistItem.vitalSigns.temperature &&
+                                (
+                                    <div className="col-md-5 col-lg-4 col-xl-3">
+                                        <div className="card">
+                                            <div className="card-header">Body temperature</div>
+                                            <div className="card-body">
+                                                <div className="card-text">
+                                                    <p>
+                                                        <span className="big">{waitlistItem.vitalSigns.temperature.value}</span>°C
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.temperature.timestamp, "X").format("Do MMM Y")}</div>
+                                        </div>
+                                    </div>
+                                )}
+                            {waitlistItem.vitalSigns &&
+                                waitlistItem.vitalSigns.heart_rate &&
+                                (
+                                    <div className="col-md-5 col-lg-4 col-xl-3">
+                                        <div className="card">
+                                            <div className="card-header">Heart rate</div>
+                                            <div className="card-body">
+                                                <div className="card-text">
+                                                    <p>
+                                                        <span className="big">{waitlistItem.vitalSigns.heart_rate.value}</span>bpm
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.heart_rate.timestamp, "X").format("Do MMM Y")}</div>
+                                        </div>
+                                    </div>
+                                )}
+                            {waitlistItem.vitalSigns &&
+                                waitlistItem.vitalSigns.pressure &&
+                                waitlistItem.vitalSigns.pressure.value.systolic &&
+                                waitlistItem.vitalSigns.pressure.value.diastolic &&
+                                (
+                                    <div className="col-md-5 col-lg-4 col-xl-3">
+                                        <div className="card">
+                                            <div className="card-header">Blood pressure</div>
+                                            <div className="card-body">
+                                                <div className="card-text">
+                                                    <p>
+                                                        <span className="big">{waitlistItem.vitalSigns.pressure.value.systolic}/{waitlistItem.vitalSigns.pressure.value.diastolic}</span>mmHg
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.pressure.timestamp, "X").format("Do MMM Y")}</div>
+                                        </div>
+                                    </div>
+                                )}
+                            {waitlistItem.vitalSigns &&
+                                waitlistItem.vitalSigns.oxygen_saturation &&
+                                (
+                                    <div className="col-md-5 col-lg-4 col-xl-3">
+                                        <div className="card">
+                                            <div className="card-header">Oxygen saturation</div>
+                                            <div className="card-body">
+                                                <div className="card-text">
+                                                    <p>
+                                                        <span className="big">{waitlistItem.vitalSigns.oxygen_saturation.value}</span>%
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.oxygen_saturation.timestamp, "X").format("Do MMM Y")}</div>
                                         </div>
                                     </div>
                                 )}

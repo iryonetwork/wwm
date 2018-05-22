@@ -76,14 +76,14 @@ class PatientDetail extends React.Component {
                                 waitlistItem.vitalSigns.height && (
                                     <div className="col-sm-4">
                                         <h5>Height</h5>
-                                        {waitlistItem.vitalSigns.height}cm
+                                        {waitlistItem.vitalSigns.height.value} cm
                                     </div>
                                 )}
                             {waitlistItem.vitalSigns &&
                                 waitlistItem.vitalSigns.weight && (
                                     <div className="col-sm-4">
                                         <h5>Weight</h5>
-                                        {waitlistItem.vitalSigns.weight}kg
+                                        {waitlistItem.vitalSigns.weight.value} kg
                                     </div>
                                 )}
                             {waitlistItem.vitalSigns &&
@@ -91,7 +91,7 @@ class PatientDetail extends React.Component {
                                 waitlistItem.vitalSigns.weight && (
                                     <div className="col-sm-4">
                                         <h5>BMI</h5>
-                                        {round(waitlistItem.vitalSigns.weight / waitlistItem.vitalSigns.height / waitlistItem.vitalSigns.height * 10000, 2)}
+                                        {round(waitlistItem.vitalSigns.weight.value / waitlistItem.vitalSigns.height.value / waitlistItem.vitalSigns.height.value * 10000, 2)}
                                     </div>
                                 )}
                         </div>

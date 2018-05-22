@@ -4,6 +4,7 @@ import { connect } from "react-redux"
 import { Fields, reduxForm } from "redux-form"
 import classnames from "classnames"
 import { goBack } from "react-router-redux"
+import moment from "moment"
 
 import Modal from "shared/containers/modal"
 import Patient from "shared/containers/patient"
@@ -14,38 +15,27 @@ import { cardToObject } from "../../../modules/discovery"
 import { ReactComponent as MedicalDataIcon } from "shared/icons/vitalsigns.svg"
 import { ReactComponent as NegativeIcon } from "shared/icons/negative.svg"
 
-const lengthUnits = [
-    // {
-    //     label: "m",
-    //     value: "m"
-    // },
-    {
-        label: "cm",
-        value: "cm"
-    }
-]
 
-const weigthUnits = [
-    {
-        label: "kg",
-        value: "kg"
-    }
-    // {
-    //     label: "lb",
-    //     value: "lb"
-    // }
-]
+const validate = form => {
+    const errors = {}
 
-const temperatureUnits = [
-    {
-        value: "c",
-        label: "°C"
-    }
-    // {
-    //     value: "f",
-    //     label: "°F"
-    // }
-]
+    _.forEach(form, (value, key) => {
+        if (key.indexOf("has_") === 0 && value) {
+            let sign = key.slice(4)
+            if (_.isObject(form[sign])) {
+                errors[sign] = {}
+                _.forEach(form[sign], (value, key) => {
+                    if (!value) {
+                        errors[sign][key] = "Required"
+                    }
+                })
+            } else if (!form[sign]) {
+                errors[sign] = "Required"
+            }
+        }
+    })
+    return errors
+}
 
 class MedicalData extends React.Component {
     constructor(props) {
@@ -69,9 +59,14 @@ class MedicalData extends React.Component {
         _.forEach(form, (value, key) => {
             if (key.indexOf("has_") === 0 && value) {
                 let sign = key.slice(4)
-                console.log(sign)
-                console.log(form)
-                vitalSigns[sign] = form[sign]
+                vitalSigns[sign] = {}
+                vitalSigns[sign].value = form[sign]
+
+                if (form[sign] !== this.props.initialValues[sign]) {
+                    vitalSigns[sign].timestamp = moment().format("X")
+                } else {
+                    vitalSigns[sign].timestamp = this.props.initialValues["timestmap_" + sign]
+                }
             }
         })
 
@@ -95,26 +90,26 @@ class MedicalData extends React.Component {
                             <Patient data={props.item.patient && cardToObject({ connections: props.item.patient })} />
                             <h1>
                                 <MedicalDataIcon />
-                                Add medical Data
+                                Add medical data
                             </h1>
                         </div>
 
                         <div className="modal-body">
-                            <h3> Body measurements</h3>
+                            <h3>Body measurements</h3>
                             <div>
                                 <Fields
                                     label="Height"
-                                    names={["has_height", "height", "height_unit"]}
-                                    units={lengthUnits}
-                                    component={renderFieldWithUnits}
+                                    names={["has_height", "height"]}
+                                    unit="cm"
+                                    component={renderFieldWithUnit}
                                     change={props.change}
                                 />
 
                                 <Fields
                                     label="Weight"
-                                    names={["has_weight", "weight", "weight_unit"]}
-                                    units={weigthUnits}
-                                    component={renderFieldWithUnits}
+                                    names={["has_weight", "weight"]}
+                                    unit="kg"
+                                    component={renderFieldWithUnit}
                                     change={props.change}
                                 />
                             </div>
@@ -124,9 +119,9 @@ class MedicalData extends React.Component {
                             <div>
                                 <Fields
                                     label="Body temperature"
-                                    names={["has_temperature", "temperature", "temperature_unit"]}
-                                    units={temperatureUnits}
-                                    component={renderFieldWithUnits}
+                                    names={["has_temperature", "temperature"]}
+                                    unit="°C"
+                                    component={renderFieldWithUnit}
                                     change={props.change}
                                 />
 
@@ -230,41 +225,41 @@ class MedicalData extends React.Component {
     }
 }
 
-const renderFieldWithUnits = fields => (
-    <div className={classnames("section", { open: fields[fields.names[0]].input.value })}>
-        {fields[fields.names[0]].input.value && (
-            <div className="form-row">
-                <div className="col-sm-4">
-                    <label>
-                        <input {...fields[fields.names[1]].input} type="number" className="form-control" placeholder={fields.label} />
+// const renderFieldWithUnits = fields => (
+//     <div className={classnames("section", { open: fields[fields.names[0]].input.value })}>
+//         {fields[fields.names[0]].input.value && (
+//             <div className="form-row">
+//                 <div className="col-sm-4">
+//                     <label>
+//                         <input {...fields[fields.names[1]].input} type="number" className="form-control" placeholder={fields.label} />
 
-                        <span>{fields.label}</span>
-                    </label>
-                </div>
+//                         <span>{fields.label}</span>
+//                     </label>
+//                 </div>
 
-                <div className="col-sm-2">
-                    <select {...fields[fields.names[2]].input} className="form-control">
-                        {fields.units.map(unit => (
-                            <option key={unit.value} value={unit.value}>
-                                {unit.label}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+//                 <div className="col-sm-2">
+//                     <select {...fields[fields.names[2]].input} className="form-control" validate={required}>
+//                         {fields.units.map(unit => (
+//                             <option key={unit.value} value={unit.value}>
+//                                 {unit.label}
+//                             </option>
+//                         ))}
+//                     </select>
+//                 </div>
 
-                <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
-                    <NegativeIcon />
-                    Remove
-                </button>
-            </div>
-        )}
-        {!fields[fields.names[0]].input.value && (
-            <button className="btn btn-link" onClick={() => fields.change(fields.names[0], true)}>
-                Add {fields.label}
-            </button>
-        )}
-    </div>
-)
+//                 <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
+//                     <NegativeIcon />
+//                     Remove
+//                 </button>
+//             </div>
+//         )}
+//         {!fields[fields.names[0]].input.value && (
+//             <button className="btn btn-link" onClick={() => fields.change(fields.names[0], true)}>
+//                 Add {fields.label}
+//             </button>
+//         )}
+//     </div>
+// )
 
 const renderFieldWithUnit = fields => (
     <div className={classnames("section", { open: fields[fields.names[0]].input.value })}>
@@ -272,9 +267,10 @@ const renderFieldWithUnit = fields => (
             <div className="form-row">
                 <div className="col-sm-4">
                     <label>
-                        <input {...fields[fields.names[1]].input} type="number" className="form-control" placeholder={fields.label} />
+                        <input {...fields[fields.names[1]].input} type="number" className={classnames("form-control", { "is-invalid": fields[fields.names[1]].meta.touched && fields[fields.names[1]].meta.error })} placeholder={fields.label} />
 
                         <span>{fields.label}</span>
+                        {fields[fields.names[1]].meta.touched && fields[fields.names[1]].meta.error && <div className="invalid-feedback">{fields[fields.names[1]].meta.error}</div>}
                     </label>
                 </div>
 
@@ -302,8 +298,9 @@ const renderBloodPressure = fields => (
                     <h4>{fields.label}</h4>
                     <div className="col-sm-4">
                         <label>
-                            <input {...fields.pressure.systolic.input} type="number" className="form-control" placeholder="Systolic" />
+                            <input {...fields.pressure.systolic.input} type="number" className={classnames("form-control", { "is-invalid": fields.pressure.systolic.meta.touched && fields.pressure.systolic.meta.error })} placeholder="Systolic" />
                             <span>Systolic</span>
+                            {fields.pressure.systolic.meta.touched && fields.pressure.systolic.meta.error && <div className="invalid-feedback">{fields.pressure.systolic.meta.error}</div>}
                         </label>
                     </div>
 
@@ -311,8 +308,9 @@ const renderBloodPressure = fields => (
 
                     <div className="col-sm-4">
                         <label>
-                            <input {...fields.pressure.diastolic.input} type="number" className="form-control" placeholder="Diastolic" />
+                            <input {...fields.pressure.diastolic.input} type="number" className={classnames("form-control", { "is-invalid": fields.pressure.diastolic.meta.touched && fields.pressure.diastolic.meta.error })} placeholder="Diastolic" />
                             <span>Diastolic</span>
+                            {fields.pressure.diastolic.meta.touched && fields.pressure.diastolic.meta.error && <div className="invalid-feedback">{fields.pressure.diastolic.meta.error}</div>}
                         </label>
                     </div>
 
@@ -427,7 +425,8 @@ const renderBloodPressure = fields => (
 // )
 
 MedicalData = reduxForm({
-    form: "medical-data"
+    form: "medical-data",
+    validate
 })(MedicalData)
 
 MedicalData = connect(
@@ -435,9 +434,10 @@ MedicalData = connect(
         let item = state.waitlist.items[props.match.params.itemID]
         let initialValues = {}
         if (item) {
-            _.forEach(item.vitalSigns || {}, (value, key) => {
-                initialValues[key] = value
+            _.forEach(item.vitalSigns || {}, (obj, key) => {
+                initialValues[key] = obj.value
                 initialValues["has_" + key] = true
+                initialValues["timestmap_" + key] = obj.timestamp
             })
         }
 
