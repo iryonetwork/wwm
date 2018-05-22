@@ -77,7 +77,7 @@ export default dispatch =>
             ehrPath:
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_weight.v2]/data[at0002]/event[at0003]/items[at0001]",
             unit: "kg",
-            formPath: "vitalSigns.weight"
+            formPath: "vitalSigns.weight.value"
         },
 
         // height
@@ -86,7 +86,7 @@ export default dispatch =>
             ehrPath:
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.height.v2]/data[at0001]/events[at0002]/data[at0003]/items[at0004]",
             unit: "cm",
-            formPath: "vitalSigns.height"
+            formPath: "vitalSigns.height.value"
         },
 
         // bmi
@@ -95,7 +95,7 @@ export default dispatch =>
             ehrPath:
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_mass_index.v2]/data[at0001]/events[at0002]/data[at0003]/items[at0004]",
             unit: "kg/m2",
-            formPath: "vitalSigns.bmi"
+            formPath: "vitalSigns.bmi.value"
         },
 
         // temperature
@@ -104,7 +104,7 @@ export default dispatch =>
             ehrPath:
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_temperature.v2]/data[at0002]/events[at0003]/data[at0001]/items[at0004]",
             unit: "Cel",
-            formPath: "vitalSigns.temperature"
+            formPath: "vitalSigns.temperature.value"
         },
 
         // blood pressure
@@ -114,7 +114,7 @@ export default dispatch =>
             ehrPath:
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.blood_pressure.v1]/data[at0001]/events[at0006]/data[at0003]/items[at0004]",
             unit: "mm[Hg]",
-            formPath: "vitalSigns.bloodPressure.systolic"
+            formPath: "vitalSigns.pressure.value.systolic"
         },
         // diastolic
         {
@@ -122,7 +122,7 @@ export default dispatch =>
             ehrPath:
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.blood_pressure.v1]/data[at0001]/events[at0006]/data[at0003]/items[at0005]",
             unit: "mm[Hg]",
-            formPath: "vitalSigns.bloodPressure.diastolic"
+            formPath: "vitalSigns.pressure.value.diastolic"
         },
 
         // pulse
@@ -137,7 +137,7 @@ export default dispatch =>
             ehrPath:
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse.v1]/data[at0002]/events[at0003]/data[at0001]/items[at0004]",
             unit: "/min",
-            formPath: "vitalSigns.pulse"
+            formPath: "vitalSigns.heart_rate.value"
         },
 
         // oxygen saturation (0 - 100)
@@ -145,6 +145,6 @@ export default dispatch =>
             type: "value",
             ehrPath:
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse_oximetry.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0006]",
-            formPath: "vitalSigns.oxygenSaturation"
+            formPath: "vitalSigns.oxygen_saturation.value"
         }
     ])
