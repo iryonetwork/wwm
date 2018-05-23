@@ -8,5 +8,7 @@ RUN wget https://sourceforge.net/projects/symmetricds/files/symmetricds/symmetri
     unzip download.zip && rm download.zip && mv symmetric-server-${SYMMETRIC_VERSION} /opt/symmetric && \
     mv /opt/symmetric/conf/log4j.xml /opt/symmetric/conf/log4j.xml.bak
 
+ADD log4j.xml /opt/symmetric/conf/
+
 CMD ["/opt/symmetric/bin/sym"]
 WORKDIR /opt/symmetric/bin
