@@ -6,6 +6,7 @@ import Consultation from "../../waitlist/detail"
 import Data from "./data"
 import History from "./history"
 import Personal from "./personal"
+import HealthRecord from "./record"
 
 import Patient from "shared/containers/patient"
 import Spinner from "shared/containers/spinner"
@@ -24,6 +25,7 @@ import { get as getWaitlistItem } from "../../../modules/waitlist"
 import { ReactComponent as InConsultationIcon } from "shared/icons/in-consultation-active.svg"
 import { ReactComponent as MedicalHistoryIcon } from "shared/icons/medical-history-active.svg"
 import { ReactComponent as PersonalInfoIcon } from "shared/icons/personal-info-active.svg"
+import { ReactComponent as HealthRecordIcon } from "shared/icons/health-record-active.svg"
 
 import "./style.css"
 
@@ -176,6 +178,15 @@ class PatientDetail extends React.Component {
                                             </NavLink>
                                         ) : null}
                                     </li>
+
+                                    {this.props.canSeeExamination && (
+                                        <li>
+                                            <NavLink to={baseURL + "record"}>
+                                                <HealthRecordIcon />
+                                                Health Record
+                                            </NavLink>
+                                        </li>
+                                    )}
                                 </ul>
                             </div>
                         </div>
@@ -186,6 +197,7 @@ class PatientDetail extends React.Component {
                     {this.props.canSeeExamination && <Route path="/waitlist/:waitlistID/:itemID/consultation" component={Consultation} />}
                     {this.props.canSeeVitalSigns && <Route path={match.path + "/data"} component={Data} />}
                     {this.props.canSeeDemographicInformation && <Route path={match.path + "/personal"} component={Personal} />}
+                    {this.props.canSeeExamination && <Route path={match.path + "/record"} component={HealthRecord} />}
                     {this.props.canSeeHealthHistory && <Route path={match.path + "/history"} component={History} />}
                 </div>
             </div>

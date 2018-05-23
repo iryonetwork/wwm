@@ -4,8 +4,8 @@ import produce from "immer"
 import { push } from "react-router-redux"
 // insert into storage
 import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
-import { createPatient as createPatientInStorage, readFileByLabel, updateFile, uploadFile } from "./storage"
-import { extractPatientData, composePatientData, composeEncounterData } from "./ehr"
+import { createPatient as createPatientInStorage, readFileByLabel, updateFile, uploadFile, readFilesByLabel } from "./storage"
+import { extractPatientData, composePatientData, composeEncounterData, extractEncounterData } from "./ehr"
 import { get as waitlistGet, remove as waitlistRemove } from "./waitlist"
 
 export const CREATE = "patient/CREATE"
@@ -19,6 +19,10 @@ export const FAILED = "patient/FAILED"
 export const UPDATE = "patient/UPDATE"
 export const UPDATE_DONE = "patient/UPDATE_DONE"
 export const UPDATE_FAILED = "patient/UPDATE_FAILED"
+
+export const FETCH_RECORDS = "patient/FETCH_RECORDS"
+export const FETCH_RECORDS_DONE = "patient/FETCH_RECORDS_DONE"
+export const FETCH_RECORDS_FAILED = "patient/FETCH_RECORDS_FAILED"
 
 const newPatientFormData = {
     documents: [
@@ -147,6 +151,7 @@ const newPatientFormData = {
 const initialState = {
     newData: process.env.NODE_ENV === "development" ? newPatientFormData : { documents: [] },
     patient: {},
+    patientRecords: {},
     patients: {}
 }
 
@@ -201,6 +206,20 @@ export default (state = initialState, action) => {
 
             case UPDATE_FAILED:
                 draft.updating = false
+                break
+
+            case FETCH_RECORDS:
+                draft.patientRecords = { loading: true }
+                break
+
+            case FETCH_RECORDS_DONE:
+                draft.patientRecords.loading = false
+                draft.patientRecords.data = action.data
+                break
+
+            case FETCH_RECORDS_FAILED:
+                draft.patientRecords.loading = false
+                draft.patientRecords.data = undefined
                 break
 
             default:
@@ -394,4 +413,23 @@ export const saveConsultation = (waitlistID, itemID) => dispatch => {
                 throw ex
             })
     )
+}
+
+export const fetchHealthRecords = patientID => dispatch => {
+    dispatch({ type: FETCH_RECORDS })
+
+    return dispatch(readFilesByLabel(patientID, "encounter"))
+        .then(documents => Promise.all(documents.map(document => Promise.all([dispatch(extractEncounterData(document.data)), document.meta]))))
+        .then(documents => documents.map(([data, meta]) => ({ data, meta })))
+        .then(documents => {
+            dispatch({
+                type: FETCH_RECORDS_DONE,
+                data: documents
+            })
+        })
+        .catch(ex => {
+            console.log(ex)
+            dispatch({ type: FETCH_RECORDS_FAILED })
+            dispatch(open("Failed to fetch health records", "", COLOR_DANGER))
+        })
 }

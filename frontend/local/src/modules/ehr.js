@@ -112,11 +112,11 @@ const extractInfoData = doc => dispatch => {
     })
 }
 
-// const extractEncounterData = doc => dispatch => {
-//     return dispatch(encounterSpec).then(spec => {
-//         return specToObject(spec, {}, doc, "")
-//     })
-// }
+export const extractEncounterData = doc => dispatch => {
+    return dispatch(encounterSpec).then(spec => {
+        return specToObject(spec, {}, doc, "")
+    })
+}
 
 const specToDocument = (specs, data, formData, ehrPrefix) => {
     const fns = specs.reduce((acc, spec) => {

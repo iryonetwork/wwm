@@ -106,3 +106,27 @@ export const readFileByLabel = (patientID, label) => dispatch => {
             return dispatch(readFile(patientID, fileData.name))
         })
 }
+
+export const readFilesByLabel = (patientID, label) => dispatch => {
+    const labelUrl = `${dispatch(read(API_URL))}/storage/${patientID}/${label}`
+
+    return fetch(labelUrl, {
+        method: "GET",
+        headers: {
+            Authorization: dispatch(getToken())
+        }
+    })
+        .then(response => {
+            if (response.status === 404) {
+                return []
+            } else if (response.status !== 200) {
+                throw new Error("Failed to read label from storage")
+            }
+            return response.json()
+        })
+
+        .then(files => {
+            return Promise.all(files.map(fileData => Promise.all([dispatch(readFile(patientID, fileData.name)), fileData])))
+        })
+        .then(files => files.map(([data, meta]) => ({ data: data, meta: meta })))
+}

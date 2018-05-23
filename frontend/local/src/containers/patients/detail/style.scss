@@ -359,3 +359,41 @@
         }
     }
 }
+
+.records {
+    .section {
+        padding-left: 50px;
+        position: relative;
+    }
+
+    svg {
+        width: 30px;
+        height: 30px;
+        position: absolute;
+        left: 0;
+    }
+
+    h3 {
+        font-size: 24px;
+        line-height: 30px;
+        margin-bottom: 0;
+    }
+
+    h4 {
+        font-size: 14px;
+        line-height: 30px;
+    }
+
+    .small {
+        color: $gray-400;
+    }
+
+    .comment {
+        margin: 10px 0;
+    }
+
+    .part {
+        padding: 10px 0;
+        border-top: 1px solid $gray-300;
+    }
+}
