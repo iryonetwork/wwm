@@ -147,7 +147,7 @@ class OrganizationDetail extends React.Component {
                                 type="text"
                                 className={"form-control" + (this.state.validationErrors["name"] ? " is-invalid" : "")}
                                 id="name"
-                                value={this.state.name}
+                                value={this.state.name || ""}
                                 onChange={this.updateInput}
                                 onBlur={this.onBlurInput}
                                 disabled={!props.canEdit}
@@ -166,7 +166,7 @@ class OrganizationDetail extends React.Component {
                                 type="text"
                                 className="form-control"
                                 id="legalStatus"
-                                value={this.state.legalStatus}
+                                value={this.state.legalStatus || ""}
                                 onChange={this.updateInput}
                                 onBlur={this.onBlurInput}
                                 disabled={!props.canEdit}
@@ -179,7 +179,7 @@ class OrganizationDetail extends React.Component {
                                 type="text"
                                 className="form-control"
                                 id="serviceType"
-                                value={this.state.serviceType}
+                                value={this.state.serviceType || ""}
                                 onChange={this.updateInput}
                                 onBlur={this.onBlurInput}
                                 disabled={!props.canEdit}
@@ -194,7 +194,7 @@ class OrganizationDetail extends React.Component {
                                     type="text"
                                     className="form-control"
                                     id="address.addressLine1"
-                                    value={this.state.address.addressLine1}
+                                    value={this.state.address.addressLine1 || ""}
                                     onChange={this.updateInput}
                                     onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
@@ -207,7 +207,7 @@ class OrganizationDetail extends React.Component {
                                     type="text"
                                     className="form-control"
                                     id="address.addressLine2"
-                                    value={this.state.address.addressLine2}
+                                    value={this.state.address.addressLine2 || ""}
                                     onChange={this.updateInput}
                                     onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
@@ -233,7 +233,7 @@ class OrganizationDetail extends React.Component {
                                     type="tel"
                                     className="form-control"
                                     id="address.postCode"
-                                    value={this.state.address.postCode}
+                                    value={this.state.address.postCode || ""}
                                     onChange={this.updateInput}
                                     onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
@@ -245,7 +245,7 @@ class OrganizationDetail extends React.Component {
                                 <select
                                     className="form-control form-control-sm"
                                     id="address.country"
-                                    value={this.state.address.country}
+                                    value={this.state.address.country || ""}
                                     onChange={this.updatePersonalData}
                                     onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
@@ -267,7 +267,7 @@ class OrganizationDetail extends React.Component {
                                     type="text"
                                     className="form-control"
                                     id="representative.name"
-                                    value={this.state.representative.name}
+                                    value={this.state.representative.name || ""}
                                     onChange={this.updateInput}
                                     onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
@@ -280,7 +280,7 @@ class OrganizationDetail extends React.Component {
                                     type="email"
                                     className="form-control"
                                     id="representative.email"
-                                    value={this.state.representative.email}
+                                    value={this.state.representative.email || ""}
                                     onChange={this.updateInput}
                                     onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
@@ -293,7 +293,7 @@ class OrganizationDetail extends React.Component {
                                     type="tel"
                                     className="form-control"
                                     id="representative.phoneNumber"
-                                    value={this.state.representative.phoneNumber}
+                                    value={this.state.representative.phoneNumber || ""}
                                     onChange={this.updateInput}
                                     onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
@@ -309,7 +309,7 @@ class OrganizationDetail extends React.Component {
                                     type="text"
                                     className="form-control"
                                     id="primaryContact.name"
-                                    value={this.state.primaryContact.name}
+                                    value={this.state.primaryContact.name || ""}
                                     onChange={this.updateInput}
                                     disabled={!props.canEdit}
                                     placeholder="Full name"
@@ -321,7 +321,7 @@ class OrganizationDetail extends React.Component {
                                     type="email"
                                     className="form-control"
                                     id="primaryContact.email"
-                                    value={this.state.primaryContact.email}
+                                    value={this.state.primaryContact.email || ""}
                                     onChange={this.updateInput}
                                     onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}
@@ -334,7 +334,7 @@ class OrganizationDetail extends React.Component {
                                     type="tel"
                                     className="form-control"
                                     id="primaryContact.phoneNumber"
-                                    value={this.state.primaryContact.phoneNumber}
+                                    value={this.state.primaryContact.phoneNumber || ""}
                                     onChange={this.updateInput}
                                     onBlur={this.onBlurInput}
                                     disabled={!props.canEdit}

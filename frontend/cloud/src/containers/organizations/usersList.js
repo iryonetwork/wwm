@@ -159,7 +159,7 @@ class UsersList extends React.Component {
                                         <tr key={i}>
                                             <th scope="row">{i + 1}</th>
                                             <td colSpan="2">
-                                                <select className="form-control form-control-sm" value={user.userID} onChange={this.editUserID(i)}>
+                                                <select className="form-control form-control-sm" value={user.userID || ""} onChange={this.editUserID(i)}>
                                                     <option>Select user</option>
                                                     {_.map(_.difference(_.map(_.values(props.users), user => user.id), props.organizationUserIDs), userID => (
                                                         <option key={userID} value={userID}>
@@ -169,7 +169,7 @@ class UsersList extends React.Component {
                                                 </select>
                                             </td>
                                             <td colSpan="2">
-                                                <select className="form-control form-control-sm" value={user.roleID} onChange={this.editRoleID(i)}>
+                                                <select className="form-control form-control-sm" value={user.roleID || ""} onChange={this.editRoleID(i)}>
                                                     <option>Select role</option>
                                                     {_.map(_.pickBy(props.roles, role => !_.includes(props.advancedRoleIDs, role.id)), role => (
                                                         <option key={role.id} value={role.id}>

@@ -121,7 +121,7 @@ class Roles extends React.Component {
                             <div className="input-group mb-3">
                                 <input
                                     type="text"
-                                    value={this.state.roleName}
+                                    value={this.state.roleName || ""}
                                     onChange={this.updateRoleName()}
                                     className="form-control form-control-sm"
                                     placeholder="Role name"

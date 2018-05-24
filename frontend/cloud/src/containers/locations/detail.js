@@ -148,7 +148,7 @@ class LocationDetail extends React.Component {
                             type="text"
                             className={"form-control" + (this.state.validationErrors["name"] ? " is-invalid" : "")}
                             id="name"
-                            value={this.state.name}
+                            value={this.state.name || ""}
                             onChange={this.updateInput}
                             onBlur={this.onBlurInput}
                             disabled={!props.canEdit}
@@ -167,7 +167,7 @@ class LocationDetail extends React.Component {
                             type="text"
                             className="form-control"
                             id="capacity"
-                            value={this.state.capacity}
+                            value={this.state.capacity || ""}
                             onChange={this.updateCapacity}
                             onBlur={this.onBlurInput}
                             disabled={!props.canEdit}
@@ -179,7 +179,7 @@ class LocationDetail extends React.Component {
                         <select
                             className="form-control form-control-sm"
                             id="country"
-                            value={this.state.country}
+                            value={this.state.country || ""}
                             onChange={this.updateInput}
                             onBlur={this.onBlurInput}
                             disabled={!props.canEdit}
@@ -198,7 +198,7 @@ class LocationDetail extends React.Component {
                             type="text"
                             className="form-control"
                             id="city"
-                            value={this.state.city}
+                            value={this.state.city || ""}
                             onChange={this.updateInput}
                             onBlur={this.onBlurInput}
                             disabled={!props.canEdit}
@@ -237,7 +237,7 @@ class LocationDetail extends React.Component {
                                 type="text"
                                 className="form-control"
                                 id="manager.name"
-                                value={this.state.manager.name}
+                                value={this.state.manager.name || ""}
                                 onChange={this.updateInput}
                                 onBlur={this.onBlurInput}
                                 disabled={!props.canEdit}
@@ -250,7 +250,7 @@ class LocationDetail extends React.Component {
                                 type="email"
                                 className="form-control"
                                 id="manager.email"
-                                value={this.state.manager.email}
+                                value={this.state.manager.email || ""}
                                 onChange={this.updateInput}
                                 onBlur={this.onBlurInput}
                                 disabled={!props.canEdit}
@@ -263,7 +263,7 @@ class LocationDetail extends React.Component {
                                 type="tel"
                                 className="form-control"
                                 id="manager.phoneNumber"
-                                value={this.state.manager.phoneNumber}
+                                value={this.state.manager.phoneNumber || ""}
                                 onChange={this.updateInput}
                                 onBlur={this.onBlurInput}
                                 disabled={!props.canEdit}

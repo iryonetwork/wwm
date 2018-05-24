@@ -168,7 +168,7 @@ class Clinics extends React.Component {
                                     <td>
                                         {props.canEdit && clinic.edit ? (
                                             <input
-                                                value={clinic.name}
+                                                value={clinic.name || ""}
                                                 onChange={this.editClinicName(i)}
                                                 type="text"
                                                 className="form-control form-control-sm"
@@ -181,7 +181,7 @@ class Clinics extends React.Component {
                                     </td>
                                     <td>
                                         {props.canEdit && clinic.edit ? (
-                                            <select className="form-control form-control-sm" value={clinic.organization} onChange={this.editOrganizationID(i)}>
+                                            <select className="form-control form-control-sm" value={clinic.organization || ""} onChange={this.editOrganizationID(i)}>
                                                 <option value="">Select organization</option>
                                                 {_.map(props.organizations, organization => (
                                                     <option key={organization.id} value={organization.id}>
@@ -195,7 +195,7 @@ class Clinics extends React.Component {
                                     </td>
                                     <td>
                                         {props.canEdit && clinic.edit ? (
-                                            <select className="form-control form-control-sm" value={clinic.location} onChange={this.editLocationID(i)}>
+                                            <select className="form-control form-control-sm" value={clinic.location || ""} onChange={this.editLocationID(i)}>
                                                 <option value="">Select location</option>
                                                 {_.map(props.locations, location => (
                                                     <option key={location.id} value={location.id}>

@@ -222,7 +222,7 @@ class Rules extends React.Component {
                                       {!props.embedded ? (
                                           <td>
                                               {props.canEdit && rule.edit ? (
-                                                  <select className="form-control form-control-sm" value={rule.subject} onChange={this.editSubject(i)}>
+                                                  <select className="form-control form-control-sm" value={rule.subject || ""} onChange={this.editSubject(i)}>
                                                       <option>Select subject</option>
                                                       <optgroup label="Roles">
                                                           {_.map(props.roles, role => (
@@ -251,7 +251,7 @@ class Rules extends React.Component {
                                               <input
                                                   type="text"
                                                   className="form-control form-control-sm"
-                                                  value={rule.resource}
+                                                  value={rule.resource || ""}
                                                   onChange={this.editResource(i)}
                                               />
                                           ) : (

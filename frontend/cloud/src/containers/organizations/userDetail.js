@@ -129,7 +129,7 @@ class UserDetail extends React.Component {
                                 <th scope="row">{i + 1}</th>
                                 <td>
                                     {props.canEdit && userRole.edit ? (
-                                        <select className="form-control form-control-sm" value={userRole.roleID} onChange={this.editRoleID(i)}>
+                                        <select className="form-control form-control-sm" value={userRole.roleID || ""} onChange={this.editRoleID(i)}>
                                             <option value="">Select role</option>
                                             {_.map(
                                                 _.difference(

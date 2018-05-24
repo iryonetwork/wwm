@@ -204,7 +204,7 @@ class UserRoles extends React.Component {
         switch (domainType) {
             case "organization":
                 return (
-                    <select className="form-control form-control-sm" value={domainID} onChange={this.editDomainID(index)}>
+                    <select className="form-control form-control-sm" value={domainID || ""} onChange={this.editDomainID(index)}>
                         <option>Select organization</option>
                         {_.map(this.props.organizations, organization => (
                             <option key={organization.id} value={organization.id}>
@@ -216,7 +216,7 @@ class UserRoles extends React.Component {
                 )
             case "clinic":
                 return (
-                    <select className="form-control form-control-sm" value={domainID} onChange={this.editDomainID(index)}>
+                    <select className="form-control form-control-sm" value={domainID || ""} onChange={this.editDomainID(index)}>
                         <option>Select clinic</option>
                         {_.map(this.props.clinics, clinic => (
                             <option key={clinic.id} value={clinic.id}>
@@ -228,7 +228,7 @@ class UserRoles extends React.Component {
                 )
             case "location":
                 return (
-                    <select className="form-control form-control-sm" value={domainID} onChange={this.editDomainID(index)}>
+                    <select className="form-control form-control-sm" value={domainID || ""} onChange={this.editDomainID(index)}>
                         <option>Select location</option>
                         {_.map(this.props.locations, location => (
                             <option key={location.id} value={location.id}>
@@ -240,7 +240,7 @@ class UserRoles extends React.Component {
                 )
             case "user":
                 return (
-                    <select className="form-control form-control-sm" value={domainID} onChange={this.editDomainID(index)}>
+                    <select className="form-control form-control-sm" value={domainID || ""} onChange={this.editDomainID(index)}>
                         <option>Select user</option>
                         {_.map(this.props.users, user => (
                             <option key={user.id} value={user.id}>
@@ -253,7 +253,7 @@ class UserRoles extends React.Component {
             case "cloud":
             case "global":
                 return (
-                    <select className="form-control form-control-sm" value={domainID} onChange={this.editDomainID(index)}>
+                    <select className="form-control form-control-sm" value={domainID || ""} onChange={this.editDomainID(index)}>
                         <option key="*" value="*">
                             *
                         </option>
@@ -261,7 +261,7 @@ class UserRoles extends React.Component {
                 )
             default:
                 return (
-                    <select className="form-control form-control-sm" value={domainID} disabled={true}>
+                    <select className="form-control form-control-sm" value={domainID || ""} disabled={true}>
                         <option>Select domain type first</option>
                     </select>
                 )
@@ -296,7 +296,7 @@ class UserRoles extends React.Component {
                                 <th scope="row">{i + 1}</th>
                                 <td>
                                     {props.canEdit && userRole.edit ? (
-                                        <select className="form-control form-control-sm" value={userRole.userID} onChange={this.editUserID(i)}>
+                                        <select className="form-control form-control-sm" value={userRole.userID || ""} onChange={this.editUserID(i)}>
                                             <option>Select user</option>
                                             {_.map(props.users, user => (
                                                 <option key={user.id} value={user.id}>
@@ -312,7 +312,7 @@ class UserRoles extends React.Component {
                                 </td>
                                 <td>
                                     {props.canEdit && userRole.edit ? (
-                                        <select className="form-control form-control-sm" value={userRole.roleID} onChange={this.editRoleID(i)}>
+                                        <select className="form-control form-control-sm" value={userRole.roleID || ""} onChange={this.editRoleID(i)}>
                                             <option>Select role</option>
                                             {_.map(props.roles, role => (
                                                 <option key={role.id} value={role.id}>
@@ -326,7 +326,7 @@ class UserRoles extends React.Component {
                                 </td>
                                 <td>
                                     {props.canEdit && userRole.edit ? (
-                                        <select className="form-control form-control-sm" value={userRole.domainType} onChange={this.editDomainType(i)}>
+                                        <select className="form-control form-control-sm" value={userRole.domainType || ""} onChange={this.editDomainType(i)}>
                                             <option>Select domain type</option>
                                             <option key="global" value="global">
                                                 global

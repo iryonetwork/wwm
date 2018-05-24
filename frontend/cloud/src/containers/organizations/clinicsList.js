@@ -153,7 +153,7 @@ class ClinicsList extends React.Component {
                                                 clinic.edit ? (
                                                     <input
                                                         type="text"
-                                                        value={clinic.name}
+                                                        value={clinic.name || ""}
                                                         onChange={this.editClinicName(i)}
                                                         className="form-control form-control-sm"
                                                         placeholder="Clinic name"
@@ -168,10 +168,10 @@ class ClinicsList extends React.Component {
                                         </td>
                                         <td>
                                             {props.canEdit && clinic.edit ? (
-                                                <select className="form-control form-control-sm" value={clinic.location} onChange={this.editLocationID(i)}>
+                                                <select className="form-control form-control-sm" value={clinic.location || ""} onChange={this.editLocationID(i)}>
                                                     <option value="">Select location</option>
                                                     {_.map(props.locations, location => (
-                                                        <option key={location.id} value={location.id}>
+                                                        <option key={location.id} value={location.id || ""}>
                                                             {location.name}
                                                         </option>
                                                     ))}
