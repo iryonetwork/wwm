@@ -10,6 +10,12 @@ import (
 // UUIDToBytes converts string uuid to bytes
 func UUIDToBytes(uuid strfmt.UUID) ([]byte, error) {
 	str := string(uuid)
+
+	return UUIDStringToBytes(str)
+}
+
+// UUIDStringToBytes converts string uuid to bytes
+func UUIDStringToBytes(str string) ([]byte, error) {
 	out := make([]byte, 16)
 
 	part, err := hex.DecodeString(str[0:8])

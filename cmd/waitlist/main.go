@@ -59,6 +59,12 @@ func main() {
 		logger.Fatal().Err(err).Msg("Failed to initialize waitlist storage")
 	}
 
+	// run migrations
+	err = storage.MigrateVitalSigns()
+	if err != nil {
+		logger.Error().Err(err).Msg("Vital sings migration failed")
+	}
+
 	_, err = storage.EnsureDefaultList(cfg.DefaultListID, cfg.DefaultListName)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to ensure default list")
