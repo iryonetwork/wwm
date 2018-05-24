@@ -224,27 +224,18 @@ class InConsultation extends React.Component {
                                 )}
 
                             {waitlistItem.vitalSigns &&
-                                waitlistItem.vitalSigns.height &&
-                                waitlistItem.vitalSigns.weight && (
+                                waitlistItem.vitalSigns.bmi && (
                                     <div className="col-md-5 col-lg-4 col-xl-3">
                                         <div className="card">
                                             <div className="card-header">BMI</div>
                                             <div className="card-body">
                                                 <div className="card-text">
                                                     <p>
-                                                        <span className="big">
-                                                            {round(
-                                                                waitlistItem.vitalSigns.weight.value /
-                                                                    waitlistItem.vitalSigns.height.value /
-                                                                    waitlistItem.vitalSigns.height.value *
-                                                                    10000,
-                                                                2
-                                                            )}
-                                                        </span>
+                                                        <span className="big">{waitlistItem.vitalSigns.bmi.value}</span>
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.height.timestamp, "X").isAfter(moment(waitlistItem.vitalSigns.weight.timestamp, "X")) ? moment(waitlistItem.vitalSigns.height.timestamp, "X").format("Do MMM Y") : moment(waitlistItem.vitalSigns.weight.timestamp, "X").format("Do MMM Y") }</div>
+                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.bmi.timestamp, "X").format("Do MMM Y")}</div>
                                         </div>
                                     </div>
                                 )}
@@ -393,11 +384,3 @@ InConsultation = connect(
 )(InConsultation)
 
 export default InConsultation
-
-const round = (number, precision) => {
-    var shift = function(number, precision) {
-        var numArray = ("" + number).split("e")
-        return +(numArray[0] + "e" + (numArray[1] ? +numArray[1] + precision : precision))
-    }
-    return shift(Math.round(shift(number, +precision)), -precision)
-}

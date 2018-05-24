@@ -70,6 +70,19 @@ class MedicalData extends React.Component {
             }
         })
 
+        // set BMI if height and weight available
+        if (vitalSigns.height && vitalSigns.weight) {
+            vitalSigns.bmi = {}
+            vitalSigns.bmi.value = round(
+                vitalSigns.weight.value /
+                    vitalSigns.height.value /
+                    vitalSigns.height.value *
+                    10000,
+                2
+            )
+            vitalSigns.bmi.timestamp = (moment(vitalSigns.height.timestamp, "X").isAfter(moment(vitalSigns.weight.timestamp, "X")) ? moment(vitalSigns.height.timestamp, "X") : moment(vitalSigns.weight.timestamp, "X")).format("X")
+        }
+
         this.props.item.vitalSigns = vitalSigns
         this.props
             .update(this.props.match.params.waitlistID, this.props.item)
@@ -456,3 +469,11 @@ MedicalData = connect(
 )(MedicalData)
 
 export default MedicalData
+
+const round = (number, precision) => {
+    var shift = function(number, precision) {
+        var numArray = ("" + number).split("e")
+        return +(numArray[0] + "e" + (numArray[1] ? +numArray[1] + precision : precision))
+    }
+    return shift(Math.round(shift(number, +precision)), -precision)
+}
