@@ -1,5 +1,6 @@
 import React from "react"
 import classnames from "classnames"
+import moment from "moment"
 
 import PersonPlaceholder from "../../public/person.svg"
 
@@ -11,8 +12,10 @@ export default ({ data, style, big }) => {
     }
 
     const gender = data.gender === "CODED-at0310" ? "M" : data.gender === "CODED-at0311" ? "F" : "?"
-    const age = Math.floor((Date.now() - new Date(data.dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365))
-    const dob = new Date(data.dateOfBirth).toLocaleDateString()
+    const dob = moment(data.dateOfBirth)
+    const dobString = dob.toDate().toLocaleDateString()
+    const age = moment().diff(dob, "years")
+
     return (
         <div className={classnames("patientCard", { big })}>
             <img src={PersonPlaceholder} alt="" />
@@ -21,7 +24,7 @@ export default ({ data, style, big }) => {
                     {data.lastName}, {data.firstName}
                 </div>
                 <div className="dob">
-                    {dob}
+                    {dobString}
                     <span className="age">{age} y</span>
                     {gender}
                 </div>
