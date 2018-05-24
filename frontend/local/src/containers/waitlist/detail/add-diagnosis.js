@@ -2,7 +2,6 @@ import React from "react"
 import { connect } from "react-redux"
 import { Field, FieldArray, reduxForm } from "redux-form"
 import { push } from "react-router-redux"
-import _ from "lodash"
 
 import { searchCodes } from "shared/modules/codes"
 import { update as updateWaitlistItem } from "../../../modules/waitlist"
@@ -28,22 +27,25 @@ class AddDiagnosis extends React.Component {
             return Promise.resolve({ options: [] })
         }
 
-        return this.props.searchCodes("diagnosis", input).then(results => ({ options: results.map(el => ({ value: el.id, label: el.title })) }))
+        return this.props.searchCodes("diagnosis", input).then(results => ({ options: results.map(el => ({ id: el.id, label: el.title })) }))
     }
 
     onSubmit(formData) {
-        // convert diagnosis from object to string
-        if (_.isObject(formData.diagnosis)) {
-            formData.diagnosis = formData.diagnosis.value
+        // add it to waitlist item
+        let diagnosis = {
+            diagnosis: formData.diagnosis.id,
+            label: formData.diagnosis.label,
+            comment: formData.comment,
+            therapies: formData.therapies,
         }
 
-        // add it to waitlist item
+
         let newItem = Object.assign({}, this.props.waitlistItem)
         newItem.diagnoses = newItem.diagnoses || []
         if (this.props.diagnosisIndex) {
-            newItem.diagnoses[this.props.diagnosisIndex] = formData
+            newItem.diagnoses[this.props.diagnosisIndex] = diagnosis
         } else {
-            newItem.diagnoses.push(formData)
+            newItem.diagnoses.push(diagnosis)
         }
 
         this.props.updateWaitlistItem(this.props.match.params.waitlistID, newItem)
@@ -68,7 +70,7 @@ class AddDiagnosis extends React.Component {
                     <div className="modal-body">
                         <div className="form-row">
                             <div className="form-group col-sm-12">
-                                <Field name="diagnosis" validate={required} component={renderReactSelect} label="Diagnosis" loadOptions={(value) => this.fetchCodes( value ? value : this.props.initialValues.diagnosis)} />
+                                <Field name="diagnosis" validate={required} component={renderReactSelect} label="Diagnosis" loadOptions={(value) => this.fetchCodes( value ? value : this.props.initialValues.diagnosis.id)} />
                             </div>
                         </div>
 
@@ -114,11 +116,23 @@ AddDiagnosis = connect(
         let loading = state.waitlist.listing || state.waitlist.fetching || state.waitlist.items[props.match.params.itemID].updating
         let item = state.waitlist.items[props.match.params.itemID]
 
+        let initialValues = {diagnosis: {}}
+        if (!loading && props.match.params.diagnosisIndex) {
+            initialValues = {
+                diagnosis: {
+                    id: item.diagnoses[props.match.params.diagnosisIndex].diagnosis,
+                    label: item.diagnoses[props.match.params.diagnosisIndex].label,
+                },
+                comment: item.diagnoses[props.match.params.diagnosisIndex].comment,
+                therapies: item.diagnoses[props.match.params.diagnosisIndex].therapies,
+            }
+        }
+
         return ({
             loading: loading,
             diagnosisIndex: props.match.params.diagnosisIndex,
             waitlistItem: item,
-            initialValues: (!loading && props.match.params.diagnosisIndex) ? item.diagnoses[props.match.params.diagnosisIndex] : {},
+            initialValues: initialValues,
             searchingCodes: state.codes.searching,
             searchingResults: state.codes.searchResults,
         })

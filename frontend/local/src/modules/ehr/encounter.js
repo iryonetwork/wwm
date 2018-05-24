@@ -19,7 +19,22 @@ export default dispatch =>
                     ehrPath: "/data/items[at0001]/item[at0002]",
                     formPath: "diagnosis.label"
                 },
-                // comment
+                {
+                    type: "value",
+                    ehrPath: "/data/items[at0001]/item[at0002]/_mapping:0/target|code",
+                    formPath: "diagnosis.id"
+                },
+                {
+                    type: "fixedValue",
+                    ehrPath: "/data/items[at0001]/item[at0002]/_mapping:0/target|terminology",
+                    value: "SNOMED-CT"
+                },
+                {
+                    type: "fixedValue",
+                    ehrPath: "/data/items[at0001]/item[at0002]/_mapping:0/match",
+                    value: "="
+                },
+                // comment (clinical description)
                 {
                     type: "value",
                     ehrPath: "/data/items[at0001]/item[at0009]",

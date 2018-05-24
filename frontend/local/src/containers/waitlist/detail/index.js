@@ -152,7 +152,7 @@ class InConsultation extends React.Component {
                             {waitlistItem.diagnoses.map((el, key) => (
                                 <React.Fragment key={key}>
                                     <h3>
-                                        <CodeTitle categoryId="diagnosis" codeId={el.diagnosis} />
+                                        {el.label ? el.label : (<CodeTitle categoryId="diagnosis" codeId={el.diagnosis} />)}
                                     </h3>
                                     {el.comment && <p>{el.comment}</p>}
 
