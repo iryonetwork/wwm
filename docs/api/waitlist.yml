@@ -471,6 +471,9 @@ definitions:
       diagnosis:
         type: string
         description: Diagnosis identifier
+      label:
+        type: string
+        description: Diagnosis text
       comment:
         type: string
         description: Additional diagnosis comment
