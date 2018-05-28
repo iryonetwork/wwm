@@ -530,7 +530,7 @@ class UserDetail extends React.Component {
                                 ) : null}
                             </div>
                             <div className="form-group">
-                                <label htmlFor="nationality">Nationality</label>
+                                <label htmlFor="personalData.nationality">Nationality</label>
                                 <select
                                     className="form-control form-control-sm"
                                     id="personalData.nationality"
@@ -547,7 +547,7 @@ class UserDetail extends React.Component {
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label htmlFor="residency">Residency</label>
+                                <label htmlFor="personalData.residency">Residency</label>
                                 <select
                                     className="form-control form-control-sm"
                                     id="personalData.residency"
@@ -562,6 +562,32 @@ class UserDetail extends React.Component {
                                         </option>
                                     ))}
                                 </select>
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="personalData.phoneNumber">Phone number</label>
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    id="personalData.phoneNumber"
+                                    value={this.state.personalData.phoneNumber || ""}
+                                    onChange={this.updateInput}
+                                    onBlur={this.onBlurInput}
+                                    disabled={!props.canEdit}
+                                    placeholder="+38640..."
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="personalData.whatsApp">WhatsApp</label>
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    id="personalData.whatsApp"
+                                    value={this.state.personalData.whatsApp || ""}
+                                    onChange={this.updateInput}
+                                    onBlur={this.onBlurInput}
+                                    disabled={!props.canEdit}
+                                    placeholder="+38640..."
+                                />
                             </div>
                             <div className="form_group">
                                 <h4>Passport</h4>

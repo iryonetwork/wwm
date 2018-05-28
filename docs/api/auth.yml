@@ -1809,6 +1809,12 @@ definitions:
       residency:
         type: string
         description: Country name.
+      phoneNumber:
+        type: string
+        description: Phone number.
+      whatsApp:
+        type: string
+        description: Phone number user for WhatsApp.
       passport:
         type: object
         properties:
