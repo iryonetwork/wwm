@@ -71,6 +71,7 @@ func (s *storage) AddItem(waitlistID []byte, item *models.Item) (*models.Item, e
 		}
 		item.ID = id.String()
 		item.Added = strfmt.DateTime(time.Now())
+		item.Status = models.ItemStatusWaiting
 
 		data, err := item.MarshalBinary()
 		if err != nil {
@@ -222,6 +223,98 @@ func (s *storage) DeleteItem(waitlistID, itemID []byte, reason string) error {
 	})
 
 	return nil
+}
+
+// ListHistoryItems returns all items in waitlist's history
+func (s *storage) ListHistoryItems(waitlistID []byte, reason *string) ([]*models.Item, error) {
+	var list []*models.Item
+
+	err := s.db.View(func(tx *bolt.Tx) error {
+		bHistory := tx.Bucket(bucketHistory).Bucket(waitlistID)
+		if bHistory == nil {
+			return utils.NewError(utils.ErrNotFound, "waitlist history not found")
+		}
+
+		err := bHistory.ForEach(func(k, v []byte) error {
+			var item models.Item
+			err := item.UnmarshalBinary(v)
+			if err != nil {
+				return err
+			}
+
+			if reason == nil || item.Status == *reason {
+				list = append(list, &item)
+			}
+
+			return nil
+		})
+
+		return err
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
+// ReopenHistoryItem puts item from history back to waitlist
+func (s *storage) ReopenHistoryItem(waitlistID, itemID, newWaitlistID []byte) (*models.Item, error) {
+	var item models.Item
+
+	err := s.db.Update(func(tx *bolt.Tx) error {
+		bHistory := tx.Bucket(bucketHistory).Bucket(waitlistID)
+		if bHistory == nil {
+			return utils.NewError(utils.ErrNotFound, "waitlist history not found")
+		}
+
+		itemData := bHistory.Get(itemID)
+		if itemData == nil {
+			return utils.NewError(utils.ErrNotFound, "item not found")
+		}
+
+		err := item.UnmarshalBinary(itemData)
+		if err != nil {
+			return utils.NewError(utils.ErrServerError, "failed to unmarshal the item")
+		}
+		item.Status = models.ItemStatusWaiting
+		item.Finished = strfmt.NewDateTime()
+		item.PriorityQueue = *item.Priority
+
+		var bCurrent *bolt.Bucket
+		if newWaitlistID != nil {
+			bCurrent = tx.Bucket(bucketCurrent).Bucket(newWaitlistID)
+			if bCurrent == nil {
+				return utils.NewError(utils.ErrNotFound, "waitlist not found")
+			}
+		} else {
+			bCurrent, err = tx.Bucket(bucketCurrent).CreateBucketIfNotExists(waitlistID)
+			if err != nil || bCurrent == nil {
+				return utils.NewError(utils.ErrServerError, "failed to access waitlist")
+			}
+		}
+
+		newData, err := item.MarshalBinary()
+		if err != nil {
+			return utils.NewError(utils.ErrServerError, "failed to marshal the item")
+		}
+
+		err = bCurrent.Put(itemID, newData)
+		if err != nil {
+			return utils.NewError(utils.ErrServerError, "failed to put item in the waitlist")
+		}
+
+		//remove from history
+		err = bHistory.Delete(itemID)
+		if err != nil {
+			return utils.NewError(utils.ErrServerError, "failed to remove item from history")
+		}
+
+		return s.addToQueue(bCurrent, byte(item.PriorityQueue), itemID)
+	})
+
+	return &item, err
 }
 
 func (s *storage) getQueue(waitlistID []byte, priority byte) ([][]byte, error) {

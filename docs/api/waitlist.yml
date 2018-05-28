@@ -225,6 +225,46 @@ paths:
         500:
           $ref: '#/responses/500'
 
+  /{listID}/history:
+    get:
+      tags:
+        - item
+
+      parameters:
+        - in: path
+          name: listID
+          required: true
+          type: string
+          format: uuid
+        - in: query
+          name: reason
+          type: string
+          enum:
+            - finished
+            - canceled
+
+      summary: Waitlist
+      description: Returns all the already closed or removed items from the waitlist, result can be filtered by reason.
+
+      responses:
+        200:
+          description: Waitlist items
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Item'
+
+        401:
+          $ref: '#/responses/401'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
 
   /{listID}/{itemID}:
     put:
@@ -328,6 +368,49 @@ paths:
         - in: path
           name: itemID
           required: true
+          type: string
+          format: uuid
+
+      responses:
+        204:
+          description: Item was updated
+
+        400:
+          $ref: '#/responses/400'
+
+        401:
+          $ref: '#/responses/401'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+  /{listID}/{itemID}/reopen:
+    put:
+      summary: Reopens waitlist item that was closed or removed, ID of the list to which reopened item should be put can be specified.
+      tags:
+        - item
+
+      parameters:
+        - in: path
+          name: listID
+          required: true
+          type: string
+          format: uuid
+
+        - in: path
+          name: itemID
+          required: true
+          type: string
+          format: uuid
+
+        - in: query
+          name: newListID
           type: string
           format: uuid
 

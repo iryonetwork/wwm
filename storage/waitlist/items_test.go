@@ -13,6 +13,7 @@ import (
 
 	"github.com/iryonetwork/wwm/gen/waitlist/models"
 	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
+	"github.com/iryonetwork/wwm/utils"
 )
 
 func initWaitlist(name string) ([]byte, *testStorage) {
@@ -278,6 +279,138 @@ func TestDeleteItem(t *testing.T) {
 
 		return nil
 	})
+}
+
+func TestListHistoryItems(t *testing.T) {
+	waitlistID, storage := initWaitlist("room 1")
+	defer storage.Close()
+
+	item1, _ := storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(4)})
+	item2, _ := storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(4)})
+	id1, _ := uuid.FromString(item1.ID)
+	id2, _ := uuid.FromString(item2.ID)
+
+	list, err := storage.ListHistoryItems(waitlistID, nil)
+	if err == nil {
+		t.Fatal("Expected error; got nil")
+	}
+	utilsErr, ok := err.(utils.Error)
+	if !ok || utilsErr.Code() != utils.ErrNotFound {
+		t.Fatalf("Expected error to be `not_found`; got '%v'", err)
+	}
+	if len(list) != 0 {
+		t.Fatalf("Expected list length to be 0, got %d", len(list))
+	}
+
+	err = storage.DeleteItem(waitlistID, id1.Bytes(), models.ItemStatusCanceled)
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	err = storage.DeleteItem(waitlistID, id2.Bytes(), models.ItemStatusFinished)
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+
+	list, err = storage.ListHistoryItems(waitlistID, nil)
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	if len(list) != 2 {
+		t.Fatalf("Expected list length to be 2, got %d", len(list))
+	}
+
+	list, err = storage.ListHistoryItems(waitlistID, swag.String(models.ItemStatusCanceled))
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	if len(list) != 1 {
+		t.Fatalf("Expected list length to be 1, got %d", len(list))
+	}
+	if list[0].ID != item1.ID {
+		t.Fatalf("Expected list item 0 ID to be '%s', got '%s'", item1.ID, list[0].ID)
+	}
+
+	list, err = storage.ListHistoryItems(waitlistID, swag.String(models.ItemStatusFinished))
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	if len(list) != 1 {
+		t.Fatalf("Expected list length to be 1, got %d", len(list))
+	}
+	if list[0].ID != item2.ID {
+		t.Fatalf("Expected list item 0 ID to be '%s', got '%s'", item2.ID, list[0].ID)
+	}
+}
+
+func TestReopenHistoryItem(t *testing.T) {
+	waitlist1ID, storage := initWaitlist("waitlist1")
+	waitlist2, err := storage.AddList("waitlist2")
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	waitlist2UUID, err := uuid.FromString(waitlist2.ID)
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	waitlist2ID := waitlist2UUID.Bytes()
+
+	item1, _ := storage.AddItem(waitlist1ID, &models.Item{Priority: swag.Int64(4)})
+	item2, _ := storage.AddItem(waitlist1ID, &models.Item{Priority: swag.Int64(4)})
+	id1, _ := uuid.FromString(item1.ID)
+	id2, _ := uuid.FromString(item2.ID)
+
+	err = storage.DeleteItem(waitlist1ID, id1.Bytes(), models.ItemStatusCanceled)
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	err = storage.DeleteItem(waitlist1ID, id2.Bytes(), models.ItemStatusFinished)
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+
+	list, err := storage.ListItems(waitlist1ID)
+	if err != nil {
+		t.Fatalf("Expected nil; got nil; got '%v'", err)
+	}
+	if len(list) != 0 {
+		t.Fatalf("Expected list length to be 0, got %d", len(list))
+	}
+
+	reopenedItem, err := storage.ReopenHistoryItem(waitlist1ID, id1.Bytes(), waitlist2ID)
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	if reopenedItem.Status != models.ItemStatusWaiting {
+		t.Fatalf("Expected item priority to be `%s`, got `%s`", models.ItemStatusWaiting, reopenedItem.Status)
+	}
+	list, err = storage.ListItems(waitlist2ID)
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	if len(list) != 1 {
+		t.Fatalf("Expected list length to be 1, got %d", len(list))
+	}
+	if list[0].ID != item1.ID {
+		t.Fatalf("Expected list item 0 ID to be '%s', got '%s'", item1.ID, list[0].ID)
+	}
+
+	reopenedItem, err = storage.ReopenHistoryItem(waitlist1ID, id2.Bytes(), nil)
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	if reopenedItem.Status != models.ItemStatusWaiting {
+		t.Fatalf("Expected item priority to be `%s`, got `%s`", models.ItemStatusWaiting, reopenedItem.Status)
+	}
+	list, err = storage.ListItems(waitlist1ID)
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	if len(list) != 1 {
+		t.Fatalf("Expected list length to be 1, got %d", len(list))
+	}
+	if list[0].ID != item2.ID {
+		t.Fatalf("Expected list item 0 ID to be '%s', got '%s'", item2.ID, list[0].ID)
+	}
 }
 
 var items []*models.Item

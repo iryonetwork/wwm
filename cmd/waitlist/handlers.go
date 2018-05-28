@@ -132,3 +132,35 @@ func (h *handlers) ItemPutListIDItemIDTop() item.PutListIDItemIDTopHandler {
 		return item.NewPutListIDItemIDTopNoContent()
 	})
 }
+
+func (h *handlers) ItemGetListIDHistory() item.GetListIDHistoryHandler {
+	return item.GetListIDHistoryHandlerFunc(func(params item.GetListIDHistoryParams, principal *string) middleware.Responder {
+		listID, _ := utils.UUIDToBytes(params.ListID)
+
+		items, err := h.s.ListHistoryItems(listID, params.Reason)
+		if err != nil {
+			return utils.NewErrorResponse(err)
+		}
+
+		return item.NewGetListIDHistoryOK().WithPayload(items)
+	})
+}
+
+func (h *handlers) ItemPutListIDItemIDReopen() item.PutListIDItemIDReopenHandler {
+	return item.PutListIDItemIDReopenHandlerFunc(func(params item.PutListIDItemIDReopenParams, principal *string) middleware.Responder {
+		listID, _ := utils.UUIDToBytes(params.ListID)
+		itemID, _ := utils.UUIDToBytes(params.ItemID)
+
+		var newListID []byte
+		if params.NewListID != nil {
+			newListID, _ = utils.UUIDToBytes(*params.NewListID)
+		}
+
+		_, err := h.s.ReopenHistoryItem(listID, itemID, newListID)
+		if err != nil {
+			return utils.NewErrorResponse(err)
+		}
+
+		return item.NewPutListIDItemIDReopenNoContent()
+	})
+}

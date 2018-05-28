@@ -96,9 +96,11 @@ func main() {
 
 	api.ItemDeleteListIDItemIDHandler = h.ItemDeleteListIDItemID()
 	api.ItemGetListIDHandler = h.ItemGetListID()
+	api.ItemGetListIDHistoryHandler = h.ItemGetListIDHistory()
 	api.ItemPostListIDHandler = h.ItemPostListID()
 	api.ItemPutListIDItemIDHandler = h.ItemPutListIDItemID()
 	api.ItemPutListIDItemIDTopHandler = h.ItemPutListIDItemIDTop()
+	api.ItemPutListIDItemIDReopenHandler = h.ItemPutListIDItemIDReopen()
 
 	// initialize metrics middleware
 	apiMetrics := APIMetrics.NewMetrics("api", "").WithURLSanitize(utils.WhitelistURLSanitize([]string{}))

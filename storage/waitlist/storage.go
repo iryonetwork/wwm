@@ -44,6 +44,12 @@ type Storage interface {
 	// DeleteItem removes an item from a waitlist and moves it to history
 	DeleteItem(waitlistID, itemID []byte, reason string) error
 
+	// ListHistoryItems returns all items in waitlist's history
+	ListHistoryItems(waitlistID []byte, reason *string) ([]*models.Item, error)
+
+	// ReopenHistoryItem puts item from history back to waitlist
+	ReopenHistoryItem(waitlistID, itemID, newWaitlistID []byte) (*models.Item, error)
+
 	// Close closes the database
 	Close() error
 
