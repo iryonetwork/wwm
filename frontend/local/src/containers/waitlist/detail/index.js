@@ -120,7 +120,7 @@ class InConsultation extends React.Component {
                     <div className="section">
                         <header>
                             <h2>
-                                <ComplaintIcon />Main Complaint
+                                <ComplaintIcon />Main complaint
                             </h2>
                             {this.props.canEditMainComplaint && (
                                 <Link to={joinPaths(match.url, "edit-complaint")} className="btn btn-link">
@@ -178,7 +178,7 @@ class InConsultation extends React.Component {
                         <header>
                             <h2>
                                 <MedicalDataIcon />
-                                Medical Data
+                                Medical data
                             </h2>
                             {this.props.canAddVitalSigns && (
                                 <Link to={joinPaths(match.url, "add-data")} className="btn btn-link">

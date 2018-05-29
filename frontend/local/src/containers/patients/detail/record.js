@@ -1,6 +1,8 @@
 import React from "react"
 import _ from "lodash"
 import { connect } from "react-redux"
+import  moment  from "moment"
+import { Collapse } from 'reactstrap';
 
 import Spinner from "shared/containers/spinner"
 import { RESOURCE_EXAMINATION, READ } from "../../../modules/validations"
@@ -17,18 +19,29 @@ class HealthRecord extends React.Component {
         if (props.patientID) {
             props.fetchHealthRecords(props.patientID)
         }
+
+        this.togglePart = this.togglePart.bind(this)
+
+        this.state = {}
     }
 
-    componentDidUpdate(prevProps) {
-        if (prevProps.patientID !== this.props.patientID) {
-            this.props.fetchHealthRecords(this.props.patientID)
+    componentWillReceiveProps(nextProps) {
+        if ((nextProps.records === undefined || nextProps.patientID !== nextProps.loadedPatientID) && !nextProps.recordsLoading) {
+            this.props.fetchHealthRecords(nextProps.patientID)
         }
     }
 
-    render() {
-        let { records, canSeeExamination } = this.props
 
-        if (records.loading) {
+    togglePart = (fileName, part) => () => {
+        let fileState = _.clone(this.state[fileName]) || {}
+        fileState[part] = fileState[part] ? !fileState[part] : true
+        this.setState({[fileName]: fileState})
+    }
+
+    render() {
+        let { records, recordsLoading, canSeeExamination } = this.props
+
+        if (recordsLoading) {
             return <Spinner />
         }
 
@@ -39,64 +52,231 @@ class HealthRecord extends React.Component {
                 </header>
 
                 {canSeeExamination && (
-                    <div className="section">
-                        {records.data && records.data.length ? (
+                    <div>
+                        {records && records.length ? (
                             <div>
-                                {records.data.map(({ data, meta }) => (
+                                {records.map(({ data, meta }) => (
                                     <div key={meta.name}>
-                                        <h3>
-                                            <ComplaintIcon /> {data.mainComplaint.complaint}
-                                        </h3>
-                                        <div className="small">{new Date(meta.created).toLocaleString()}</div>
-                                        {data.mainComplaint.comment && <div className="comment">{data.mainComplaint.comment}</div>}
-
-                                        {!_.isEmpty(data.diagnoses) && (
-                                            <div className="part">
-                                                <h4>
-                                                    <DiagnosisIcon /> Diagnoses
-                                                </h4>
-                                                <dl>
-                                                    {data.diagnoses.map(diagnosis => (
-                                                        <React.Fragment key={diagnosis.comment}>
-                                                            <dt>{diagnosis.name || "NAME"}</dt>
-                                                            <dd>{diagnosis.comment}</dd>
-                                                        </React.Fragment>
-                                                    ))}
-                                                </dl>
+                                        <div className="dateheader">{moment(meta.created).format("dddd, Do MMM YYYY")}</div>
+                                        <div className="section" key={meta.name}>
+                                            <div key="mainDiagnosis">
+                                                {!_.isEmpty(data.diagnoses) ? (
+                                                    <React.Fragment key="0">
+                                                        <h3>
+                                                            <DiagnosisIcon /> {data.diagnoses[0].diagnosis ? (data.diagnoses[0].diagnosis.label || "Diagnosis") : "Diagnosis"}
+                                                        </h3>
+                                                        <div className="comment">{data.diagnoses[0].comment}</div>
+                                                    </React.Fragment>
+                                                ) : (
+                                                    <React.Fragment key="missingDiagnosis">
+                                                        <h3 className="missing">
+                                                            <DiagnosisIcon /> Diagnosis was not set
+                                                        </h3>
+                                                    </React.Fragment>
+                                                )}
                                             </div>
-                                        )}
 
-                                        {!_.isEmpty(data.therapies) && (
-                                            <div className="part">
-                                                <h4>
-                                                    <TherapyIcon /> Therapies
-                                                </h4>
-                                                <dl>
-                                                    {data.therapies.map(therapy => (
-                                                        <React.Fragment key={therapy.medication}>
-                                                            <dt>{therapy.medication}</dt>
-                                                            <dd>{therapy.instructions}</dd>
-                                                        </React.Fragment>
-                                                    ))}
-                                                </dl>
-                                            </div>
-                                        )}
 
-                                        {!_.isEmpty(data.vitalSigns) && (
-                                            <div className="part">
-                                                <h4>
-                                                    <MedicalDataIcon /> Vital Signs
-                                                </h4>
-                                                <dl>
-                                                    {_.map(data.vitalSigns, (value, key) => (
-                                                        <React.Fragment key={key}>
-                                                            <dt>{_.upperFirst(key)}</dt>
-                                                            <dd>{value}</dd>
-                                                        </React.Fragment>
-                                                    ))}
-                                                </dl>
-                                            </div>
-                                        )}
+                                            {!_.isEmpty(data.mainComplaint) ? (
+                                                <div className="part" key="mainComplaint">
+                                                    <div className="partHeader" onClick={this.togglePart(meta.name, "mainComplaint")}>
+                                                        <h4>
+                                                            <ComplaintIcon /> Main complaint
+                                                        </h4>
+                                                    </div>
+                                                    <Collapse isOpen={this.state[meta.name] ? this.state[meta.name]["mainComplaint"] : false}>
+                                                        <dl>
+                                                            <dt>{data.mainComplaint ? data.mainComplaint.complaint : null}</dt>
+                                                            {data.mainComplaint && data.mainComplaint.comment && <dd>{data.mainComplaint.comment}</dd>}
+                                                        </dl>
+                                                    </Collapse>
+                                                </div>
+                                            ) : (
+                                                <div className="part">
+                                                    <h4 className="missing">
+                                                        <ComplaintIcon /> Main complaint was not set
+                                                    </h4>
+                                                </div>
+                                            )}
+
+                                            {!_.isEmpty(_.filter(data.diagnoses, (diagnosis, i) => (i !== 0))) && (
+                                                <div className="part" key="complementaryDiagnoses">
+                                                    <div className="partHeader" onClick={this.togglePart(meta.name, "complementaryDiagnoses")}>
+                                                        <h4>
+                                                            <DiagnosisIcon /> Complementary diagnoses
+                                                        </h4>
+                                                    </div>
+                                                    <Collapse isOpen={this.state[meta.name] ? this.state[meta.name]["complementaryDiagnoses"] : false}>
+                                                        <dl>
+                                                            {data.diagnoses.map((diagnosis, i) => {
+                                                                return (i !== 0) && (
+                                                                    <React.Fragment key={"diagnosis" + i}>
+                                                                        <dt>{diagnosis.diagnosis ? (diagnosis.diagnosis.label || "Diagnosis") : "Diagnosis"}</dt>
+                                                                        <dd>{diagnosis.comment}</dd>
+                                                                    </React.Fragment>
+                                                            )})}
+                                                        </dl>
+                                                    </Collapse>
+                                                </div>
+                                            )}
+
+                                            {!_.isEmpty(data.therapies) && (
+                                                <div className="part" key="therapies">
+                                                    <div className="partHeader" onClick={this.togglePart(meta.name, "therapies")}>
+                                                        <h4>
+                                                            <TherapyIcon /> Therapy
+                                                        </h4>
+                                                    </div>
+
+                                                    <Collapse isOpen={this.state[meta.name] ? this.state[meta.name]["therapies"] : false}>
+                                                        <dl>
+                                                            {data.therapies.map((therapy, i) => (
+                                                                <React.Fragment key={i}>
+                                                                    <dt>{therapy.medication}</dt>
+                                                                    {data.diagnoses.length > 1 && data.diagnoses[therapy.diagnosis].diagnosis.label && <aside className="diagnosisReference">{data.diagnoses[therapy.diagnosis].diagnosis.label}</aside>}
+                                                                    <dd>{therapy.instructions}</dd>
+                                                                </React.Fragment>
+                                                            ))}
+                                                        </dl>
+                                                    </Collapse>
+                                                </div>
+                                            )}
+
+
+                                            {!_.isEmpty(data.vitalSigns) && (
+                                                <div className="part">
+                                                    <div className="partHeader" onClick={this.togglePart(meta.name, "medicalData")}>
+                                                        <h4>
+                                                            <MedicalDataIcon /> Medical data
+                                                        </h4>
+                                                    </div>
+                                                    <Collapse isOpen={this.state[meta.name] ? this.state[meta.name]["medicalData"] : false}>
+                                                        <dl>
+                                                            <div className="card-group">
+                                                                {data.vitalSigns.height && (
+                                                                        <div className="col-md-5 col-lg-4 col-xl-3">
+                                                                            <div className="card">
+                                                                                <div className="card-header">Height</div>
+                                                                                <div className="card-body">
+                                                                                    <div className="card-text">
+                                                                                        <p>
+                                                                                            <span className="big">{data.vitalSigns.height.value}</span>cm
+                                                                                        </p>
+                                                                                        {/* <p>5ft 1in</p> */}
+                                                                                    </div>
+                                                                                </div>
+                                                                                {/*should be replaced by vitalSign timestamp when it will be saved*/}
+                                                                                <div className="card-footer">{moment(meta.created).format("Do MMM Y")}</div>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+
+                                                                {data.vitalSigns.weight && (
+                                                                        <div className="col-md-5 col-lg-4 col-xl-3">
+                                                                            <div className="card">
+                                                                                <div className="card-header">Body mass</div>
+                                                                                <div className="card-body">
+                                                                                    <div className="card-text">
+                                                                                        <p>
+                                                                                            <span className="big">{data.vitalSigns.weight.value}</span>kg
+                                                                                        </p>
+                                                                                        {/* <p>1008.8 lb</p> */}
+                                                                                    </div>
+                                                                                </div>
+                                                                                {/*should be replaced by vitalSign timestamp when it will be saved*/}
+                                                                                <div className="card-footer">{moment(meta.created).format("Do MMM Y")}</div>                                                                        </div>
+                                                                        </div>
+                                                                    )}
+
+                                                                {data.vitalSigns.bmi && (
+                                                                        <div className="col-md-5 col-lg-4 col-xl-3">
+                                                                            <div className="card">
+                                                                                <div className="card-header">BMI</div>
+                                                                                <div className="card-body">
+                                                                                    <div className="card-text">
+                                                                                        <p>
+                                                                                            <span className="big">{data.vitalSigns.bmi.value}</span>
+                                                                                        </p>
+                                                                                    </div>
+                                                                                </div>
+                                                                                {/*should be replaced by vitalSign timestamp when it will be saved*/}
+                                                                                <div className="card-footer">{moment(meta.created).format("Do MMM Y")}</div>                                                                        </div>
+                                                                        </div>
+                                                                    )}
+
+                                                                {data.vitalSigns.temperature &&
+                                                                    (
+                                                                        <div className="col-md-5 col-lg-4 col-xl-3">
+                                                                            <div className="card">
+                                                                                <div className="card-header">Body temperature</div>
+                                                                                <div className="card-body">
+                                                                                    <div className="card-text">
+                                                                                        <p>
+                                                                                            <span className="big">{data.vitalSigns.temperature.value}</span>°C
+                                                                                        </p>
+                                                                                    </div>
+                                                                                </div>
+                                                                                {/*should be replaced by vitalSign timestamp when it will be saved*/}
+                                                                                <div className="card-footer">{moment(meta.created).format("Do MMM Y")}</div>                                                                        </div>
+                                                                        </div>
+                                                                    )}
+                                                                {data.vitalSigns.heart_rate &&
+                                                                    (
+                                                                        <div className="col-md-5 col-lg-4 col-xl-3">
+                                                                            <div className="card">
+                                                                                <div className="card-header">Heart rate</div>
+                                                                                <div className="card-body">
+                                                                                    <div className="card-text">
+                                                                                        <p>
+                                                                                            <span className="big">{data.vitalSigns.heart_rate.value}</span>bpm
+                                                                                        </p>
+                                                                                    </div>
+                                                                                </div>
+                                                                                {/*should be replaced by vitalSign timestamp when it will be saved*/}
+                                                                                <div className="card-footer">{moment(meta.created).format("Do MMM Y")}</div>                                                                        </div>
+                                                                        </div>
+                                                                    )}
+                                                                {data.vitalSigns.pressure &&
+                                                                    data.vitalSigns.pressure.value.systolic &&
+                                                                    data.vitalSigns.pressure.value.diastolic &&
+                                                                    (
+                                                                        <div className="col-md-5 col-lg-4 col-xl-3">
+                                                                            <div className="card">
+                                                                                <div className="card-header">Blood pressure</div>
+                                                                                <div className="card-body">
+                                                                                    <div className="card-text">
+                                                                                        <p>
+                                                                                            <span className="big">{data.vitalSigns.pressure.value.systolic}/{data.vitalSigns.pressure.value.diastolic}</span>mmHg
+                                                                                        </p>
+                                                                                    </div>
+                                                                                </div>
+                                                                                {/*should be replaced by vitalSign timestamp when it will be saved*/}
+                                                                                <div className="card-footer">{moment(meta.created).format("Do MMM Y")}</div>                                                                        </div>
+                                                                        </div>
+                                                                    )}
+                                                                {data.vitalSigns.oxygen_saturation &&
+                                                                    (
+                                                                        <div className="col-md-5 col-lg-4 col-xl-3">
+                                                                            <div className="card">
+                                                                                <div className="card-header">Oxygen saturation</div>
+                                                                                <div className="card-body">
+                                                                                    <div className="card-text">
+                                                                                        <p>
+                                                                                            <span className="big">{data.vitalSigns.oxygen_saturation.value}</span>%
+                                                                                        </p>
+                                                                                    </div>
+                                                                                </div>
+                                                                                {/*should be replaced by vitalSign timestamp when it will be saved*/}
+                                                                                <div className="card-footer">{moment(meta.created).format("Do MMM Y")}</div>                                                                        </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                        </dl>
+                                                    </Collapse>
+                                                </div>
+                                            )}
+
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -111,11 +291,19 @@ class HealthRecord extends React.Component {
 }
 
 HealthRecord = connect(
-    state => ({
-        patientID: state.patient.patient.ID,
-        records: state.patient.patientRecords,
-        canSeeExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[READ]
-    }),
+    (state, props) => {
+        let records = state.patient.patientRecords.data
+        // sort records by creation time and reverse to have latest record as first
+        records = _.reverse(_.sortBy(records, [function(obj) { return obj.meta.created; }]))
+
+        return {
+            patientID: props.match.params.patientID || state.patient.patient.ID,
+            loadedPatientID: state.patient.patient.ID,
+            records: records,
+            recordsLoading: state.patient.patientRecords.loading,
+            canSeeExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[READ]
+        }
+    },
     { fetchHealthRecords }
 )(HealthRecord)
 
