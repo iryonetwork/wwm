@@ -135,6 +135,11 @@
         margin: 0px 0 40px 0;
     }
 
+    .diagnosisSelect {
+        position: relative;
+        z-index: 1000;
+    }
+
     .Select-multi-value-wrapper,
     .Select-arrow-zone,
     .Select-arrow,
@@ -149,6 +154,7 @@
     }
 
     .Select-menu-outer {
-        z-index: 1000;
+        position: absolute;
+        z-index: -1;
     }
 }

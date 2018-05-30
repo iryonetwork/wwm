@@ -8,8 +8,9 @@ import { update as updateWaitlistItem } from "../../../modules/waitlist"
 import Modal from "shared/containers/modal"
 import Patient from "shared/containers/patient"
 import { renderInput, renderTextarea, renderReactSelect } from "shared/forms/renderField"
+import { cardToObject } from "../../../modules/discovery"
 
-import { ReactComponent as MedicalHistoryIcon } from "shared/icons/medical-history-active.svg"
+import { ReactComponent as DiagnosisIcon } from "shared/icons/diagnosis.svg"
 
 import "react-select/dist/react-select.css"
 
@@ -60,15 +61,15 @@ class AddDiagnosis extends React.Component {
             <Modal>
                 <form className="add-diagnosis" onSubmit={handleSubmit(this.onSubmit)}>
                     <div className="modal-header">
-                        <Patient />
+                        <Patient data={this.props.waitlistItem.patient && cardToObject({ connections: this.props.waitlistItem.patient })} />
                         <h1>
-                            <MedicalHistoryIcon />
+                            <DiagnosisIcon />
                             {this.props.diagnosisIndex ? "Edit diagnosis" : "Add diagnosis"}
                         </h1>
                     </div>
 
                     <div className="modal-body">
-                        <div className="form-row">
+                        <div className="form-row diagnosisSelect">
                             <div className="form-group col-sm-12">
                                 <Field name="diagnosis" validate={required} component={renderReactSelect} label="Diagnosis" loadOptions={(value) => this.fetchCodes( value ? value : this.props.initialValues.diagnosis.id)} />
                             </div>
@@ -161,7 +162,7 @@ class renderTherapies extends React.Component {
     render() {
         const { fields } = this.props
         return (
-            <React.Fragment>
+            <div className="section">
                 {(fields || []).map((therapy, index) => (
                     <React.Fragment key={index}>
                         <div className="form-row">
@@ -183,7 +184,7 @@ class renderTherapies extends React.Component {
                         </button>
                     </div>
                 </div>
-            </React.Fragment>
+            </div>
         )
     }
 }
