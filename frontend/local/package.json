@@ -8,7 +8,7 @@
         "react-form": "^3.4.0",
         "react-scripts": "2.0.0-next.47d2d941",
         "react-select": "^1.2.1",
-        "reactstrap": "^5.0.0-beta.3"
+        "reactstrap": "^6.0.1"
     },
     "scripts": {
         "build-shared-css": "node-sass-chokidar --include-path ../shared/ --include-path ../node_modules ../shared/ -o ../shared/",
