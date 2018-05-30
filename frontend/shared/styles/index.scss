@@ -368,6 +368,9 @@ label {
     span {
         position: absolute;
         top: -20px;
+        text-transform:uppercase;
+        font-size:11px;
+        color :$grey5;
     }
 
     .invalid-feedback {
