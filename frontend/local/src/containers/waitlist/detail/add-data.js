@@ -64,7 +64,7 @@ class MedicalData extends React.Component {
                 vitalSigns[sign].value = form[sign]
 
                 if (form[sign] !== this.props.initialValues[sign]) {
-                    vitalSigns[sign].timestamp = moment().format("X")
+                    vitalSigns[sign].timestamp = moment().format()
                 } else {
                     vitalSigns[sign].timestamp = this.props.initialValues["timestmap_" + sign]
                 }
@@ -81,7 +81,7 @@ class MedicalData extends React.Component {
                     10000,
                 2
             )
-            vitalSigns.bmi.timestamp = (moment(vitalSigns.height.timestamp, "X").isAfter(moment(vitalSigns.weight.timestamp, "X")) ? moment(vitalSigns.height.timestamp, "X") : moment(vitalSigns.weight.timestamp, "X")).format("X")
+            vitalSigns.bmi.timestamp = (moment(vitalSigns.height.timestamp).isAfter(moment(vitalSigns.weight.timestamp)) ? moment(vitalSigns.height.timestamp) : moment(vitalSigns.weight.timestamp)).format()
         }
 
         this.props.item.vitalSigns = vitalSigns

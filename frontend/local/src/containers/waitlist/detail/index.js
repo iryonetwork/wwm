@@ -200,7 +200,7 @@ class InConsultation extends React.Component {
                                                     {/* <p>5ft 1in</p> */}
                                                 </div>
                                             </div>
-                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.height.timestamp, "X").format("Do MMM Y")}</div>
+                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.height.timestamp).format("Do MMM Y")}</div>
                                         </div>
                                     </div>
                                 )}
@@ -218,7 +218,7 @@ class InConsultation extends React.Component {
                                                     {/* <p>1008.8 lb</p> */}
                                                 </div>
                                             </div>
-                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.weight.timestamp, "X").format("Do MMM Y")}</div>
+                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.weight.timestamp).format("Do MMM Y")}</div>
                                         </div>
                                     </div>
                                 )}
@@ -235,7 +235,7 @@ class InConsultation extends React.Component {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.bmi.timestamp, "X").format("Do MMM Y")}</div>
+                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.bmi.timestamp).format("Do MMM Y")}</div>
                                         </div>
                                     </div>
                                 )}
@@ -253,7 +253,7 @@ class InConsultation extends React.Component {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.temperature.timestamp, "X").format("Do MMM Y")}</div>
+                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.temperature.timestamp).format("Do MMM Y")}</div>
                                         </div>
                                     </div>
                                 )}
@@ -270,7 +270,7 @@ class InConsultation extends React.Component {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.heart_rate.timestamp, "X").format("Do MMM Y")}</div>
+                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.heart_rate.timestamp).format("Do MMM Y")}</div>
                                         </div>
                                     </div>
                                 )}
@@ -289,7 +289,7 @@ class InConsultation extends React.Component {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.pressure.timestamp, "X").format("Do MMM Y")}</div>
+                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.pressure.timestamp).format("Do MMM Y")}</div>
                                         </div>
                                     </div>
                                 )}
@@ -306,7 +306,7 @@ class InConsultation extends React.Component {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.oxygen_saturation.timestamp, "X").format("Do MMM Y")}</div>
+                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.oxygen_saturation.timestamp).format("Do MMM Y")}</div>
                                         </div>
                                     </div>
                                 )}

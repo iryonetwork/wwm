@@ -151,16 +151,21 @@ func (s *storage) MigrateVitalSigns() error {
 									_, ok := vitalSignMap["timestamp"]
 									if ok {
 										vitalSigns[key] = vitalSignMap
+										// if timestamp is float64, convert, treatingas unix epoch
+										epoch, ok := vitalSignMap["timestamp"].(float64)
+										if ok {
+											vitalSignMap["timestamp"] = time.Unix(int64(epoch), 0).UTC().Format(time.RFC3339)
+										}
 									} else {
 										vitalSigns[key] = map[string]interface{}{
-											"timestamp": time.Now().Unix(),
+											"timestamp": time.Now().UTC().Format(time.RFC3339),
 											"value":     vitalSign,
 										}
 									}
 								}
 							} else {
 								vitalSigns[key] = map[string]interface{}{
-									"timestamp": time.Now().Unix(),
+									"timestamp": time.Now().UTC().Format(time.RFC3339),
 									"value":     vitalSign,
 								}
 							}

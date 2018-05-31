@@ -328,7 +328,7 @@ const migrateVitalSigns = vitalSigns => dispatch => {
                 10000,
             2
         )
-        vitalSigns.bmi.timestamp = (moment(vitalSigns.height.timestamp, "X").isAfter(moment(vitalSigns.weight.timestamp, "X")) ? moment(vitalSigns.height.timestamp, "X") : moment(vitalSigns.weight.timestamp, "X")).format("X")
+        vitalSigns.bmi.timestamp = (moment(vitalSigns.height.timestamp).isAfter(moment(vitalSigns.weight.timestamp)) ? moment(vitalSigns.height.timestamp) : moment(vitalSigns.weight.timestamp)).format()
     }
 
     return Promise.resolve(vitalSigns)
