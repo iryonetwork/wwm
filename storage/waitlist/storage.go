@@ -127,6 +127,8 @@ func (s *storage) MigrateVitalSigns() error {
 
 	for _, waitlist := range waitlists {
 		waitlistID, _ := utils.UUIDStringToBytes(waitlist.ID)
+
+		// migrate current items
 		items, err := s.ListItems(waitlistID)
 		if err != nil {
 			s.logger.Error().Err(err).Msgf("failed to fetch items from waitlist %s", waitlist.ID)
@@ -137,7 +139,7 @@ func (s *storage) MigrateVitalSigns() error {
 
 					originalVitalSings, ok := item.VitalSigns.(map[string]interface{})
 					if !ok {
-						s.logger.Error().Msgf("couldn't migrate vitalSigns &v", item.VitalSigns)
+						s.logger.Error().Msgf("couldn't migrate vitalSigns %v", item.VitalSigns)
 					} else {
 						for key, vitalSign := range originalVitalSings {
 							_, ok := vitalSign.(string)
@@ -172,6 +174,54 @@ func (s *storage) MigrateVitalSigns() error {
 				}
 			}
 		}
+
+		// migrate history items
+		items, err = s.ListHistoryItems(waitlistID, nil)
+		if err != nil {
+			s.logger.Error().Err(err).Msgf("failed to fetch items from waitlist %s", waitlist.ID)
+		} else {
+			for _, item := range items {
+				if item.VitalSigns != nil {
+					vitalSigns := make(map[string]map[string]interface{})
+
+					originalVitalSings, ok := item.VitalSigns.(map[string]interface{})
+					if !ok {
+						s.logger.Error().Msgf("couldn't migrate vitalSigns %v", item.VitalSigns)
+					} else {
+						for key, vitalSign := range originalVitalSings {
+							_, ok := vitalSign.(string)
+							if !ok {
+								vitalSignMap, ok := vitalSign.(map[string]interface{})
+								if !ok {
+									s.logger.Error().Msgf("invaid vital sign value %v", vitalSign)
+								} else {
+									_, ok := vitalSignMap["timestamp"]
+									if ok {
+										vitalSigns[key] = vitalSignMap
+									} else {
+										vitalSigns[key] = map[string]interface{}{
+											"timestamp": time.Now().Unix(),
+											"value":     vitalSign,
+										}
+									}
+								}
+							} else {
+								vitalSigns[key] = map[string]interface{}{
+									"timestamp": time.Now().Unix(),
+									"value":     vitalSign,
+								}
+							}
+						}
+					}
+					item.VitalSigns = vitalSigns
+					_, err = s.UpdateHistoryItem(waitlistID, item)
+					if err != nil {
+						s.logger.Error().Msgf("failed to migrate waitlist item %v", item)
+					}
+				}
+			}
+		}
 	}
+
 	return nil
 }
