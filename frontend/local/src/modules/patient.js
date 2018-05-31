@@ -7,7 +7,6 @@ import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 import { createPatient as createPatientInStorage, readFileByLabel, updateFile, uploadFile } from "./storage"
 import { extractPatientData, composePatientData, buildEncounterData } from "./ehr"
 import { get as waitlistGet, remove as waitlistRemove } from "./waitlist"
-import { fetchCode } from "shared/modules/codes"
 
 export const CREATE = "patient/CREATE"
 export const CREATED = "patient/CREATED"
@@ -360,26 +359,21 @@ export const saveConsultation = (waitlistID, itemID) => dispatch => {
                     therapies: []
                 }
                 ;(item.diagnoses || []).forEach((el, i) => {
-                    // if label is not present (legacy items) we need to fetch it [TO BE REMOVED]
-                    let label = el.label ? Promise.resolve(el.label) : dispatch(fetchCode("diagnosis", el.diagnosis)).then(result => result ? result.title : el.diagnosis)
-                    // extract diagnoses (after label resolved, [TO BE REMOVED])
-                    label.then(label => {
-                        data.diagnoses.push({
-                            diagnosis: {
-                                label: el.label,
-                                id: el.diagnosis,
-                            },
-                            comment: el.comment
-                        })
-                        // extract therapies
-                        ;(el.therapies || []).forEach(therapy =>
-                            data.therapies.push({
-                                medication: therapy.medicine,
-                                instructions: therapy.instructions,
-                                diagnosis: i
-                            })
-                        )
+                    data.diagnoses.push({
+                        diagnosis: {
+                            label: el.label,
+                            id: el.diagnosis,
+                        },
+                        comment: el.comment
                     })
+                    // extract therapies
+                    ;(el.therapies || []).forEach(therapy =>
+                        data.therapies.push({
+                            medication: therapy.medicine,
+                            instructions: therapy.instructions,
+                            diagnosis: i
+                        })
+                    )
                 })
                 return data
             })

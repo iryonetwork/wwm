@@ -1,9 +1,13 @@
 import produce from "immer"
 import { push } from "react-router-redux"
 import _ from "lodash"
+import moment from "moment"
+
 import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 import { read, API_URL, DEFAULT_WAITLIST_ID } from "shared/modules/config"
 import { getToken } from "shared/modules/authentication"
+import { fetchCode } from "shared/modules/codes"
+import { round } from "shared/utils"
 
 export const LIST = "waitlist/LIST"
 export const LISTED = "waitlist/LISTED"
@@ -144,8 +148,17 @@ export const listAll = listID => dispatch => {
             if (!ok) {
                 throw new Error(`Failed to search for patients (${status})`)
             }
-            dispatch({ type: LISTED, results: data })
-            return data
+
+            let items = []
+            ;(data || []).forEach((item, i) => {
+                items.push(dispatch(migrateItem(item)))
+            })
+
+            return Promise.all(items)
+        })
+        .then(items => {
+            dispatch({ type: LISTED, results: items })
+            return items
         })
         .catch(ex => {
             dispatch(open(ex.message, "", COLOR_DANGER))
@@ -266,6 +279,59 @@ export const remove = (listID, itemID, reason) => dispatch => {
         .catch(ex => {
             dispatch(open(ex.message, "", COLOR_DANGER))
         })
+}
+
+// function to migrate old items to new format
+const migrateItem = item => dispatch => {
+    let diagnoses = []
+    ;(item.diagnoses || []).forEach((diagnosis, i) => {
+        diagnoses.push(dispatch(migrateDiagnosis(diagnosis)))
+    })
+    let vitalSigns = dispatch(migrateVitalSigns(item.vitalSigns))
+
+    return Promise.all([Promise.all(diagnoses), vitalSigns])
+        .then(([diagnoses, vitalSigns]) => {
+            if (diagnoses.length > 0) {
+                item.diagnoses = diagnoses
+            }
+            item.vitalSigns = vitalSigns
+            return Promise.resolve(item)
+        })
+}
+
+// migrating diagnosis with only SNOMED code and without label
+const migrateDiagnosis = diagnosis => dispatch => {
+    if (diagnosis.label) {
+        return Promise.resolve(diagnosis)
+    }
+
+    return dispatch(fetchCode("diagnosis", diagnosis.diagnosis))
+        .then(data => {
+            diagnosis.label = data ? data.title : diagnosis.diagnosis
+            return Promise.resolve(diagnosis)
+        })
+        .catch(ex => {
+            diagnosis.label = diagnosis.diagnosis
+            return Promise.resolve(diagnosis)
+        })
+}
+
+// migrating vital signs without separately saved BMI
+const migrateVitalSigns = vitalSigns => dispatch => {
+    // migrate BMI (to be removed)
+    if (vitalSigns && !vitalSigns.bmi && vitalSigns.height && vitalSigns.weight) {
+        vitalSigns.bmi = {}
+        vitalSigns.bmi.value = round(
+            vitalSigns.weight.value /
+                vitalSigns.height.value /
+                vitalSigns.height.value *
+                10000,
+            2
+        )
+        vitalSigns.bmi.timestamp = (moment(vitalSigns.height.timestamp, "X").isAfter(moment(vitalSigns.weight.timestamp, "X")) ? moment(vitalSigns.height.timestamp, "X") : moment(vitalSigns.weight.timestamp, "X")).format("X")
+    }
+
+    return Promise.resolve(vitalSigns)
 }
 
 export const cardToObject = card => {

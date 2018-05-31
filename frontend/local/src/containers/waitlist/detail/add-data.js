@@ -8,6 +8,7 @@ import moment from "moment"
 
 import Modal from "shared/containers/modal"
 import Patient from "shared/containers/patient"
+import { round } from "shared/utils"
 import { open, COLOR_DANGER } from "shared/modules/alert"
 import { listAll, update } from "../../../modules/waitlist"
 import { cardToObject } from "../../../modules/discovery"
@@ -469,11 +470,3 @@ MedicalData = connect(
 )(MedicalData)
 
 export default MedicalData
-
-const round = (number, precision) => {
-    var shift = function(number, precision) {
-        var numArray = ("" + number).split("e")
-        return +(numArray[0] + "e" + (numArray[1] ? +numArray[1] + precision : precision))
-    }
-    return shift(Math.round(shift(number, +precision)), -precision)
-}
