@@ -2,6 +2,7 @@ import React from "react"
 import { connect } from "react-redux"
 import { Field, FieldArray, reduxForm } from "redux-form"
 import { push } from "react-router-redux"
+import _ from "lodash"
 
 import { searchCodes } from "shared/modules/codes"
 import { update as updateWaitlistItem } from "../../../modules/waitlist"
@@ -14,7 +15,7 @@ import { ReactComponent as DiagnosisIcon } from "shared/icons/diagnosis.svg"
 
 import "react-select/dist/react-select.css"
 
-const required = value => (value ? undefined : 'Required')
+const diagnosisRequired = value => ( !_.isEmpty(value) ? undefined : 'Required')
 
 class AddDiagnosis extends React.Component {
     constructor(props) {
@@ -71,7 +72,7 @@ class AddDiagnosis extends React.Component {
                     <div className="modal-body">
                         <div className="form-row diagnosisSelect">
                             <div className="form-group col-sm-12">
-                                <Field name="diagnosis" validate={required} component={renderReactSelect} label="Diagnosis" loadOptions={(value) => this.fetchCodes( value ? value : this.props.initialValues.diagnosis.id)} />
+                                <Field name="diagnosis" validate={diagnosisRequired} component={renderReactSelect} label="Diagnosis" loadOptions={(value) => this.fetchCodes( value ? value : this.props.initialValues.diagnosis.id)} />
                             </div>
                         </div>
 
