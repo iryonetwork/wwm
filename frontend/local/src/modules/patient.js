@@ -5,7 +5,7 @@ import { push } from "react-router-redux"
 // insert into storage
 import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 import { createPatient as createPatientInStorage, readFileByLabel, updateFile, uploadFile } from "./storage"
-import { extractPatientData, composePatientData, buildEncounterData } from "./ehr"
+import { extractPatientData, composePatientData, composeEncounterData } from "./ehr"
 import { get as waitlistGet, remove as waitlistRemove } from "./waitlist"
 
 export const CREATE = "patient/CREATE"
@@ -378,7 +378,7 @@ export const saveConsultation = (waitlistID, itemID) => dispatch => {
                 return data
             })
             // create the document
-            .then(data => Promise.all([Promise.resolve(data.patientID), dispatch(buildEncounterData({}, data))]))
+            .then(data => Promise.all([Promise.resolve(data.patientID), dispatch(composeEncounterData(data))]))
             // upload the file
             .then(([patientID, doc]) => dispatch(uploadFile(patientID, doc, "encounter", "openEHR-EHR-COMPOSITION.encounter.v1")))
             // remove from waitlist

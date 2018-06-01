@@ -18,6 +18,13 @@ export const composePatientData = formData => dispatch => {
     })
 }
 
+// Creates encounter document with context
+export const composeEncounterData = formData => dispatch => {
+    return dispatch(buildContextForEncounterData(formData)).then(context => {
+        return dispatch(buildEncounterData(context, formData))
+    })
+}
+
 export const extractPatientData = (person, info) => dispatch => {
     return Promise.all([dispatch(extractPersonData(person)), dispatch(extractInfoData(info))]).then(([person, info]) => Object.assign(person, info))
 }
@@ -27,7 +34,7 @@ const buildContextForPatientData = formData => dispatch => {
         dispatch(loadClinic(dispatch(read(CLINIC_ID)))),
         dispatch(loadLocation(dispatch(read(LOCATION_ID)))),
         dispatch(loadUser("me")) // doctor
-    ]).then(([clinic, location, doctor]) => {
+    ]).then(([clinic, location, author]) => {
         return {
             // facility details
             "/context/health_care_facility|name": clinic.name,
@@ -41,10 +48,37 @@ const buildContextForPatientData = formData => dispatch => {
 
             // // participants
             // // add doctor
-            // "/composer|identifier": doctor.id,
-            // "/composer|name": `${doctor.personalData.firstName} ${doctor.personalData.lastName}`,
+            "/composer|identifier": author.id,
+            "/composer|name": `${author.personalData.firstName} ${author.personalData.lastName}`,
 
             "/category": "openehr::431|persistent|"
+        }
+    })
+}
+
+const buildContextForEncounterData = formData => dispatch => {
+    return Promise.all([
+        dispatch(loadClinic(dispatch(read(CLINIC_ID)))),
+        dispatch(loadLocation(dispatch(read(LOCATION_ID)))),
+        dispatch(loadUser("me")) // doctor
+    ]).then(([clinic, location, author]) => {
+        return {
+            // facility details
+            "/context/health_care_facility|name": clinic.name,
+            "/context/health_care_facility|identifier": clinic.id,
+            "/territory": location.country,
+            "/language": "en",
+
+            // time info
+            "/context/start_time": new Date().toJSON(),
+            "/context/end_time": new Date().toJSON(),
+
+            // // participants
+            // // add doctor
+            "/composer|identifier": author.id,
+            "/composer|name": `${author.personalData.firstName} ${author.personalData.lastName}`,
+
+            "/category": "openehr::433|event|"
         }
     })
 }
