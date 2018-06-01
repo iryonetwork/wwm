@@ -90,14 +90,14 @@ export default dispatch =>
         {
             type: "quantity",
             ehrPath:
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_weight.v2]/data[at0002]/event[at0003]/items[at0001]",
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_weight.v2]/data[at0002]/events[at0003]:0/data[at0001]/items[at0004]",
             unit: "kg",
             formPath: "vitalSigns.weight.value"
         },
         {
             type: "dateTime",
             ehrPath:
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_weight.v2]/context/start_time",
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_weight.v2]/data[at0002]/events[at0003]:0/time",
             formPath: "vitalSigns.weight.timestamp"
         },
 
@@ -105,14 +105,14 @@ export default dispatch =>
         {
             type: "quantity",
             ehrPath:
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.height.v2]/data[at0001]/events[at0002]/data[at0003]/items[at0004]",
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.height.v2]/data[at0001]/events[at0002]:0/data[at0003]/items[at0004]",
             unit: "cm",
             formPath: "vitalSigns.height.value"
         },
         {
             type: "dateTime",
             ehrPath:
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.height.v2]/context/start_time",
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.height.v2]/data[at0001]/events[at0002]:0/time",
             formPath: "vitalSigns.height.timestamp"
         },
 
@@ -120,14 +120,14 @@ export default dispatch =>
         {
             type: "quantity",
             ehrPath:
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_mass_index.v2]/data[at0001]/events[at0002]/data[at0003]/items[at0004]",
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_mass_index.v2]/data[at0001]/events[at0002]:0/data[at0003]/items[at0004]",
             unit: "kg/m2",
             formPath: "vitalSigns.bmi.value"
         },
         {
             type: "dateTime",
             ehrPath:
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_mass_index.v2]/context/start_time",
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_mass_index.v2]/data[at0001]/events[at0002]:0/time",
             formPath: "vitalSigns.bmi.timestamp"
         },
 
@@ -135,14 +135,14 @@ export default dispatch =>
         {
             type: "quantity",
             ehrPath:
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_temperature.v2]/data[at0002]/events[at0003]/data[at0001]/items[at0004]",
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_temperature.v2]/data[at0002]/events[at0003]:0/data[at0001]/items[at0004]",
             unit: "Cel",
             formPath: "vitalSigns.temperature.value"
         },
         {
             type: "dateTime",
             ehrPath:
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.temperature.v2]/context/start_time",
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_temperature.v2]/data[at0002]/events[at0003]:0/time",
             formPath: "vitalSigns.temperature.timestamp"
         },
 
@@ -151,7 +151,7 @@ export default dispatch =>
         {
             type: "quantity",
             ehrPath:
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.blood_pressure.v1]/data[at0001]/events[at0006]/data[at0003]/items[at0004]",
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.blood_pressure.v1]/data[at0001]/events[at0006]:0/data[at0003]/items[at0004]",
             unit: "mm[Hg]",
             formPath: "vitalSigns.pressure.value.systolic"
         },
@@ -159,14 +159,14 @@ export default dispatch =>
         {
             type: "quantity",
             ehrPath:
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.blood_pressure.v1]/data[at0001]/events[at0006]/data[at0003]/items[at0005]",
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.blood_pressure.v1]/data[at0001]/events[at0006]:0/data[at0003]/items[at0005]",
             unit: "mm[Hg]",
             formPath: "vitalSigns.pressure.value.diastolic"
         },
         {
             type: "dateTime",
             ehrPath:
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.blood_pressure.v1]/context/start_time",
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.blood_pressure.v1]/data[at0001]/events[at0006]:0/time",
             formPath: "vitalSigns.pressure.timestamp"
         },
 
@@ -174,20 +174,20 @@ export default dispatch =>
         {
             type: "fixedValue",
             ehrPath:
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse.v1]/data[at0002]/events[at0003]/data[at0001]/items[at0004]|name",
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse.v1]/data[at0002]/events[at0003]:0/data[at0001]/items[at0004]|name",
             value: "local::at1027"
         },
         {
             type: "quantity",
             ehrPath:
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse.v1]/data[at0002]/events[at0003]/data[at0001]/items[at0004]",
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse.v1]/data[at0002]/events[at0003]:0/data[at0001]/items[at0004]",
             unit: "/min",
             formPath: "vitalSigns.heart_rate.value"
         },
         {
             type: "dateTime",
             ehrPath:
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse.v1]/context/start_time",
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse.v1]/data[at0002]/events[at0003]:0/time",
             formPath: "vitalSigns.pulse.timestamp"
         },
 
@@ -195,13 +195,13 @@ export default dispatch =>
         {
             type: "value",
             ehrPath:
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse_oximetry.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0006]",
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse_oximetry.v1]/data[at0001]/events[at0002]:0/data[at0003]/items[at0006]",
             formPath: "vitalSigns.oxygen_saturation.value"
         },
         {
             type: "dateTime",
             ehrPath:
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse_oximetry.v1]/context/start_time",
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse_oximetry.v1]/data[at0001]/events[at0002]:0/time",
             formPath: "vitalSigns.oxygen_saturation.timestamp"
         }
     ])
