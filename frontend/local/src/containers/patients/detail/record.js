@@ -165,8 +165,7 @@ class HealthRecord extends React.Component {
                                                                                         {/* <p>5ft 1in</p> */}
                                                                                     </div>
                                                                                 </div>
-                                                                                {/*should be replaced by vitalSign timestamp when it will be saved*/}
-                                                                                <div className="card-footer">{moment(meta.created).format("Do MMM Y")}</div>
+                                                                                <div className="card-footer">{data.vitalSigns.height.timestamp ? moment(data.vitalSigns.height.timestamp).format("Do MMM Y") : moment(meta.created).format("Do MMM Y")}</div>
                                                                             </div>
                                                                         </div>
                                                                     )}
@@ -183,8 +182,8 @@ class HealthRecord extends React.Component {
                                                                                         {/* <p>1008.8 lb</p> */}
                                                                                     </div>
                                                                                 </div>
-                                                                                {/*should be replaced by vitalSign timestamp when it will be saved*/}
-                                                                                <div className="card-footer">{moment(meta.created).format("Do MMM Y")}</div>                                                                        </div>
+                                                                                <div className="card-footer">{data.vitalSigns.weight.timestamp ? moment(data.vitalSigns.weight.timestamp).format("Do MMM Y") : moment(meta.created).format("Do MMM Y")}</div>
+                                                                            </div>
                                                                         </div>
                                                                     )}
 
@@ -199,8 +198,8 @@ class HealthRecord extends React.Component {
                                                                                         </p>
                                                                                     </div>
                                                                                 </div>
-                                                                                {/*should be replaced by vitalSign timestamp when it will be saved*/}
-                                                                                <div className="card-footer">{moment(meta.created).format("Do MMM Y")}</div>                                                                        </div>
+                                                                                <div className="card-footer">{data.vitalSigns.bmi.timestamp ? moment(data.vitalSigns.bmi.timestamp).format("Do MMM Y") : moment(meta.created).format("Do MMM Y")}</div>
+                                                                            </div>
                                                                         </div>
                                                                     )}
 
@@ -216,10 +215,11 @@ class HealthRecord extends React.Component {
                                                                                         </p>
                                                                                     </div>
                                                                                 </div>
-                                                                                {/*should be replaced by vitalSign timestamp when it will be saved*/}
-                                                                                <div className="card-footer">{moment(meta.created).format("Do MMM Y")}</div>                                                                        </div>
+                                                                                <div className="card-footer">{data.vitalSigns.temperature.timestamp ? moment(data.vitalSigns.temperature.timestamp).format("Do MMM Y") : moment(meta.created).format("Do MMM Y")}</div>
+                                                                            </div>
                                                                         </div>
                                                                     )}
+
                                                                 {data.vitalSigns.heart_rate &&
                                                                     (
                                                                         <div className="col-md-5 col-lg-4 col-xl-3">
@@ -232,8 +232,8 @@ class HealthRecord extends React.Component {
                                                                                         </p>
                                                                                     </div>
                                                                                 </div>
-                                                                                {/*should be replaced by vitalSign timestamp when it will be saved*/}
-                                                                                <div className="card-footer">{moment(meta.created).format("Do MMM Y")}</div>                                                                        </div>
+                                                                                <div className="card-footer">{data.vitalSigns.heart_rate.timestamp ? moment(data.vitalSigns.heart_rate.timestamp).format("Do MMM Y") : moment(meta.created).format("Do MMM Y")}</div>
+                                                                            </div>
                                                                         </div>
                                                                     )}
                                                                 {data.vitalSigns.pressure &&
@@ -250,10 +250,11 @@ class HealthRecord extends React.Component {
                                                                                         </p>
                                                                                     </div>
                                                                                 </div>
-                                                                                {/*should be replaced by vitalSign timestamp when it will be saved*/}
-                                                                                <div className="card-footer">{moment(meta.created).format("Do MMM Y")}</div>                                                                        </div>
+                                                                                <div className="card-footer">{data.vitalSigns.pressure.timestamp ? moment(data.vitalSigns.pressure.timestamp).format("Do MMM Y") : moment(meta.created).format("Do MMM Y")}</div>
+                                                                            </div>
                                                                         </div>
                                                                     )}
+
                                                                 {data.vitalSigns.oxygen_saturation &&
                                                                     (
                                                                         <div className="col-md-5 col-lg-4 col-xl-3">
@@ -266,8 +267,8 @@ class HealthRecord extends React.Component {
                                                                                         </p>
                                                                                     </div>
                                                                                 </div>
-                                                                                {/*should be replaced by vitalSign timestamp when it will be saved*/}
-                                                                                <div className="card-footer">{moment(meta.created).format("Do MMM Y")}</div>                                                                        </div>
+                                                                                <div className="card-footer">{data.vitalSigns.oxygen_saturation.timestamp ? moment(data.vitalSigns.oxygen_saturation.timestamp).format("Do MMM Y") : moment(meta.created).format("Do MMM Y")}</div>
+                                                                            </div>
                                                                         </div>
                                                                     )}
                                                                 </div>
