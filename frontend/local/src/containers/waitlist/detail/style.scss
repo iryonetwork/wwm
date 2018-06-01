@@ -158,3 +158,62 @@
         z-index: -1;
     }
 }
+
+.add-to-waitlist {
+    .patientCard {
+        margin: -30px 0 40px;
+    }
+
+    .modal-body {
+        .form-row {
+            margin: 20px 0;
+        }
+
+        label {
+            width: 100%;
+
+            input,
+            span,
+            textarea,
+            select {
+                display: inline-block;
+            }
+
+            span {
+                width: 33.33%;
+                line-height: 39px;
+            }
+
+            input,
+            textarea,
+            select {
+                width: 66.66%;
+                float: right;
+            }
+            .invalid-feedback {
+                display: block;
+                width: 66.66%;
+                float: right;
+                position: relative;
+            }
+        }
+
+        .form-inline-container {
+            width: 100%;
+
+            .label {
+                width: 33.33%;
+                display: inline-block;
+            }
+
+            .form-check-inline {
+                margin: 0;
+                width: 25%;
+            }
+        }
+
+        .details span {
+            visibility: hidden;
+        }
+    }
+}

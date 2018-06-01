@@ -1,6 +1,9 @@
 import React from "react"
 import classnames from "classnames"
 import Select from "react-select"
+import _ from "lodash"
+
+const validateRequired = value => ( !_.isEmpty(value) ? undefined : 'Required')
 
 const renderInput = ({ input, optional, disabled, label, type, meta: { touched, error } }) => (
     <label>
@@ -206,6 +209,7 @@ const renderHabitFields = fields => (
 )
 
 export {
+    validateRequired,
     renderInput,
     renderHorizontalInput,
     renderSelect,

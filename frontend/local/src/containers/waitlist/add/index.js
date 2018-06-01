@@ -7,7 +7,7 @@ import { Field, reduxForm } from "redux-form"
 
 import { get, cardToObject } from "../../../modules/discovery"
 import { add } from "../../../modules/waitlist"
-import { renderInput, renderNumericalValuesRadio, renderTextarea } from "shared/forms/renderField"
+import { renderInput, renderNumericalValuesRadio, renderTextarea, validateRequired } from "shared/forms/renderField"
 import Patient from "shared/containers/patient"
 import Spinner from "shared/containers/spinner"
 import "./style.css"
@@ -103,11 +103,11 @@ class AddToWaitlist extends Component {
                                     </div>
 
                                     <div className="form-row">
-                                        <Field name="mainComplaint" component={renderInput} label="Main complaint" />
+                                        <Field name="mainComplaint" validate={validateRequired} component={renderInput} label="Main complaint" />
                                     </div>
 
                                     <div className="form-row details">
-                                        <Field name="mainComplaintDetails" component={renderTextarea} optional={true} label="Details" />
+                                        <Field name="mainComplaintDetails" component={renderTextarea} optional={true} rows={10} label="Details" />
                                     </div>
 
                                     {/* <div className="form-row">

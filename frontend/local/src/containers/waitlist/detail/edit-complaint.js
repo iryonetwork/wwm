@@ -7,7 +7,7 @@ import { goBack } from "react-router-redux"
 import Modal from "shared/containers/modal"
 import Patient from "shared/containers/patient"
 import Spinner from "shared/containers/spinner"
-import { renderInput, renderTextarea } from "shared/forms/renderField"
+import { renderInput, renderTextarea, validateRequired } from "shared/forms/renderField"
 import { open, COLOR_DANGER } from "shared/modules/alert"
 import { listAll, update } from "../../../modules/waitlist"
 import { cardToObject } from "../../../modules/discovery"
@@ -60,7 +60,7 @@ class EditComplaint extends React.Component {
 
                         {item && item.id ? (
                             <div className="modal-body">
-                                <Field name="mainComplaint" component={renderInput} label="Main complaint" />
+                                <Field name="mainComplaint" validate={validateRequired} component={renderInput} label="Main complaint" />
                                 <Field name="mainComplaintDetails" component={renderTextarea} optional={true} rows={10} label="Details" />
                             </div>
                         ) : (

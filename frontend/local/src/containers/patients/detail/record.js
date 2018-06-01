@@ -63,9 +63,9 @@ class HealthRecord extends React.Component {
                                                 {!_.isEmpty(data.diagnoses) ? (
                                                     <React.Fragment key="0">
                                                         <h3>
-                                                            <DiagnosisIcon /> {data.diagnoses[0].diagnosis ? (data.diagnoses[0].diagnosis.label || "Diagnosis") : "Diagnosis"}
+                                                            <DiagnosisIcon /> {data.diagnoses[0].diagnosis ? (data.diagnoses[0].diagnosis.label && !_.isObject(data.diagnoses[0].diagnosis.label) ? data.diagnoses[0].diagnosis.label : "Diagnosis") : "Diagnosis"}
                                                         </h3>
-                                                        <div className="comment">{data.diagnoses[0].comment}</div>
+                                                        <div className="comment">{data.diagnoses[0].comment ? data.diagnoses[0].comment : ""}</div>
                                                     </React.Fragment>
                                                 ) : (
                                                     <React.Fragment key="missingDiagnosis">

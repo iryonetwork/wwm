@@ -29,6 +29,12 @@
                 width: 66.66%;
                 float: right;
             }
+            .invalid-feedback {
+                display: block;
+                width: 66.66%;
+                float: right;
+                position: absolute;
+            }
         }
 
         .form-inline-container {
@@ -43,10 +49,6 @@
                 margin: 0;
                 width: 25%;
             }
-        }
-
-        .details span {
-            visibility: hidden;
         }
     }
 }
