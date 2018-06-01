@@ -81,7 +81,7 @@ class MedicalData extends React.Component {
                     10000,
                 2
             )
-            vitalSigns.bmi.timestamp = (moment(vitalSigns.height.timestamp).isAfter(moment(vitalSigns.weight.timestamp)) ? moment(vitalSigns.height.timestamp) : moment(vitalSigns.weight.timestamp)).format()
+            vitalSigns.bmi.timestamp = moment.max(moment(vitalSigns.height.timestamp), moment(vitalSigns.weight.timestamp)).format()
         }
 
         this.props.item.vitalSigns = vitalSigns
