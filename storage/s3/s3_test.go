@@ -658,6 +658,34 @@ func TestS3Write(t *testing.T) {
 			noErrors,
 			nil,
 		},
+		{
+			"PutObjectWithContext returns error",
+			&object.NewObjectInfo{
+				Name:        "File1",
+				Version:     "V1",
+				Operation:   "w",
+				Created:     time1,
+				ContentType: "text/openEhrXml",
+				Archetype:   "openEHR-EHR-OBSERVATION.blood_pressure.v1",
+				Checksum:    "CHS",
+				Labels:      []string{"vitalSign", "basicPatientInfo"},
+			},
+			func(r io.Reader, m *mock.MockMinio, k *mock.MockKeyProvider) []*gomock.Call {
+				return []*gomock.Call{
+					k.EXPECT().Get("BUCKET").Return("SECRET", nil),
+					m.EXPECT().PutObjectWithContext(
+						gomock.Any(),
+						"BUCKET",
+						"File1.V1.w.1516288966123.CHS.dGV4dC9vcGVuRWhyWG1s.b3BlbkVIUi1FSFItT0JTRVJWQVRJT04uYmxvb2RfcHJlc3N1cmUudjE=.dml0YWxTaWduLGJhc2ljUGF0aWVudEluZm8=",
+						r,
+						int64(-1),
+						gomock.Any(),
+					).Return(int64(0), errors.New("Error")),
+				}
+			},
+			withErrors,
+			nil,
+		},
 	}
 
 	for _, test := range testCases {
