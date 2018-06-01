@@ -94,6 +94,12 @@ export default dispatch =>
             unit: "kg",
             formPath: "vitalSigns.weight.value"
         },
+        {
+            type: "dateTime",
+            ehrPath:
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_weight.v2]/context/start_time",
+            formPath: "vitalSigns.weight.timestamp"
+        },
 
         // height
         {
@@ -102,6 +108,12 @@ export default dispatch =>
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.height.v2]/data[at0001]/events[at0002]/data[at0003]/items[at0004]",
             unit: "cm",
             formPath: "vitalSigns.height.value"
+        },
+        {
+            type: "dateTime",
+            ehrPath:
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.height.v2]/context/start_time",
+            formPath: "vitalSigns.height.timestamp"
         },
 
         // bmi
@@ -112,6 +124,12 @@ export default dispatch =>
             unit: "kg/m2",
             formPath: "vitalSigns.bmi.value"
         },
+        {
+            type: "dateTime",
+            ehrPath:
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_mass_index.v2]/context/start_time",
+            formPath: "vitalSigns.bmi.timestamp"
+        },
 
         // temperature
         {
@@ -120,6 +138,12 @@ export default dispatch =>
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_temperature.v2]/data[at0002]/events[at0003]/data[at0001]/items[at0004]",
             unit: "Cel",
             formPath: "vitalSigns.temperature.value"
+        },
+        {
+            type: "dateTime",
+            ehrPath:
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.temperature.v2]/context/start_time",
+            formPath: "vitalSigns.temperature.timestamp"
         },
 
         // blood pressure
@@ -139,6 +163,12 @@ export default dispatch =>
             unit: "mm[Hg]",
             formPath: "vitalSigns.pressure.value.diastolic"
         },
+        {
+            type: "dateTime",
+            ehrPath:
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.blood_pressure.v1]/context/start_time",
+            formPath: "vitalSigns.pressure.timestamp"
+        },
 
         // pulse
         {
@@ -154,6 +184,12 @@ export default dispatch =>
             unit: "/min",
             formPath: "vitalSigns.heart_rate.value"
         },
+        {
+            type: "dateTime",
+            ehrPath:
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse.v1]/context/start_time",
+            formPath: "vitalSigns.pulse.timestamp"
+        },
 
         // oxygen saturation (0 - 100)
         {
@@ -161,5 +197,11 @@ export default dispatch =>
             ehrPath:
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse_oximetry.v1]/data[at0001]/events[at0002]/data[at0003]/items[at0006]",
             formPath: "vitalSigns.oxygen_saturation.value"
+        },
+        {
+            type: "dateTime",
+            ehrPath:
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse_oximetry.v1]/context/start_time",
+            formPath: "vitalSigns.oxygen_saturation.timestamp"
         }
     ])

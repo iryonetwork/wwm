@@ -99,6 +99,10 @@ const specToDocument = (specs, data, formData, ehrPrefix) => {
                 acc.push(assignBoolean(ehrPrefix + spec.ehrPath, spec.formPath))
                 break
 
+            case "dateTime":
+                acc.push(assignValue(ehrPrefix + spec.ehrPath, spec.formPath))
+                break
+
             case "fixedValue":
                 acc.push(assignFixedValue(ehrPrefix + spec.ehrPath, spec.value))
                 break
@@ -145,6 +149,7 @@ const specToObject = (specs, data, doc, ehrPrefix) => {
             case "value":
             case "integer":
             case "boolean":
+            case "dateTime":
                 newValue = value
                 break
 
