@@ -413,6 +413,54 @@ func TestReopenHistoryItem(t *testing.T) {
 	}
 }
 
+func TestUpdateHistoryItem(t *testing.T) {
+	waitlistID, storage := initWaitlist("waitlist")
+
+	item1, _ := storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(4)})
+	id1, _ := uuid.FromString(item1.ID)
+
+	err := storage.DeleteItem(waitlistID, id1.Bytes(), models.ItemStatusFinished)
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+
+	list, err := storage.ListItems(waitlistID)
+	if err != nil {
+		t.Fatalf("Expected nil; got nil; got '%v'", err)
+	}
+	if len(list) != 0 {
+		t.Fatalf("Expected list length to be 0, got %d", len(list))
+	}
+
+	item1.Status = models.ItemStatusCanceled
+
+	updatedItem, err := storage.UpdateHistoryItem(waitlistID, item1)
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	if updatedItem.Status != models.ItemStatusCanceled {
+		t.Fatalf("Expected item status to be `canceled`, got %s", updatedItem.Status)
+	}
+
+	var item models.Item
+	storage.db.View(func(tx *bolt.Tx) error {
+		data := tx.Bucket(bucketHistory).Bucket(waitlistID).Get(id1.Bytes())
+		if data == nil {
+			t.Fatal("Expected item to be in history bucket, got nil")
+		}
+
+		err := item.UnmarshalBinary(data)
+		if err != nil {
+			t.Fatal("Failed to unmarshal binary")
+		}
+		return nil
+	})
+
+	if item.Status != models.ItemStatusCanceled {
+		t.Fatalf("Expected item status to be `canceled`, got %s", item.Status)
+	}
+}
+
 var items []*models.Item
 
 func benchmarkListItems(i int, b *testing.B) {

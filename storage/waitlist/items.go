@@ -317,6 +317,56 @@ func (s *storage) ReopenHistoryItem(waitlistID, itemID, newWaitlistID []byte) (*
 	return &item, err
 }
 
+// UpdateItem updates an item in a waitlist history
+func (s *storage) UpdateHistoryItem(waitlistID []byte, item *models.Item) (*models.Item, error) {
+	if *item.Priority < 1 || *item.Priority > priorityLevels {
+		return nil, utils.NewError(utils.ErrBadRequest, "invalid priority level")
+	}
+
+	err := s.db.Update(func(tx *bolt.Tx) error {
+		bCurrent := tx.Bucket(bucketCurrent).Bucket(waitlistID)
+		if bCurrent == nil {
+			return utils.NewError(utils.ErrNotFound, "waitlist not found")
+		}
+
+		id, err := uuid.FromString(item.ID)
+		if err != nil {
+			return err
+		}
+
+		currentItemData := bCurrent.Get(id.Bytes())
+		if currentItemData == nil {
+			return utils.NewError(utils.ErrNotFound, "item not found")
+		}
+
+		bHistory, err := tx.Bucket(bucketHistory).CreateBucketIfNotExists(waitlistID)
+		if err != nil {
+			return err
+		}
+
+		currentItemHistoryData := bHistory.Get(id.Bytes())
+		if currentItemHistoryData == nil {
+			return utils.NewError(utils.ErrNotFound, "item not found in waitlist history")
+		}
+
+		var currentItem models.Item
+		currentItem.UnmarshalBinary(currentItemData)
+
+		data, err := item.MarshalBinary()
+		if err != nil {
+			return err
+		}
+
+		err = bHistory.Put(id.Bytes(), data)
+		if err != nil {
+			return err
+		}
+		return bCurrent.Put(id.Bytes(), data)
+	})
+
+	return item, err
+}
+
 func (s *storage) getQueue(waitlistID []byte, priority byte) ([][]byte, error) {
 	var q [][]byte
 	err := s.db.View(func(tx *bolt.Tx) error {
