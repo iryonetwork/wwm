@@ -49,7 +49,7 @@ const buildContextForPatientData = formData => dispatch => {
             // // participants
             // // add doctor
             "/composer|identifier": author.id,
-            "/composer|name": `${author.personalData.firstName} ${author.personalData.lastName}`,
+            "/composer|name": `${get(author, "personalData.firstName", "")} ${get(author, "personalData.lastName", "")}`,
 
             "/category": "openehr::431|persistent|"
         }
@@ -76,7 +76,7 @@ const buildContextForEncounterData = formData => dispatch => {
             // // participants
             // // add doctor
             "/composer|identifier": author.id,
-            "/composer|name": `${author.personalData.firstName} ${author.personalData.lastName}`,
+            "/composer|name": `${get(author, "personalData.firstName", "")} ${get(author, "personalData.lastName", "")}`,
 
             "/category": "openehr::433|event|"
         }
