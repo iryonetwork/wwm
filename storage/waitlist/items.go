@@ -116,7 +116,7 @@ func (s *storage) UpdateItem(waitlistID []byte, item *models.Item) (*models.Item
 		item.PriorityQueue = currentItem.PriorityQueue
 
 		if *currentItem.Priority != *item.Priority {
-			if *item.Priority < currentItem.PriorityQueue {
+			if *currentItem.Priority == currentItem.PriorityQueue {
 				item.PriorityQueue = *item.Priority
 				err := s.removeFromQueue(bCurrent, byte(currentItem.PriorityQueue), id.Bytes())
 				if err != nil {
