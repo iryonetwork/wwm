@@ -236,7 +236,7 @@ class HealthRecord extends React.Component {
                                                                             </div>
                                                                         </div>
                                                                     )}
-                                                                {data.vitalSigns.pressure &&
+                                                                {data.vitalSigns.pressure && data.vitalSigns.pressure.value &&
                                                                     data.vitalSigns.pressure.value.systolic &&
                                                                     data.vitalSigns.pressure.value.diastolic &&
                                                                     (

@@ -41,4 +41,8 @@ const round = (number, precision) => {
     return shift(Math.round(shift(number, +precision)), -precision)
 }
 
-export { PropRoute, joinPaths, round }
+const escapeRegex = text => {
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+}
+
+export { PropRoute, joinPaths, round, escapeRegex }

@@ -1,4 +1,6 @@
 import { get, has, set } from "lodash"
+
+import { escapeRegex } from "shared/utils"
 import { read, CLINIC_ID, LOCATION_ID } from "shared/modules/config"
 import { load as loadClinic } from "./clinics"
 import { load as loadLocation } from "./locations"
@@ -188,8 +190,8 @@ const specToObject = (specs, data, doc, ehrPrefix) => {
                 break
 
             case "quantity":
-                const re = new RegExp(`\\,${spec.unit}$`)
-
+                // escape regex special characters
+                const re = new RegExp(`\\,${escapeRegex(spec.unit)}`)
                 // skip if value is malformed
                 if (!re.test(value)) {
                     // noop
