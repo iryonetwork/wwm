@@ -7,6 +7,8 @@ export const SEARCH = "patient/SEARCH"
 export const SEARCHED = "patient/SEARCHED"
 export const FETCH = "patient/FETCH"
 export const FETCHED = "patient/FETCHED"
+export const UPDATE = "patient/UPDATE"
+export const UPDATED = "patient/UPDATED"
 export const FAILED = "patient/FAILED"
 
 const initialState = {}
@@ -33,6 +35,17 @@ export default (state = initialState, action) => {
             case FETCHED:
                 draft.fetching = false
                 draft.fetched = true
+                draft.patient = action.result
+                break
+
+            case UPDATE:
+                draft.updating = true
+                draft.updated = draft.failed = false
+                break
+
+            case UPDATED:
+                draft.updating = false
+                draft.updated = true
                 draft.patient = action.result
                 break
 
@@ -79,6 +92,45 @@ export const newPatient = formData => dispatch => {
             if (!ok) {
                 throw new Error("Failed to load insert new card / patient")
             }
+            return data
+        })
+}
+
+export const updatePatient = (patientID, formData) => dispatch => {
+    const url = `${dispatch(read(API_URL))}/discovery/${patientID}`
+    dispatch({ type: UPDATE })
+
+    var data = {
+        connections: [
+            { key: "firstName", value: formData.firstName },
+            { key: "lastName", value: formData.lastName },
+            { key: "dateOfBirth", value: formData.dateOfBirth },
+            { key: "nationality", value: formData.nationality },
+            { key: "gender", value: formData.gender },
+            { key: "tent", value: formData.tent },
+            { key: "camp", value: formData.camp }
+        ],
+        locations: [dispatch(read(LOCATION_ID))]
+    }
+    ;(formData.documents || []).forEach(doc => {
+        data.connections.push({ key: doc.type, value: doc.number })
+    })
+
+    return fetch(url, {
+        method: "PUT",
+        headers: {
+            Authorization: dispatch(getToken()),
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+    })
+        .then(response => Promise.all([response.status === 200, response.json()]))
+        .then(([ok, data]) => {
+            if (!ok) {
+                throw new Error("Failed to update patient")
+            }
+
+            dispatch({ type: UPDATED, result: data })
             return data
         })
 }

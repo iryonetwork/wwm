@@ -1,11 +1,11 @@
-import { newPatient, get, cardToObject } from "./discovery"
 // DEV ONLY MODULE
 import produce from "immer"
 import { push } from "react-router-redux"
 // insert into storage
 import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
-import { createPatient as createPatientInStorage, readFileByLabel, updateFile, uploadFile, readFilesByLabel } from "./storage"
+import { newPatient, updatePatient as updateDiscoveryPatient, get, cardToObject } from "./discovery"
 import { extractPatientData, composePatientData, composeEncounterData, extractEncounterData } from "./ehr"
+import { createPatient as createPatientInStorage, readFileByLabel, updateFile, uploadFile, readFilesByLabel } from "./storage"
 import { get as waitlistGet, remove as waitlistRemove } from "./waitlist"
 
 export const CREATE = "patient/CREATE"
@@ -300,6 +300,7 @@ export const updatePatient = formData => (dispatch, getState) => {
                 })
             )
         })
+        .then(() => dispatch(updateDiscoveryPatient(patient.ID, formData)))
         .then(() => {
             return dispatch(composePatientData(formData))
                 .then(({ person, info }) => {
@@ -381,7 +382,7 @@ export const saveConsultation = (waitlistID, itemID) => dispatch => {
                     data.diagnoses.push({
                         diagnosis: {
                             label: el.label,
-                            id: el.diagnosis,
+                            id: el.diagnosis
                         },
                         comment: el.comment
                     })
