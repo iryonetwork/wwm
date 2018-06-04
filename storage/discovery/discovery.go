@@ -5,6 +5,7 @@ package discovery
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/agext/uuid"
@@ -238,7 +239,18 @@ var getCard = func(tx db.DB, patientID strfmt.UUID) (*models.Card, error) {
 
 // Find looks up a patient by connection's value
 func (s *storage) Find(q string) (models.Cards, error) {
-	rows, err := s.db.Model(&connection{}).Where("value ILIKE ?", fmt.Sprintf("%%%s%%", q)).Select("DISTINCT patient_id").Rows()
+	// search for each separate token
+	sqlWhere := []string{}
+	sqlAttrs := []interface{}{}
+	tokens := strings.Split(q, " ")
+	for _, token := range tokens {
+		sqlWhere = append(sqlWhere, "value ILIKE ?")
+		sqlAttrs = append(sqlAttrs, fmt.Sprintf("%%%s%%", token))
+	}
+
+	rows, err := s.db.Model(&connection{}).
+		Where(strings.Join(sqlWhere, " OR "), sqlAttrs...).
+		Select("DISTINCT patient_id").Rows()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to look up matching connections")
 	}

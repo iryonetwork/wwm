@@ -600,6 +600,137 @@ func TestDelete(t *testing.T) {
 	}
 }
 
+func TestFind(t *testing.T) {
+	testCases := []struct {
+		title         string
+		query         string
+		calls         func(sqlmock.Sqlmock)
+		expected      models.Cards
+		errorExpected bool
+		exactError    error
+	}{
+		{
+			"Singe token",
+			"single",
+			func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT DISTINCT patient_id FROM \"connections\" WHERE \\(value ILIKE \\$1\\)").
+					WithArgs("%single%").
+					WillReturnRows(sqlmock.NewRows([]string{"patient_id"}).AddRow(uuid1.String()))
+				mock.ExpectQuery("SELECT \\* FROM \"patients\" .+").
+					WithArgs(uuid1.String()).
+					WillReturnRows(sqlmock.NewRows([]string{"patient_id"}).AddRow(uuid1.String()))
+				mock.ExpectQuery("SELECT \\* FROM \"connections\" .+").
+					WithArgs(uuid1.String()).
+					WillReturnRows(sqlmock.NewRows([]string{"patient_id", "key", "value"}).
+						AddRow(uuid1.String(), "K1", "V1").
+						AddRow(uuid1.String(), "K2", "V2"))
+				mock.ExpectQuery("SELECT \\* FROM \"locations\" .+").
+					WithArgs(uuid1.String()).
+					WillReturnRows(sqlmock.NewRows([]string{"patient_id", "location_id"}).
+						AddRow(uuid1.String(), uuid1.String()))
+			},
+			models.Cards{
+				&models.Card{
+					PatientID: uuid1,
+					Connections: models.Connections{
+						&models.ConnectionsItems{Key: "K1", Value: "V1"},
+						&models.ConnectionsItems{Key: "K2", Value: "V2"},
+					},
+					Locations: models.Locations{uuid1},
+				},
+			},
+			noErrors,
+			nil,
+		},
+		{
+			"Composed token",
+			"composed token",
+			func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT DISTINCT patient_id FROM \"connections\" WHERE \\(value ILIKE \\$1 OR value ILIKE \\$2\\)").
+					WithArgs("%composed%", "%token%").
+					WillReturnRows(sqlmock.NewRows([]string{"patient_id"}).AddRow(uuid1.String()))
+				mock.ExpectQuery("SELECT \\* FROM \"patients\" .+").
+					WithArgs(uuid1.String()).
+					WillReturnRows(sqlmock.NewRows([]string{"patient_id"}).AddRow(uuid1.String()))
+				mock.ExpectQuery("SELECT \\* FROM \"connections\" .+").
+					WithArgs(uuid1.String()).
+					WillReturnRows(sqlmock.NewRows([]string{"patient_id", "key", "value"}).
+						AddRow(uuid1.String(), "K1", "V1").
+						AddRow(uuid1.String(), "K2", "V2"))
+				mock.ExpectQuery("SELECT \\* FROM \"locations\" .+").
+					WithArgs(uuid1.String()).
+					WillReturnRows(sqlmock.NewRows([]string{"patient_id", "location_id"}).
+						AddRow(uuid1.String(), uuid1.String()))
+			},
+			models.Cards{
+				&models.Card{
+					PatientID: uuid1,
+					Connections: models.Connections{
+						&models.ConnectionsItems{Key: "K1", Value: "V1"},
+						&models.ConnectionsItems{Key: "K2", Value: "V2"},
+					},
+					Locations: models.Locations{uuid1},
+				},
+			},
+			noErrors,
+			nil,
+		},
+		{
+			"First select no results",
+			"noResults",
+			func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT DISTINCT patient_id .*").
+					WillReturnRows(sqlmock.NewRows([]string{"patient_id"}))
+			},
+			models.Cards{},
+			noErrors,
+			nil,
+		},
+		{
+			"First select fails",
+			"fails",
+			func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT DISTINCT patient_id .+").
+					WillReturnError(fmt.Errorf("Failed"))
+			},
+			nil,
+			withErrors,
+			nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
+			// init storage
+			s, db, c := getTestDB(t)
+			defer c()
+
+			// collect mocked calls
+			tc.calls(db)
+
+			// call the method
+			out, err := s.Find(tc.query)
+
+			// check expected results
+			if !reflect.DeepEqual(out, tc.expected) {
+				t.Errorf("Expected\n\t%s\nto equal\n\t%s", toJSON(out), toJSON(tc.expected))
+			}
+
+			// assert error
+			if tc.errorExpected && err == nil {
+				t.Error("Expected error, got nil")
+			} else if !tc.errorExpected && err != nil {
+				t.Errorf("Expected error to be nil, got %v", err)
+			}
+
+			// assert actual error
+			if tc.exactError != nil && tc.exactError != err {
+				t.Errorf("Expected error to equal '%v'; got %v", tc.exactError, err)
+			}
+		})
+	}
+}
+
 func TestLink(t *testing.T) {
 	testCases := []struct {
 		title         string
@@ -1215,13 +1346,14 @@ func getTestDB(t *testing.T) (*storage, sqlmock.Sqlmock, func()) {
 
 	// setup minio mock
 
-	db, mock, _ := sqlmock.New()
-	gdb, _ := gorm.Open("postgres", db)
+	mdb, mock, _ := sqlmock.New()
+	gdb, _ := gorm.Open("postgres", mdb)
 
 	s := &storage{
 		gdb:        gdb,
 		logger:     zerolog.New(os.Stdout),
 		locationID: uuid1.String(),
+		db:         db.New(gdb),
 	}
 
 	cleanup := func() {
