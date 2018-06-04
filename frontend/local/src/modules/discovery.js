@@ -70,8 +70,8 @@ export const newPatient = formData => dispatch => {
             { key: "dateOfBirth", value: formData.dateOfBirth },
             { key: "nationality", value: formData.nationality },
             { key: "gender", value: formData.gender },
-            { key: "tent", value: formData.tent },
-            { key: "camp", value: formData.camp }
+            { key: "region", value: formData.region },
+            { key: "address", value: formData.address || "" }
         ],
         locations: [dispatch(read(LOCATION_ID))]
     }
@@ -107,8 +107,8 @@ export const updatePatient = (patientID, formData) => dispatch => {
             { key: "dateOfBirth", value: formData.dateOfBirth },
             { key: "nationality", value: formData.nationality },
             { key: "gender", value: formData.gender },
-            { key: "tent", value: formData.tent },
-            { key: "camp", value: formData.camp }
+            { key: "region", value: formData.region },
+            { key: "address", value: formData.address || "" }
         ],
         locations: [dispatch(read(LOCATION_ID))]
     }
