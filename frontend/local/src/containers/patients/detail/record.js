@@ -1,47 +1,47 @@
-import React from "react"
-import _ from "lodash"
-import { connect } from "react-redux"
-import moment from "moment"
-import { Collapse } from "reactstrap"
+import React from "react";
+import _ from "lodash";
+import { connect } from "react-redux";
+import moment from "moment";
+import { Collapse } from "reactstrap";
 
-import Spinner from "shared/containers/spinner"
-import { RESOURCE_EXAMINATION, READ } from "../../../modules/validations"
-import { fetchHealthRecords } from "../../../modules/patient"
+import Spinner from "shared/containers/spinner";
+import { RESOURCE_EXAMINATION, READ } from "../../../modules/validations";
+import { fetchHealthRecords } from "../../../modules/patient";
 
-import { ReactComponent as ComplaintIcon } from "shared/icons/complaint.svg"
-import { ReactComponent as DiagnosisIcon } from "shared/icons/diagnosis.svg"
-import { ReactComponent as MedicalDataIcon } from "shared/icons/vitalsigns.svg"
-import { ReactComponent as TherapyIcon } from "shared/icons/therapy.svg"
+import { ReactComponent as ComplaintIcon } from "shared/icons/complaint.svg";
+import { ReactComponent as DiagnosisIcon } from "shared/icons/diagnosis.svg";
+import { ReactComponent as MedicalDataIcon } from "shared/icons/vitalsigns.svg";
+import { ReactComponent as TherapyIcon } from "shared/icons/therapy.svg";
 
 class HealthRecord extends React.Component {
     constructor(props) {
-        super(props)
+        super(props);
         if (props.patientID) {
-            props.fetchHealthRecords(props.patientID)
+            props.fetchHealthRecords(props.patientID);
         }
 
-        this.togglePart = this.togglePart.bind(this)
+        this.togglePart = this.togglePart.bind(this);
 
-        this.state = {}
+        this.state = {};
     }
 
     componentWillReceiveProps(nextProps) {
         if ((nextProps.records === undefined || nextProps.patientID !== nextProps.loadedPatientID) && !nextProps.recordsLoading) {
-            this.props.fetchHealthRecords(nextProps.patientID)
+            this.props.fetchHealthRecords(nextProps.patientID);
         }
     }
 
     togglePart = (fileName, part) => () => {
-        let fileState = _.clone(this.state[fileName]) || {}
-        fileState[part] = fileState[part] ? !fileState[part] : true
-        this.setState({ [fileName]: fileState })
-    }
+        let fileState = _.clone(this.state[fileName]) || {};
+        fileState[part] = fileState[part] ? !fileState[part] : true;
+        this.setState({ [fileName]: fileState });
+    };
 
     render() {
-        let { records, recordsLoading, canSeeExamination } = this.props
+        let { records, recordsLoading, canSeeExamination } = this.props;
 
         if (recordsLoading) {
-            return <Spinner />
+            return <Spinner />;
         }
 
         return (
@@ -62,14 +62,10 @@ class HealthRecord extends React.Component {
                                                 {!_.isEmpty(data.diagnoses) ? (
                                                     <React.Fragment key="0">
                                                         <h3>
-                                                            <DiagnosisIcon />{" "}
-                                                            {data.diagnoses[0].diagnosis
-                                                                ? data.diagnoses[0].diagnosis.label && !_.isObject(data.diagnoses[0].diagnosis.label)
-                                                                    ? data.diagnoses[0].diagnosis.label
-                                                                    : "Diagnosis"
-                                                                : "Diagnosis"}
+                                                            <DiagnosisIcon />
+                                                            {_.get(data.diagnoses[0], "diagnosis.label", "Diagnosis")}
                                                         </h3>
-                                                        <div className="comment">{data.diagnoses[0].comment ? data.diagnoses[0].comment : ""}</div>
+                                                        <div className="comment">{_.get(data.diagnoses[0], "comment", "")}</div>
                                                     </React.Fragment>
                                                 ) : (
                                                     <React.Fragment key="missingDiagnosis">
@@ -102,7 +98,7 @@ class HealthRecord extends React.Component {
                                                 </div>
                                             )}
 
-                                            {!_.isEmpty(_.filter(data.diagnoses, (diagnosis, i) => i !== 0)) && (
+                                            {data.diagnoses.length > 1 && (
                                                 <div className="part" key="complementaryDiagnoses">
                                                     <div className="partHeader" onClick={this.togglePart(meta.name, "complementaryDiagnoses")}>
                                                         <h4>
@@ -115,13 +111,11 @@ class HealthRecord extends React.Component {
                                                                 return (
                                                                     i !== 0 && (
                                                                         <React.Fragment key={"diagnosis" + i}>
-                                                                            <dt>
-                                                                                {diagnosis.diagnosis ? diagnosis.diagnosis.label || "Diagnosis" : "Diagnosis"}
-                                                                            </dt>
+                                                                            <dt>{_.get(diagnosis, "diagnosis.label", "Diagnosis")}</dt>
                                                                             <dd>{diagnosis.comment}</dd>
                                                                         </React.Fragment>
                                                                     )
-                                                                )
+                                                                );
                                                             })}
                                                         </dl>
                                                     </Collapse>
@@ -327,31 +321,31 @@ class HealthRecord extends React.Component {
                     </div>
                 )}
             </div>
-        )
+        );
     }
 }
 
 HealthRecord = connect(
     (state, props) => {
-        let records = state.patient.patientRecords.data
+        let records = state.patient.patientRecords.data;
         // sort records by creation time and reverse to have latest record as first
         records = _.reverse(
             _.sortBy(records, [
                 function(obj) {
-                    return obj.meta.created
-                }
+                    return obj.meta.created;
+                },
             ])
-        )
+        );
 
         return {
             patientID: props.match.params.patientID || state.patient.patient.ID,
             loadedPatientID: state.patient.patient.ID,
             records: records,
             recordsLoading: state.patient.patientRecords.loading,
-            canSeeExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[READ]
-        }
+            canSeeExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[READ],
+        };
     },
     { fetchHealthRecords }
-)(HealthRecord)
+)(HealthRecord);
 
-export default HealthRecord
+export default HealthRecord;
