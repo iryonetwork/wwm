@@ -36,7 +36,8 @@ class EditComplaint extends React.Component {
         item.mainComplaint.complaint = form.mainComplaint
         item.mainComplaint.comment = form.mainComplaintDetails
 
-        this.props.update(this.props.match.params.waitlistID, item)
+        this.props
+            .update(this.props.match.params.waitlistID, item)
             .then(data => {
                 this.props.listAll(this.props.match.params.waitlistID)
                 this.props.goBack()
@@ -86,7 +87,9 @@ class EditComplaint extends React.Component {
                     </form>
                 </div>
             </Modal>
-        ) : (<Spinner />)
+        ) : (
+            <Spinner />
+        )
     }
 }
 

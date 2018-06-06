@@ -181,7 +181,11 @@ class ClinicsList extends React.Component {
                                             <tr key={userClinic.id || i} className={this.state.selectedClinicID === userClinic.id ? "table-active" : ""}>
                                                 <th scope="row">{i + 1}</th>
                                                 <td colSpan="2">
-                                                    <select className="form-control form-control-sm" value={userClinic.id || ""} onChange={this.editClinicID(i)}>
+                                                    <select
+                                                        className="form-control form-control-sm"
+                                                        value={userClinic.id || ""}
+                                                        onChange={this.editClinicID(i)}
+                                                    >
                                                         <option value="">Select clinic</option>
                                                         {_.map(
                                                             _.difference(
@@ -198,7 +202,11 @@ class ClinicsList extends React.Component {
                                                     </select>
                                                 </td>
                                                 <td>
-                                                    <select className="form-control form-control-sm" value={userClinic.roleID || ""} onChange={this.editRoleID(i)}>
+                                                    <select
+                                                        className="form-control form-control-sm"
+                                                        value={userClinic.roleID || ""}
+                                                        onChange={this.editRoleID(i)}
+                                                    >
                                                         <option value="">Select role</option>
                                                         {_.map(_.pickBy(props.roles, role => !_.includes(props.advancedRoleIDs, role.id)), role => (
                                                             <option key={role.id} value={role.id}>

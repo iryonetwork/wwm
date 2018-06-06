@@ -3,7 +3,7 @@ import { connect } from "react-redux"
 //import PropTypes from "prop-types"
 import classnames from "classnames"
 import { push } from "react-router-redux"
-import {reset} from 'redux-form';
+import { reset } from "redux-form"
 
 import { createPatient } from "../../../modules/patient"
 
@@ -50,7 +50,9 @@ class NewPatientForm extends Component {
                 this.props.reset("newPatient")
                 this.props.push(`/to-waitlist/${patientID}`)
             })
-            .catch(ex => {console.log(ex)})
+            .catch(ex => {
+                console.log(ex)
+            })
     }
 
     componentDidMount() {

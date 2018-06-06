@@ -35,9 +35,8 @@ class AddDiagnosis extends React.Component {
             diagnosis: formData.diagnosis.id,
             label: formData.diagnosis.label,
             comment: formData.comment,
-            therapies: formData.therapies,
+            therapies: formData.therapies
         }
-
 
         let newItem = Object.assign({}, this.props.waitlistItem)
         newItem.diagnoses = newItem.diagnoses || []
@@ -49,7 +48,7 @@ class AddDiagnosis extends React.Component {
 
         this.props.updateWaitlistItem(this.props.match.params.waitlistID, newItem)
 
-        let {waitlistID, itemID} = this.props.match.params
+        let { waitlistID, itemID } = this.props.match.params
         this.props.push(`/waitlist/${waitlistID}/${itemID}/consultation`)
     }
 
@@ -69,7 +68,13 @@ class AddDiagnosis extends React.Component {
                     <div className="modal-body">
                         <div className="form-row diagnosisSelect">
                             <div className="form-group col-sm-12">
-                                <Field name="diagnosis" validate={validateRequired} component={renderReactSelect} label="Diagnosis" loadOptions={(value) => this.fetchCodes( value ? value : this.props.initialValues.diagnosis.id)} />
+                                <Field
+                                    name="diagnosis"
+                                    validate={validateRequired}
+                                    component={renderReactSelect}
+                                    label="Diagnosis"
+                                    loadOptions={value => this.fetchCodes(value ? value : this.props.initialValues.diagnosis.id)}
+                                />
                             </div>
                         </div>
 
@@ -102,7 +107,7 @@ class AddDiagnosis extends React.Component {
                     </div>
                 </form>
             </Modal>
-        ) : (null)
+        ) : null
     }
 }
 
@@ -115,26 +120,26 @@ AddDiagnosis = connect(
         let loading = state.waitlist.listing || state.waitlist.fetching || state.waitlist.items[props.match.params.itemID].updating
         let item = state.waitlist.items[props.match.params.itemID]
 
-        let initialValues = {diagnosis: {}}
+        let initialValues = { diagnosis: {} }
         if (!loading && props.match.params.diagnosisIndex) {
             initialValues = {
                 diagnosis: {
                     id: item.diagnoses[props.match.params.diagnosisIndex].diagnosis,
-                    label: item.diagnoses[props.match.params.diagnosisIndex].label,
+                    label: item.diagnoses[props.match.params.diagnosisIndex].label
                 },
                 comment: item.diagnoses[props.match.params.diagnosisIndex].comment,
-                therapies: item.diagnoses[props.match.params.diagnosisIndex].therapies,
+                therapies: item.diagnoses[props.match.params.diagnosisIndex].therapies
             }
         }
 
-        return ({
+        return {
             loading: loading,
             diagnosisIndex: props.match.params.diagnosisIndex,
             waitlistItem: item,
             initialValues: initialValues,
             searchingCodes: state.codes.searching,
-            searchingResults: state.codes.searchResults,
-        })
+            searchingResults: state.codes.searchResults
+        }
     },
     {
         searchCodes,
@@ -144,7 +149,6 @@ AddDiagnosis = connect(
 )(AddDiagnosis)
 
 export default AddDiagnosis
-
 
 class renderTherapies extends React.Component {
     constructor(props) {

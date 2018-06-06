@@ -42,7 +42,7 @@ const round = (number, precision) => {
 }
 
 const escapeRegex = text => {
-    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")
 }
 
 export { PropRoute, joinPaths, round, escapeRegex }

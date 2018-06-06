@@ -31,7 +31,6 @@ export const RESOURCE_LABORATORY_TEST = "/frontend/testsAndHistory/laboratoryTes
 export const RESOURCE_EXAMINATION = "/frontend/examination/examination"
 export const RESOURCE_MEDICATION = "/frontend/examination/medication"
 
-
 const initialState = {
     loading: false,
     forbidden: false
@@ -100,7 +99,7 @@ export const loadUserRights = userID => {
                 actions: READ,
                 domainType: "clinic",
                 domainID: clinicID
-            },
+            }
         ]
 
         let resources = [
@@ -140,7 +139,7 @@ export const loadUserRights = userID => {
                     actions: UPDATE,
                     domainType: "clinic",
                     domainID: clinicID
-                },
+                }
             ]
             validations.push(...resourceValidations)
         }

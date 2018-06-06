@@ -101,10 +101,7 @@ class familyMembers extends React.Component {
     }
 
     render() {
-        let {
-            fields,
-            getCodes,
-        } = this.props
+        let { fields, getCodes } = this.props
 
         return (
             <div className="familyMembers">

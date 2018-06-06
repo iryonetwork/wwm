@@ -16,7 +16,6 @@ import { cardToObject } from "../../../modules/discovery"
 import { ReactComponent as MedicalDataIcon } from "shared/icons/vitalsigns.svg"
 import { ReactComponent as NegativeIcon } from "shared/icons/negative.svg"
 
-
 const validate = form => {
     const errors = {}
 
@@ -74,13 +73,7 @@ class MedicalData extends React.Component {
         // set BMI if height and weight available
         if (vitalSigns.height && vitalSigns.weight) {
             vitalSigns.bmi = {}
-            vitalSigns.bmi.value = round(
-                vitalSigns.weight.value /
-                    vitalSigns.height.value /
-                    vitalSigns.height.value *
-                    10000,
-                2
-            )
+            vitalSigns.bmi.value = round(vitalSigns.weight.value / vitalSigns.height.value / vitalSigns.height.value * 10000, 2)
             vitalSigns.bmi.timestamp = moment.max(moment(vitalSigns.height.timestamp), moment(vitalSigns.weight.timestamp)).format()
         }
 
@@ -111,21 +104,9 @@ class MedicalData extends React.Component {
                         <div className="modal-body">
                             <h3>Body measurements</h3>
                             <div>
-                                <Fields
-                                    label="Height"
-                                    names={["has_height", "height"]}
-                                    unit="cm"
-                                    component={renderFieldWithUnit}
-                                    change={props.change}
-                                />
+                                <Fields label="Height" names={["has_height", "height"]} unit="cm" component={renderFieldWithUnit} change={props.change} />
 
-                                <Fields
-                                    label="Weight"
-                                    names={["has_weight", "weight"]}
-                                    unit="kg"
-                                    component={renderFieldWithUnit}
-                                    change={props.change}
-                                />
+                                <Fields label="Weight" names={["has_weight", "weight"]} unit="kg" component={renderFieldWithUnit} change={props.change} />
                             </div>
 
                             <h3>Vital signs</h3>
@@ -281,10 +262,16 @@ const renderFieldWithUnit = fields => (
             <div className="form-row">
                 <div className="col-sm-4">
                     <label>
-                        <input {...fields[fields.names[1]].input} type="number" className={classnames("form-control", { "is-invalid": fields[fields.names[1]].meta.touched && fields[fields.names[1]].meta.error })} placeholder={fields.label} />
+                        <input
+                            {...fields[fields.names[1]].input}
+                            type="number"
+                            className={classnames("form-control", { "is-invalid": fields[fields.names[1]].meta.touched && fields[fields.names[1]].meta.error })}
+                            placeholder={fields.label}
+                        />
 
                         <span>{fields.label}</span>
-                        {fields[fields.names[1]].meta.touched && fields[fields.names[1]].meta.error && <div className="invalid-feedback">{fields[fields.names[1]].meta.error}</div>}
+                        {fields[fields.names[1]].meta.touched &&
+                            fields[fields.names[1]].meta.error && <div className="invalid-feedback">{fields[fields.names[1]].meta.error}</div>}
                     </label>
                 </div>
 
@@ -312,9 +299,17 @@ const renderBloodPressure = fields => (
                     <h4>{fields.label}</h4>
                     <div className="col-sm-4">
                         <label>
-                            <input {...fields.pressure.systolic.input} type="number" className={classnames("form-control", { "is-invalid": fields.pressure.systolic.meta.touched && fields.pressure.systolic.meta.error })} placeholder="Systolic" />
+                            <input
+                                {...fields.pressure.systolic.input}
+                                type="number"
+                                className={classnames("form-control", {
+                                    "is-invalid": fields.pressure.systolic.meta.touched && fields.pressure.systolic.meta.error
+                                })}
+                                placeholder="Systolic"
+                            />
                             <span>Systolic</span>
-                            {fields.pressure.systolic.meta.touched && fields.pressure.systolic.meta.error && <div className="invalid-feedback">{fields.pressure.systolic.meta.error}</div>}
+                            {fields.pressure.systolic.meta.touched &&
+                                fields.pressure.systolic.meta.error && <div className="invalid-feedback">{fields.pressure.systolic.meta.error}</div>}
                         </label>
                     </div>
 
@@ -322,9 +317,17 @@ const renderBloodPressure = fields => (
 
                     <div className="col-sm-4">
                         <label>
-                            <input {...fields.pressure.diastolic.input} type="number" className={classnames("form-control", { "is-invalid": fields.pressure.diastolic.meta.touched && fields.pressure.diastolic.meta.error })} placeholder="Diastolic" />
+                            <input
+                                {...fields.pressure.diastolic.input}
+                                type="number"
+                                className={classnames("form-control", {
+                                    "is-invalid": fields.pressure.diastolic.meta.touched && fields.pressure.diastolic.meta.error
+                                })}
+                                placeholder="Diastolic"
+                            />
                             <span>Diastolic</span>
-                            {fields.pressure.diastolic.meta.touched && fields.pressure.diastolic.meta.error && <div className="invalid-feedback">{fields.pressure.diastolic.meta.error}</div>}
+                            {fields.pressure.diastolic.meta.touched &&
+                                fields.pressure.diastolic.meta.error && <div className="invalid-feedback">{fields.pressure.diastolic.meta.error}</div>}
                         </label>
                     </div>
 

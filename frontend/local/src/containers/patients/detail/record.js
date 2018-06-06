@@ -1,8 +1,8 @@
 import React from "react"
 import _ from "lodash"
 import { connect } from "react-redux"
-import  moment  from "moment"
-import { Collapse } from 'reactstrap';
+import moment from "moment"
+import { Collapse } from "reactstrap"
 
 import Spinner from "shared/containers/spinner"
 import { RESOURCE_EXAMINATION, READ } from "../../../modules/validations"
@@ -31,11 +31,10 @@ class HealthRecord extends React.Component {
         }
     }
 
-
     togglePart = (fileName, part) => () => {
         let fileState = _.clone(this.state[fileName]) || {}
         fileState[part] = fileState[part] ? !fileState[part] : true
-        this.setState({[fileName]: fileState})
+        this.setState({ [fileName]: fileState })
     }
 
     render() {
@@ -63,7 +62,12 @@ class HealthRecord extends React.Component {
                                                 {!_.isEmpty(data.diagnoses) ? (
                                                     <React.Fragment key="0">
                                                         <h3>
-                                                            <DiagnosisIcon /> {data.diagnoses[0].diagnosis ? (data.diagnoses[0].diagnosis.label && !_.isObject(data.diagnoses[0].diagnosis.label) ? data.diagnoses[0].diagnosis.label : "Diagnosis") : "Diagnosis"}
+                                                            <DiagnosisIcon />{" "}
+                                                            {data.diagnoses[0].diagnosis
+                                                                ? data.diagnoses[0].diagnosis.label && !_.isObject(data.diagnoses[0].diagnosis.label)
+                                                                    ? data.diagnoses[0].diagnosis.label
+                                                                    : "Diagnosis"
+                                                                : "Diagnosis"}
                                                         </h3>
                                                         <div className="comment">{data.diagnoses[0].comment ? data.diagnoses[0].comment : ""}</div>
                                                     </React.Fragment>
@@ -75,7 +79,6 @@ class HealthRecord extends React.Component {
                                                     </React.Fragment>
                                                 )}
                                             </div>
-
 
                                             {!_.isEmpty(data.mainComplaint) ? (
                                                 <div className="part" key="mainComplaint">
@@ -99,7 +102,7 @@ class HealthRecord extends React.Component {
                                                 </div>
                                             )}
 
-                                            {!_.isEmpty(_.filter(data.diagnoses, (diagnosis, i) => (i !== 0))) && (
+                                            {!_.isEmpty(_.filter(data.diagnoses, (diagnosis, i) => i !== 0)) && (
                                                 <div className="part" key="complementaryDiagnoses">
                                                     <div className="partHeader" onClick={this.togglePart(meta.name, "complementaryDiagnoses")}>
                                                         <h4>
@@ -109,12 +112,17 @@ class HealthRecord extends React.Component {
                                                     <Collapse isOpen={this.state[meta.name] ? this.state[meta.name]["complementaryDiagnoses"] : false}>
                                                         <dl>
                                                             {data.diagnoses.map((diagnosis, i) => {
-                                                                return (i !== 0) && (
-                                                                    <React.Fragment key={"diagnosis" + i}>
-                                                                        <dt>{diagnosis.diagnosis ? (diagnosis.diagnosis.label || "Diagnosis") : "Diagnosis"}</dt>
-                                                                        <dd>{diagnosis.comment}</dd>
-                                                                    </React.Fragment>
-                                                            )})}
+                                                                return (
+                                                                    i !== 0 && (
+                                                                        <React.Fragment key={"diagnosis" + i}>
+                                                                            <dt>
+                                                                                {diagnosis.diagnosis ? diagnosis.diagnosis.label || "Diagnosis" : "Diagnosis"}
+                                                                            </dt>
+                                                                            <dd>{diagnosis.comment}</dd>
+                                                                        </React.Fragment>
+                                                                    )
+                                                                )
+                                                            })}
                                                         </dl>
                                                     </Collapse>
                                                 </div>
@@ -133,7 +141,12 @@ class HealthRecord extends React.Component {
                                                             {data.therapies.map((therapy, i) => (
                                                                 <React.Fragment key={i}>
                                                                     <dt>{therapy.medication}</dt>
-                                                                    {data.diagnoses.length > 1 && data.diagnoses[therapy.diagnosis].diagnosis.label && <aside className="diagnosisReference">{data.diagnoses[therapy.diagnosis].diagnosis.label}</aside>}
+                                                                    {data.diagnoses.length > 1 &&
+                                                                        data.diagnoses[therapy.diagnosis].diagnosis.label && (
+                                                                            <aside className="diagnosisReference">
+                                                                                {data.diagnoses[therapy.diagnosis].diagnosis.label}
+                                                                            </aside>
+                                                                        )}
                                                                     <dd>{therapy.instructions}</dd>
                                                                 </React.Fragment>
                                                             ))}
@@ -141,7 +154,6 @@ class HealthRecord extends React.Component {
                                                     </Collapse>
                                                 </div>
                                             )}
-
 
                                             {!_.isEmpty(data.vitalSigns) && (
                                                 <div className="part">
@@ -154,129 +166,157 @@ class HealthRecord extends React.Component {
                                                         <dl>
                                                             <div className="card-group">
                                                                 {data.vitalSigns.height && (
-                                                                        <div className="col-md-5 col-lg-4 col-xl-3">
-                                                                            <div className="card">
-                                                                                <div className="card-header">Height</div>
-                                                                                <div className="card-body">
-                                                                                    <div className="card-text">
-                                                                                        <p>
-                                                                                            <span className="big">{data.vitalSigns.height.value}</span>cm
-                                                                                        </p>
-                                                                                        {/* <p>5ft 1in</p> */}
-                                                                                    </div>
+                                                                    <div className="col-md-5 col-lg-4 col-xl-3">
+                                                                        <div className="card">
+                                                                            <div className="card-header">Height</div>
+                                                                            <div className="card-body">
+                                                                                <div className="card-text">
+                                                                                    <p>
+                                                                                        <span className="big">{data.vitalSigns.height.value}</span>cm
+                                                                                    </p>
+                                                                                    {/* <p>5ft 1in</p> */}
                                                                                 </div>
-                                                                                <div className="card-footer">{data.vitalSigns.height.timestamp ? moment(data.vitalSigns.height.timestamp).format("Do MMM Y") : moment(meta.created).format("Do MMM Y")}</div>
+                                                                            </div>
+                                                                            <div className="card-footer">
+                                                                                {data.vitalSigns.height.timestamp
+                                                                                    ? moment(data.vitalSigns.height.timestamp).format("Do MMM Y")
+                                                                                    : moment(meta.created).format("Do MMM Y")}
                                                                             </div>
                                                                         </div>
-                                                                    )}
+                                                                    </div>
+                                                                )}
 
                                                                 {data.vitalSigns.weight && (
-                                                                        <div className="col-md-5 col-lg-4 col-xl-3">
-                                                                            <div className="card">
-                                                                                <div className="card-header">Body mass</div>
-                                                                                <div className="card-body">
-                                                                                    <div className="card-text">
-                                                                                        <p>
-                                                                                            <span className="big">{data.vitalSigns.weight.value}</span>kg
-                                                                                        </p>
-                                                                                        {/* <p>1008.8 lb</p> */}
-                                                                                    </div>
+                                                                    <div className="col-md-5 col-lg-4 col-xl-3">
+                                                                        <div className="card">
+                                                                            <div className="card-header">Body mass</div>
+                                                                            <div className="card-body">
+                                                                                <div className="card-text">
+                                                                                    <p>
+                                                                                        <span className="big">{data.vitalSigns.weight.value}</span>kg
+                                                                                    </p>
+                                                                                    {/* <p>1008.8 lb</p> */}
                                                                                 </div>
-                                                                                <div className="card-footer">{data.vitalSigns.weight.timestamp ? moment(data.vitalSigns.weight.timestamp).format("Do MMM Y") : moment(meta.created).format("Do MMM Y")}</div>
+                                                                            </div>
+                                                                            <div className="card-footer">
+                                                                                {data.vitalSigns.weight.timestamp
+                                                                                    ? moment(data.vitalSigns.weight.timestamp).format("Do MMM Y")
+                                                                                    : moment(meta.created).format("Do MMM Y")}
                                                                             </div>
                                                                         </div>
-                                                                    )}
+                                                                    </div>
+                                                                )}
 
                                                                 {data.vitalSigns.bmi && (
-                                                                        <div className="col-md-5 col-lg-4 col-xl-3">
-                                                                            <div className="card">
-                                                                                <div className="card-header">BMI</div>
-                                                                                <div className="card-body">
-                                                                                    <div className="card-text">
-                                                                                        <p>
-                                                                                            <span className="big">{data.vitalSigns.bmi.value}</span>
-                                                                                        </p>
-                                                                                    </div>
+                                                                    <div className="col-md-5 col-lg-4 col-xl-3">
+                                                                        <div className="card">
+                                                                            <div className="card-header">BMI</div>
+                                                                            <div className="card-body">
+                                                                                <div className="card-text">
+                                                                                    <p>
+                                                                                        <span className="big">{data.vitalSigns.bmi.value}</span>
+                                                                                    </p>
                                                                                 </div>
-                                                                                <div className="card-footer">{data.vitalSigns.bmi.timestamp ? moment(data.vitalSigns.bmi.timestamp).format("Do MMM Y") : moment(meta.created).format("Do MMM Y")}</div>
+                                                                            </div>
+                                                                            <div className="card-footer">
+                                                                                {data.vitalSigns.bmi.timestamp
+                                                                                    ? moment(data.vitalSigns.bmi.timestamp).format("Do MMM Y")
+                                                                                    : moment(meta.created).format("Do MMM Y")}
                                                                             </div>
                                                                         </div>
-                                                                    )}
+                                                                    </div>
+                                                                )}
 
-                                                                {data.vitalSigns.temperature &&
-                                                                    (
-                                                                        <div className="col-md-5 col-lg-4 col-xl-3">
-                                                                            <div className="card">
-                                                                                <div className="card-header">Body temperature</div>
-                                                                                <div className="card-body">
-                                                                                    <div className="card-text">
-                                                                                        <p>
-                                                                                            <span className="big">{data.vitalSigns.temperature.value}</span>°C
-                                                                                        </p>
-                                                                                    </div>
+                                                                {data.vitalSigns.temperature && (
+                                                                    <div className="col-md-5 col-lg-4 col-xl-3">
+                                                                        <div className="card">
+                                                                            <div className="card-header">Body temperature</div>
+                                                                            <div className="card-body">
+                                                                                <div className="card-text">
+                                                                                    <p>
+                                                                                        <span className="big">{data.vitalSigns.temperature.value}</span>°C
+                                                                                    </p>
                                                                                 </div>
-                                                                                <div className="card-footer">{data.vitalSigns.temperature.timestamp ? moment(data.vitalSigns.temperature.timestamp).format("Do MMM Y") : moment(meta.created).format("Do MMM Y")}</div>
+                                                                            </div>
+                                                                            <div className="card-footer">
+                                                                                {data.vitalSigns.temperature.timestamp
+                                                                                    ? moment(data.vitalSigns.temperature.timestamp).format("Do MMM Y")
+                                                                                    : moment(meta.created).format("Do MMM Y")}
                                                                             </div>
                                                                         </div>
-                                                                    )}
+                                                                    </div>
+                                                                )}
 
-                                                                {data.vitalSigns.heart_rate &&
-                                                                    (
-                                                                        <div className="col-md-5 col-lg-4 col-xl-3">
-                                                                            <div className="card">
-                                                                                <div className="card-header">Heart rate</div>
-                                                                                <div className="card-body">
-                                                                                    <div className="card-text">
-                                                                                        <p>
-                                                                                            <span className="big">{data.vitalSigns.heart_rate.value}</span>bpm
-                                                                                        </p>
-                                                                                    </div>
+                                                                {data.vitalSigns.heart_rate && (
+                                                                    <div className="col-md-5 col-lg-4 col-xl-3">
+                                                                        <div className="card">
+                                                                            <div className="card-header">Heart rate</div>
+                                                                            <div className="card-body">
+                                                                                <div className="card-text">
+                                                                                    <p>
+                                                                                        <span className="big">{data.vitalSigns.heart_rate.value}</span>bpm
+                                                                                    </p>
                                                                                 </div>
-                                                                                <div className="card-footer">{data.vitalSigns.heart_rate.timestamp ? moment(data.vitalSigns.heart_rate.timestamp).format("Do MMM Y") : moment(meta.created).format("Do MMM Y")}</div>
+                                                                            </div>
+                                                                            <div className="card-footer">
+                                                                                {data.vitalSigns.heart_rate.timestamp
+                                                                                    ? moment(data.vitalSigns.heart_rate.timestamp).format("Do MMM Y")
+                                                                                    : moment(meta.created).format("Do MMM Y")}
                                                                             </div>
                                                                         </div>
-                                                                    )}
-                                                                {data.vitalSigns.pressure && data.vitalSigns.pressure.value &&
+                                                                    </div>
+                                                                )}
+                                                                {data.vitalSigns.pressure &&
+                                                                    data.vitalSigns.pressure.value &&
                                                                     data.vitalSigns.pressure.value.systolic &&
-                                                                    data.vitalSigns.pressure.value.diastolic &&
-                                                                    (
+                                                                    data.vitalSigns.pressure.value.diastolic && (
                                                                         <div className="col-md-5 col-lg-4 col-xl-3">
                                                                             <div className="card">
                                                                                 <div className="card-header">Blood pressure</div>
                                                                                 <div className="card-body">
                                                                                     <div className="card-text">
                                                                                         <p>
-                                                                                            <span className="big">{data.vitalSigns.pressure.value.systolic}/{data.vitalSigns.pressure.value.diastolic}</span>mmHg
+                                                                                            <span className="big">
+                                                                                                {data.vitalSigns.pressure.value.systolic}/{
+                                                                                                    data.vitalSigns.pressure.value.diastolic
+                                                                                                }
+                                                                                            </span>mmHg
                                                                                         </p>
                                                                                     </div>
                                                                                 </div>
-                                                                                <div className="card-footer">{data.vitalSigns.pressure.timestamp ? moment(data.vitalSigns.pressure.timestamp).format("Do MMM Y") : moment(meta.created).format("Do MMM Y")}</div>
+                                                                                <div className="card-footer">
+                                                                                    {data.vitalSigns.pressure.timestamp
+                                                                                        ? moment(data.vitalSigns.pressure.timestamp).format("Do MMM Y")
+                                                                                        : moment(meta.created).format("Do MMM Y")}
+                                                                                </div>
                                                                             </div>
                                                                         </div>
                                                                     )}
 
-                                                                {data.vitalSigns.oxygen_saturation &&
-                                                                    (
-                                                                        <div className="col-md-5 col-lg-4 col-xl-3">
-                                                                            <div className="card">
-                                                                                <div className="card-header">Oxygen saturation</div>
-                                                                                <div className="card-body">
-                                                                                    <div className="card-text">
-                                                                                        <p>
-                                                                                            <span className="big">{data.vitalSigns.oxygen_saturation.value}</span>%
-                                                                                        </p>
-                                                                                    </div>
+                                                                {data.vitalSigns.oxygen_saturation && (
+                                                                    <div className="col-md-5 col-lg-4 col-xl-3">
+                                                                        <div className="card">
+                                                                            <div className="card-header">Oxygen saturation</div>
+                                                                            <div className="card-body">
+                                                                                <div className="card-text">
+                                                                                    <p>
+                                                                                        <span className="big">{data.vitalSigns.oxygen_saturation.value}</span>%
+                                                                                    </p>
                                                                                 </div>
-                                                                                <div className="card-footer">{data.vitalSigns.oxygen_saturation.timestamp ? moment(data.vitalSigns.oxygen_saturation.timestamp).format("Do MMM Y") : moment(meta.created).format("Do MMM Y")}</div>
+                                                                            </div>
+                                                                            <div className="card-footer">
+                                                                                {data.vitalSigns.oxygen_saturation.timestamp
+                                                                                    ? moment(data.vitalSigns.oxygen_saturation.timestamp).format("Do MMM Y")
+                                                                                    : moment(meta.created).format("Do MMM Y")}
                                                                             </div>
                                                                         </div>
-                                                                    )}
-                                                                </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </dl>
                                                     </Collapse>
                                                 </div>
                                             )}
-
                                         </div>
                                     </div>
                                 ))}
@@ -295,7 +335,13 @@ HealthRecord = connect(
     (state, props) => {
         let records = state.patient.patientRecords.data
         // sort records by creation time and reverse to have latest record as first
-        records = _.reverse(_.sortBy(records, [function(obj) { return obj.meta.created; }]))
+        records = _.reverse(
+            _.sortBy(records, [
+                function(obj) {
+                    return obj.meta.created
+                }
+            ])
+        )
 
         return {
             patientID: props.match.params.patientID || state.patient.patient.ID,

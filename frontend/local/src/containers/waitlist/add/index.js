@@ -30,7 +30,8 @@ class AddToWaitlist extends Component {
     }
 
     onSubmit(formData) {
-        this.props.add(formData, this.props.patient)
+        this.props
+            .add(formData, this.props.patient)
             .then(data => {
                 this.props.push("/")
             })
@@ -56,13 +57,7 @@ class AddToWaitlist extends Component {
                                     <div className="modal-footer">
                                         <div className="form-row">
                                             <div className="col-sm-4">
-                                                <button
-                                                    type="button"
-                                                    tabIndex="-1"
-                                                    className="btn btn-link btn-block"
-                                                    data-dismiss="has-modal"
-                                                    disabled
-                                                >
+                                                <button type="button" tabIndex="-1" className="btn btn-link btn-block" data-dismiss="has-modal" disabled>
                                                     Cancel
                                                 </button>
                                             </div>

@@ -93,7 +93,13 @@ class PatientDetail extends React.Component {
                                 waitlistItem.vitalSigns.weight && (
                                     <div className="col-sm-4">
                                         <h5>BMI</h5>
-                                        {round(waitlistItem.vitalSigns.weight.value / waitlistItem.vitalSigns.height.value / waitlistItem.vitalSigns.height.value * 10000, 2)}
+                                        {round(
+                                            waitlistItem.vitalSigns.weight.value /
+                                                waitlistItem.vitalSigns.height.value /
+                                                waitlistItem.vitalSigns.height.value *
+                                                10000,
+                                            2
+                                        )}
                                     </div>
                                 )}
                         </div>

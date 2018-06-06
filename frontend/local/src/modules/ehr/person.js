@@ -69,8 +69,7 @@ export default dispatch => {
             // Region (stored under "district")
             {
                 type: "value",
-                ehrPath:
-                    "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.address.v1]:0/details[at0001]/items[at0003]",
+                ehrPath: "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.address.v1]:0/details[at0001]/items[at0003]",
                 formPath: "region"
             },
             // Address (stored under "street")

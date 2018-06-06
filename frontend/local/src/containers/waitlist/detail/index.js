@@ -82,12 +82,12 @@ class InConsultation extends React.Component {
     constructor(props) {
         super(props)
         this.closeConsultation = this.closeConsultation.bind(this)
-        this.state = {saving: false}
+        this.state = { saving: false }
     }
 
     closeConsultation(ev) {
         ev.preventDefault()
-        this.setState({saving: true})
+        this.setState({ saving: true })
         this.props.saveConsultation(this.props.match.params.waitlistID, this.props.match.params.itemID)
     }
 
@@ -108,7 +108,11 @@ class InConsultation extends React.Component {
                                     Add diagnosis
                                 </Link>
                             )) || (
-                                <a href={`/waitlist/${match.params.waitlistID}`} onClick={this.closeConsultation} className="btn btn-success btn-wide btn-close">
+                                <a
+                                    href={`/waitlist/${match.params.waitlistID}`}
+                                    onClick={this.closeConsultation}
+                                    className="btn btn-success btn-wide btn-close"
+                                >
                                     Close
                                 </a>
                             )}
@@ -151,9 +155,7 @@ class InConsultation extends React.Component {
 
                             {waitlistItem.diagnoses.map((el, key) => (
                                 <React.Fragment key={key}>
-                                    <h3>
-                                        {el.label ? el.label : (<CodeTitle categoryId="diagnosis" codeId={el.diagnosis} />)}
-                                    </h3>
+                                    <h3>{el.label ? el.label : <CodeTitle categoryId="diagnosis" codeId={el.diagnosis} />}</h3>
                                     {el.comment && <p>{el.comment}</p>}
 
                                     {el.therapies && <h4>Therapies</h4>}
@@ -241,8 +243,7 @@ class InConsultation extends React.Component {
                                 )}
 
                             {waitlistItem.vitalSigns &&
-                                waitlistItem.vitalSigns.temperature &&
-                                (
+                                waitlistItem.vitalSigns.temperature && (
                                     <div className="col-md-5 col-lg-4 col-xl-3">
                                         <div className="card">
                                             <div className="card-header">Body temperature</div>
@@ -258,8 +259,7 @@ class InConsultation extends React.Component {
                                     </div>
                                 )}
                             {waitlistItem.vitalSigns &&
-                                waitlistItem.vitalSigns.heart_rate &&
-                                (
+                                waitlistItem.vitalSigns.heart_rate && (
                                     <div className="col-md-5 col-lg-4 col-xl-3">
                                         <div className="card">
                                             <div className="card-header">Heart rate</div>
@@ -277,15 +277,16 @@ class InConsultation extends React.Component {
                             {waitlistItem.vitalSigns &&
                                 waitlistItem.vitalSigns.pressure &&
                                 waitlistItem.vitalSigns.pressure.value.systolic &&
-                                waitlistItem.vitalSigns.pressure.value.diastolic &&
-                                (
+                                waitlistItem.vitalSigns.pressure.value.diastolic && (
                                     <div className="col-md-5 col-lg-4 col-xl-3">
                                         <div className="card">
                                             <div className="card-header">Blood pressure</div>
                                             <div className="card-body">
                                                 <div className="card-text">
                                                     <p>
-                                                        <span className="big">{waitlistItem.vitalSigns.pressure.value.systolic}/{waitlistItem.vitalSigns.pressure.value.diastolic}</span>mmHg
+                                                        <span className="big">
+                                                            {waitlistItem.vitalSigns.pressure.value.systolic}/{waitlistItem.vitalSigns.pressure.value.diastolic}
+                                                        </span>mmHg
                                                     </p>
                                                 </div>
                                             </div>
@@ -294,8 +295,7 @@ class InConsultation extends React.Component {
                                     </div>
                                 )}
                             {waitlistItem.vitalSigns &&
-                                waitlistItem.vitalSigns.oxygen_saturation &&
-                                (
+                                waitlistItem.vitalSigns.oxygen_saturation && (
                                     <div className="col-md-5 col-lg-4 col-xl-3">
                                         <div className="card">
                                             <div className="card-header">Oxygen saturation</div>
@@ -355,7 +355,7 @@ class InConsultation extends React.Component {
                 {this.props.canEditMainComplaint && <Route path={match.path + "/edit-complaint"} component={EditComplaint} />}
                 {this.props.canRemoveFromWaitlist && <Route path={match.path + "/remove"} component={Remove} />}
             </div>
-        ) : (null)
+        ) : null
     }
 }
 

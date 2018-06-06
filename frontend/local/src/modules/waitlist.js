@@ -213,7 +213,7 @@ export const update = (listID, data) => dispatch => {
             dispatch(open(ex.message, "", COLOR_DANGER))
             dispatch({
                 type: UPDATE_ITEM_FAILED,
-                itemID: data.id,
+                itemID: data.id
             })
         })
 }
@@ -239,7 +239,7 @@ export const moveToTop = (listID, itemID) => dispatch => {
             }
             dispatch({
                 type: UPDATE_ITEM_DONE,
-                itemID: itemID,
+                itemID: itemID
             })
             dispatch(listAll(listID))
             setTimeout(() => dispatch(open("Waiting list was updated ", "", COLOR_SUCCESS, 5)), 100)
@@ -289,14 +289,13 @@ const migrateItem = item => dispatch => {
     })
     let vitalSigns = dispatch(migrateVitalSigns(item.vitalSigns))
 
-    return Promise.all([Promise.all(diagnoses), vitalSigns])
-        .then(([diagnoses, vitalSigns]) => {
-            if (diagnoses.length > 0) {
-                item.diagnoses = diagnoses
-            }
-            item.vitalSigns = vitalSigns
-            return Promise.resolve(item)
-        })
+    return Promise.all([Promise.all(diagnoses), vitalSigns]).then(([diagnoses, vitalSigns]) => {
+        if (diagnoses.length > 0) {
+            item.diagnoses = diagnoses
+        }
+        item.vitalSigns = vitalSigns
+        return Promise.resolve(item)
+    })
 }
 
 // migrating diagnosis with only SNOMED code and without label
@@ -321,13 +320,7 @@ const migrateVitalSigns = vitalSigns => dispatch => {
     // migrate BMI (to be removed)
     if (vitalSigns && !vitalSigns.bmi && vitalSigns.height && vitalSigns.weight) {
         vitalSigns.bmi = {}
-        vitalSigns.bmi.value = round(
-            vitalSigns.weight.value /
-                vitalSigns.height.value /
-                vitalSigns.height.value *
-                10000,
-            2
-        )
+        vitalSigns.bmi.value = round(vitalSigns.weight.value / vitalSigns.height.value / vitalSigns.height.value * 10000, 2)
         vitalSigns.bmi.timestamp = moment.max(moment(vitalSigns.height.timestamp), moment(vitalSigns.weight.timestamp)).format()
     }
 

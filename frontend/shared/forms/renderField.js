@@ -3,7 +3,7 @@ import classnames from "classnames"
 import Select from "react-select"
 import _ from "lodash"
 
-const validateRequired = value => ( !_.isEmpty(value) ? undefined : 'Required')
+const validateRequired = value => (!_.isEmpty(value) ? undefined : "Required")
 
 const renderInput = ({ input, optional, disabled, label, type, meta: { touched, error } }) => (
     <label>
@@ -55,11 +55,19 @@ const renderSelect = ({ input, disabled, pristine, label, options, meta: { touch
 )
 
 const renderReactSelect = ({ input, label, loadOptions, meta: { touched, error } }) => {
-    return (<label>
-        <Select.Async value={input.value} className={classnames("form-control", { "is-invalid": touched && error })} multi={false} loadOptions={loadOptions} onChange={input.onChange} />
-        <span>{label}</span>
-        {touched && error && <div className="invalid-feedback">{error}</div>}
-    </label>)
+    return (
+        <label>
+            <Select.Async
+                value={input.value}
+                className={classnames("form-control", { "is-invalid": touched && error })}
+                multi={false}
+                loadOptions={loadOptions}
+                onChange={input.onChange}
+            />
+            <span>{label}</span>
+            {touched && error && <div className="invalid-feedback">{error}</div>}
+        </label>
+    )
 }
 
 const renderHorizontalSelect = ({ input, pristine, label, unit, options, meta: { touched, error } }) => (

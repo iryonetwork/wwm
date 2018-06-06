@@ -189,7 +189,11 @@ class OrganizationsList extends React.Component {
                                         </td>
                                         <td>
                                             {props.canEdit && userOrganization.edit ? (
-                                                <select className="form-control form-control-sm" value={userOrganization.roleID || ""} onChange={this.editRoleID(i)}>
+                                                <select
+                                                    className="form-control form-control-sm"
+                                                    value={userOrganization.roleID || ""}
+                                                    onChange={this.editRoleID(i)}
+                                                >
                                                     <option value="">Select role</option>
                                                     {_.map(_.pickBy(props.roles, role => !_.includes(props.advancedRoleIDs, role.id)), role => (
                                                         <option key={role.id} value={role.id}>

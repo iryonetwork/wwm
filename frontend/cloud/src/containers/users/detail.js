@@ -679,10 +679,8 @@ const mapStateToProps = (state, ownProps) => {
         licenses: state.codes.codes[CATEGORY_LICENSES],
         codesLoading: state.codes.loading,
         isHome: ownProps.home,
-        canSee:
-            state.authentication.token.sub === id || (state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined),
-        canEdit:
-            state.authentication.token.sub === id || (state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined),
+        canSee: state.authentication.token.sub === id || (state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined),
+        canEdit: state.authentication.token.sub === id || (state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined),
         canEditPassword:
             state.authentication.token.sub === id || (state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined),
         validationsLoading: state.validations.loading,

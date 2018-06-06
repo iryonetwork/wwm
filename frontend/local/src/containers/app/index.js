@@ -79,11 +79,11 @@ class App extends React.Component {
                 <main>
                     <div className="container">
                         <Alert />
-                        {this.props.canSeePatients && (<Route exact path="/" render={() => <Redirect to="/patients" />} />)}
-                        {this.props.canSeePatients && (<Route exact path="/patients" component={Patients} />)}
-                        {this.props.canSeePatients && (<Route path="/patients/:patientID" component={WaitlistDetail} />)}
-                        {this.props.canAddPatient && (<Route exact path="/new-patient" component={NewPatient} />)}
-                        {this.props.canAddToWaitlist && (<Route path="/to-waitlist/:patientID" component={AddToWaitlist} meta={{ modal: true }} />)}
+                        {this.props.canSeePatients && <Route exact path="/" render={() => <Redirect to="/patients" />} />}
+                        {this.props.canSeePatients && <Route exact path="/patients" component={Patients} />}
+                        {this.props.canSeePatients && <Route path="/patients/:patientID" component={WaitlistDetail} />}
+                        {this.props.canAddPatient && <Route exact path="/new-patient" component={NewPatient} />}
+                        {this.props.canAddToWaitlist && <Route path="/to-waitlist/:patientID" component={AddToWaitlist} meta={{ modal: true }} />}
                         {this.props.canSeeWaitlist && (
                             <div className="container">
                                 <Route exact path="/waitlist/:waitlistID" component={Waitlist} />
@@ -110,7 +110,7 @@ const mapStateToProps = state => ({
     canSeePatients: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[READ],
     canAddPatient: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[WRITE],
     canSeeWaitlist: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[READ],
-    canAddToWaitlist: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[WRITE],
+    canAddToWaitlist: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[WRITE]
 })
 
 const mapDispatchToProps = dispatch =>

@@ -181,7 +181,11 @@ class Clinics extends React.Component {
                                     </td>
                                     <td>
                                         {props.canEdit && clinic.edit ? (
-                                            <select className="form-control form-control-sm" value={clinic.organization || ""} onChange={this.editOrganizationID(i)}>
+                                            <select
+                                                className="form-control form-control-sm"
+                                                value={clinic.organization || ""}
+                                                onChange={this.editOrganizationID(i)}
+                                            >
                                                 <option value="">Select organization</option>
                                                 {_.map(props.organizations, organization => (
                                                     <option key={organization.id} value={organization.id}>

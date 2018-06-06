@@ -321,8 +321,7 @@ EditPersonal = reduxForm({
         documents: [{}]
     },
     validate
-},
-)(EditPersonal)
+})(EditPersonal)
 
 EditPersonal = connect(
     state => ({

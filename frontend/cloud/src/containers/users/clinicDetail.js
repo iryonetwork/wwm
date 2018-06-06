@@ -127,7 +127,10 @@ class ClinicDetail extends React.Component {
                                             <option value="">Select role</option>
                                             {_.map(
                                                 _.difference(
-                                                    _.map(_.values(_.pickBy(props.roles, role => !_.includes(props.advancedRoleIDs, role.id))), role => role.id),
+                                                    _.map(
+                                                        _.values(_.pickBy(props.roles, role => !_.includes(props.advancedRoleIDs, role.id))),
+                                                        role => role.id
+                                                    ),
                                                     _.map(_.values(props.clinicUserRoles), userRole => userRole.roleID)
                                                 ),
                                                 roleID => (
