@@ -4,7 +4,7 @@ import { connect } from "react-redux"
 import classnames from "classnames"
 
 import Footer from "./footer"
-import validate from "./validate"
+import validate from "../shared/validatePersonal"
 import {
     renderInput,
     renderHabitFields,

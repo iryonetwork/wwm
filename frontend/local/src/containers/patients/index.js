@@ -48,7 +48,6 @@ class PatientList extends React.Component {
 
     render() {
         const { push } = this.props
-
         return (
             <div className="patients">
                 <header>

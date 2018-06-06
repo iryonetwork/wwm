@@ -4,7 +4,7 @@ import { Field, FieldArray, reduxForm } from "redux-form"
 import Select from "react-select"
 
 import Footer from "./footer"
-import validate from "./validate"
+import validate from "../shared/validatePersonal"
 import { renderInput, renderSelect, renderRadio } from "shared/forms/renderField"
 import { livingTogetherOptions, relationOptions } from "shared/forms/options"
 import { search, cardToObject } from "../../../modules/discovery"

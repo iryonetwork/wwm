@@ -2,7 +2,7 @@ import React, { Component } from "react"
 import { connect } from "react-redux"
 import { Field, FieldArray, reduxForm } from "redux-form"
 
-import validate from "./validate"
+import validate from "../shared/validatePersonal"
 import Footer from "./footer"
 import Spinner from "shared/containers/spinner"
 import { renderInput, renderSelect } from "shared/forms/renderField"

@@ -7,6 +7,7 @@ import { reduxForm } from "redux-form"
 import { RESOURCE_DEMOGRAPHIC_INFORMATION, READ, UPDATE } from "../../../modules/validations"
 import { loadCategories, getCodes, getCodesAsOptions } from "shared/modules/codes"
 import { updatePatient } from "../../../modules/patient"
+import validate from "../shared/validatePersonal"
 import { relationOptions, livingTogetherOptions } from "shared/forms/options"
 
 import { joinPaths } from "shared/utils"
@@ -265,10 +266,10 @@ class EditPersonal extends React.Component {
     constructor(props) {
         super(props)
 
-        this.handleSubmit = this.handleSubmit.bind(this)
+        this.update = this.update.bind(this)
     }
 
-    handleSubmit(form) {
+    update(form) {
         this.props.updatePatient(form).then(() => {
             this.props.history.push(this.props.location.pathname.replace("/edit", ""))
         })
@@ -287,7 +288,7 @@ class EditPersonal extends React.Component {
 
         return this.props.canEditDemographicInformation ? (
             <div>
-                <form onSubmit={handleSubmit(this.handleSubmit)}>
+                <form onSubmit={handleSubmit(this.update)}>
                     <PatientForm
                         countries={getCodes("countries")}
                         maritalStatus={getCodes("maritalStatus")}
@@ -318,8 +319,10 @@ EditPersonal = reduxForm({
     form: "personal",
     initialValues: {
         documents: [{}]
-    }
-})(EditPersonal)
+    },
+    validate
+},
+)(EditPersonal)
 
 EditPersonal = connect(
     state => ({
