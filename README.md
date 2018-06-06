@@ -1,4 +1,6 @@
 # Iryo for Walk With Me
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Firyonetwork%2Fwwm.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Firyonetwork%2Fwwm?ref=badge_shield)
+
 
 This project holds Iryo's first pilot project developed together with Walk With
 Me foundation.
@@ -68,3 +70,7 @@ On OSX it's common to experience 5 second timeouts when using `curl` to request 
 ```
 ::FFFF:10.99.99.99	iryo.local minio.iryo.local vault.iryo.local
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Firyonetwork%2Fwwm.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Firyonetwork%2Fwwm?ref=badge_large)
