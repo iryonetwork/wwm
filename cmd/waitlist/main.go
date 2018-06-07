@@ -64,12 +64,6 @@ func main() {
 		logger.Fatal().Err(err).Msg("Failed to ensure default list")
 	}
 
-	// run migrations
-	err = storage.MigrateVitalSigns()
-	if err != nil {
-		logger.Error().Err(err).Msg("Vital sings migration failed")
-	}
-
 	auth := authorizer.New(cfg.DomainType, cfg.DomainID, fmt.Sprintf("https://%s/%s/validate", cfg.AuthHost, cfg.AuthPath), logger)
 
 	api := operations.NewWaitlistAPI(swaggerSpec)

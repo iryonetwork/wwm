@@ -82,9 +82,6 @@ type Storage interface {
 
 	// ReopenHistoryItem puts item from history back to waitlist
 	ReopenHistoryItem(waitlistID, itemID, newWaitlistID []byte) (*models.Item, error)
-
-	// MigrateVitalSigns migrates vital signs from old format to new format, to be removed
-	MigrateVitalSigns() error
 }
 
 type service struct {
