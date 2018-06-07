@@ -79,6 +79,7 @@ export default (state = initialState, action) => {
             case FAILED:
                 draft.listing = draft.listed = false
                 draft.adding = draft.added = false
+                draft.updating = draft.updated = false
                 draft.failed = true
                 break
 
@@ -148,6 +149,13 @@ export const add = (waitlistID, formData, patient) => dispatch => {
         .then(response => Promise.all([response.status === 201, response.json(), response.status]))
         .then(([ok, data, status]) => {
             if (!ok) {
+                if (status === 409) {
+                    dispatch(listAll(waitlistID)).then(() => {
+                        dispatch({ type: RESET_INDICATORS })
+                    })
+                    setTimeout(() => dispatch(open("Patient has been already added to the Waiting List", "", COLOR_DANGER, 5)), 100)
+                    return undefined
+                }
                 throw new Error(`Failed to add patient to waitlist (${status})`)
             }
             dispatch({ type: ADDED, result: data })
