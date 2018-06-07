@@ -12,6 +12,7 @@
 
         .age {
             display: inline-block;
+            font-size: 14px;
 
             &::before,
             &::after {
@@ -26,15 +27,15 @@
         font-weight: bold;
 
         img {
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             border-radius: 30px;
             float: none;
             margin-bottom: 10px;
         }
 
         .name {
-            font-size: 18px;
+            font-size: 24px;
         }
     }
 }

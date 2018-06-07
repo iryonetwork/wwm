@@ -4,7 +4,7 @@ import _ from "lodash"
 import moment from "moment"
 
 import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
-import { read, API_URL, DEFAULT_WAITLIST_ID } from "shared/modules/config"
+import { read, API_URL } from "shared/modules/config"
 import { getToken } from "shared/modules/authentication"
 import { fetchCode } from "shared/modules/codes"
 import { round } from "shared/utils"
@@ -20,6 +20,10 @@ export const FAILED = "waitlist/FAILED"
 export const UPDATE_ITEM = "waitlist/UPDATE_ITEM"
 export const UPDATE_ITEM_DONE = "waitlist/UPDATE_ITEM_DONE"
 export const UPDATE_ITEM_FAILED = "waitlist/UPDATE_ITEM_FAILED"
+
+export const MOVE_TO_TOP_ITEM = "waitlist/MOVE_TO_TOP_ITEM"
+export const MOVE_TO_TOP_ITEM_DONE = "waitlist/MOVE_TO_TOP_ITEM_DONE"
+export const MOVE_TO_TOP_ITEM_FAILED = "waitlist/ MOVE_TO_TOP_ITEM_FAILED"
 
 export const REMOVE_ITEM = "waitlist/REMOVE_ITEM"
 
@@ -63,6 +67,7 @@ export default (state = initialState, action) => {
                 draft.adding = false
                 draft.added = true
                 draft.item = action.result
+                draft.items[action.result.id] = action.result
                 break
 
             case FAILED:
@@ -79,8 +84,20 @@ export default (state = initialState, action) => {
                 draft.items[action.itemID].updating = false
                 break
             case UPDATE_ITEM_DONE:
-                draft.items[action.itemID] = action.updated ? action.updated : draft.items[action.itemID]
+                draft.items[action.itemID] = action.updated
                 draft.item = action.updated
+                draft.items[action.itemID].updating = false
+                break
+
+            case MOVE_TO_TOP_ITEM:
+                draft.items[action.itemID].updating = true
+                break
+
+            case MOVE_TO_TOP_ITEM_FAILED:
+                draft.items[action.itemID].updating = false
+                break
+            case MOVE_TO_TOP_ITEM_DONE:
+                draft.item = draft.items[action.itemID]
                 draft.items[action.itemID].updating = false
                 break
 
@@ -94,8 +111,7 @@ export default (state = initialState, action) => {
     })
 }
 
-export const add = (formData, patient) => dispatch => {
-    const waitlistID = dispatch(read(DEFAULT_WAITLIST_ID))
+export const add = (waitlistID, formData, patient) => dispatch => {
     const url = `${dispatch(read(API_URL))}/waitlist/${waitlistID}`
     dispatch({ type: ADD })
 
@@ -189,9 +205,14 @@ export const update = (listID, data) => dispatch => {
         itemID: data.id
     })
 
+    let item = {
+        ...data,
+        priority: parseInt(data.priority, 10) || 1
+    }
+
     return fetch(url, {
         method: "PUT",
-        body: JSON.stringify(data),
+        body: JSON.stringify(item),
         headers: {
             Authorization: dispatch(getToken()),
             "Content-Type": "application/json"
@@ -207,7 +228,7 @@ export const update = (listID, data) => dispatch => {
                 itemID: data.id,
                 updated: data
             })
-            return dispatch(listAll(listID))
+            return ok
         })
         .catch(ex => {
             dispatch(open(ex.message, "", COLOR_DANGER))
@@ -221,7 +242,7 @@ export const update = (listID, data) => dispatch => {
 export const moveToTop = (listID, itemID) => dispatch => {
     const url = `${dispatch(read(API_URL))}/waitlist/${listID}/${itemID}/top`
     dispatch({
-        type: UPDATE_ITEM,
+        type: MOVE_TO_TOP_ITEM,
         itemID: itemID
     })
 
@@ -238,7 +259,7 @@ export const moveToTop = (listID, itemID) => dispatch => {
                 throw new Error(`Failed to update waiting list item (${status})`)
             }
             dispatch({
-                type: UPDATE_ITEM_DONE,
+                type: MOVE_TO_TOP_ITEM_DONE,
                 itemID: itemID
             })
             dispatch(listAll(listID))
@@ -247,7 +268,7 @@ export const moveToTop = (listID, itemID) => dispatch => {
         .catch(ex => {
             dispatch(open(ex.message, "", COLOR_DANGER))
             dispatch({
-                type: UPDATE_ITEM_FAILED,
+                type: MOVE_TO_TOP_ITEM_FAILED,
                 itemID: itemID
             })
         })

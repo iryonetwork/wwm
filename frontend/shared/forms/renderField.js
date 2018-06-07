@@ -1,9 +1,9 @@
-import React from "react"
-import classnames from "classnames"
-import Select from "react-select"
-import _ from "lodash"
+import React from "react";
+import classnames from "classnames";
+import Select from "react-select";
+import _ from "lodash";
 
-const validateRequired = value => (!_.isEmpty(value) ? undefined : "Required")
+const validateRequired = value => (!_.isEmpty(value) ? undefined : "Required");
 
 const renderInput = ({ input, optional, disabled, label, type, meta: { touched, error } }) => (
     <label>
@@ -18,7 +18,7 @@ const renderInput = ({ input, optional, disabled, label, type, meta: { touched, 
         <span>{label}</span>
         {touched && error && <div className="invalid-feedback">{error}</div>}
     </label>
-)
+);
 
 const renderHorizontalInput = ({ input, optional, label, unit, hideLabel, type, meta: { touched, error } }) => (
     <div className="form-row">
@@ -34,7 +34,7 @@ const renderHorizontalInput = ({ input, optional, label, unit, hideLabel, type, 
         </div>
         {unit && <div className="col-sm-2">{unit}</div>}
     </div>
-)
+);
 
 const renderSelect = ({ input, disabled, pristine, label, options, meta: { touched, error } }) => (
     <label>
@@ -52,7 +52,7 @@ const renderSelect = ({ input, disabled, pristine, label, options, meta: { touch
         <span>{label}</span>
         {touched && error && <div className="invalid-feedback">{error}</div>}
     </label>
-)
+);
 
 const renderReactSelect = ({ input, label, loadOptions, meta: { touched, error } }) => {
     return (
@@ -67,8 +67,8 @@ const renderReactSelect = ({ input, label, loadOptions, meta: { touched, error }
             <span>{label}</span>
             {touched && error && <div className="invalid-feedback">{error}</div>}
         </label>
-    )
-}
+    );
+};
 
 const renderHorizontalSelect = ({ input, pristine, label, unit, options, meta: { touched, error } }) => (
     <div className="form-row">
@@ -88,7 +88,7 @@ const renderHorizontalSelect = ({ input, pristine, label, unit, options, meta: {
         </div>
         {unit && <div className="col-sm-2">{unit}</div>}
     </div>
-)
+);
 
 const renderNumericalValuesRadio = ({ input, className, label, options, hideLabel, meta: { touched, error } }) => (
     <div className={classnames("form-inline-container", className)}>
@@ -103,13 +103,13 @@ const renderNumericalValuesRadio = ({ input, className, label, options, hideLabe
                     checked={Number(input.value) === option.value}
                     value={option.value}
                 />
-                <label className="form-check-label" htmlFor={`${input.name}${index}`}>
+                <span className="form-check-label" htmlFor={`${input.name}${index}`}>
                     {option.label}
-                </label>
+                </span>
             </div>
         ))}
     </div>
-)
+);
 
 const renderRadio = ({ input, className, label, options, hideLabel, meta: { touched, error } }) => (
     <div className={classnames("form-inline-container", className)}>
@@ -124,13 +124,13 @@ const renderRadio = ({ input, className, label, options, hideLabel, meta: { touc
                     checked={input.value === option.value}
                     value={option.value}
                 />
-                <label className="form-check-label" htmlFor={`${input.name}${index}`}>
+                <span className="form-check-label" htmlFor={`${input.name}${index}`}>
                     {option.label}
-                </label>
+                </span>
             </div>
         ))}
     </div>
-)
+);
 
 const renderHorizontalRadio = ({ input, className, label, options, hideLabel, meta: { touched, error } }) => (
     <div className="form-row">
@@ -153,7 +153,7 @@ const renderHorizontalRadio = ({ input, className, label, options, hideLabel, me
             ))}
         </div>
     </div>
-)
+);
 
 const renderTextarea = ({ input, rows, optional, label, meta: { touched, error } }) => (
     <label>
@@ -167,7 +167,7 @@ const renderTextarea = ({ input, rows, optional, label, meta: { touched, error }
         <span>{label}</span>
         {touched && error && <div className="invalid-feedback">{error}</div>}
     </label>
-)
+);
 
 const renderHabitFields = fields => (
     <div className="habits">
@@ -214,7 +214,7 @@ const renderHabitFields = fields => (
             </div>
         )}
     </div>
-)
+);
 
 export {
     validateRequired,
@@ -227,5 +227,5 @@ export {
     renderNumericalValuesRadio,
     renderHorizontalRadio,
     renderTextarea,
-    renderHabitFields
-}
+    renderHabitFields,
+};

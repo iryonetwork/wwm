@@ -1,24 +1,31 @@
 import React, { Component } from "react"
+import _ from "lodash"
 import { connect } from "react-redux"
 import { push } from "react-router-redux"
-import { Field, reduxForm } from "redux-form"
-//import PropTypes from "prop-types"
-//import classnames from "classnames"
 
+import { ComplaintFormModalContent, ComplaintSummary } from "../shared/complaint"
 import { get, cardToObject } from "../../../modules/discovery"
-import { add } from "../../../modules/waitlist"
-import { renderInput, renderNumericalValuesRadio, renderTextarea, validateRequired } from "shared/forms/renderField"
-import Patient from "shared/containers/patient"
+import { add, update, listAll } from "../../../modules/waitlist"
 import Spinner from "shared/containers/spinner"
-import "./style.css"
-
-const priorityOptions = [{ value: 1, label: "Yes" }, { value: 4, label: "No" }]
+import Modal from "shared/containers/modal"
 
 class AddToWaitlist extends Component {
     constructor(props) {
         super(props)
         props.get(props.match.params.patientID)
-        this.onSubmit = this.onSubmit.bind(this)
+        props.listAll(props.match.params.destinationWaitlistID)
+
+        this.edit = this.edit.bind(this)
+        this.save = this.save.bind(this)
+        this.close = this.close.bind(this)
+
+        this.state = {
+            edit: false,
+            saving: false,
+            saved: false,
+            adding: false,
+            added: false
+        }
     }
 
     componentDidMount() {
@@ -29,137 +36,104 @@ class AddToWaitlist extends Component {
         document.body.classList.remove("has-modal")
     }
 
-    onSubmit(formData) {
-        this.props
-            .add(formData, this.props.patient)
-            .then(data => {
-                this.props.push("/")
+    save(formData) {
+        if (!this.props.waitlistItem) {
+            this.setState({
+                edit: false,
+                adding: true,
+                added: false
             })
-            .catch(ex => {})
+            this.props
+                .add(this.props.waitlistID, formData, this.props.patient)
+                .then(data => {
+                    this.setState({
+                        adding: false,
+                        added: true
+                    })
+                })
+                .catch(ex => {
+                    console.log(ex)
+                })
+        } else {
+            let item = this.props.waitlistItem
+            item.priority = formData.priority
+            item.mainComplaint.complaint = formData.mainComplaint
+            item.mainComplaint.comment = formData.mainComplaintDetails
+            this.setState({
+                edit: false,
+                saving: true,
+                saved: false
+            })
+            this.props
+                .update(this.props.waitlistID, item)
+                .then(data => {
+                    this.props.listAll(this.props.waitlistID)
+                    this.setState({
+                        saving: false,
+                        saved: true
+                    })
+                })
+                .catch(ex => {
+                    console.log(ex)
+                })
+        }
+    }
+
+    edit = () => {
+        this.setState({ edit: true })
+    }
+
+    close = () => {
+        this.props.push("/")
     }
 
     render() {
-        const { fetching, patient, push } = this.props
-        if (fetching || !patient) {
-            return (
-                <React.Fragment>
-                    <div className="add-to-waitlist modal fade show" tabIndex="-1" role="dialog">
-                        <div className="modal-dialog" role="document">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <h1>Add to Waiting List</h1>
-                                </div>
-                                <form>
-                                    <div className="modal-body">
-                                        <Spinner />
-                                    </div>
-
-                                    <div className="modal-footer">
-                                        <div className="form-row">
-                                            <div className="col-sm-4">
-                                                <button type="button" tabIndex="-1" className="btn btn-link btn-block" data-dismiss="has-modal" disabled>
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                            <div className="col-sm-4" />
-                                            <div className="col-sm-4">
-                                                <button type="submit" data-dismiss="has-modal" className="float-right btn btn-primary btn-block" disabled>
-                                                    Add
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="modal-backdrop fade show" />
-                </React.Fragment>
-            )
-        }
-
-        const p = cardToObject(patient)
-        const { handleSubmit } = this.props
+        const { waitlistFetching, patientFetching, waitlistItem } = this.props
+        let patient = this.props.patient && cardToObject(this.props.patient)
+        let loading = waitlistFetching || patientFetching || !patient || this.state.adding || this.state.saving
 
         return (
-            <React.Fragment>
-                <div className="add-to-waitlist modal fade show" tabIndex="-1" role="dialog">
-                    <div className="modal-dialog" role="document">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <Patient data={p} />
-                                <h1>Add to Waiting List</h1>
-                            </div>
-                            <form onSubmit={handleSubmit(this.onSubmit)}>
-                                <div className="modal-body">
-                                    <div className="form-row">
-                                        <Field name="priority" component={renderNumericalValuesRadio} label="Urgent?" options={priorityOptions} />
-                                    </div>
-
-                                    <div className="form-row">
-                                        <Field name="mainComplaint" validate={validateRequired} component={renderInput} label="Main complaint" />
-                                    </div>
-
-                                    <div className="form-row details">
-                                        <Field name="mainComplaintDetails" component={renderTextarea} optional={true} rows={10} label="Details" />
-                                    </div>
-
-                                    {/* <div className="form-row">
-                                        <Field name="doctor" component={renderSelect} options={doctorOptions} label="Doctor" />
-                                    </div> */}
-                                </div>
-
-                                <div className="modal-footer">
-                                    <div className="form-row">
-                                        <div className="col-sm-4">
-                                            <button
-                                                type="button"
-                                                tabIndex="-1"
-                                                className="btn btn-link btn-block"
-                                                data-dismiss="has-modal"
-                                                onClick={() => {
-                                                    push("/")
-                                                }}
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                        <div className="col-sm-4" />
-                                        <div className="col-sm-4">
-                                            <button type="submit" data-dismiss="has-modal" className="float-right btn btn-primary btn-block">
-                                                Add
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
+            <Modal>
+                <div className="add-to-waitlist">
+                    {loading ? (
+                        <div className="modal-body">
+                            <Spinner />
                         </div>
-                    </div>
+                    ) : !waitlistItem || this.state.edit ? (
+                        <ComplaintFormModalContent waitlistItem={waitlistItem} patient={patient} onSave={this.save} onClose={this.close} />
+                    ) : (
+                        <ComplaintSummary
+                            waitlistItem={waitlistItem}
+                            patient={patient}
+                            onEnableEdit={!this.state.saved && !this.state.added && this.edit}
+                            onClose={this.close}
+                            headerMessage={
+                                (this.state.added && "Patient has been succesfully added to Waiting List") ||
+                                (this.state.saved && "Main complaint has been succesfully updated") ||
+                                "Patient is already in the Waiting List"
+                            }
+                        />
+                    )}
                 </div>
-
-                <div className="modal-backdrop fade show" />
-            </React.Fragment>
+            </Modal>
         )
     }
 }
 
-AddToWaitlist = reduxForm({
-    form: "addToWaitlist",
-    initialValues: {
-        priority: 1
-    }
-})(AddToWaitlist)
-
 AddToWaitlist = connect(
-    state => ({
+    (state, props) => ({
+        waitlistID: props.match.params.destinationWaitlistID,
         patient: state.discovery.patient,
-        fetching: state.discovery.fetching
+        patientFetching: state.discovery.fetching,
+        waitlistItem: _.find(state.waitlist.items, ["patientID", props.match.params.patientID]),
+        waitlistFetching: state.waitlist.listing
     }),
     {
-        push,
         get,
-        add
+        add,
+        update,
+        listAll,
+        push
     }
 )(AddToWaitlist)
 

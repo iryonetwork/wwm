@@ -83,7 +83,9 @@ class App extends React.Component {
                         {this.props.canSeePatients && <Route exact path="/patients" component={Patients} />}
                         {this.props.canSeePatients && <Route path="/patients/:patientID" component={WaitlistDetail} />}
                         {this.props.canAddPatient && <Route exact path="/new-patient" component={NewPatient} />}
-                        {this.props.canAddToWaitlist && <Route path="/to-waitlist/:patientID" component={AddToWaitlist} meta={{ modal: true }} />}
+                        {this.props.canAddToWaitlist && (
+                            <Route path="/to-waitlist/:destinationWaitlistID/:patientID" component={AddToWaitlist} meta={{ modal: true }} />
+                        )}
                         {this.props.canSeeWaitlist && (
                             <div className="container">
                                 <Route exact path="/waitlist/:waitlistID" component={Waitlist} />

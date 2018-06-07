@@ -5,6 +5,7 @@ import classnames from "classnames"
 import { push } from "react-router-redux"
 import { reset } from "redux-form"
 
+import { read, DEFAULT_WAITLIST_ID } from "shared/modules/config"
 import { createPatient } from "../../../modules/patient"
 
 import Step1 from "./step1"
@@ -48,7 +49,7 @@ class NewPatientForm extends Component {
             .then(patientID => {
                 // reset the form
                 this.props.reset("newPatient")
-                this.props.push(`/to-waitlist/${patientID}`)
+                this.props.push(`/to-waitlist/${this.props.read(DEFAULT_WAITLIST_ID)}/${patientID}`)
             })
             .catch(ex => {
                 console.log(ex)
@@ -108,7 +109,8 @@ NewPatientForm.propTypes = {
 NewPatientForm = connect(state => ({}), {
     push,
     createPatient,
-    reset
+    reset,
+    read
 })(NewPatientForm)
 
 export default NewPatientForm

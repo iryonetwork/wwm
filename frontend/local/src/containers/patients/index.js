@@ -3,13 +3,14 @@ import { connect } from "react-redux"
 import { Link } from "react-router-dom"
 import { push } from "react-router-redux"
 
+import { read, DEFAULT_WAITLIST_ID } from "shared/modules/config"
 import { RESOURCE_PATIENT_IDENTIFICATION, READ, WRITE } from "../../modules/validations"
 import { search, cardToObject } from "../../modules/discovery"
 import Patient from "shared/containers/patient"
 import Spinner from "shared/containers/spinner"
 import "./style.css"
 
-const ListRow = ({ patient, canAddToWaitlist }) => {
+const ListRow = ({ patient, canAddToWaitlist, waitlistID }) => {
     const p = cardToObject(patient)
     const id = p["syrian-id"] ? `Syrian ID: ${p["syrian-id"]}` : p["un-id"] ? `UN ID: ${p["un-id"]}` : ""
 
@@ -23,7 +24,7 @@ const ListRow = ({ patient, canAddToWaitlist }) => {
             <td>{p.nationality}</td>
             <td>{id}</td>
             <td>{p.region}</td>
-            <td>{canAddToWaitlist && <Link to={`/to-waitlist/${patient.patientID}`}>Add to Waiting List</Link>}</td>
+            <td>{canAddToWaitlist && <Link to={`/to-waitlist/${waitlistID}/${patient.patientID}`}>Add to Waiting List</Link>}</td>
         </tr>
     )
 }
@@ -32,6 +33,7 @@ class PatientList extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
+            waitlistID: this.props.read(DEFAULT_WAITLIST_ID),
             searchQuery: ""
         }
         this.props.search("")
@@ -83,7 +85,12 @@ class PatientList extends React.Component {
                             <table className="table patients">
                                 <tbody>
                                     {this.props.patients.map(patient => (
-                                        <ListRow patient={patient} key={patient.patientID} canAddToWaitlist={this.props.canAddToWaitlist} />
+                                        <ListRow
+                                            patient={patient}
+                                            key={patient.patientID}
+                                            canAddToWaitlist={this.props.canAddToWaitlist}
+                                            waitlistID={this.state.waitlistID}
+                                        />
                                     ))}
                                 </tbody>
                             </table>
@@ -103,7 +110,7 @@ PatientList = connect(
         canSeePatients: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[READ],
         canAddToWaitlist: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[WRITE]
     }),
-    { search, push }
+    { search, push, read }
 )(PatientList)
 
 export default PatientList

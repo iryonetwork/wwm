@@ -1,0 +1,147 @@
+@import "shared/styles/variables.scss";
+
+.complaintForm {
+    .modal-body {
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 0 !important;
+            margin-bottom: 0.5rem !important;
+        }
+        border-top: 1px solid $grey2;
+        border-bottom: 1px solid $grey2;
+
+        .form-row {
+            margin: 20px 0;
+        }
+
+        label {
+            width: 100%;
+
+            input,
+            span,
+            textarea,
+            select {
+                display: inline-block;
+            }
+
+            span {
+                top:0px;
+                position: relative;
+                text-transform:none;
+                font-size: 14px;
+                font-weight: bold;
+                padding-top: .5rem;
+                text-align: left;
+                color: $black
+            }
+
+            input,
+            textarea,
+            select {
+                width: 66.66%;
+                float: right;
+            }
+            .invalid-feedback {
+                display: block;
+                width: 66.66%;
+                float: right;
+                position: relative;
+            }
+            .form-check-inline {
+                margin: 0;
+                width: 25%;
+            }
+            .label {
+                width: 33.33%;
+                display: inline-block;
+            }
+        }
+
+        .details span {
+            visibility: hidden;
+        }
+
+        .form-inline-container {
+            width: 100%;
+
+            .label {
+                width: 33.33%;
+                display: inline-block;
+                position: relative;
+                text-transform:none;
+                font-size: 14px;
+                font-weight: bold;
+                text-align: left;
+                color: $black
+            }
+
+            .form-check-inline {
+                margin: 0;
+                width: 25%;
+            }
+        }
+    }
+
+    .modal-footer {
+        width: 66.66%;
+        float: right;
+    }
+}
+
+.complaintSummary {
+    text-align: center;
+
+    .modal-body {
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 0 !important;
+            margin-bottom: 0.5rem !important;
+        }
+
+        .row {
+            margin: 20px;
+        }
+
+        .summaryBox {
+            padding: 20px;
+            margin-top:50px;
+            border-radius: 6px;
+            background-color: $grey1;
+            border: solid 1px $grey2;
+            border: solid 1px $grey2;
+
+            .header {
+                border-bottom: 1px solid $grey2;
+                padding-bottom: 5px;
+                margin-bottom: 30px;
+            }
+
+            label {
+                text-transform: uppercase;
+                margin-bottom: .1rem;
+                font-size: 11px;
+                letter-spacing: 0.5px;
+                text-align: left;
+                color: $grey5;
+            }
+
+            .complaint,
+            .comment {
+                font-weight: bold;
+            }
+        }
+    }
+
+    .modal-footer {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+        .col {
+            button {
+                margin-left: auto;
+                margin-right: auto;
+                text-align: center;
+                max-width: 260px;
+            }
+        }
+    }
+}

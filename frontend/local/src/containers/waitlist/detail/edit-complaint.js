@@ -1,18 +1,14 @@
 import React from "react"
-import { Field, reduxForm } from "redux-form"
 import { connect } from "react-redux"
 import { withRouter } from "react-router"
-import { goBack } from "react-router-redux"
+import { push } from "react-router-redux"
 
+import { ComplaintFormModalContent, ComplaintSummary } from "../shared/complaint"
 import Modal from "shared/containers/modal"
-import Patient from "shared/containers/patient"
 import Spinner from "shared/containers/spinner"
-import { renderInput, renderTextarea, validateRequired } from "shared/forms/renderField"
 import { open, COLOR_DANGER } from "shared/modules/alert"
-import { listAll, update } from "../../../modules/waitlist"
+import { update, listAll } from "../../../modules/waitlist"
 import { cardToObject } from "../../../modules/discovery"
-
-import { ReactComponent as ComplaintIcon } from "shared/icons/complaint.svg"
 
 class EditComplaint extends React.Component {
     constructor(props) {
@@ -21,7 +17,21 @@ class EditComplaint extends React.Component {
             props.listAll(props.match.params.waitlistID)
         }
 
-        this.handleSubmit = this.handleSubmit.bind(this)
+        this.save = this.save.bind(this)
+        this.close = this.close.bind(this)
+
+        this.state = {
+            saving: false,
+            saved: false
+        }
+    }
+
+    componentDidMount() {
+        document.body.classList.add("has-modal")
+    }
+
+    componentWillUnmount() {
+        document.body.classList.remove("has-modal")
     }
 
     componentWillReceiveProps(nextProps) {
@@ -31,94 +41,74 @@ class EditComplaint extends React.Component {
         }
     }
 
-    handleSubmit(form) {
+    save(formData) {
         let item = this.props.item
-        item.mainComplaint.complaint = form.mainComplaint
-        item.mainComplaint.comment = form.mainComplaintDetails
+        item.priority = formData.priority
+        item.mainComplaint.complaint = formData.mainComplaint
+        item.mainComplaint.comment = formData.mainComplaintDetails
 
+        this.setState({
+            saving: true,
+            saved: false
+        })
         this.props
-            .update(this.props.match.params.waitlistID, item)
+            .update(this.props.waitlistID, item)
             .then(data => {
-                this.props.listAll(this.props.match.params.waitlistID)
-                this.props.goBack()
+                this.setState({
+                    saving: false,
+                    saved: true
+                })
             })
-            .catch(ex => {})
+            .catch(ex => {
+                console.log(ex)
+            })
+    }
+
+    close = () => {
+        this.props.push(`/waitlist/${this.props.match.params.waitlistID}`)
     }
 
     render() {
-        let { item, history, handleSubmit } = this.props
-        return item ? (
+        let { item } = this.props
+        let loading = !item || this.state.saving
+        let patient = item && item.patient && cardToObject({ connections: item.patient })
+
+        return (
             <Modal>
                 <div className="add-to-waitlist">
-                    <form onSubmit={handleSubmit(this.handleSubmit)}>
-                        <div className="modal-header">
-                            <Patient data={item.patient && cardToObject({ connections: item.patient })} />
-                            <h1>
-                                <ComplaintIcon />
-                                Edit main complaint
-                            </h1>
+                    {loading ? (
+                        <div className="modal-body">
+                            <Spinner />
                         </div>
-
-                        {item && item.id ? (
-                            <div className="modal-body">
-                                <Field name="mainComplaint" validate={validateRequired} component={renderInput} label="Main complaint" />
-                                <Field name="mainComplaintDetails" component={renderTextarea} optional={true} rows={10} label="Details" />
-                            </div>
-                        ) : (
-                            <div className="modal-body">Loading...</div>
-                        )}
-
-                        <div className="modal-footer">
-                            <div className="form-row">
-                                <div className="col-sm-4" />
-                                <div className="col-sm-4">
-                                    <button type="button" tabIndex="-1" className="btn btn-link btn-block" datadismiss="modal" onClick={() => history.goBack()}>
-                                        Cancel
-                                    </button>
-                                </div>
-
-                                <div className="col-sm-4">
-                                    <button type="submit" className="float-right btn btn-primary btn-block">
-                                        Save
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
+                    ) : !this.state.saved ? (
+                        <ComplaintFormModalContent waitlistItem={item} patient={patient} onSave={this.save} onClose={this.close} />
+                    ) : (
+                        <ComplaintSummary
+                            waitlistItem={item}
+                            patient={patient}
+                            onClose={this.close}
+                            headerMessage="Main complaint has been succesfully updated"
+                        />
+                    )}
                 </div>
             </Modal>
-        ) : (
-            <Spinner />
         )
     }
 }
 
-EditComplaint = reduxForm({
-    form: "complaint"
-})(EditComplaint)
-
 EditComplaint = connect(
     (state, props) => {
-        let item = state.waitlist.items[props.match.params.itemID]
-        let initialValues
-        if (item) {
-            initialValues = {
-                mainComplaint: item.mainComplaint.complaint,
-                mainComplaintDetails: item.mainComplaint.comment
-            }
-        }
-
         return {
+            waitlistID: props.match.params.waitlistID,
             listed: state.waitlist.listed,
-            item,
-            initialValues
+            item: state.waitlist.items[props.match.params.itemID]
         }
     },
     {
-        listAll,
         update,
+        listAll,
         open,
-        goBack
+        push
     }
 )(EditComplaint)
 
