@@ -68,7 +68,6 @@ class Waitlist extends React.Component {
                     title="Consultation"
                     waitlistID={match.params.waitlistID}
                     canAddExamination={this.props.canAddExamination}
-                    canSeeExamination={this.props.canSeeExamination}
                     canRemoveFromWaitlist={this.props.canRemoveFromWaitlist}
                     canSeePatients={this.props.canSeePatients}
                     canSeeMainComplaint={this.props.canSeeMainComplaint}
@@ -82,7 +81,6 @@ class Waitlist extends React.Component {
                     list={listNext}
                     title="Up next"
                     waitlistID={match.params.waitlistID}
-                    canSeeExamination={this.props.canSeeExamination}
                     canAddExamination={this.props.canAddExamination}
                     canRemoveFromWaitlist={this.props.canRemoveFromWaitlist}
                     canSeePatients={this.props.canSeePatients}
@@ -97,7 +95,6 @@ class Waitlist extends React.Component {
                     list={list}
                     title="Waiting list"
                     waitlistID={match.params.waitlistID}
-                    canSeeExamination={this.props.canSeeExamination}
                     canAddExamination={this.props.canAddExamination}
                     canRemoveFromWaitlist={this.props.canRemoveFromWaitlist}
                     canSeePatients={this.props.canSeePatients}
@@ -119,7 +116,6 @@ const Section = ({
     list,
     title,
     waitlistID,
-    canSeeExamination,
     canAddExamination,
     canRemoveFromWaitlist,
     canSeePatients,
@@ -165,7 +161,6 @@ const Section = ({
                                     listType={type}
                                     waitlistID={waitlistID}
                                     itemID={el.id}
-                                    canSeeExamination={canSeeExamination}
                                     canAddExamination={canAddExamination}
                                     canEditMainComplaint={canEditMainComplaint}
                                     canSeeVitalSigns={canSeeVitalSigns}
@@ -192,7 +187,7 @@ class Tools extends React.Component {
     }
 
     render() {
-        const { listType, waitlistID, itemID, canSeeExamination, canAddExamination, canEditMainComplaint, canAddVitalSigns, canRemoveFromWaitlist } = this.props
+        const { listType, waitlistID, itemID, canAddExamination, canEditMainComplaint, canAddVitalSigns, canRemoveFromWaitlist } = this.props
         return (
             <td className="tools">
                 <UncontrolledDropdown>
@@ -222,11 +217,6 @@ class Tools extends React.Component {
                         {canAddVitalSigns && (
                             <DropdownItem>
                                 <Link to={`/waitlist/${waitlistID}/${itemID}/add-data`}>Add vital signs</Link>
-                            </DropdownItem>
-                        )}
-                        {canSeeExamination && (
-                            <DropdownItem>
-                                <Link to={`/waitlist/${waitlistID}/${itemID}/consultation`}>See consultation data</Link>
                             </DropdownItem>
                         )}
                         {canRemoveFromWaitlist && (
@@ -267,7 +257,6 @@ Waitlist = connect(
         list: state.waitlist.list.length > 2 ? state.waitlist.list.slice(2) : [],
         listing: state.waitlist.listing,
         listed: state.waitlist.listed,
-        canSeeExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[READ],
         canAddExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[WRITE],
         canSeeWaitlist: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[READ],
         canRemoveFromWaitlist: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[DELETE],
