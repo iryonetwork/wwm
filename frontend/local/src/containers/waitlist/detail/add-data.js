@@ -1,7 +1,7 @@
 import React from "react"
 import _ from "lodash"
 import { connect } from "react-redux"
-import { Fields, reduxForm } from "redux-form"
+import { Fields, reduxForm, submit } from "redux-form"
 import classnames from "classnames"
 import { goBack } from "react-router-redux"
 import moment from "moment"
@@ -37,14 +37,47 @@ const validate = form => {
     return errors
 }
 
+const onMedicalDataFormSubmit = (form, dispatch, props) => {
+    let vitalSigns = {}
+
+    _.forEach(form, (value, key) => {
+        if (key.indexOf("has_") === 0 && value) {
+            let sign = key.slice(4)
+            vitalSigns[sign] = {}
+            vitalSigns[sign].value = form[sign]
+
+            if (form[sign] !== props.initialValues[sign]) {
+                vitalSigns[sign].timestamp = moment().format()
+            } else {
+                vitalSigns[sign].timestamp = props.initialValues["timestmap_" + sign]
+            }
+        }
+    })
+
+    // set BMI if height and weight available
+    if (vitalSigns.height && vitalSigns.weight) {
+        vitalSigns.bmi = {}
+        vitalSigns.bmi.value = round((vitalSigns.weight.value / vitalSigns.height.value / vitalSigns.height.value) * 10000, 2)
+        vitalSigns.bmi.timestamp = moment.max(moment(vitalSigns.height.timestamp), moment(vitalSigns.weight.timestamp)).format()
+    }
+
+    let newItem = _.clone(props.item)
+    newItem.vitalSigns = vitalSigns
+
+    dispatch(update(props.match.params.waitlistID, newItem))
+        .then(data => {
+            dispatch(listAll(props.match.params.waitlistID))
+            dispatch(goBack())
+        })
+        .catch(ex => {})
+}
+
 class MedicalData extends React.Component {
     constructor(props) {
         super(props)
         if (!props.item) {
             props.listAll(props.match.params.waitlistID)
         }
-
-        this.handleSubmit = this.handleSubmit.bind(this)
     }
 
     componentWillReceiveProps(nextProps) {
@@ -54,47 +87,14 @@ class MedicalData extends React.Component {
         }
     }
 
-    handleSubmit(form) {
-        let vitalSigns = {}
-        _.forEach(form, (value, key) => {
-            if (key.indexOf("has_") === 0 && value) {
-                let sign = key.slice(4)
-                vitalSigns[sign] = {}
-                vitalSigns[sign].value = form[sign]
-
-                if (form[sign] !== this.props.initialValues[sign]) {
-                    vitalSigns[sign].timestamp = moment().format()
-                } else {
-                    vitalSigns[sign].timestamp = this.props.initialValues["timestmap_" + sign]
-                }
-            }
-        })
-
-        // set BMI if height and weight available
-        if (vitalSigns.height && vitalSigns.weight) {
-            vitalSigns.bmi = {}
-            vitalSigns.bmi.value = round(vitalSigns.weight.value / vitalSigns.height.value / vitalSigns.height.value * 10000, 2)
-            vitalSigns.bmi.timestamp = moment.max(moment(vitalSigns.height.timestamp), moment(vitalSigns.weight.timestamp)).format()
-        }
-
-        this.props.item.vitalSigns = vitalSigns
-        this.props
-            .update(this.props.match.params.waitlistID, this.props.item)
-            .then(data => {
-                this.props.listAll(this.props.match.params.waitlistID)
-                this.props.goBack()
-            })
-            .catch(ex => {})
-    }
-
     render() {
-        let props = this.props
+        let { handleSubmit, item, change, history } = this.props
         return (
             <Modal>
                 <div className="medical-data">
-                    <form onSubmit={props.handleSubmit(this.handleSubmit)}>
+                    <form onSubmit={handleSubmit}>
                         <div className="modal-header">
-                            <Patient data={props.item.patient && cardToObject({ connections: props.item.patient })} />
+                            <Patient data={item.patient && cardToObject({ connections: item.patient })} />
                             <h1>
                                 <MedicalDataIcon />
                                 Add medical data
@@ -104,9 +104,9 @@ class MedicalData extends React.Component {
                         <div className="modal-body">
                             <h3>Body measurements</h3>
                             <div>
-                                <Fields label="Height" names={["has_height", "height"]} unit="cm" component={renderFieldWithUnit} change={props.change} />
+                                <Fields label="Height" names={["has_height", "height"]} unit="cm" component={renderFieldWithUnit} change={change} />
 
-                                <Fields label="Weight" names={["has_weight", "weight"]} unit="kg" component={renderFieldWithUnit} change={props.change} />
+                                <Fields label="Weight" names={["has_weight", "weight"]} unit="kg" component={renderFieldWithUnit} change={change} />
                             </div>
 
                             <h3>Vital signs</h3>
@@ -117,14 +117,14 @@ class MedicalData extends React.Component {
                                     names={["has_temperature", "temperature"]}
                                     unit="°C"
                                     component={renderFieldWithUnit}
-                                    change={props.change}
+                                    change={change}
                                 />
 
                                 <Fields
                                     label="Blood pressure"
                                     names={["has_pressure", "pressure.systolic", "pressure.diastolic"]}
                                     component={renderBloodPressure}
-                                    change={props.change}
+                                    change={change}
                                 />
 
                                 <Fields
@@ -132,7 +132,7 @@ class MedicalData extends React.Component {
                                     names={["has_heart_rate", "heart_rate"]}
                                     unit="bpm"
                                     component={renderFieldWithUnit}
-                                    change={props.change}
+                                    change={change}
                                 />
 
                                 {/*<Fields
@@ -155,7 +155,7 @@ class MedicalData extends React.Component {
                                         "hearing.right.8000"
                                     ]}
                                     component={renderHearingScreening}
-                                    change={props.change}
+                                    change={change}
                                 />*/}
 
                                 {/*<Fields
@@ -169,7 +169,7 @@ class MedicalData extends React.Component {
                                     ]}
                                     unit="%"
                                     component={renderVisualScreening}
-                                    change={props.change}
+                                    change={change}
                                 />*/}
 
                                 <Fields
@@ -177,17 +177,16 @@ class MedicalData extends React.Component {
                                     names={["has_oxygen_saturation", "oxygen_saturation"]}
                                     unit="%"
                                     component={renderFieldWithUnit}
-                                    change={props.change}
+                                    change={change}
                                 />
-                                {/*
-                    <Fields
-                        label="Lung function test"
-                        names={["has_lung_function_test", "heart_lung_function_test"]}
-                        unit="%"
-                        component={renderFieldWithUnit}
-                        change={props.change}
-                    />
-                    */}
+                                {/*<Fields
+                                    label="Lung function test"
+                                    names={["has_lung_function_test", "heart_lung_function_test"]}
+                                    unit="%"
+                                    component={renderFieldWithUnit}
+                                    change={change}
+                                />
+                                */}
                             </div>
                         </div>
 
@@ -195,13 +194,7 @@ class MedicalData extends React.Component {
                             <div className="form-row">
                                 <div className="col-sm-4" />
                                 <div className="col-sm-4">
-                                    <button
-                                        type="button"
-                                        tabIndex="-1"
-                                        className="btn btn-link btn-block"
-                                        datadismiss="modal"
-                                        onClick={() => props.history.goBack()}
-                                    >
+                                    <button type="button" tabIndex="-1" className="btn btn-link btn-block" datadismiss="modal" onClick={() => history.goBack()}>
                                         Cancel
                                     </button>
                                 </div>
@@ -256,17 +249,33 @@ class MedicalData extends React.Component {
 //     </div>
 // )
 
-const renderFieldWithUnit = fields => (
+const SimpleInput = connect()(({ input, dispatch }) => (
+    <input
+        {...input}
+        onKeyPress={ev => {
+            if (ev.key === "Enter") {
+                ev.preventDefault()
+                dispatch(submit("medical-data"))
+            }
+        }}
+    />
+))
+
+const renderFieldWithUnit = connect()(fields => (
     <div className={classnames("section", { open: fields[fields.names[0]].input.value })}>
         {fields[fields.names[0]].input.value && (
             <div className="form-row">
                 <div className="col-sm-4">
                     <label>
-                        <input
-                            {...fields[fields.names[1]].input}
-                            type="number"
-                            className={classnames("form-control", { "is-invalid": fields[fields.names[1]].meta.touched && fields[fields.names[1]].meta.error })}
-                            placeholder={fields.label}
+                        <SimpleInput
+                            input={{
+                                ...fields[fields.names[1]].input,
+                                type: "number",
+                                className: classnames("form-control", {
+                                    "is-invalid": fields[fields.names[1]].meta.touched && fields[fields.names[1]].meta.error
+                                }),
+                                placeholder: fields.label
+                            }}
                         />
 
                         <span>{fields.label}</span>
@@ -289,7 +298,7 @@ const renderFieldWithUnit = fields => (
             </button>
         )}
     </div>
-)
+))
 
 const renderBloodPressure = fields => (
     <div className={classnames("section", { open: fields[fields.names[0]].input.value })}>
@@ -299,13 +308,15 @@ const renderBloodPressure = fields => (
                     <h4>{fields.label}</h4>
                     <div className="col-sm-4">
                         <label>
-                            <input
-                                {...fields.pressure.systolic.input}
-                                type="number"
-                                className={classnames("form-control", {
-                                    "is-invalid": fields.pressure.systolic.meta.touched && fields.pressure.systolic.meta.error
-                                })}
-                                placeholder="Systolic"
+                            <SimpleInput
+                                input={{
+                                    ...fields.pressure.systolic.input,
+                                    type: "number",
+                                    className: classnames("form-control", {
+                                        "is-invalid": fields.pressure.systolic.meta.touched && fields.pressure.systolic.meta.error
+                                    }),
+                                    placeholder: "Systolic"
+                                }}
                             />
                             <span>Systolic</span>
                             {fields.pressure.systolic.meta.touched &&
@@ -317,13 +328,15 @@ const renderBloodPressure = fields => (
 
                     <div className="col-sm-4">
                         <label>
-                            <input
-                                {...fields.pressure.diastolic.input}
-                                type="number"
-                                className={classnames("form-control", {
-                                    "is-invalid": fields.pressure.diastolic.meta.touched && fields.pressure.diastolic.meta.error
-                                })}
-                                placeholder="Diastolic"
+                            <SimpleInput
+                                input={{
+                                    ...fields.pressure.diastolic.input,
+                                    type: "number",
+                                    className: classnames("form-control", {
+                                        "is-invalid": fields.pressure.diastolic.meta.touched && fields.pressure.diastolic.meta.error
+                                    }),
+                                    placeholder: "Diastolic"
+                                }}
                             />
                             <span>Diastolic</span>
                             {fields.pressure.diastolic.meta.touched &&
@@ -443,7 +456,8 @@ const renderBloodPressure = fields => (
 
 MedicalData = reduxForm({
     form: "medical-data",
-    validate
+    validate,
+    onSubmit: onMedicalDataFormSubmit
 })(MedicalData)
 
 MedicalData = connect(
