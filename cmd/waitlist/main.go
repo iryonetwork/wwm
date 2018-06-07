@@ -87,7 +87,10 @@ func main() {
 	server.EnabledListeners = []string{"http", "https"}
 	defer server.Shutdown()
 
-	h := waitlist.NewHandlers(storage, logger)
+	// initialize the service
+	service := waitlist.New(storage, logger)
+	// initialize handlers
+	h := waitlist.NewHandlers(service, logger)
 
 	api.WaitlistDeleteListIDHandler = h.DeleteWaitlist()
 	api.WaitlistGetHandler = h.GetWaitlists()

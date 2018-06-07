@@ -43,7 +43,7 @@ func newTestStorage(key []byte) *testStorage {
 	}
 
 	// return wrapped type
-	return &testStorage{db.(*storage)}
+	return &testStorage{db}
 }
 
 func (storage *testStorage) Close() {

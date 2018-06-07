@@ -7,55 +7,9 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/iryonetwork/wwm/gen/waitlist/models"
 	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 	"github.com/iryonetwork/wwm/utils"
 )
-
-// Storage provides an interface for waitlist public functions
-type Storage interface {
-	// EnsureDefaultList ensures that default list exists
-	EnsureDefaultList(id, name string) (*models.List, error)
-
-	// Lists returns all active lists
-	Lists() ([]*models.List, error)
-
-	// AddList adds new list
-	AddList(name string) (*models.List, error)
-
-	// UpdateList updates list metadata
-	UpdateList(list *models.List) (*models.List, error)
-
-	// DeleteList removes list from active lists and move its items to history
-	DeleteList(waitlistID []byte) error
-
-	// ListItems returns all items in a waitlist
-	ListItems(waitlistID []byte) ([]*models.Item, error)
-
-	// AddItem creates a new item in a waitlist
-	AddItem(waitlistID []byte, item *models.Item) (*models.Item, error)
-
-	// UpdateItem updates an item in a waitlist
-	UpdateItem(waitlistID []byte, item *models.Item) (*models.Item, error)
-
-	// MoveItemToTop moves item to the top of the list diregarding priority
-	MoveItemToTop(waitlistID, itemID []byte) (*models.Item, error)
-
-	// DeleteItem removes an item from a waitlist and moves it to history
-	DeleteItem(waitlistID, itemID []byte, reason string) error
-
-	// ListHistoryItems returns all items in waitlist's history
-	ListHistoryItems(waitlistID []byte, reason *string) ([]*models.Item, error)
-
-	// ReopenHistoryItem puts item from history back to waitlist
-	ReopenHistoryItem(waitlistID, itemID, newWaitlistID []byte) (*models.Item, error)
-
-	// Close closes the database
-	Close() error
-
-	// MigrateVitalSigns migrates vital signs from old format to new format, to be removed
-	MigrateVitalSigns() error
-}
 
 type storage struct {
 	db     *bolt.DB
@@ -72,7 +26,7 @@ const priorityLevels = 4
 var dbPermissions os.FileMode = 0666
 
 // New returns a new instance of storage
-func New(path string, key []byte, logger zerolog.Logger) (Storage, error) {
+func New(path string, key []byte, logger zerolog.Logger) (*storage, error) {
 	logger = logger.With().Str("component", "storage/waitlist").Logger()
 	logger.Debug().Msg("Initialize waitlist storage")
 
