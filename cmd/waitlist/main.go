@@ -21,8 +21,9 @@ import (
 	APIMetrics "github.com/iryonetwork/wwm/metrics/api"
 	metricsServer "github.com/iryonetwork/wwm/metrics/server"
 	"github.com/iryonetwork/wwm/service/authorizer"
+	"github.com/iryonetwork/wwm/service/waitlist"
 	statusServer "github.com/iryonetwork/wwm/status/server"
-	"github.com/iryonetwork/wwm/storage/waitlist"
+	waitlistStorage "github.com/iryonetwork/wwm/storage/waitlist"
 	"github.com/iryonetwork/wwm/utils"
 )
 
@@ -54,7 +55,7 @@ func main() {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to decode storage encryption key")
 	}
-	storage, err := waitlist.New(cfg.BoltDBFilepath, key, logger)
+	storage, err := waitlistStorage.New(cfg.BoltDBFilepath, key, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to initialize waitlist storage")
 	}
@@ -86,20 +87,20 @@ func main() {
 	server.EnabledListeners = []string{"http", "https"}
 	defer server.Shutdown()
 
-	h := &handlers{s: storage}
+	h := waitlist.NewHandlers(storage, logger)
 
-	api.WaitlistDeleteListIDHandler = h.WaitlistDeleteListID()
-	api.WaitlistGetHandler = h.WaitlistGet()
-	api.WaitlistPostHandler = h.WaitlistPost()
-	api.WaitlistPutListIDHandler = h.WaitlistPutListID()
+	api.WaitlistDeleteListIDHandler = h.DeleteWaitlist()
+	api.WaitlistGetHandler = h.GetWaitlists()
+	api.WaitlistPostHandler = h.CreateWaitlist()
+	api.WaitlistPutListIDHandler = h.UpdateWaitlist()
 
-	api.ItemDeleteListIDItemIDHandler = h.ItemDeleteListIDItemID()
-	api.ItemGetListIDHandler = h.ItemGetListID()
-	api.ItemGetListIDHistoryHandler = h.ItemGetListIDHistory()
-	api.ItemPostListIDHandler = h.ItemPostListID()
-	api.ItemPutListIDItemIDHandler = h.ItemPutListIDItemID()
-	api.ItemPutListIDItemIDTopHandler = h.ItemPutListIDItemIDTop()
-	api.ItemPutListIDItemIDReopenHandler = h.ItemPutListIDItemIDReopen()
+	api.ItemDeleteListIDItemIDHandler = h.DeleteItem()
+	api.ItemGetListIDHandler = h.GetWaitlist()
+	api.ItemGetListIDHistoryHandler = h.GetWaitlistHistory()
+	api.ItemPostListIDHandler = h.CreateItem()
+	api.ItemPutListIDItemIDHandler = h.UpdateItem()
+	api.ItemPutListIDItemIDTopHandler = h.MoveItemToTop()
+	api.ItemPutListIDItemIDReopenHandler = h.ReopenHistoryItem()
 
 	// initialize metrics middleware
 	apiMetrics := APIMetrics.NewMetrics("api", "").WithURLSanitize(utils.WhitelistURLSanitize([]string{}))

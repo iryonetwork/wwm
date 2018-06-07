@@ -1,7 +1,8 @@
-package main
+package waitlist
 
 import (
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/waitlist/restapi/operations/item"
 	"github.com/iryonetwork/wwm/gen/waitlist/restapi/operations/waitlist"
@@ -9,11 +10,27 @@ import (
 	"github.com/iryonetwork/wwm/utils"
 )
 
-type handlers struct {
-	s storage.Storage
+// Handlers describes the actions supported by the discovery handlers
+type Handlers interface {
+	GetWaitlists() waitlist.GetHandler
+	CreateWaitlist() waitlist.PostHandler
+	UpdateWaitlist() waitlist.PutListIDHandler
+	DeleteWaitlist() waitlist.DeleteListIDHandler
+	GetWaitlist() item.GetListIDHandler
+	GetWaitlistHistory() item.GetListIDHistoryHandler
+	DeleteItem() item.DeleteListIDItemIDHandler
+	CreateItem() item.PostListIDHandler
+	UpdateItem() item.PutListIDItemIDHandler
+	MoveItemToTop() item.PutListIDItemIDTopHandler
+	ReopenHistoryItem() item.PutListIDItemIDReopenHandler
 }
 
-func (h *handlers) WaitlistGet() waitlist.GetHandler {
+type handlers struct {
+	s      storage.Storage
+	logger zerolog.Logger
+}
+
+func (h *handlers) GetWaitlists() waitlist.GetHandler {
 	return waitlist.GetHandlerFunc(func(params waitlist.GetParams, principal *string) middleware.Responder {
 		lists, err := h.s.Lists()
 		if err != nil {
@@ -24,7 +41,7 @@ func (h *handlers) WaitlistGet() waitlist.GetHandler {
 	})
 }
 
-func (h *handlers) WaitlistPost() waitlist.PostHandler {
+func (h *handlers) CreateWaitlist() waitlist.PostHandler {
 	return waitlist.PostHandlerFunc(func(params waitlist.PostParams, principal *string) middleware.Responder {
 		list, err := h.s.AddList(*params.List.Name)
 		if err != nil {
@@ -35,7 +52,7 @@ func (h *handlers) WaitlistPost() waitlist.PostHandler {
 	})
 }
 
-func (h *handlers) WaitlistPutListID() waitlist.PutListIDHandler {
+func (h *handlers) UpdateWaitlist() waitlist.PutListIDHandler {
 	return waitlist.PutListIDHandlerFunc(func(params waitlist.PutListIDParams, principal *string) middleware.Responder {
 		if params.ListID.String() != params.List.ID {
 			return utils.NewError(utils.ErrBadRequest, "URL list ID and body list ID do not match")
@@ -50,7 +67,7 @@ func (h *handlers) WaitlistPutListID() waitlist.PutListIDHandler {
 	})
 }
 
-func (h *handlers) WaitlistDeleteListID() waitlist.DeleteListIDHandler {
+func (h *handlers) DeleteWaitlist() waitlist.DeleteListIDHandler {
 	return waitlist.DeleteListIDHandlerFunc(func(params waitlist.DeleteListIDParams, principal *string) middleware.Responder {
 		listID, _ := utils.UUIDToBytes(params.ListID)
 
@@ -63,7 +80,7 @@ func (h *handlers) WaitlistDeleteListID() waitlist.DeleteListIDHandler {
 	})
 }
 
-func (h *handlers) ItemGetListID() item.GetListIDHandler {
+func (h *handlers) GetWaitlist() item.GetListIDHandler {
 	return item.GetListIDHandlerFunc(func(params item.GetListIDParams, principal *string) middleware.Responder {
 		listID, _ := utils.UUIDToBytes(params.ListID)
 
@@ -76,7 +93,7 @@ func (h *handlers) ItemGetListID() item.GetListIDHandler {
 	})
 }
 
-func (h *handlers) ItemDeleteListIDItemID() item.DeleteListIDItemIDHandler {
+func (h *handlers) DeleteItem() item.DeleteListIDItemIDHandler {
 	return item.DeleteListIDItemIDHandlerFunc(func(params item.DeleteListIDItemIDParams, principal *string) middleware.Responder {
 		listID, _ := utils.UUIDToBytes(params.ListID)
 		itemID, _ := utils.UUIDToBytes(params.ItemID)
@@ -90,7 +107,7 @@ func (h *handlers) ItemDeleteListIDItemID() item.DeleteListIDItemIDHandler {
 	})
 }
 
-func (h *handlers) ItemPostListID() item.PostListIDHandler {
+func (h *handlers) CreateItem() item.PostListIDHandler {
 	return item.PostListIDHandlerFunc(func(params item.PostListIDParams, principal *string) middleware.Responder {
 		listID, _ := utils.UUIDToBytes(params.ListID)
 
@@ -103,7 +120,7 @@ func (h *handlers) ItemPostListID() item.PostListIDHandler {
 	})
 }
 
-func (h *handlers) ItemPutListIDItemID() item.PutListIDItemIDHandler {
+func (h *handlers) UpdateItem() item.PutListIDItemIDHandler {
 	return item.PutListIDItemIDHandlerFunc(func(params item.PutListIDItemIDParams, principal *string) middleware.Responder {
 		if params.ItemID.String() != params.Item.ID {
 			return utils.NewError(utils.ErrBadRequest, "URL item ID and body item ID do not match")
@@ -119,7 +136,7 @@ func (h *handlers) ItemPutListIDItemID() item.PutListIDItemIDHandler {
 	})
 }
 
-func (h *handlers) ItemPutListIDItemIDTop() item.PutListIDItemIDTopHandler {
+func (h *handlers) MoveItemToTop() item.PutListIDItemIDTopHandler {
 	return item.PutListIDItemIDTopHandlerFunc(func(params item.PutListIDItemIDTopParams, principal *string) middleware.Responder {
 		listID, _ := utils.UUIDToBytes(params.ListID)
 		itemID, _ := utils.UUIDToBytes(params.ItemID)
@@ -133,7 +150,7 @@ func (h *handlers) ItemPutListIDItemIDTop() item.PutListIDItemIDTopHandler {
 	})
 }
 
-func (h *handlers) ItemGetListIDHistory() item.GetListIDHistoryHandler {
+func (h *handlers) GetWaitlistHistory() item.GetListIDHistoryHandler {
 	return item.GetListIDHistoryHandlerFunc(func(params item.GetListIDHistoryParams, principal *string) middleware.Responder {
 		listID, _ := utils.UUIDToBytes(params.ListID)
 
@@ -146,7 +163,7 @@ func (h *handlers) ItemGetListIDHistory() item.GetListIDHistoryHandler {
 	})
 }
 
-func (h *handlers) ItemPutListIDItemIDReopen() item.PutListIDItemIDReopenHandler {
+func (h *handlers) ReopenHistoryItem() item.PutListIDItemIDReopenHandler {
 	return item.PutListIDItemIDReopenHandlerFunc(func(params item.PutListIDItemIDReopenParams, principal *string) middleware.Responder {
 		listID, _ := utils.UUIDToBytes(params.ListID)
 		itemID, _ := utils.UUIDToBytes(params.ItemID)
@@ -163,4 +180,12 @@ func (h *handlers) ItemPutListIDItemIDReopen() item.PutListIDItemIDReopenHandler
 
 		return item.NewPutListIDItemIDReopenNoContent()
 	})
+}
+
+// NewHandlers returns a new instance of waitlist handlers
+func NewHandlers(storage storage.Storage, logger zerolog.Logger) Handlers {
+	return &handlers{
+		s:      storage,
+		logger: logger.With().Str("component", "service/waitlist/handlers").Logger(),
+	}
 }
