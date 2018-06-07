@@ -27,6 +27,8 @@ export const MOVE_TO_TOP_ITEM_FAILED = "waitlist/ MOVE_TO_TOP_ITEM_FAILED"
 
 export const REMOVE_ITEM = "waitlist/REMOVE_ITEM"
 
+export const RESET_INDICATORS = "waitlist/RESET_INDICATORS"
+
 const initialState = {
     list: [],
     items: {}
@@ -35,6 +37,10 @@ const initialState = {
 export default (state = initialState, action) => {
     return produce(state, draft => {
         switch (action.type) {
+            case RESET_INDICATORS:
+                draft.listing = draft.listed = draft.fetching = draft.fetched = draft.adding = draft.added = draft.updating = draft.updated = false
+                break
+
             case LIST:
                 draft.listing = true
                 draft.listed = draft.failed = false
@@ -77,13 +83,19 @@ export default (state = initialState, action) => {
                 break
 
             case UPDATE_ITEM:
+                draft.updating = true
+                draft.updated = draft.failed = false
                 draft.items[action.itemID].updating = true
                 break
 
             case UPDATE_ITEM_FAILED:
+                draft.updating = draft.updated = false
+                draft.failed = true
                 draft.items[action.itemID].updating = false
                 break
             case UPDATE_ITEM_DONE:
+                draft.updating = false
+                draft.updated = true
                 draft.items[action.itemID] = action.updated
                 draft.item = action.updated
                 draft.items[action.itemID].updating = false
@@ -272,6 +284,12 @@ export const moveToTop = (listID, itemID) => dispatch => {
                 itemID: itemID
             })
         })
+}
+
+export const resetIndicators = () => dispatch => {
+    dispatch({
+        type: RESET_INDICATORS
+    })
 }
 
 export const remove = (listID, itemID, reason) => dispatch => {

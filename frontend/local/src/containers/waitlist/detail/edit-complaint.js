@@ -7,12 +7,13 @@ import { ComplaintFormModalContent, ComplaintSummary } from "../shared/complaint
 import Modal from "shared/containers/modal"
 import Spinner from "shared/containers/spinner"
 import { open, COLOR_DANGER } from "shared/modules/alert"
-import { update, listAll } from "../../../modules/waitlist"
+import { update, listAll, resetIndicators } from "../../../modules/waitlist"
 import { cardToObject } from "../../../modules/discovery"
 
 class EditComplaint extends React.Component {
     constructor(props) {
         super(props)
+        props.resetIndicators()
         if (!props.item) {
             props.listAll(props.match.params.waitlistID)
         }
@@ -47,21 +48,7 @@ class EditComplaint extends React.Component {
         item.mainComplaint.complaint = formData.mainComplaint
         item.mainComplaint.comment = formData.mainComplaintDetails
 
-        this.setState({
-            saving: true,
-            saved: false
-        })
-        this.props
-            .update(this.props.waitlistID, item)
-            .then(data => {
-                this.setState({
-                    saving: false,
-                    saved: true
-                })
-            })
-            .catch(ex => {
-                console.log(ex)
-            })
+        this.props.update(this.props.waitlistID, item)
     }
 
     close = () => {
@@ -69,8 +56,8 @@ class EditComplaint extends React.Component {
     }
 
     render() {
-        let { item } = this.props
-        let loading = !item || this.state.saving
+        let { item, waitlistUpdating, waitlistUpdated } = this.props
+        let loading = !item || waitlistUpdating
         let patient = item && item.patient && cardToObject({ connections: item.patient })
 
         return (
@@ -80,7 +67,7 @@ class EditComplaint extends React.Component {
                         <div className="modal-body">
                             <Spinner />
                         </div>
-                    ) : !this.state.saved ? (
+                    ) : !waitlistUpdated ? (
                         <ComplaintFormModalContent waitlistItem={item} patient={patient} onSave={this.save} onClose={this.close} />
                     ) : (
                         <ComplaintSummary
@@ -101,13 +88,16 @@ EditComplaint = connect(
         return {
             waitlistID: props.match.params.waitlistID,
             listed: state.waitlist.listed,
-            item: state.waitlist.items[props.match.params.itemID]
+            item: state.waitlist.items[props.match.params.itemID],
+            waitlistUpdating: state.waitlist.updating,
+            waitlistUpdated: state.waitlist.updated
         }
     },
     {
         update,
         listAll,
         open,
+        resetIndicators,
         push
     }
 )(EditComplaint)

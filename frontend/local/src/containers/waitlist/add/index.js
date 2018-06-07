@@ -5,13 +5,14 @@ import { push } from "react-router-redux"
 
 import { ComplaintFormModalContent, ComplaintSummary } from "../shared/complaint"
 import { get, cardToObject } from "../../../modules/discovery"
-import { add, update, listAll } from "../../../modules/waitlist"
+import { add, update, listAll, resetIndicators } from "../../../modules/waitlist"
 import Spinner from "shared/containers/spinner"
 import Modal from "shared/containers/modal"
 
 class AddToWaitlist extends Component {
     constructor(props) {
         super(props)
+        props.resetIndicators()
         props.get(props.match.params.patientID)
         props.listAll(props.match.params.destinationWaitlistID)
 
@@ -20,11 +21,7 @@ class AddToWaitlist extends Component {
         this.close = this.close.bind(this)
 
         this.state = {
-            edit: false,
-            saving: false,
-            saved: false,
-            adding: false,
-            added: false
+            edit: false
         }
     }
 
@@ -39,43 +36,21 @@ class AddToWaitlist extends Component {
     save(formData) {
         if (!this.props.waitlistItem) {
             this.setState({
-                edit: false,
-                adding: true,
-                added: false
+                edit: false
             })
-            this.props
-                .add(this.props.waitlistID, formData, this.props.patient)
-                .then(data => {
-                    this.setState({
-                        adding: false,
-                        added: true
-                    })
-                })
-                .catch(ex => {
-                    console.log(ex)
-                })
+            this.props.add(this.props.waitlistID, formData, this.props.patient)
         } else {
+            this.setState({
+                edit: false
+            })
             let item = this.props.waitlistItem
             item.priority = formData.priority
             item.mainComplaint.complaint = formData.mainComplaint
             item.mainComplaint.comment = formData.mainComplaintDetails
-            this.setState({
-                edit: false,
-                saving: true,
-                saved: false
+
+            this.props.update(this.props.waitlistID, item).then(data => {
+                this.props.listAll(this.props.waitlistID)
             })
-            this.props
-                .update(this.props.waitlistID, item)
-                .then(data => {
-                    this.props.listAll(this.props.waitlistID)
-                    this.setState({
-                        saving: false,
-                        saved: true
-                    })
-                })
-                .catch(ex => {
-                    console.log(ex)
-                })
         }
     }
 
@@ -88,9 +63,9 @@ class AddToWaitlist extends Component {
     }
 
     render() {
-        const { waitlistFetching, patientFetching, waitlistItem } = this.props
+        const { waitlistFetching, patientFetching, waitlistItem, waitlistAdding, waitlistAdded, waitlistUpdating, waitlistUpdated } = this.props
         let patient = this.props.patient && cardToObject(this.props.patient)
-        let loading = waitlistFetching || patientFetching || !patient || this.state.adding || this.state.saving
+        let loading = waitlistFetching || patientFetching || !patient || waitlistAdding || waitlistUpdating
 
         return (
             <Modal>
@@ -105,11 +80,11 @@ class AddToWaitlist extends Component {
                         <ComplaintSummary
                             waitlistItem={waitlistItem}
                             patient={patient}
-                            onEnableEdit={!this.state.saved && !this.state.added && this.edit}
+                            onEnableEdit={!waitlistUpdated && !waitlistAdded && this.edit}
                             onClose={this.close}
                             headerMessage={
-                                (this.state.added && "Patient has been succesfully added to Waiting List") ||
-                                (this.state.saved && "Main complaint has been succesfully updated") ||
+                                (waitlistAdded && "Patient has been succesfully added to Waiting List") ||
+                                (waitlistUpdated && "Main complaint has been succesfully updated") ||
                                 "Patient is already in the Waiting List"
                             }
                         />
@@ -126,13 +101,18 @@ AddToWaitlist = connect(
         patient: state.discovery.patient,
         patientFetching: state.discovery.fetching,
         waitlistItem: _.find(state.waitlist.items, ["patientID", props.match.params.patientID]),
-        waitlistFetching: state.waitlist.listing
+        waitlistFetching: state.waitlist.listing,
+        waitlistAdding: state.waitlist.adding,
+        waitlistAdded: state.waitlist.added,
+        waitlistUpdating: state.waitlist.updating,
+        waitlistUpdated: state.waitlist.updated
     }),
     {
         get,
         add,
         update,
         listAll,
+        resetIndicators,
         push
     }
 )(AddToWaitlist)
