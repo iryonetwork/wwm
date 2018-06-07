@@ -16,6 +16,7 @@ const (
 	ErrServerError = "server_error"
 	ErrBadRequest  = "bad_request"
 	ErrForbidden   = "forbidden"
+	ErrConflict    = "conflict"
 )
 
 // Error wraps models.Error so it will implement error interface
@@ -54,6 +55,8 @@ func (err Error) WriteResponse(rw http.ResponseWriter, producer runtime.Producer
 		rw.WriteHeader(403)
 	case ErrNotFound:
 		rw.WriteHeader(404)
+	case ErrConflict:
+		rw.WriteHeader(409)
 	default:
 		rw.WriteHeader(500)
 		err.e = authModels.Error{

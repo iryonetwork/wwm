@@ -153,6 +153,9 @@ paths:
         404:
           $ref: '#/responses/404'
 
+        409:
+          $ref: '#/responses/409'
+
         500:
           $ref: '#/responses/500'
 
@@ -621,6 +624,15 @@ responses:
       application/json:
         code: not_found
         message: Required entity cannot be found
+
+  409:
+    description: Entity already exists.
+    schema:
+      $ref: '#/definitions/Error'
+    examples:
+      application/json:
+        code: conflict
+        message: Waitlist already contains item with provided patientID
 
   500:
     description: Internal server error
