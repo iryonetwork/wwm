@@ -214,7 +214,7 @@ class PatientDetail extends React.Component {
 PatientDetail = connect(
     (state, props) => ({
         waitlistFetching: state.waitlist.fetching,
-        patientLoading: state.patient.loading,
+        patientLoading: state.patient.loading || state.patient.saving,
         patient: state.patient.patient,
         waitlistItem: state.waitlist.item || {},
         canSeePatientId: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[READ],

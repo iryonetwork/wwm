@@ -84,22 +84,20 @@ class InConsultation extends React.Component {
     constructor(props) {
         super(props)
         this.closeConsultation = this.closeConsultation.bind(this)
-        this.state = { saving: false }
     }
 
     closeConsultation(ev) {
         ev.preventDefault()
-        this.setState({ saving: true })
         this.props.saveConsultation(this.props.match.params.waitlistID, this.props.match.params.itemID).then(() => {
-            this.props.open("Consultation was closed", "", COLOR_SUCCESS, 5)
             this.props.push(`/waitlist/${this.props.match.params.waitlistID}`)
+            this.props.open("Consultation was closed", "", COLOR_SUCCESS, 5)
         })
     }
 
     render() {
-        const { match, waitlistItem, waitlistFetching } = this.props
+        const { match, saving, waitlistItem, waitlistFetching } = this.props
 
-        if (this.state.saving || waitlistFetching) {
+        if (saving || waitlistFetching) {
             return <Spinner />
         }
         return waitlistItem ? (
@@ -370,6 +368,7 @@ InConsultation = connect(
 
         return {
             patient: state.patient.patient,
+            saving: state.patient.saving,
             waitlistItem: item,
             waitlistFetching: state.waitlist.fetching || state.waitlist.listing,
             canSeeDiagnosis: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[READ],

@@ -11,8 +11,8 @@ export const CREATE = "patient/CREATE"
 export const CREATED = "patient/CREATED"
 export const LOADING = "patient/LOADING"
 export const LOADED = "patient/LOADED"
-export const SAVING = "patient/SAVING"
-export const SAVED = "patient/SAVED"
+export const SAVING_CONSULTATION = "patient/SAVING_CONSULTATION"
+export const SAVED_CONSULTATION = "patient/SAVED_CONSULTATION"
 export const FAILED = "patient/FAILED"
 
 export const UPDATE = "patient/UPDATE"
@@ -176,12 +176,12 @@ export default (state = initialState, action) => {
                 draft.patient = action.result
                 break
 
-            case SAVING:
+            case SAVING_CONSULTATION:
                 draft.saving = true
                 draft.saved = false
                 break
 
-            case SAVED:
+            case SAVED_CONSULTATION:
                 draft.saving = false
                 draft.saved = true
                 break
@@ -362,7 +362,7 @@ export const fetchPatient = patientID => dispatch => {
 }
 
 export const saveConsultation = (waitlistID, itemID) => dispatch => {
-    dispatch({ type: SAVING })
+    dispatch({ type: SAVING_CONSULTATION })
 
     // get waitlist item
     return (
@@ -399,7 +399,10 @@ export const saveConsultation = (waitlistID, itemID) => dispatch => {
             // upload the file
             .then(([patientID, doc]) => dispatch(uploadFile(patientID, doc, "encounter", "openEHR-EHR-COMPOSITION.encounter.v1")))
             // remove from waitlist
-            .then(() => dispatch(waitlistRemove(waitlistID, itemID, "finished")))
+            .then(() => {
+                dispatch(waitlistRemove(waitlistID, itemID, "finished"))
+                dispatch({ type: SAVED_CONSULTATION })
+            })
             .catch(ex => {
                 console.log("failed to close", ex)
                 dispatch({ type: FAILED })
