@@ -4,7 +4,7 @@ import { goBack } from "react-router-redux"
 
 import Modal from "shared/containers/modal"
 import Patient from "shared/containers/patient"
-import { open, COLOR_DANGER } from "shared/modules/alert"
+import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 import { listAll, remove } from "../../../modules/waitlist"
 import { cardToObject } from "../../../modules/discovery"
 
@@ -21,7 +21,7 @@ class Remove extends React.Component {
     componentWillReceiveProps(nextProps) {
         if (!nextProps.item && nextProps.listed) {
             this.props.history.goBack()
-            setTimeout(() => this.props.open("Waitlist item was not found", "", COLOR_DANGER, 5), 100)
+            this.props.open("Waitlist item was not found", "", COLOR_DANGER, 5)
         }
     }
 
@@ -31,6 +31,7 @@ class Remove extends React.Component {
         this.props
             .remove(this.props.match.params.waitlistID, this.props.match.params.itemID, "canceled")
             .then(data => {
+                this.props.open("Patient was removed from Waiting list", "", COLOR_SUCCESS, 5)
                 this.props.listAll(this.props.match.params.waitlistID)
                 this.props.goBack()
             })

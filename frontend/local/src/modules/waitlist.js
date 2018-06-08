@@ -3,7 +3,7 @@ import { push } from "react-router-redux"
 import _ from "lodash"
 import moment from "moment"
 
-import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
+import { open, COLOR_DANGER } from "shared/modules/alert"
 import { read, API_URL } from "shared/modules/config"
 import { getToken } from "shared/modules/authentication"
 import { fetchCode } from "shared/modules/codes"
@@ -153,13 +153,12 @@ export const add = (waitlistID, formData, patient) => dispatch => {
                     dispatch(listAll(waitlistID)).then(() => {
                         dispatch({ type: RESET_INDICATORS })
                     })
-                    setTimeout(() => dispatch(open("Patient has been already added to the Waiting List", "", COLOR_DANGER, 5)), 100)
+                    dispatch(open("Patient has been already added to the Waiting List", "", COLOR_DANGER, 5))
                     return undefined
                 }
                 throw new Error(`Failed to add patient to waitlist (${status})`)
             }
             dispatch({ type: ADDED, result: data })
-            setTimeout(() => dispatch(open("Patient was added to waiting list", "", COLOR_SUCCESS, 5)), 100)
             return data
         })
         .catch(ex => {
@@ -283,7 +282,6 @@ export const moveToTop = (listID, itemID) => dispatch => {
                 itemID: itemID
             })
             dispatch(listAll(listID))
-            setTimeout(() => dispatch(open("Waiting list was updated ", "", COLOR_SUCCESS, 5)), 100)
         })
         .catch(ex => {
             dispatch(open(ex.message, "", COLOR_DANGER))
@@ -321,7 +319,6 @@ export const remove = (listID, itemID, reason) => dispatch => {
             })
 
             dispatch(push(`/waitlist/${listID}`))
-            setTimeout(() => dispatch(open("Patient was removed from Waiting list", "", COLOR_SUCCESS, 5)), 100)
         })
         .catch(ex => {
             dispatch(open(ex.message, "", COLOR_DANGER))

@@ -1,5 +1,6 @@
 import React from "react"
 import { connect } from "react-redux"
+import { push } from "react-router-redux"
 import { Route, Link } from "react-router-dom"
 import moment from "moment"
 
@@ -33,6 +34,7 @@ import EditComplaint from "./edit-complaint"
 import AddDiagnosis from "./add-diagnosis"
 import Remove from "./remove"
 import Spinner from "shared/containers/spinner"
+import { open, COLOR_SUCCESS } from "shared/modules/alert"
 
 class CodeTitle extends React.Component {
     constructor(props) {
@@ -88,7 +90,10 @@ class InConsultation extends React.Component {
     closeConsultation(ev) {
         ev.preventDefault()
         this.setState({ saving: true })
-        this.props.saveConsultation(this.props.match.params.waitlistID, this.props.match.params.itemID)
+        this.props.saveConsultation(this.props.match.params.waitlistID, this.props.match.params.itemID).then(() => {
+            this.props.open("Consultation was closed", "", COLOR_SUCCESS, 5)
+            this.props.push(`/waitlist/${this.props.match.params.waitlistID}`)
+        })
     }
 
     render() {
@@ -379,7 +384,9 @@ InConsultation = connect(
         }
     },
     {
-        saveConsultation
+        saveConsultation,
+        open,
+        push
     }
 )(InConsultation)
 

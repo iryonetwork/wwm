@@ -1,8 +1,7 @@
 // DEV ONLY MODULE
 import produce from "immer"
-import { push } from "react-router-redux"
 // insert into storage
-import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
+import { open, COLOR_DANGER } from "shared/modules/alert"
 import { newPatient, updatePatient as updateDiscoveryPatient, get, cardToObject } from "./discovery"
 import { extractPatientData, composePatientData, composeEncounterData, extractEncounterData } from "./ehr"
 import { createPatient as createPatientInStorage, readFileByLabel, updateFile, uploadFile, readFilesByLabel } from "./storage"
@@ -401,10 +400,6 @@ export const saveConsultation = (waitlistID, itemID) => dispatch => {
             .then(([patientID, doc]) => dispatch(uploadFile(patientID, doc, "encounter", "openEHR-EHR-COMPOSITION.encounter.v1")))
             // remove from waitlist
             .then(() => dispatch(waitlistRemove(waitlistID, itemID, "finished")))
-            .then(() => {
-                dispatch(push(`/waitlist/${waitlistID}`))
-                dispatch(open("Consultation closed", "", COLOR_SUCCESS))
-            })
             .catch(ex => {
                 console.log("failed to close", ex)
                 dispatch({ type: FAILED })

@@ -83,7 +83,7 @@ class MedicalData extends React.Component {
     componentWillReceiveProps(nextProps) {
         if (!nextProps.item && nextProps.listed) {
             this.props.history.goBack()
-            setTimeout(() => this.props.open("Waitlist item was not found", "", COLOR_DANGER, 5), 100)
+            this.props.open("Waitlist item was not found", "", COLOR_DANGER, 5)
         }
     }
 

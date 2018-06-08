@@ -15,7 +15,7 @@ class CloseConsultation extends React.Component {
     componentWillReceiveProps(nextProps) {
         if (!nextProps.item && nextProps.listed) {
             this.props.history.goBack()
-            setTimeout(() => this.props.open("Waiting list item was not found", "", COLOR_DANGER, 5), 100)
+            this.props.open("Waiting list item was not found", "", COLOR_DANGER, 5)
         }
     }
 
