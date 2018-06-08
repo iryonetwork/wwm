@@ -180,9 +180,21 @@ func TestDeleteList(t *testing.T) {
 	waitlistID, storage := initWaitlist("room 1")
 	defer storage.Close()
 
-	item1, _ := storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(4)})
-	item2, _ := storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(4)})
-	item3, _ := storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(4)})
+	item1, _ := storage.AddItem(waitlistID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(4),
+		PatientID:     swag.String(patient1ID.String()),
+	})
+	item2, _ := storage.AddItem(waitlistID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(4),
+		PatientID:     swag.String(patient2ID.String()),
+	})
+	item3, _ := storage.AddItem(waitlistID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(4),
+		PatientID:     swag.String(patient3ID.String()),
+	})
 
 	id1, _ := uuid.FromString(item1.ID)
 	id2, _ := uuid.FromString(item2.ID)

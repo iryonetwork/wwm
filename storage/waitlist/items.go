@@ -65,6 +65,28 @@ func (s *storage) AddItem(waitlistID []byte, item *models.Item) (*models.Item, e
 			return utils.NewError(utils.ErrNotFound, "waitlist not found")
 		}
 
+		// check with item with the same patientID already exists
+		var i byte
+		for i = 1; i <= priorityLevels; i++ {
+			q, err := s.getQueue(waitlistID, i)
+			if err != nil {
+				return err
+			}
+
+			for _, currentItemID := range q {
+				var currentItem models.Item
+				err = currentItem.UnmarshalBinary(bCurrent.Get(currentItemID))
+				if err != nil {
+					return err
+				}
+
+				if *currentItem.PatientID == *item.PatientID {
+					return utils.NewError(utils.ErrConflict, "waitlist already contains item with provided patientID")
+				}
+			}
+
+		}
+
 		id, err := uuid.NewV4()
 		if err != nil {
 			return err
@@ -86,7 +108,11 @@ func (s *storage) AddItem(waitlistID []byte, item *models.Item) (*models.Item, e
 		return s.addToQueue(bCurrent, byte(item.PriorityQueue), id.Bytes())
 	})
 
-	return item, err
+	if err != nil {
+		return nil, err
+	}
+
+	return item, nil
 }
 
 // UpdateItem updates an item in a waitlist

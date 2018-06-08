@@ -16,6 +16,12 @@ import (
 	"github.com/iryonetwork/wwm/utils"
 )
 
+var (
+	patient1ID, _ = uuid.NewV4()
+	patient2ID, _ = uuid.NewV4()
+	patient3ID, _ = uuid.NewV4()
+)
+
 func initWaitlist(name string) ([]byte, *testStorage) {
 	storage := newTestStorage(nil)
 	list, err := storage.AddList(name)
@@ -32,10 +38,24 @@ func TestAddItem(t *testing.T) {
 	waitlistID, storage := initWaitlist("room 1")
 	defer storage.Close()
 
+	// create items to test
 	item1 := &models.Item{
-		Priority: swag.Int64(1),
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(1),
+		PatientID:     swag.String(patient1ID.String()),
+	}
+	item2 := &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(1),
+		PatientID:     swag.String(patient2ID.String()),
+	}
+	item3 := &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(1),
+		PatientID:     swag.String(patient1ID.String()),
 	}
 
+	// #1 Succesfully add first item
 	item1, err := storage.AddItem(waitlistID, item1)
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
@@ -44,16 +64,23 @@ func TestAddItem(t *testing.T) {
 		t.Fatalf("Expected ID to be set, got an empty string")
 	}
 
-	item2 := &models.Item{
-		Priority: swag.Int64(1),
-	}
-
+	// #2 Succesfully add second item
 	item2, err = storage.AddItem(waitlistID, item2)
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
 	if item2.ID == "" {
 		t.Fatalf("Expected ID to be set, got an empty string")
+	}
+
+	// #3 Fail to add item with items that has patientID already present in waitlist
+	_, err = storage.AddItem(waitlistID, item3)
+	uErr, ok := err.(utils.Error)
+	if !ok {
+		t.Fatalf("Expected error to be of type 'utils.Error'; got '%T'", err)
+	}
+	if uErr.Code() != utils.ErrConflict {
+		t.Fatalf("Expected error code to be '%s'; got '%s'", utils.ErrConflict, uErr.Code())
 	}
 
 	storage.db.View(func(tx *bolt.Tx) error {
@@ -93,7 +120,11 @@ func TestListItem(t *testing.T) {
 	waitlistID, storage := initWaitlist("room 1")
 	defer storage.Close()
 
-	item1, _ := storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(4)})
+	item1, _ := storage.AddItem(waitlistID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(4),
+		PatientID:     swag.String(patient1ID.String()),
+	})
 
 	list, err := storage.ListItems(waitlistID)
 	if err != nil {
@@ -104,7 +135,11 @@ func TestListItem(t *testing.T) {
 	}
 
 	// add high priority item
-	item2, _ := storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(1)})
+	item2, _ := storage.AddItem(waitlistID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(1),
+		PatientID:     swag.String(patient2ID.String()),
+	})
 
 	list, err = storage.ListItems(waitlistID)
 	if err != nil {
@@ -122,7 +157,11 @@ func TestUpdateItem(t *testing.T) {
 	waitlistID, storage := initWaitlist("room 1")
 	defer storage.Close()
 
-	item1, _ := storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(4)})
+	item1, _ := storage.AddItem(waitlistID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(4),
+		PatientID:     swag.String(patient1ID.String()),
+	})
 	id1, _ := uuid.FromString(item1.ID)
 
 	storage.db.View(func(tx *bolt.Tx) error {
@@ -166,9 +205,17 @@ func TestMoveItemToTop(t *testing.T) {
 	defer storage.Close()
 
 	// add priority 1 item
-	_, _ = storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(1)})
+	_, _ = storage.AddItem(waitlistID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(1),
+		PatientID:     swag.String(patient1ID.String()),
+	})
 
-	item1, _ := storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(4)})
+	item1, _ := storage.AddItem(waitlistID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(4),
+		PatientID:     swag.String(patient2ID.String()),
+	})
 	id1, _ := uuid.FromString(item1.ID)
 
 	storage.db.View(func(tx *bolt.Tx) error {
@@ -213,9 +260,21 @@ func TestDeleteItem(t *testing.T) {
 	waitlistID, storage := initWaitlist("room 1")
 	defer storage.Close()
 
-	item1, _ := storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(4)})
-	item2, _ := storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(4)})
-	item3, _ := storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(4)})
+	item1, _ := storage.AddItem(waitlistID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(4),
+		PatientID:     swag.String(patient1ID.String()),
+	})
+	item2, _ := storage.AddItem(waitlistID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(4),
+		PatientID:     swag.String(patient2ID.String()),
+	})
+	item3, _ := storage.AddItem(waitlistID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(4),
+		PatientID:     swag.String(patient3ID.String()),
+	})
 
 	id1, _ := uuid.FromString(item1.ID)
 	id2, _ := uuid.FromString(item2.ID)
@@ -285,8 +344,16 @@ func TestListHistoryItems(t *testing.T) {
 	waitlistID, storage := initWaitlist("room 1")
 	defer storage.Close()
 
-	item1, _ := storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(4)})
-	item2, _ := storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(4)})
+	item1, _ := storage.AddItem(waitlistID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(4),
+		PatientID:     swag.String(patient1ID.String()),
+	})
+	item2, _ := storage.AddItem(waitlistID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(4),
+		PatientID:     swag.String(patient2ID.String()),
+	})
 	id1, _ := uuid.FromString(item1.ID)
 	id2, _ := uuid.FromString(item2.ID)
 
@@ -354,8 +421,16 @@ func TestReopenHistoryItem(t *testing.T) {
 	}
 	waitlist2ID := waitlist2UUID.Bytes()
 
-	item1, _ := storage.AddItem(waitlist1ID, &models.Item{Priority: swag.Int64(4)})
-	item2, _ := storage.AddItem(waitlist1ID, &models.Item{Priority: swag.Int64(4)})
+	item1, _ := storage.AddItem(waitlist1ID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(4),
+		PatientID:     swag.String(patient1ID.String()),
+	})
+	item2, _ := storage.AddItem(waitlist1ID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(4),
+		PatientID:     swag.String(patient2ID.String()),
+	})
 	id1, _ := uuid.FromString(item1.ID)
 	id2, _ := uuid.FromString(item2.ID)
 
@@ -416,7 +491,11 @@ func TestReopenHistoryItem(t *testing.T) {
 func TestUpdateHistoryItem(t *testing.T) {
 	waitlistID, storage := initWaitlist("waitlist")
 
-	item1, _ := storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(4)})
+	item1, _ := storage.AddItem(waitlistID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(4),
+		PatientID:     swag.String(patient1ID.String()),
+	})
 	id1, _ := uuid.FromString(item1.ID)
 
 	err := storage.DeleteItem(waitlistID, id1.Bytes(), models.ItemStatusFinished)
@@ -470,6 +549,7 @@ func benchmarkListItems(i int, b *testing.B) {
 		item := &models.Item{
 			MainComplaint: &models.Complaint{"something", "comment"},
 			Priority:      swag.Int64(int64(r.Intn(3) + 1)),
+			PatientID:     swag.String(patient1ID.String()),
 		}
 
 		storage.AddItem(id, item)
@@ -504,6 +584,7 @@ func benchmarkListItemsSort(i int, b *testing.B) {
 		item := &models.Item{
 			MainComplaint: &models.Complaint{"something", "comment"},
 			Priority:      swag.Int64(int64(r.Intn(3) + 1)),
+			PatientID:     swag.String(patient1ID.String()),
 		}
 
 		storage.db.Update(func(tx *bolt.Tx) error {

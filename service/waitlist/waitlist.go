@@ -6,7 +6,6 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/waitlist/models"
-	"github.com/iryonetwork/wwm/utils"
 )
 
 // Service describes the actions supported by the discovery service
@@ -129,18 +128,6 @@ func (s *service) DeleteItem(waitlistID, itemID []byte, reason string) error {
 
 // CreateItem creates a new item in a waitlist
 func (s *service) CreateItem(waitlistID []byte, item *models.Item) (*models.Item, error) {
-	currentItems, err := s.storage.ListItems(waitlistID)
-	if err != nil {
-		return nil, err
-	}
-
-	// check with the item with provided patientID already exists
-	for i := range currentItems {
-		if *currentItems[i].PatientID == *item.PatientID {
-			return nil, utils.NewError(utils.ErrConflict, "Waitlist already contains item with provided patientID")
-		}
-	}
-
 	return s.storage.AddItem(waitlistID, item)
 }
 
