@@ -5,14 +5,14 @@ Me foundation.
 
 ## Requirements
 
-* docker
-* docker-compose
-* go (1.9+) (`brew install golang`)
-* govendor (`go get -u github.com/kardianos/govendor`)
-* gomock (`go get -u github.com/golang/mock/gomock`, `github.com/golang/mock/mockgen`)
-* go-swagger (`go get -u github.com/go-swagger/go-swagger/cmd/swagger`)
-* updated `/etc/hosts` (`127.0.0.1 iryo.local minio.iryo.local vault.iryo.local iryo.cloud minio.iryo.cloud nats.iryo.local nats-monitor.iryo.local prometheus.iryo.local prometheus.iryo.cloud pgweb.iryo.local`)
-* nodejs & yarn (`brew install node yarn`)
+*   docker
+*   docker-compose
+*   go (1.9+) (`brew install golang`)
+*   govendor (`go get -u github.com/kardianos/govendor`)
+*   gomock (`go get -u github.com/golang/mock/gomock`, `github.com/golang/mock/mockgen`)
+*   go-swagger (`go get -u github.com/go-swagger/go-swagger/cmd/swagger`)
+*   updated `/etc/hosts` (`127.0.0.1 iryo.local minio.iryo.local vault.iryo.local iryo.cloud minio.iryo.cloud nats.iryo.local nats-monitor.iryo.local prometheus.iryo.local prometheus.iryo.cloud pgweb.iryo.local`)
+*   nodejs (5 <= version <= 9) & yarn (`brew install node@8 && npm install --global yarn@1.3.2`)
 
 ## How to set up and work with the repository
 
@@ -41,10 +41,10 @@ cd frontend/local && yarn install && yarn run start
 
 ## Additional documentation
 
-* [WOW](docs/wow.md)
-* [Secure communication (TLS)](docs/tls.md)
-* [Development environment setup](docs/dev.md)
-* [Symmetric data replication](docs/symmetric.md)
+*   [WOW](docs/wow.md)
+*   [Secure communication (TLS)](docs/tls.md)
+*   [Development environment setup](docs/dev.md)
+*   [Symmetric data replication](docs/symmetric.md)
 
 ## Development environment
 
@@ -52,10 +52,10 @@ cd frontend/local && yarn install && yarn run start
 
 Given our remote / local setup we use two predefined locations IDs the development environment:
 
-| Location | ID |
-|----------|----|
-| Cloud | f7e41e48-ec79-4c78-9db6-37c0c4f78326 |
-| Local | 2d04b22e-1cc3-46b4-96dd-2bee5bad9ffa |
+| Location | ID                                   |
+| -------- | ------------------------------------ |
+| Cloud    | f7e41e48-ec79-4c78-9db6-37c0c4f78326 |
+| Local    | 2d04b22e-1cc3-46b4-96dd-2bee5bad9ffa |
 
 All predefined data set on service init should use these two IDs when working with locations.
 
@@ -66,5 +66,5 @@ All predefined data set on service init should use these two IDs when working wi
 On OSX it's common to experience 5 second timeouts when using `curl` to request a page from `.local` domains. This occurs when OSX internally tries to resolve `iryo.local` with `IPV6`. To fix it, duplicate the line in `/etc/hosts` for all `.local` domains and replace `127.0.0.1` with `::FFFF:10.99.99.99`.
 
 ```
-::FFFF:10.99.99.99	iryo.local minio.iryo.local vault.iryo.local
+::FFFF:10.99.99.99  iryo.local minio.iryo.local vault.iryo.local
 ```
