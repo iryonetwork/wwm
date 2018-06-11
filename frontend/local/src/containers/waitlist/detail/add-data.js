@@ -49,7 +49,8 @@ const onMedicalDataFormSubmit = (form, dispatch, props) => {
             if (form[sign] !== props.initialValues[sign]) {
                 vitalSigns[sign].timestamp = moment().format()
             } else {
-                vitalSigns[sign].timestamp = props.initialValues["timestmap_" + sign]
+                vitalSigns[sign].timestamp =
+                    props.initialValues["timestmap_" + sign]
             }
         }
     })
@@ -57,8 +58,19 @@ const onMedicalDataFormSubmit = (form, dispatch, props) => {
     // set BMI if height and weight available
     if (vitalSigns.height && vitalSigns.weight) {
         vitalSigns.bmi = {}
-        vitalSigns.bmi.value = round((vitalSigns.weight.value / vitalSigns.height.value / vitalSigns.height.value) * 10000, 2)
-        vitalSigns.bmi.timestamp = moment.max(moment(vitalSigns.height.timestamp), moment(vitalSigns.weight.timestamp)).format()
+        vitalSigns.bmi.value = round(
+            vitalSigns.weight.value /
+                vitalSigns.height.value /
+                vitalSigns.height.value *
+                10000,
+            2
+        )
+        vitalSigns.bmi.timestamp = moment
+            .max(
+                moment(vitalSigns.height.timestamp),
+                moment(vitalSigns.weight.timestamp)
+            )
+            .format()
     }
 
     let newItem = _.clone(props.item)
@@ -94,7 +106,12 @@ class MedicalData extends React.Component {
                 <div className="medical-data">
                     <form onSubmit={handleSubmit}>
                         <div className="modal-header">
-                            <Patient data={item.patient && cardToObject({ connections: item.patient })} />
+                            <Patient
+                                data={
+                                    item.patient &&
+                                    cardToObject({ connections: item.patient })
+                                }
+                            />
                             <h1>
                                 <MedicalDataIcon />
                                 Add medical data
@@ -104,9 +121,21 @@ class MedicalData extends React.Component {
                         <div className="modal-body">
                             <h3>Body measurements</h3>
                             <div>
-                                <Fields label="Height" names={["has_height", "height"]} unit="cm" component={renderFieldWithUnit} change={change} />
+                                <Fields
+                                    label="Height"
+                                    names={["has_height", "height"]}
+                                    unit="cm"
+                                    component={renderFieldWithUnit}
+                                    change={change}
+                                />
 
-                                <Fields label="Weight" names={["has_weight", "weight"]} unit="kg" component={renderFieldWithUnit} change={change} />
+                                <Fields
+                                    label="Weight"
+                                    names={["has_weight", "weight"]}
+                                    unit="kg"
+                                    component={renderFieldWithUnit}
+                                    change={change}
+                                />
                             </div>
 
                             <h3>Vital signs</h3>
@@ -122,7 +151,11 @@ class MedicalData extends React.Component {
 
                                 <Fields
                                     label="Blood pressure"
-                                    names={["has_pressure", "pressure.systolic", "pressure.diastolic"]}
+                                    names={[
+                                        "has_pressure",
+                                        "pressure.systolic",
+                                        "pressure.diastolic"
+                                    ]}
                                     component={renderBloodPressure}
                                     change={change}
                                 />
@@ -174,7 +207,10 @@ class MedicalData extends React.Component {
 
                                 <Fields
                                     label="Oxygen saturation"
-                                    names={["has_oxygen_saturation", "oxygen_saturation"]}
+                                    names={[
+                                        "has_oxygen_saturation",
+                                        "oxygen_saturation"
+                                    ]}
                                     unit="%"
                                     component={renderFieldWithUnit}
                                     change={change}
@@ -194,13 +230,22 @@ class MedicalData extends React.Component {
                             <div className="form-row">
                                 <div className="col-sm-4" />
                                 <div className="col-sm-4">
-                                    <button type="button" tabIndex="-1" className="btn btn-link btn-block" datadismiss="modal" onClick={() => history.goBack()}>
+                                    <button
+                                        type="button"
+                                        tabIndex="-1"
+                                        className="btn btn-link btn-block"
+                                        datadismiss="modal"
+                                        onClick={() => history.goBack()}
+                                    >
                                         Cancel
                                     </button>
                                 </div>
 
                                 <div className="col-sm-4">
-                                    <button type="submit" className="float-right btn btn-primary btn-block">
+                                    <button
+                                        type="submit"
+                                        className="float-right btn btn-primary btn-block"
+                                    >
                                         Add
                                     </button>
                                 </div>
@@ -262,7 +307,11 @@ const SimpleInput = connect()(({ input, dispatch }) => (
 ))
 
 const renderFieldWithUnit = connect()(fields => (
-    <div className={classnames("section", { open: fields[fields.names[0]].input.value })}>
+    <div
+        className={classnames("section", {
+            open: fields[fields.names[0]].input.value
+        })}
+    >
         {fields[fields.names[0]].input.value && (
             <div className="form-row">
                 <div className="col-sm-4">
@@ -272,28 +321,41 @@ const renderFieldWithUnit = connect()(fields => (
                                 ...fields[fields.names[1]].input,
                                 type: "number",
                                 className: classnames("form-control", {
-                                    "is-invalid": fields[fields.names[1]].meta.touched && fields[fields.names[1]].meta.error
+                                    "is-invalid":
+                                        fields[fields.names[1]].meta.touched &&
+                                        fields[fields.names[1]].meta.error
                                 }),
-                                placeholder: fields.label
+                                placeholder: fields.label,
+                                autoFocus: true
                             }}
                         />
 
                         <span>{fields.label}</span>
                         {fields[fields.names[1]].meta.touched &&
-                            fields[fields.names[1]].meta.error && <div className="invalid-feedback">{fields[fields.names[1]].meta.error}</div>}
+                            fields[fields.names[1]].meta.error && (
+                                <div className="invalid-feedback">
+                                    {fields[fields.names[1]].meta.error}
+                                </div>
+                            )}
                     </label>
                 </div>
 
                 <div className="col-sm-2 unit">{fields.unit}</div>
 
-                <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
+                <button
+                    className="btn btn-link remove"
+                    onClick={() => fields.change(fields.names[0], false)}
+                >
                     <NegativeIcon />
                     Remove
                 </button>
             </div>
         )}
         {!fields[fields.names[0]].input.value && (
-            <button className="btn btn-link" onClick={() => fields.change(fields.names[0], true)}>
+            <button
+                className="btn btn-link"
+                onClick={() => fields.change(fields.names[0], true)}
+            >
                 Add {fields.label}
             </button>
         )}
@@ -301,7 +363,11 @@ const renderFieldWithUnit = connect()(fields => (
 ))
 
 const renderBloodPressure = fields => (
-    <div className={classnames("section", { open: fields[fields.names[0]].input.value })}>
+    <div
+        className={classnames("section", {
+            open: fields[fields.names[0]].input.value
+        })}
+    >
         {fields[fields.names[0]].input.value && (
             <div>
                 <div className="form-row title">
@@ -313,14 +379,22 @@ const renderBloodPressure = fields => (
                                     ...fields.pressure.systolic.input,
                                     type: "number",
                                     className: classnames("form-control", {
-                                        "is-invalid": fields.pressure.systolic.meta.touched && fields.pressure.systolic.meta.error
+                                        "is-invalid":
+                                            fields.pressure.systolic.meta
+                                                .touched &&
+                                            fields.pressure.systolic.meta.error
                                     }),
-                                    placeholder: "Systolic"
+                                    placeholder: "Systolic",
+                                    autoFocus: true
                                 }}
                             />
                             <span>Systolic</span>
                             {fields.pressure.systolic.meta.touched &&
-                                fields.pressure.systolic.meta.error && <div className="invalid-feedback">{fields.pressure.systolic.meta.error}</div>}
+                                fields.pressure.systolic.meta.error && (
+                                    <div className="invalid-feedback">
+                                        {fields.pressure.systolic.meta.error}
+                                    </div>
+                                )}
                         </label>
                     </div>
 
@@ -333,20 +407,30 @@ const renderBloodPressure = fields => (
                                     ...fields.pressure.diastolic.input,
                                     type: "number",
                                     className: classnames("form-control", {
-                                        "is-invalid": fields.pressure.diastolic.meta.touched && fields.pressure.diastolic.meta.error
+                                        "is-invalid":
+                                            fields.pressure.diastolic.meta
+                                                .touched &&
+                                            fields.pressure.diastolic.meta.error
                                     }),
                                     placeholder: "Diastolic"
                                 }}
                             />
                             <span>Diastolic</span>
                             {fields.pressure.diastolic.meta.touched &&
-                                fields.pressure.diastolic.meta.error && <div className="invalid-feedback">{fields.pressure.diastolic.meta.error}</div>}
+                                fields.pressure.diastolic.meta.error && (
+                                    <div className="invalid-feedback">
+                                        {fields.pressure.diastolic.meta.error}
+                                    </div>
+                                )}
                         </label>
                     </div>
 
                     <div className="col-sm-2 unit">mmHg</div>
 
-                    <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
+                    <button
+                        className="btn btn-link remove"
+                        onClick={() => fields.change(fields.names[0], false)}
+                    >
                         <NegativeIcon />
                         Remove
                     </button>
@@ -354,7 +438,16 @@ const renderBloodPressure = fields => (
             </div>
         )}
         {!fields[fields.names[0]].input.value && (
-            <button className="btn btn-link" onClick={() => fields.change(fields.names[0], true)}>
+            <button
+                className="btn btn-link"
+                onClick={() => {
+                    fields.change(fields.names[0], true)
+                    fields.change("pressure", {
+                        diastolic: undefined,
+                        systolic: undefined
+                    })
+                }}
+            >
                 Add {fields.label}
             </button>
         )}
