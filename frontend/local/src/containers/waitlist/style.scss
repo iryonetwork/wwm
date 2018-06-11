@@ -35,6 +35,63 @@
         .dropdown {
             float: right;
         }
+        .dropdown-menu {
+
+            border-radius: 4px;
+            background-color: $grey5;
+            border: 1px solid $grey2;
+            box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.12);
+
+            .arrow {
+                position: absolute;
+                bottom: 100%;
+                right: 20px !important;
+                left: auto !important;
+                background: $grey5;
+            }
+            .arrow:after, .arrow:before {
+                bottom: 100%;
+                left: 50%;
+                border: solid transparent;
+                content: " ";
+                height: 0;
+                width: 0;
+                position: absolute;
+                pointer-events: none;
+            }
+
+            .arrow:after {
+                border-color: rgba(255, 255, 255, 0);
+                border-bottom-color: $grey5;
+                border-width: 8px;
+                margin-left: -8px;
+            }
+
+            .arrow:before {
+                border-color: rgba(235, 241, 245, 0);
+                border-bottom-color: $grey2;
+                border-width: 9px;
+                margin-left: -9px;
+            }
+            a {
+                text-decoration: none;
+            }
+            .dropdown-item {
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: bold;
+                color: $white;
+                &:hover {
+                    color: $grey5;
+                    background-color: $white;
+                }
+                &:focus {
+                    outline: none;
+                    color: $grey5;
+                    background-color: $white;
+                }
+            }
+        }
     }
 
     .meatballs {

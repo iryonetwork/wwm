@@ -1,10 +1,15 @@
-import React from "react"
-import classnames from "classnames"
-import { connect } from "react-redux"
-import { Route, Link } from "react-router-dom"
-import { UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap"
-import { listAll, moveToTop } from "../../modules/waitlist"
-import { cardToObject } from "../../modules/discovery"
+import React from "react";
+import classnames from "classnames";
+import { connect } from "react-redux";
+import { Route, Link } from "react-router-dom";
+import {
+    UncontrolledDropdown,
+    DropdownToggle,
+    DropdownMenu,
+    DropdownItem
+} from "reactstrap";
+import { listAll, moveToTop } from "../../modules/waitlist";
+import { cardToObject } from "../../modules/discovery";
 import {
     RESOURCE_WAITLIST,
     RESOURCE_EXAMINATION,
@@ -14,35 +19,35 @@ import {
     WRITE,
     UPDATE,
     DELETE
-} from "../../modules/validations"
+} from "../../modules/validations";
 
-import MedicalData from "./detail/add-data"
-import EditComplaint from "./detail/edit-complaint"
-import RemoveFromWaitlist from "./detail/remove"
-import Patient from "shared/containers/patient"
-import Spinner from "shared/containers/spinner"
+import MedicalData from "./detail/add-data";
+import EditComplaint from "./detail/edit-complaint";
+import RemoveFromWaitlist from "./detail/remove";
+import Patient from "shared/containers/patient";
+import Spinner from "shared/containers/spinner";
 
-import "./style.css"
+import "./style.css";
 
-const TYPE_ENCOUNTER = "encounter"
-const TYPE_NEXT = "next"
-const TYPE_WAITLIST = "waitlist"
+const TYPE_ENCOUNTER = "encounter";
+const TYPE_NEXT = "next";
+const TYPE_WAITLIST = "waitlist";
 
 class Waitlist extends React.Component {
     constructor(props) {
-        super(props)
+        super(props);
 
-        const waitlistItemID = props.match.params.itemID
+        const waitlistItemID = props.match.params.itemID;
 
         if (!waitlistItemID || !props.listed) {
-            props.listAll(props.match.params.waitlistID)
+            props.listAll(props.match.params.waitlistID);
         }
     }
 
     render() {
-        const { match, listEncounter, listNext, list, listing } = this.props
+        const { match, listEncounter, listNext, list, listing } = this.props;
         if (!this.props.canSeeWaitlist) {
-            return null
+            return null;
         }
 
         if (listing) {
@@ -51,12 +56,15 @@ class Waitlist extends React.Component {
                     <h1>Waiting list</h1>
                     <Spinner />
                 </div>
-            )
+            );
         }
 
-        const waitlistID = match.params.waitlistID
-        const waitlistItemID = match.params.itemID
-        const baseMatchURL = waitlistID && waitlistItemID ? "/waitlist/:waitlistID/:itemID" : "/waitlist/:waitlistID"
+        const waitlistID = match.params.waitlistID;
+        const waitlistItemID = match.params.itemID;
+        const baseMatchURL =
+            waitlistID && waitlistItemID
+                ? "/waitlist/:waitlistID/:itemID"
+                : "/waitlist/:waitlistID";
 
         return (
             <div className="waitlist">
@@ -103,11 +111,26 @@ class Waitlist extends React.Component {
                     canSeeVitalSigns={this.props.canSeeVitalSigns}
                     canAddVitalSigns={this.props.canAddVitalSigns}
                 />
-                {this.props.canEditMainComplaint && <Route path={baseMatchURL + "/edit-complaint"} component={EditComplaint} />}
-                {this.props.canAddVitalSigns && <Route path={baseMatchURL + "/add-data"} component={MedicalData} />}
-                {this.props.canRemoveFromWaitlist && <Route path={baseMatchURL + "/remove"} component={RemoveFromWaitlist} />}
+                {this.props.canEditMainComplaint && (
+                    <Route
+                        path={baseMatchURL + "/edit-complaint"}
+                        component={EditComplaint}
+                    />
+                )}
+                {this.props.canAddVitalSigns && (
+                    <Route
+                        path={baseMatchURL + "/add-data"}
+                        component={MedicalData}
+                    />
+                )}
+                {this.props.canRemoveFromWaitlist && (
+                    <Route
+                        path={baseMatchURL + "/remove"}
+                        component={RemoveFromWaitlist}
+                    />
+                )}
             </div>
-        )
+        );
     }
 }
 
@@ -125,7 +148,7 @@ const Section = ({
     canAddVitalSigns
 }) => {
     if (!list) {
-        return null
+        return null;
     }
 
     return canSeePatients ? (
@@ -139,8 +162,18 @@ const Section = ({
                     {(list || []).map(el => (
                         <tr key={el.id}>
                             <th scope="row">
-                                <Link className="patientLink" to={`/patients/${el.patientID}`}>
-                                    <Patient data={el.patient && cardToObject({ connections: el.patient })} />
+                                <Link
+                                    className="patientLink"
+                                    to={`/patients/${el.patientID}`}
+                                >
+                                    <Patient
+                                        data={
+                                            el.patient &&
+                                            cardToObject({
+                                                connections: el.patient
+                                            })
+                                        }
+                                    />
                                 </Link>
                             </th>
                             <td>
@@ -149,14 +182,20 @@ const Section = ({
                                         {el.complaint}
                                         {el.priority === 1 && (
                                             <div>
-                                                <span className="badge badge-pill badge-danger">Urgent</span>
+                                                <span className="badge badge-pill badge-danger">
+                                                    Urgent
+                                                </span>
                                             </div>
                                         )}
                                     </div>
                                 )}
                             </td>
-                            {canSeeVitalSigns && <VitalSigns signs={el.vitalSigns || {}} />}
-                            {(canEditMainComplaint || canAddVitalSigns || canRemoveFromWaitlist) && (
+                            {canSeeVitalSigns && (
+                                <VitalSigns signs={el.vitalSigns || {}} />
+                            )}
+                            {(canEditMainComplaint ||
+                                canAddVitalSigns ||
+                                canRemoveFromWaitlist) && (
                                 <Tools
                                     listType={type}
                                     waitlistID={waitlistID}
@@ -165,7 +204,9 @@ const Section = ({
                                     canEditMainComplaint={canEditMainComplaint}
                                     canSeeVitalSigns={canSeeVitalSigns}
                                     canAddVitalSigns={canAddVitalSigns}
-                                    canRemoveFromWaitlist={canRemoveFromWaitlist}
+                                    canRemoveFromWaitlist={
+                                        canRemoveFromWaitlist
+                                    }
                                 />
                             )}
                         </tr>
@@ -173,67 +214,91 @@ const Section = ({
                 </tbody>
             </table>
         </div>
-    ) : null
-}
+    ) : null;
+};
 
 class Tools extends React.Component {
     constructor(props) {
-        super(props)
-        this.moveToTop = this.moveToTop.bind(this)
+        super(props);
+        this.moveToTop = this.moveToTop.bind(this);
     }
 
     moveToTop(e) {
-        this.props.moveToTop(this.props.waitlistID, this.props.itemID)
+        this.props.moveToTop(this.props.waitlistID, this.props.itemID);
     }
 
     render() {
-        const { listType, waitlistID, itemID, canAddExamination, canEditMainComplaint, canAddVitalSigns, canRemoveFromWaitlist } = this.props
+        const {
+            listType,
+            waitlistID,
+            itemID,
+            canAddExamination,
+            canEditMainComplaint,
+            canAddVitalSigns,
+            canRemoveFromWaitlist
+        } = this.props;
         return (
             <td className="tools">
-                <UncontrolledDropdown>
+                <UncontrolledDropdown direction="down">
                     <DropdownToggle color="link">
                         <span className="meatballs" />
                     </DropdownToggle>
-                    <DropdownMenu right>
+                    <DropdownMenu right flip={false}>
                         {canAddExamination &&
                             listType === TYPE_ENCOUNTER && (
-                                <DropdownItem>
-                                    <Link to={`/waitlist/${waitlistID}/${itemID}/consultation`}>Start consultation</Link>
-                                </DropdownItem>
+                                <Link
+                                    to={`/waitlist/${waitlistID}/${itemID}/consultation`}
+                                >
+                                    <DropdownItem>
+                                        Start consultation
+                                    </DropdownItem>
+                                </Link>
                             )}
                         {canAddExamination &&
                             listType !== TYPE_ENCOUNTER && (
-                                <DropdownItem onClick={this.moveToTop}>
-                                    <Link onClick={this.moveToTop} to={`/waitlist/${waitlistID}/${itemID}/consultation`}>
+                                <Link
+                                    onClick={this.moveToTop}
+                                    to={`/waitlist/${waitlistID}/${itemID}/consultation`}
+                                >
+                                    <DropdownItem onClick={this.moveToTop}>
                                         Start consultation out of order
-                                    </Link>
-                                </DropdownItem>
+                                    </DropdownItem>{" "}
+                                </Link>
                             )}
                         {canEditMainComplaint && (
-                            <DropdownItem>
-                                <Link to={`/waitlist/${waitlistID}/${itemID}/edit-complaint`}>Edit main complaint</Link>
-                            </DropdownItem>
+                            <Link
+                                to={`/waitlist/${waitlistID}/${itemID}/edit-complaint`}
+                            >
+                                <DropdownItem>Edit main complaint</DropdownItem>
+                            </Link>
                         )}
                         {canAddVitalSigns && (
-                            <DropdownItem>
-                                <Link to={`/waitlist/${waitlistID}/${itemID}/add-data`}>Add vital signs</Link>
-                            </DropdownItem>
+                            <Link
+                                to={`/waitlist/${waitlistID}/${itemID}/add-data`}
+                            >
+                                <DropdownItem>Add vital signs</DropdownItem>
+                            </Link>
                         )}
                         {canRemoveFromWaitlist && (
-                            <DropdownItem>
-                                <Link to={`/waitlist/${waitlistID}/${itemID}/remove`}>Remove from Waiting list</Link>
-                            </DropdownItem>
+                            <Link
+                                to={`/waitlist/${waitlistID}/${itemID}/remove`}
+                            >
+                                <DropdownItem>
+                                    Remove from Waiting list
+                                </DropdownItem>
+                            </Link>
                         )}
+                        <span className="arrow" />
                     </DropdownMenu>
                 </UncontrolledDropdown>
             </td>
-        )
+        );
     }
 }
 
 Tools = connect(state => ({}), {
     moveToTop
-})(Tools)
+})(Tools);
 
 const VitalSigns = ({ signs }) => (
     <td className="vital_signs">
@@ -244,31 +309,52 @@ const VitalSigns = ({ signs }) => (
                 <li className={classnames({ active: signs.temperature })}>T</li>
                 <li className={classnames({ active: signs.heart_rate })}>HR</li>
                 <li className={classnames({ active: signs.pressure })}>BP</li>
-                <li className={classnames({ active: signs.oxygen_saturation })}>OS</li>
+                <li className={classnames({ active: signs.oxygen_saturation })}>
+                    OS
+                </li>
             </ul>
         </div>
     </td>
-)
+);
 
 Waitlist = connect(
     state => ({
-        listEncounter: state.waitlist.list.length > 0 ? [state.waitlist.list[0]] : [],
-        listNext: state.waitlist.list.length > 1 ? [state.waitlist.list[1]] : [],
-        list: state.waitlist.list.length > 2 ? state.waitlist.list.slice(2) : [],
+        listEncounter:
+            state.waitlist.list.length > 0 ? [state.waitlist.list[0]] : [],
+        listNext:
+            state.waitlist.list.length > 1 ? [state.waitlist.list[1]] : [],
+        list:
+            state.waitlist.list.length > 2 ? state.waitlist.list.slice(2) : [],
         listing: state.waitlist.listing,
         listed: state.waitlist.listed,
-        canAddExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[WRITE],
-        canSeeWaitlist: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[READ],
-        canRemoveFromWaitlist: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[DELETE],
-        canSeePatients: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[READ],
-        canSeeVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[READ],
-        canAddVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[WRITE],
-        canSeeMainComplaint: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[READ],
-        canEditMainComplaint: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[UPDATE]
+        canAddExamination: ((state.validations.userRights || {})[
+            RESOURCE_EXAMINATION
+        ] || {})[WRITE],
+        canSeeWaitlist: ((state.validations.userRights || {})[
+            RESOURCE_WAITLIST
+        ] || {})[READ],
+        canRemoveFromWaitlist: ((state.validations.userRights || {})[
+            RESOURCE_WAITLIST
+        ] || {})[DELETE],
+        canSeePatients: ((state.validations.userRights || {})[
+            RESOURCE_PATIENT_IDENTIFICATION
+        ] || {})[READ],
+        canSeeVitalSigns: ((state.validations.userRights || {})[
+            RESOURCE_VITAL_SIGNS
+        ] || {})[READ],
+        canAddVitalSigns: ((state.validations.userRights || {})[
+            RESOURCE_VITAL_SIGNS
+        ] || {})[WRITE],
+        canSeeMainComplaint: ((state.validations.userRights || {})[
+            RESOURCE_WAITLIST
+        ] || {})[READ],
+        canEditMainComplaint: ((state.validations.userRights || {})[
+            RESOURCE_WAITLIST
+        ] || {})[UPDATE]
     }),
     {
         listAll
     }
-)(Waitlist)
+)(Waitlist);
 
-export default Waitlist
+export default Waitlist;
