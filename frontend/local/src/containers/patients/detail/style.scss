@@ -427,6 +427,16 @@
         font-size: 16px;
     }
 
+    .context {
+        opacity: 0.3;
+        font-size: 14px;
+        font-weight: normal;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 1.79;
+        color: $black;
+    }
+
     .comment {
         margin: 10px 0;
     }

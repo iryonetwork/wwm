@@ -65,6 +65,16 @@ class HealthRecord extends React.Component {
                                                             <DiagnosisIcon />
                                                             {_.get(data.diagnoses[0], "diagnosis.label", "Diagnosis")}
                                                         </h3>
+
+                                                        <div className="context">
+                                                            <span key="endTime">{moment(_.get(data.context, "endTime")).format("Do MMM YYYY, HH:mm")}</span>
+                                                            <span key="seperator"> · </span>
+                                                            <span key="authorName">
+                                                                {_.get(data.context, "author.name").trim() !== ""
+                                                                    ? _.get(data.context, "author.name").trim()
+                                                                    : "Unknown diagnosis author"}
+                                                            </span>
+                                                        </div>
                                                         <div className="comment">{_.get(data.diagnoses[0], "comment", "")}</div>
                                                     </React.Fragment>
                                                 ) : (
