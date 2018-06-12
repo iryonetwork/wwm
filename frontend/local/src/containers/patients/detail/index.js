@@ -150,12 +150,12 @@ class PatientDetail extends React.Component {
                                             {this.props.canSeeVitalSigns ? (
                                                 <NavLink to={baseURL + "consultation"}>
                                                     <InConsultationIcon />
-                                                    In consultation
+                                                    In Consultation
                                                 </NavLink>
                                             ) : (
                                                 <span>
                                                     <InConsultationIcon />
-                                                    In consultation
+                                                    In Consultation
                                                 </span>
                                             )}
                                         </li>
@@ -172,27 +172,26 @@ class PatientDetail extends React.Component {
                                         {this.props.canSeeHealthHistory ? (
                                             <NavLink to={baseURL + "history"}>
                                                 <MedicalHistoryIcon />
-                                                Medical history
+                                                Medical History
                                             </NavLink>
                                         ) : null}
                                     </li>
-                                    <li>
-                                        {this.props.canSeeDemographicInformation ? (
-                                            <NavLink to={baseURL + "personal"}>
-                                                <PersonalInfoIcon />
-                                                Personal info
-                                            </NavLink>
-                                        ) : null}
-                                    </li>
-
                                     {this.props.canSeeExamination && (
                                         <li>
                                             <NavLink to={baseURL + "record"}>
                                                 <HealthRecordIcon />
-                                                Health Record
+                                                Medical Record
                                             </NavLink>
                                         </li>
                                     )}
+                                    <li>
+                                        {this.props.canSeeDemographicInformation ? (
+                                            <NavLink to={baseURL + "personal"}>
+                                                <PersonalInfoIcon />
+                                                Personal Info
+                                            </NavLink>
+                                        ) : null}
+                                    </li>
                                 </ul>
                             </div>
                         </div>

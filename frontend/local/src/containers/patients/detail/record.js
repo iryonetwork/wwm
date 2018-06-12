@@ -47,7 +47,7 @@ class HealthRecord extends React.Component {
         return (
             <div className="records">
                 <header>
-                    <h1>Health Record</h1>
+                    <h1>Medical Record</h1>
                 </header>
 
                 {canSeeExamination && (
