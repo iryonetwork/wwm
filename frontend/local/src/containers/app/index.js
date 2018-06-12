@@ -91,6 +91,7 @@ class App extends React.Component {
                                 <Route exact path="/waitlist/:waitlistID" component={Waitlist} />
                                 <Switch>
                                     <Route path="/waitlist/:waitlistID/:itemID/edit-complaint" component={Waitlist} />
+                                    <Route path="/waitlist/:waitlistID/:itemID/add-data/:sign" component={Waitlist} />
                                     <Route path="/waitlist/:waitlistID/:itemID/add-data" component={Waitlist} />
                                     <Route path="/waitlist/:waitlistID/:itemID/remove" component={Waitlist} />
                                     <Route path="/waitlist/:waitlistID/:itemID" component={WaitlistDetail} />

@@ -53,7 +53,11 @@ class CodeTitle extends React.Component {
             .fetchCode(categoryId, codeId)
             .then(code => {
                 if (!this.unmounted) {
-                    this.setState({ loading: false, failed: false, title: code.title })
+                    this.setState({
+                        loading: false,
+                        failed: false,
+                        title: code.title
+                    })
                 }
             })
             .catch(ex => {
@@ -350,10 +354,10 @@ class InConsultation extends React.Component {
                         </dl>
                     </div>
                 )*/}
-
                 {this.props.canAddDiagnosis && <Route path={match.path + "/add-diagnosis"} component={AddDiagnosis} />}
                 {this.props.canAddDiagnosis && <Route path={match.path + "/diagnoses/:diagnosisIndex/edit"} component={AddDiagnosis} />}
-                {this.props.canAddVitalSigns && <Route path={match.path + "/add-data"} component={MedicalData} />}
+                {this.props.canAddVitalSigns && <Route exact path={match.path + "/add-data/:sign"} component={MedicalData} />}
+                {this.props.canAddVitalSigns && <Route exact path={match.path + "/add-data"} component={MedicalData} />}
                 {this.props.canAddLaboratoryTests && <Route path={match.path + "/add-lab-test"} component={LaboratoryTest} />}
                 {this.props.canEditMainComplaint && <Route path={match.path + "/edit-complaint"} component={EditComplaint} />}
                 {this.props.canRemoveFromWaitlist && <Route path={match.path + "/remove"} component={Remove} />}
