@@ -2,6 +2,7 @@ import produce from "immer"
 import { open, COLOR_DANGER } from "shared/modules/alert"
 import { read, API_URL, LOCATION_ID } from "shared/modules/config"
 import { getToken } from "shared/modules/authentication"
+import { updatePatient as updateWaitlistPatient } from "./waitlist"
 
 export const SEARCH = "patient/SEARCH"
 export const SEARCHED = "patient/SEARCHED"
@@ -129,6 +130,8 @@ export const updatePatient = (patientID, formData) => dispatch => {
             if (!ok) {
                 throw new Error("Failed to update patient")
             }
+
+            dispatch(updateWaitlistPatient(patientID, data.connections))
 
             dispatch({ type: UPDATED, result: data })
             return data

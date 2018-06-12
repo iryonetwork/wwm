@@ -21,6 +21,10 @@ export const UPDATE_ITEM = "waitlist/UPDATE_ITEM"
 export const UPDATE_ITEM_DONE = "waitlist/UPDATE_ITEM_DONE"
 export const UPDATE_ITEM_FAILED = "waitlist/UPDATE_ITEM_FAILED"
 
+export const UPDATE_PATIENT = "waitlist/UPDATE_PATIENT"
+export const UPDATE_PATIENT_DONE = "waitlist/UPDATE_PATIENT_DONE"
+export const UPDATE_PATIENT_FAILED = "waitlist/UPDATE_PATIENT_FAILED"
+
 export const MOVE_TO_TOP_ITEM = "waitlist/MOVE_TO_TOP_ITEM"
 export const MOVE_TO_TOP_ITEM_DONE = "waitlist/MOVE_TO_TOP_ITEM_DONE"
 export const MOVE_TO_TOP_ITEM_FAILED = "waitlist/ MOVE_TO_TOP_ITEM_FAILED"
@@ -102,10 +106,27 @@ export default (state = initialState, action) => {
                 draft.items[action.itemID].updating = false
                 break
 
+            case UPDATE_PATIENT:
+                draft.updating = true
+                draft.updated = draft.failed = false
+                break
+            case UPDATE_PATIENT_FAILED:
+                draft.updating = draft.updated = false
+                draft.failed = true
+                break
+            case UPDATE_PATIENT_DONE:
+                draft.updating = false
+                draft.updated = true
+                _.forEach(draft.items, item => {
+                    if (item.patientID === action.patientID) {
+                        item.patient = action.data
+                    }
+                })
+                break
+
             case MOVE_TO_TOP_ITEM:
                 draft.items[action.itemID].updating = true
                 break
-
             case MOVE_TO_TOP_ITEM_FAILED:
                 draft.items[action.itemID].updating = false
                 break
@@ -254,6 +275,40 @@ export const update = (listID, data) => dispatch => {
             dispatch({
                 type: UPDATE_ITEM_FAILED,
                 itemID: data.id
+            })
+        })
+}
+
+export const updatePatient = (patientID, patientData) => dispatch => {
+    const url = `${dispatch(read(API_URL))}/waitlist/patient/${patientID}`
+    dispatch({
+        type: UPDATE_PATIENT
+    })
+
+    return fetch(url, {
+        method: "PUT",
+        body: JSON.stringify(patientData),
+        headers: {
+            Authorization: dispatch(getToken()),
+            "Content-Type": "application/json"
+        }
+    })
+        .then(response => Promise.all([response.status === 204, response.status]))
+        .then(([ok, status]) => {
+            if (!ok) {
+                throw new Error(`Failed to update patient data in the waitling list (${status})`)
+            }
+            dispatch({
+                type: UPDATE_PATIENT_DONE,
+                patientID: patientID,
+                data: patientData
+            })
+            return ok
+        })
+        .catch(ex => {
+            dispatch(open(ex.message, "", COLOR_DANGER))
+            dispatch({
+                type: UPDATE_PATIENT_FAILED
             })
         })
 }
