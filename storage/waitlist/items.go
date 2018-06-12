@@ -169,6 +169,60 @@ func (s *storage) UpdateItem(waitlistID []byte, item *models.Item) (*models.Item
 	return item, err
 }
 
+// UpdatePatient updates with new patient data all the items with specified patientID
+func (s *storage) UpdatePatient(patientID []byte, patient models.Patient) ([]*models.Item, error) {
+	patientUUID, err := uuid.FromBytes(patientID)
+	if err != nil {
+		return nil, utils.NewError(utils.ErrBadRequest, "invalid patientID")
+	}
+	var list []*models.Item
+
+	err = s.db.Update(func(tx *bolt.Tx) error {
+		err := tx.Bucket(bucketCurrent).ForEach(func(waitlistID, _ []byte) error {
+			bCurrent := tx.Bucket(bucketCurrent).Bucket(waitlistID)
+			if bCurrent == nil {
+				return utils.NewError(utils.ErrServerError, "waitlist not found")
+			}
+
+			var i byte
+			for i = 1; i <= priorityLevels; i++ {
+				q, err := s.getQueue(waitlistID, i)
+				if err != nil {
+					return err
+				}
+				for _, itemID := range q {
+					var item models.Item
+					err = item.UnmarshalBinary(bCurrent.Get(itemID))
+					if err != nil {
+						return err
+					}
+					if *item.PatientID == patientUUID.String() {
+						item.Patient = patient
+						data, err := item.MarshalBinary()
+						if err != nil {
+							return err
+						}
+						err = bCurrent.Put(itemID, data)
+						if err != nil {
+							return err
+						}
+
+						list = append(list, &item)
+					}
+				}
+			}
+			return err
+		})
+		return err
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+}
+
 // MoveItemToTop moves item to the top of the list diregarding priority
 func (s *storage) MoveItemToTop(waitlistID, itemID []byte) (*models.Item, error) {
 	var item models.Item

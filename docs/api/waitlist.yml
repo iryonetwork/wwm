@@ -436,6 +436,45 @@ paths:
         500:
           $ref: '#/responses/500'
 
+  /patient/{patientID}:
+    put:
+      summary: Updates patient data in all the items with this patient.
+      tags:
+        - item
+
+      parameters:
+        - in: path
+          name: patientID
+          required: true
+          type: string
+          format: uuid
+
+        - in: body
+          name: patient
+          required: true
+          schema:
+            $ref: '#/definitions/Patient'
+
+      responses:
+        204:
+          description: Items were updated
+
+        400:
+          $ref: '#/responses/400'
+
+        401:
+          $ref: '#/responses/401'
+
+        403:
+          $ref: '#/responses/403'
+
+        404:
+          $ref: '#/responses/404'
+
+        500:
+          $ref: '#/responses/500'
+
+
 definitions:
   List:
     type: object

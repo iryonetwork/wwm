@@ -200,6 +200,81 @@ func TestUpdateItem(t *testing.T) {
 	})
 }
 
+func TestUpdatePatient(t *testing.T) {
+	waitlist1ID, storage := initWaitlist("waitlist 1")
+	defer storage.Close()
+	waitlist2, err := storage.AddList("waitlist 2")
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	waitlist2UUID, err := uuid.FromString(waitlist2.ID)
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	waitlist2ID := waitlist2UUID.Bytes()
+
+	// add item for patient1 to waitlist1
+	storage.AddItem(waitlist1ID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(1),
+		PatientID:     swag.String(patient1ID.String()),
+		Patient: models.Patient{
+			&models.PatientItems{
+				Key:   "status",
+				Value: "added",
+			},
+		},
+	})
+	// add item for patient2 to waitlist1
+	storage.AddItem(waitlist2ID, &models.Item{
+		MainComplaint: &models.Complaint{"something", "comment"},
+		Priority:      swag.Int64(1),
+		PatientID:     swag.String(patient1ID.String()),
+		Patient: models.Patient{
+			&models.PatientItems{
+				Key:   "status",
+				Value: "added",
+			},
+		},
+	})
+
+	updatedItems, err := storage.UpdatePatient(
+		patient1ID.Bytes(),
+		models.Patient{
+			&models.PatientItems{
+				Key:   "status",
+				Value: "updated",
+			},
+		})
+
+	if err != nil {
+		t.Fatalf("Expected error to be nil; got '%v'", err)
+	}
+	if updatedItems[0].Patient[0].Value != "updated" {
+		t.Fatalf("Patient data returned on update were not updated")
+	}
+	if updatedItems[1].Patient[0].Value != "updated" {
+		t.Fatalf("Patient data returned on update were not updated")
+	}
+
+	// check if update actually happen by fetching content of waitlists
+	items, err := storage.ListItems(waitlist1ID)
+	if err != nil {
+		t.Fatalf("Failed to fetch waitlist 1")
+	}
+	if items[0].Patient[0].Value != "updated" {
+		t.Fatalf("Patient data were not updated")
+	}
+	// check if update actually happen by fetching content of waitlists
+	items, err = storage.ListItems(waitlist2ID)
+	if err != nil {
+		t.Fatalf("Failed to fetch waitlist 1")
+	}
+	if items[0].Patient[0].Value != "updated" {
+		t.Fatalf("Patient data were not updated")
+	}
+}
+
 func TestMoveItemToTop(t *testing.T) {
 	waitlistID, storage := initWaitlist("room 1")
 	defer storage.Close()

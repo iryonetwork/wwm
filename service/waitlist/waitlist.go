@@ -37,6 +37,9 @@ type Service interface {
 	// UpdateItem updates an item in a waitlist
 	UpdateItem(waitlistID []byte, item *models.Item) (*models.Item, error)
 
+	// UpdatePatient updates with new patient data all the items with specified patientID
+	UpdatePatient(patientID []byte, patient models.Patient) ([]*models.Item, error)
+
 	// MoveItemToTop moves item to the top of the list diregarding priority
 	MoveItemToTop(waitlistID, itemID []byte) (*models.Item, error)
 
@@ -72,6 +75,9 @@ type Storage interface {
 
 	// UpdateItem updates an item in a waitlist
 	UpdateItem(waitlistID []byte, item *models.Item) (*models.Item, error)
+
+	// UpdatePatient updates with new patient data all the items with specified patientID
+	UpdatePatient(patientID []byte, patient models.Patient) ([]*models.Item, error)
 
 	// MoveItemToTop moves item to the top of the list diregarding priority
 	MoveItemToTop(waitlistID, itemID []byte) (*models.Item, error)
@@ -134,6 +140,11 @@ func (s *service) CreateItem(waitlistID []byte, item *models.Item) (*models.Item
 // UpdateItem updates an item in a waitlist
 func (s *service) UpdateItem(waitlistID []byte, item *models.Item) (*models.Item, error) {
 	return s.storage.UpdateItem(waitlistID, item)
+}
+
+// UpdatePatient updates with new patient data all the items with specified patientID
+func (s *service) UpdatePatient(patientID []byte, patient models.Patient) ([]*models.Item, error) {
+	return s.storage.UpdatePatient(patientID, patient)
 }
 
 // MoveItemToTop moves item to the top of the list diregarding priority

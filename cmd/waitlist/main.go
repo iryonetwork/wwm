@@ -98,6 +98,7 @@ func main() {
 	api.ItemPutListIDItemIDHandler = h.UpdateItem()
 	api.ItemPutListIDItemIDTopHandler = h.MoveItemToTop()
 	api.ItemPutListIDItemIDReopenHandler = h.ReopenHistoryItem()
+	api.ItemPutPatientPatientIDHandler = h.UpdatePatient()
 
 	// initialize metrics middleware
 	apiMetrics := APIMetrics.NewMetrics("api", "").WithURLSanitize(utils.WhitelistURLSanitize([]string{}))
