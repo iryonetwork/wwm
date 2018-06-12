@@ -3,7 +3,7 @@ import produce from "immer"
 // insert into storage
 import { open, COLOR_DANGER } from "shared/modules/alert"
 import { newPatient, updatePatient as updateDiscoveryPatient, get, cardToObject } from "./discovery"
-import { extractPatientData, composePatientData, composeEncounterData, extractEncounterData } from "./ehr"
+import { extractPatientData, composePatientData, composeEncounterData, extractEncounterDataWithContext } from "./ehr"
 import { createPatient as createPatientInStorage, readFileByLabel, updateFile, uploadFile, readFilesByLabel } from "./storage"
 import { get as waitlistGet, remove as waitlistRemove } from "./waitlist"
 
@@ -416,7 +416,7 @@ export const fetchHealthRecords = patientID => dispatch => {
     dispatch({ type: FETCH_RECORDS })
 
     return dispatch(readFilesByLabel(patientID, "encounter"))
-        .then(documents => Promise.all(documents.map(document => Promise.all([dispatch(extractEncounterData(document.data)), document.meta]))))
+        .then(documents => Promise.all(documents.map(document => Promise.all([dispatch(extractEncounterDataWithContext(document.data)), document.meta]))))
         .then(documents => documents.map(([data, meta]) => ({ data, meta })))
         .then(documents => {
             dispatch({

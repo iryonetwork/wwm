@@ -8,7 +8,7 @@ import { load as loadUser } from "./users"
 import personSpec from "./ehr/person"
 import infoSpec from "./ehr/info"
 import encounterSpec from "./ehr/encounter"
-//import encounter from "./ehr/encounter"
+import contextSpec from "./ehr/context"
 
 // Converts form data into two separate documents
 export const composePatientData = formData => dispatch => {
@@ -25,10 +25,6 @@ export const composeEncounterData = formData => dispatch => {
     return dispatch(buildContextForEncounterData(formData)).then(context => {
         return dispatch(buildEncounterData(context, formData))
     })
-}
-
-export const extractPatientData = (person, info) => dispatch => {
-    return Promise.all([dispatch(extractPersonData(person)), dispatch(extractInfoData(info))]).then(([person, info]) => Object.assign(person, info))
 }
 
 const buildContextForPatientData = formData => dispatch => {
@@ -51,7 +47,7 @@ const buildContextForPatientData = formData => dispatch => {
             // // participants
             // // add doctor
             "/composer|identifier": author.id,
-            "/composer|name": `${get(author, "personalData.firstName", "")} ${get(author, "personalData.lastName", "")}`,
+            "/composer|name": `${get(author, "personalData.firstName", "")} ${get(author, "personalData.lastName", "")}`.trim(),
 
             "/category": "openehr::431|persistent|"
         }
@@ -78,7 +74,7 @@ const buildContextForEncounterData = formData => dispatch => {
             // // participants
             // // add doctor
             "/composer|identifier": author.id,
-            "/composer|name": `${get(author, "personalData.firstName", "")} ${get(author, "personalData.lastName", "")}`,
+            "/composer|name": `${get(author, "personalData.firstName", "")} ${get(author, "personalData.lastName", "")}`.trim(),
 
             "/category": "openehr::433|event|"
         }
@@ -102,21 +98,48 @@ export const buildEncounterData = (ctx, formData) => dispatch =>
         return specToDocument(spec, Object.assign({}, ctx), formData, "")
     })
 
-export const extractPersonData = doc => dispatch => {
+export const extractContextData = (doc, obj) => dispatch => {
+    return dispatch(contextSpec).then(spec => {
+        return specToObject(spec, obj || {}, doc, "")
+    })
+}
+
+export const extractPersonDataWithContext = (doc, obj) => dispatch => {
+    return dispatch(extractContextData(doc, obj)).then(context => {
+        return dispatch(extractPersonData(doc, context))
+    })
+}
+
+export const extractPersonData = (doc, obj) => dispatch => {
     return dispatch(personSpec).then(spec => {
-        return specToObject(spec, {}, doc, "")
+        return specToObject(spec, obj || {}, doc, "")
     })
 }
 
-const extractInfoData = doc => dispatch => {
+export const extractInfoDataWithContext = (doc, obj) => dispatch => {
+    return dispatch(extractContextData(doc, obj)).then(context => {
+        return dispatch(extractInfoData(doc, context))
+    })
+}
+
+export const extractInfoData = (doc, obj) => dispatch => {
     return dispatch(infoSpec).then(spec => {
-        return specToObject(spec, {}, doc, "")
+        return specToObject(spec, obj || {}, doc, "")
+    })
+}
+export const extractPatientData = (person, info) => dispatch => {
+    return Promise.all([dispatch(extractPersonData(person)), dispatch(extractInfoData(info))]).then(([person, info]) => Object.assign(person, info))
+}
+
+export const extractEncounterDataWithContext = (doc, obj) => dispatch => {
+    return dispatch(extractContextData(doc, obj)).then(context => {
+        return dispatch(extractEncounterData(doc, context))
     })
 }
 
-export const extractEncounterData = doc => dispatch => {
+export const extractEncounterData = (doc, obj) => dispatch => {
     return dispatch(encounterSpec).then(spec => {
-        return specToObject(spec, {}, doc, "")
+        return specToObject(spec, obj || {}, doc, "")
     })
 }
 
