@@ -115,9 +115,9 @@ class ComplaintSummary extends Component {
             <div className="complaintSummary">
                 <div className="modal-header">
                     <Patient data={patient} big={true} />
+                    <h2 className="headerMessage">{headerMessage}</h2>
                 </div>
                 <div className="modal-body">
-                    <h2>{headerMessage}</h2>
                     <div className="summaryBox">
                         <div className="row header">
                             <h2>Summary</h2>
