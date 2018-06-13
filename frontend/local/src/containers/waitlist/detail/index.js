@@ -2,7 +2,6 @@ import React from "react"
 import { connect } from "react-redux"
 import { push } from "react-router-redux"
 import { Route, Link } from "react-router-dom"
-import moment from "moment"
 
 import "./style.css"
 
@@ -34,6 +33,7 @@ import EditComplaint from "./edit-complaint"
 import AddDiagnosis from "./add-diagnosis"
 import Remove from "./remove"
 import Spinner from "shared/containers/spinner"
+import VitalSignCard from "shared/containers/vitalSign"
 import { open, COLOR_SUCCESS } from "shared/modules/alert"
 
 class CodeTitle extends React.Component {
@@ -199,86 +199,64 @@ class InConsultation extends React.Component {
                             {waitlistItem.vitalSigns &&
                                 waitlistItem.vitalSigns.height && (
                                     <div className="col-md-5 col-lg-4 col-xl-3">
-                                        <div className="card">
-                                            <div className="card-header">Height</div>
-                                            <div className="card-body">
-                                                <div className="card-text">
-                                                    <p>
-                                                        <span className="big">{waitlistItem.vitalSigns.height.value}</span>cm
-                                                    </p>
-                                                    {/* <p>5ft 1in</p> */}
-                                                </div>
-                                            </div>
-                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.height.timestamp).format("Do MMM Y")}</div>
-                                        </div>
+                                        <VitalSignCard
+                                            id="height"
+                                            name="Height"
+                                            value={waitlistItem.vitalSigns.height.value}
+                                            unit="cm"
+                                            timestamp={waitlistItem.vitalSigns.height.timestamp}
+                                        />
                                     </div>
                                 )}
 
                             {waitlistItem.vitalSigns &&
                                 waitlistItem.vitalSigns.weight && (
                                     <div className="col-md-5 col-lg-4 col-xl-3">
-                                        <div className="card">
-                                            <div className="card-header">Body mass</div>
-                                            <div className="card-body">
-                                                <div className="card-text">
-                                                    <p>
-                                                        <span className="big">{waitlistItem.vitalSigns.weight.value}</span>kg
-                                                    </p>
-                                                    {/* <p>1008.8 lb</p> */}
-                                                </div>
-                                            </div>
-                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.weight.timestamp).format("Do MMM Y")}</div>
-                                        </div>
+                                        <VitalSignCard
+                                            id="weight"
+                                            name="Body mass"
+                                            value={waitlistItem.vitalSigns.weight.value}
+                                            unit="kg"
+                                            timestamp={waitlistItem.vitalSigns.weight.timestamp}
+                                        />
                                     </div>
                                 )}
 
                             {waitlistItem.vitalSigns &&
                                 waitlistItem.vitalSigns.bmi && (
                                     <div className="col-md-5 col-lg-4 col-xl-3">
-                                        <div className="card">
-                                            <div className="card-header">BMI</div>
-                                            <div className="card-body">
-                                                <div className="card-text">
-                                                    <p>
-                                                        <span className="big">{waitlistItem.vitalSigns.bmi.value}</span>
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.bmi.timestamp).format("Do MMM Y")}</div>
-                                        </div>
+                                        <VitalSignCard
+                                            id="bmi"
+                                            name="BMI"
+                                            value={waitlistItem.vitalSigns.bmi.value}
+                                            unit="kg"
+                                            timestamp={waitlistItem.vitalSigns.bmi.timestamp}
+                                        />
                                     </div>
                                 )}
 
                             {waitlistItem.vitalSigns &&
                                 waitlistItem.vitalSigns.temperature && (
                                     <div className="col-md-5 col-lg-4 col-xl-3">
-                                        <div className="card">
-                                            <div className="card-header">Body temperature</div>
-                                            <div className="card-body">
-                                                <div className="card-text">
-                                                    <p>
-                                                        <span className="big">{waitlistItem.vitalSigns.temperature.value}</span>°C
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.temperature.timestamp).format("Do MMM Y")}</div>
-                                        </div>
+                                        <VitalSignCard
+                                            id="temperature"
+                                            name="Body temperature"
+                                            value={waitlistItem.vitalSigns.temperature.value}
+                                            unit="°C"
+                                            timestamp={waitlistItem.vitalSigns.temperature.timestamp}
+                                        />
                                     </div>
                                 )}
                             {waitlistItem.vitalSigns &&
                                 waitlistItem.vitalSigns.heart_rate && (
                                     <div className="col-md-5 col-lg-4 col-xl-3">
-                                        <div className="card">
-                                            <div className="card-header">Heart rate</div>
-                                            <div className="card-body">
-                                                <div className="card-text">
-                                                    <p>
-                                                        <span className="big">{waitlistItem.vitalSigns.heart_rate.value}</span>bpm
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.heart_rate.timestamp).format("Do MMM Y")}</div>
-                                        </div>
+                                        <VitalSignCard
+                                            id="heart_rate"
+                                            name="Heart rate"
+                                            value={waitlistItem.vitalSigns.heart_rate.value}
+                                            unit="bpm"
+                                            timestamp={waitlistItem.vitalSigns.heart_rate.timestamp}
+                                        />
                                     </div>
                                 )}
                             {waitlistItem.vitalSigns &&
@@ -286,35 +264,25 @@ class InConsultation extends React.Component {
                                 waitlistItem.vitalSigns.pressure.value.systolic &&
                                 waitlistItem.vitalSigns.pressure.value.diastolic && (
                                     <div className="col-md-5 col-lg-4 col-xl-3">
-                                        <div className="card">
-                                            <div className="card-header">Blood pressure</div>
-                                            <div className="card-body">
-                                                <div className="card-text">
-                                                    <p>
-                                                        <span className="big">
-                                                            {waitlistItem.vitalSigns.pressure.value.systolic}/{waitlistItem.vitalSigns.pressure.value.diastolic}
-                                                        </span>mmHg
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.pressure.timestamp).format("Do MMM Y")}</div>
-                                        </div>
+                                        <VitalSignCard
+                                            id="pressure"
+                                            name="Blood pressure"
+                                            value={`${waitlistItem.vitalSigns.pressure.value.systolic}/${waitlistItem.vitalSigns.pressure.value.diastolic}`}
+                                            unit="mmHg"
+                                            timestamp={waitlistItem.vitalSigns.pressure.timestamp}
+                                        />
                                     </div>
                                 )}
                             {waitlistItem.vitalSigns &&
                                 waitlistItem.vitalSigns.oxygen_saturation && (
                                     <div className="col-md-5 col-lg-4 col-xl-3">
-                                        <div className="card">
-                                            <div className="card-header">Oxygen saturation</div>
-                                            <div className="card-body">
-                                                <div className="card-text">
-                                                    <p>
-                                                        <span className="big">{waitlistItem.vitalSigns.oxygen_saturation.value}</span>%
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="card-footer">{moment(waitlistItem.vitalSigns.oxygen_saturation.timestamp).format("Do MMM Y")}</div>
-                                        </div>
+                                        <VitalSignCard
+                                            id="oxygen_saturation"
+                                            name="Oxygen saturation"
+                                            value={waitlistItem.vitalSigns.oxygen_saturation.value}
+                                            unit="%"
+                                            timestamp={waitlistItem.vitalSigns.oxygen_saturation.timestamp}
+                                        />
                                     </div>
                                 )}
                         </div>
