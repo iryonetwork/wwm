@@ -409,6 +409,7 @@ MedicalData = connect(
                 _.forEach(data.vitalSigns, (obj, key) => {
                     // if in consultation, mark historical data with warning
                     let vitalSign = _.clone(obj)
+                    vitalSign.timestamp = vitalSign.timestamp ? vitalSign.timestamp : meta.created
                     vitalSign.timestampWarning = vitalSign.timestamp ? inConsultation : true
                     medicalData[key] = medicalData[key] || []
                     medicalData[key].push(vitalSign)
