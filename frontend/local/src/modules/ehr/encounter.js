@@ -188,7 +188,7 @@ export default dispatch =>
             type: "dateTime",
             ehrPath:
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse.v1]/data[at0002]/events[at0003]:0/time",
-            formPath: "vitalSigns.pulse.timestamp"
+            formPath: "vitalSigns.heart_rate.timestamp"
         },
 
         // oxygen saturation (0 - 100)
