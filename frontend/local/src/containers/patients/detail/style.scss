@@ -108,41 +108,6 @@
                 padding: 10px;
             }
         }
-
-        .card {
-            background: $grey1;
-            border: 1px solid $grey2;
-            border-radius: 3px;
-            padding: 12px 15px;
-            color: $black;
-
-            .card-header {
-                text-transform: uppercase;
-                font-size: 11px;
-                font-weight: bold;
-            }
-
-            .card-body {
-                font-weight: bold;
-                min-height: 57px;
-
-                p {
-                    margin: 0;
-                }
-
-                .big {
-                    font-size: 24px;
-                    margin-right: 5px;
-                }
-            }
-
-            .card-footer {
-                margin-top: 8px;
-                text-transform: uppercase;
-                color: $grey5;
-                font-size: 11px;
-            }
-        }
     }
 
     .lab {
@@ -445,5 +410,68 @@
         padding: 10px 0;
         border-top: 1px solid $grey3;
         margin-bottom: 0;
+    }
+}
+
+
+.medicalData {
+    .section {
+        padding-left: 50px;
+        position: relative;
+        padding-top: 15px;
+        padding-bottom: 0px;
+        margin-top:5px;
+        margin-bottom:25px;
+    }
+    .part {
+        margin-top: 10px;
+        border-bottom: 1px solid $grey2;
+    }
+    .missingHistory {
+        padding-top: 10px;
+        color: $grey5;
+    }
+}
+
+.tooltip {
+    font-size: 11px;
+    color: $white;
+    margin-top:5px;
+    padding: 5px;
+    border-radius: 4px;
+    background-color: $grey5;
+    border: 1px solid $grey2;
+    box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.12);
+
+    .arrow {
+        position: absolute;
+        bottom: 100%;
+        left: 20px !important;
+        right: auto !important;
+        background: $grey5;
+    }
+    .arrow:after, .arrow:before {
+        bottom: 100%;
+        left: 50%;
+        border: solid transparent;
+        content: " ";
+        height: 0;
+        width: 0;
+        position: absolute;
+        pointer-events: none;
+    }
+
+    .arrow:after {
+        border-color: rgba(255, 255, 255, 0);
+        border-bottom-color: $grey5;
+        border-width: 6px;
+        margin-left: -6px;
+    }
+
+    .arrow:before {
+        border-color: rgba(235, 241, 245, 0);
+        border-bottom-color: $grey2;
+        border-width: 7px;
+        margin-left: -7px;
     }
 }

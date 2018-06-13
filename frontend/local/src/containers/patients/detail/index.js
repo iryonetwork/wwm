@@ -23,6 +23,7 @@ import { fetchPatient } from "../../../modules/patient"
 import { get as getWaitlistItem } from "../../../modules/waitlist"
 
 import { ReactComponent as InConsultationIcon } from "shared/icons/in-consultation-active.svg"
+import { ReactComponent as MedicalDataIcon } from "shared/icons/medical-data-active.svg"
 import { ReactComponent as MedicalHistoryIcon } from "shared/icons/medical-history-active.svg"
 import { ReactComponent as PersonalInfoIcon } from "shared/icons/personal-info-active.svg"
 import { ReactComponent as HealthRecordIcon } from "shared/icons/health-record-active.svg"
@@ -160,14 +161,14 @@ class PatientDetail extends React.Component {
                                             )}
                                         </li>
                                     )}
-                                    {/* <li>
+                                    <li>
                                         {this.props.canSeeVitalSigns ? (
                                             <NavLink to={baseURL + "data"}>
                                                 <MedicalDataIcon />
                                                 Medical data
                                             </NavLink>
                                         ) : null}
-                                    </li> */}
+                                    </li>
                                     <li>
                                         {this.props.canSeeHealthHistory ? (
                                             <NavLink to={baseURL + "history"}>
