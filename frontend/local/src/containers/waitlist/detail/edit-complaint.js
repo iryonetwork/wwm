@@ -1,7 +1,7 @@
 import React from "react"
 import { connect } from "react-redux"
 import { withRouter } from "react-router"
-import { push } from "react-router-redux"
+import { goBack } from "react-router-redux"
 
 import { ComplaintFormModalContent, ComplaintSummary } from "../shared/complaint"
 import Modal from "shared/containers/modal"
@@ -52,7 +52,7 @@ class EditComplaint extends React.Component {
     }
 
     close = () => {
-        this.props.push(`/waitlist/${this.props.match.params.waitlistID}`)
+        this.props.goBack()
     }
 
     render() {
@@ -98,7 +98,7 @@ EditComplaint = connect(
         listAll,
         open,
         resetIndicators,
-        push
+        goBack
     }
 )(EditComplaint)
 
