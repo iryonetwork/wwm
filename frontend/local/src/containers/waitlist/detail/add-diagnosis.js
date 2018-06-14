@@ -83,17 +83,23 @@ class AddDiagnosis extends React.Component {
                                 <Field name="comment" component={renderTextarea} label="Description" />
                             </div>
                         </div>
-
-                        <h2>Therapy</h2>
-
-                        <FieldArray name="therapies" component={renderTherapies} />
+                        <div className="therapies">
+                            <h2>Therapies</h2>
+                            <FieldArray name="therapies" component={renderTherapies} />
+                        </div>
                     </div>
 
                     <div className="modal-footer">
                         <div className="form-row">
                             <div className="col-sm-4" />
                             <div className="col-sm-4">
-                                <button type="button" tabIndex="-1" className="btn btn-link btn-block" datadismiss="modal" onClick={() => history.goBack()}>
+                                <button
+                                    type="button"
+                                    tabIndex="-1"
+                                    className="btn btn-secondary btn-block"
+                                    datadismiss="modal"
+                                    onClick={() => history.goBack()}
+                                >
                                     Cancel
                                 </button>
                             </div>
@@ -164,9 +170,9 @@ class renderTherapies extends React.Component {
     render() {
         const { fields } = this.props
         return (
-            <div className="section">
+            <React.Fragment>
                 {(fields || []).map((therapy, index) => (
-                    <React.Fragment key={index}>
+                    <div className="section" key={index}>
                         <div className="form-row">
                             <div className="form-group col-sm-12">
                                 <Field name={`${therapy}.medicine`} component={renderInput} label="Medicine" />
@@ -177,16 +183,14 @@ class renderTherapies extends React.Component {
                                 <Field name={`${therapy}.instructions`} component={renderTextarea} label="Instructions" />
                             </div>
                         </div>
-                    </React.Fragment>
-                ))}
-                <div className="form-row">
-                    <div className="form-group">
-                        <button className="btn btn-link addTherapy" onClick={this.pushNewFields}>
-                            Add therapy
-                        </button>
                     </div>
+                ))}
+                <div className="section">
+                    <button className="btn btn-link addTherapy" onClick={this.pushNewFields}>
+                        Add therapy
+                    </button>
                 </div>
-            </div>
+            </React.Fragment>
         )
     }
 }

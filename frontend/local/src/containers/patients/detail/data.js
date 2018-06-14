@@ -247,7 +247,7 @@ class MedicalData extends React.Component {
                                                 <div className="col-md-5 col-lg-4 col-xl-3">
                                                     <VitalSignCard
                                                         id="oxygen_saturation0"
-                                                        name="Heart rate"
+                                                        name="Oxygen saturation"
                                                         value={medicalData.oxygen_saturation[0].value}
                                                         unit="%"
                                                         timestamp={medicalData.oxygen_saturation[0].timestamp}

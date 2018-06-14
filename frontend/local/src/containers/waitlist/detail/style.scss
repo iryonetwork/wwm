@@ -132,13 +132,10 @@
 }
 
 .add-diagnosis {
-    h2 {
-        margin: 0px 0 40px 0;
-    }
-
     .diagnosisSelect {
         position: relative;
         z-index: 1000;
+        margin-bottom: -5px;
     }
 
     .Select-multi-value-wrapper,
@@ -157,5 +154,24 @@
     .Select-menu-outer {
         position: absolute;
         z-index: -1;
+    }
+
+    .form-group {
+        margin-bottom: 0px;
+        padding-bottom: 0px;
+    }
+    .form-row {
+        margin-top: 25px;
+    }
+
+    .therapies {
+        margin-top: 15px;
+        .section {
+            padding: 10px 0 10px;
+            border-top: 1px solid $grey2;
+            &:last-child {
+                border-bottom: 1px solid $grey2;
+            }
+        }
     }
 }

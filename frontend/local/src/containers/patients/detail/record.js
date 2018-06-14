@@ -122,13 +122,15 @@ class HealthRecord extends React.Component {
                                                         <dl>
                                                             {data.therapies.map((therapy, i) => (
                                                                 <React.Fragment key={i}>
-                                                                    <dt>{therapy.medication}</dt>
-                                                                    {data.diagnoses.length > 1 &&
-                                                                        data.diagnoses[therapy.diagnosis].diagnosis.label && (
-                                                                            <aside className="diagnosisReference">
-                                                                                {data.diagnoses[therapy.diagnosis].diagnosis.label}
-                                                                            </aside>
-                                                                        )}
+                                                                    <dt>
+                                                                        {therapy.medication}
+                                                                        {data.diagnoses.length > 1 &&
+                                                                            data.diagnoses[therapy.diagnosis].diagnosis.label && (
+                                                                                <aside className="diagnosisReference">
+                                                                                    {data.diagnoses[therapy.diagnosis].diagnosis.label}
+                                                                                </aside>
+                                                                            )}
+                                                                    </dt>
                                                                     <dd>{therapy.instructions}</dd>
                                                                 </React.Fragment>
                                                             ))}

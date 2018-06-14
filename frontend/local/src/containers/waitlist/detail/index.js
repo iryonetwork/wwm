@@ -2,12 +2,14 @@ import React from "react"
 import { connect } from "react-redux"
 import { push } from "react-router-redux"
 import { Route, Link } from "react-router-dom"
+import _ from "lodash"
 
 import "./style.css"
 
 import { ReactComponent as ComplaintIcon } from "shared/icons/complaint.svg"
 import { ReactComponent as DiagnosisIcon } from "shared/icons/diagnosis.svg"
 import { ReactComponent as MedicalDataIcon } from "shared/icons/vitalsigns.svg"
+import { ReactComponent as TherapyIcon } from "shared/icons/therapy.svg"
 //import { ReactComponent as LaboratoryIcon } from "shared/icons/laboratory.svg"
 //import { ReactComponent as NegativeIcon } from "shared/icons/negative.svg"
 //import { ReactComponent as PositiveIcon } from "shared/icons/positive.svg"
@@ -101,13 +103,24 @@ class InConsultation extends React.Component {
     render() {
         const { match, saving, waitlistItem, waitlistFetching } = this.props
 
+        // collect all therapies
+        let therapies = []
+        waitlistItem &&
+            _.forEach(waitlistItem.diagnoses, (diagnosis, i) => {
+                _.forEach(diagnosis.therapies, therapy => {
+                    let t = _.clone(therapy)
+                    t.diagnosis = i
+                    therapies.push(t)
+                })
+            })
+
         if (saving || waitlistFetching) {
             return <Spinner />
         }
         return waitlistItem ? (
-            <div>
+            <div className="consultation">
                 <header>
-                    <h1>In consultation</h1>
+                    <h1>In Consultation</h1>
                     {this.props.canAddDiagnosis && (
                         <React.Fragment>
                             {(!waitlistItem.diagnoses && (
@@ -127,6 +140,96 @@ class InConsultation extends React.Component {
                     )}
                 </header>
 
+                {this.props.canSeeDiagnosis &&
+                    (waitlistItem.diagnoses || []).length > 0 && (
+                        <React.Fragment key="diagnoses">
+                            <div className="section" key="diangosis0">
+                                <header>
+                                    <h2>
+                                        <DiagnosisIcon />Diagnosis
+                                    </h2>
+                                    {this.props.canAddDiagnosis && (
+                                        <Link to={joinPaths(match.url, "add-diagnosis")} className="btn btn-link">
+                                            Add Complementary Diagnosis
+                                        </Link>
+                                    )}
+                                </header>
+                                <div className="part diagnosis" key="diagnosis0body">
+                                    <header>
+                                        <h3>
+                                            {waitlistItem.diagnoses[0].label ? (
+                                                waitlistItem.diagnoses[0].label
+                                            ) : (
+                                                <CodeTitle categoryId="diagnosis" codeId={waitlistItem.diagnoses[0].diagnosis} />
+                                            )}
+                                        </h3>
+                                        {this.props.canAddDiagnosis && (
+                                            <Link to={joinPaths(match.url, `diagnoses/0/edit`)} className="btn btn-link">
+                                                Edit
+                                            </Link>
+                                        )}
+                                    </header>
+                                    <React.Fragment key="diagnosis0comment">
+                                        {waitlistItem.diagnoses[0].comment && <p>{waitlistItem.diagnoses[0].comment}</p>}
+                                    </React.Fragment>
+                                </div>
+                                {waitlistItem.diagnoses.length > 1 && (
+                                    <div className="subsection part" key="complementaryDiagnoses">
+                                        <header>
+                                            <h3>Complementary diagnoses</h3>
+                                        </header>
+                                        <dl>
+                                            {waitlistItem.diagnoses.map((el, key) => {
+                                                return (
+                                                    key !== 0 && (
+                                                        <React.Fragment key={`diagnosis${key}`}>
+                                                            <dt className="with-btn">
+                                                                <h4>{el.label ? el.label : <CodeTitle categoryId="diagnosis" codeId={el.diagnosis} />}</h4>
+                                                                {this.props.canAddDiagnosis && (
+                                                                    <Link to={joinPaths(match.url, `diagnoses/${key}/edit`)} className="btn btn-link">
+                                                                        Edit
+                                                                    </Link>
+                                                                )}
+                                                            </dt>
+                                                            <dd>{el.comment}</dd>
+                                                        </React.Fragment>
+                                                    )
+                                                )
+                                            })}
+                                        </dl>
+                                    </div>
+                                )}
+                            </div>
+
+                            {therapies.length > 0 && (
+                                <div className="section" key="therapy">
+                                    <header>
+                                        <h2>
+                                            <TherapyIcon />Therapy
+                                        </h2>
+                                    </header>
+                                    <div className="part">
+                                        <dl>
+                                            {therapies.map((therapy, i) => (
+                                                <React.Fragment key={i}>
+                                                    <dt>
+                                                        <h3>{therapy.medicine}</h3>
+
+                                                        {waitlistItem.diagnoses.length > 1 &&
+                                                            waitlistItem.diagnoses[therapy.diagnosis].label && (
+                                                                <aside className="diagnosisReference">{waitlistItem.diagnoses[therapy.diagnosis].label}</aside>
+                                                            )}
+                                                    </dt>
+                                                    <dd>{therapy.instructions}</dd>
+                                                </React.Fragment>
+                                            ))}
+                                        </dl>
+                                    </div>
+                                </div>
+                            )}
+                        </React.Fragment>
+                    )}
+
                 {this.props.canSeeMainComplaint && (
                     <div className="section">
                         <header>
@@ -135,52 +238,24 @@ class InConsultation extends React.Component {
                             </h2>
                             {this.props.canEditMainComplaint && (
                                 <Link to={joinPaths(match.url, "edit-complaint")} className="btn btn-link">
-                                    Edit main complaint
+                                    Edit Main Complaint
                                 </Link>
                             )}
                         </header>
-
-                        <h3>{(waitlistItem.mainComplaint || {}).complaint}</h3>
-                        {(waitlistItem.mainComplaint || {}).comment && <p>{(waitlistItem.mainComplaint || {}).comment}</p>}
+                        <div className="part" key="mainComplaint">
+                            {!_.isEmpty(waitlistItem.mainComplaint) ? (
+                                <dl>
+                                    <dt>{waitlistItem.mainComplaint ? waitlistItem.mainComplaint.complaint : null}</dt>
+                                    {waitlistItem.mainComplaint && waitlistItem.mainComplaint.comment && <dd>{waitlistItem.mainComplaint.comment}</dd>}
+                                </dl>
+                            ) : (
+                                <dl>
+                                    <dd className="missing">Main complaint was not set</dd>
+                                </dl>
+                            )}
+                        </div>
                     </div>
                 )}
-
-                {this.props.canSeeDiagnosis &&
-                    (waitlistItem.diagnoses || []).length > 0 && (
-                        <div className="section">
-                            <header>
-                                <h2>
-                                    <DiagnosisIcon />
-                                    Diagnoses
-                                </h2>
-                                {this.props.canAddDiagnosis && (
-                                    <Link to={joinPaths(match.url, "add-diagnosis")} className="btn btn-link">
-                                        Add complementary diagnosis
-                                    </Link>
-                                )}
-                            </header>
-
-                            {waitlistItem.diagnoses.map((el, key) => (
-                                <React.Fragment key={key}>
-                                    <h3>{el.label ? el.label : <CodeTitle categoryId="diagnosis" codeId={el.diagnosis} />}</h3>
-                                    {el.comment && <p>{el.comment}</p>}
-
-                                    {el.therapies && <h4>Therapies</h4>}
-                                    {(el.therapies || []).map((tel, tkey) => (
-                                        <React.Fragment key={tkey}>
-                                            <h5>{tel.medicine}</h5>
-                                            {tel.instructions && <p>{tel.instructions}</p>}
-                                        </React.Fragment>
-                                    ))}
-                                    {this.props.canAddDiagnosis && (
-                                        <Link to={joinPaths(match.url, `diagnoses/${key}/edit`)} className="btn btn-link">
-                                            Edit diagnosis
-                                        </Link>
-                                    )}
-                                </React.Fragment>
-                            ))}
-                        </div>
-                    )}
 
                 {this.props.canSeeVitalSigns && (
                     <div className="section">
@@ -191,100 +266,102 @@ class InConsultation extends React.Component {
                             </h2>
                             {this.props.canAddVitalSigns && (
                                 <Link to={joinPaths(match.url, "add-data")} className="btn btn-link">
-                                    Add medical data
+                                    Add Medical Data
                                 </Link>
                             )}
                         </header>
-                        <div className="card-group">
-                            {waitlistItem.vitalSigns &&
-                                waitlistItem.vitalSigns.height && (
-                                    <div className="col-md-5 col-lg-4 col-xl-3">
-                                        <VitalSignCard
-                                            id="height"
-                                            name="Height"
-                                            value={waitlistItem.vitalSigns.height.value}
-                                            unit="cm"
-                                            timestamp={waitlistItem.vitalSigns.height.timestamp}
-                                        />
-                                    </div>
-                                )}
+                        <div className="part" key="vitalSigns">
+                            <div className="card-group">
+                                {waitlistItem.vitalSigns &&
+                                    waitlistItem.vitalSigns.height && (
+                                        <div className="col-md-5 col-lg-4 col-xl-3">
+                                            <VitalSignCard
+                                                id="height"
+                                                name="Height"
+                                                value={waitlistItem.vitalSigns.height.value}
+                                                unit="cm"
+                                                timestamp={waitlistItem.vitalSigns.height.timestamp}
+                                            />
+                                        </div>
+                                    )}
 
-                            {waitlistItem.vitalSigns &&
-                                waitlistItem.vitalSigns.weight && (
-                                    <div className="col-md-5 col-lg-4 col-xl-3">
-                                        <VitalSignCard
-                                            id="weight"
-                                            name="Body mass"
-                                            value={waitlistItem.vitalSigns.weight.value}
-                                            unit="kg"
-                                            timestamp={waitlistItem.vitalSigns.weight.timestamp}
-                                        />
-                                    </div>
-                                )}
+                                {waitlistItem.vitalSigns &&
+                                    waitlistItem.vitalSigns.weight && (
+                                        <div className="col-md-5 col-lg-4 col-xl-3">
+                                            <VitalSignCard
+                                                id="weight"
+                                                name="Body mass"
+                                                value={waitlistItem.vitalSigns.weight.value}
+                                                unit="kg"
+                                                timestamp={waitlistItem.vitalSigns.weight.timestamp}
+                                            />
+                                        </div>
+                                    )}
 
-                            {waitlistItem.vitalSigns &&
-                                waitlistItem.vitalSigns.bmi && (
-                                    <div className="col-md-5 col-lg-4 col-xl-3">
-                                        <VitalSignCard
-                                            id="bmi"
-                                            name="BMI"
-                                            value={waitlistItem.vitalSigns.bmi.value}
-                                            unit="kg"
-                                            timestamp={waitlistItem.vitalSigns.bmi.timestamp}
-                                        />
-                                    </div>
-                                )}
+                                {waitlistItem.vitalSigns &&
+                                    waitlistItem.vitalSigns.bmi && (
+                                        <div className="col-md-5 col-lg-4 col-xl-3">
+                                            <VitalSignCard
+                                                id="bmi"
+                                                name="BMI"
+                                                value={waitlistItem.vitalSigns.bmi.value}
+                                                unit=""
+                                                timestamp={waitlistItem.vitalSigns.bmi.timestamp}
+                                            />
+                                        </div>
+                                    )}
 
-                            {waitlistItem.vitalSigns &&
-                                waitlistItem.vitalSigns.temperature && (
-                                    <div className="col-md-5 col-lg-4 col-xl-3">
-                                        <VitalSignCard
-                                            id="temperature"
-                                            name="Body temperature"
-                                            value={waitlistItem.vitalSigns.temperature.value}
-                                            unit="°C"
-                                            timestamp={waitlistItem.vitalSigns.temperature.timestamp}
-                                        />
-                                    </div>
-                                )}
-                            {waitlistItem.vitalSigns &&
-                                waitlistItem.vitalSigns.heart_rate && (
-                                    <div className="col-md-5 col-lg-4 col-xl-3">
-                                        <VitalSignCard
-                                            id="heart_rate"
-                                            name="Heart rate"
-                                            value={waitlistItem.vitalSigns.heart_rate.value}
-                                            unit="bpm"
-                                            timestamp={waitlistItem.vitalSigns.heart_rate.timestamp}
-                                        />
-                                    </div>
-                                )}
-                            {waitlistItem.vitalSigns &&
-                                waitlistItem.vitalSigns.pressure &&
-                                waitlistItem.vitalSigns.pressure.value.systolic &&
-                                waitlistItem.vitalSigns.pressure.value.diastolic && (
-                                    <div className="col-md-5 col-lg-4 col-xl-3">
-                                        <VitalSignCard
-                                            id="pressure"
-                                            name="Blood pressure"
-                                            value={`${waitlistItem.vitalSigns.pressure.value.systolic}/${waitlistItem.vitalSigns.pressure.value.diastolic}`}
-                                            unit="mmHg"
-                                            timestamp={waitlistItem.vitalSigns.pressure.timestamp}
-                                        />
-                                    </div>
-                                )}
-                            {waitlistItem.vitalSigns &&
-                                waitlistItem.vitalSigns.oxygen_saturation && (
-                                    <div className="col-md-5 col-lg-4 col-xl-3">
-                                        <VitalSignCard
-                                            id="oxygen_saturation"
-                                            name="Oxygen saturation"
-                                            value={waitlistItem.vitalSigns.oxygen_saturation.value}
-                                            unit="%"
-                                            timestamp={waitlistItem.vitalSigns.oxygen_saturation.timestamp}
-                                        />
-                                    </div>
-                                )}
+                                {waitlistItem.vitalSigns &&
+                                    waitlistItem.vitalSigns.temperature && (
+                                        <div className="col-md-5 col-lg-4 col-xl-3">
+                                            <VitalSignCard
+                                                id="temperature"
+                                                name="Body temperature"
+                                                value={waitlistItem.vitalSigns.temperature.value}
+                                                unit="°C"
+                                                timestamp={waitlistItem.vitalSigns.temperature.timestamp}
+                                            />
+                                        </div>
+                                    )}
+                                {waitlistItem.vitalSigns &&
+                                    waitlistItem.vitalSigns.heart_rate && (
+                                        <div className="col-md-5 col-lg-4 col-xl-3">
+                                            <VitalSignCard
+                                                id="heart_rate"
+                                                name="Heart rate"
+                                                value={waitlistItem.vitalSigns.heart_rate.value}
+                                                unit="bpm"
+                                                timestamp={waitlistItem.vitalSigns.heart_rate.timestamp}
+                                            />
+                                        </div>
+                                    )}
+                                {waitlistItem.vitalSigns &&
+                                    waitlistItem.vitalSigns.pressure &&
+                                    waitlistItem.vitalSigns.pressure.value.systolic &&
+                                    waitlistItem.vitalSigns.pressure.value.diastolic && (
+                                        <div className="col-md-5 col-lg-4 col-xl-3">
+                                            <VitalSignCard
+                                                id="pressure"
+                                                name="Blood pressure"
+                                                value={`${waitlistItem.vitalSigns.pressure.value.systolic}/${waitlistItem.vitalSigns.pressure.value.diastolic}`}
+                                                unit="mmHg"
+                                                timestamp={waitlistItem.vitalSigns.pressure.timestamp}
+                                            />
+                                        </div>
+                                    )}
+                                {waitlistItem.vitalSigns &&
+                                    waitlistItem.vitalSigns.oxygen_saturation && (
+                                        <div className="col-md-5 col-lg-4 col-xl-3">
+                                            <VitalSignCard
+                                                id="oxygen_saturation"
+                                                name="Oxygen saturation"
+                                                value={waitlistItem.vitalSigns.oxygen_saturation.value}
+                                                unit="%"
+                                                timestamp={waitlistItem.vitalSigns.oxygen_saturation.timestamp}
+                                            />
+                                        </div>
+                                    )}
+                            </div>
                         </div>
                     </div>
                 )}
