@@ -183,6 +183,9 @@
             &:last-child {
                 border-bottom: 1px solid $grey2;
             }
+            .remove {
+                padding: 0;
+            }
         }
     }
 }

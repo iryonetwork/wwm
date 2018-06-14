@@ -15,6 +15,7 @@ import Spinner from "shared/containers/spinner"
 import { open, COLOR_SUCCESS } from "shared/modules/alert"
 
 import { ReactComponent as DiagnosisIcon } from "shared/icons/diagnosis.svg"
+import { ReactComponent as NegativeIcon } from "shared/icons/negative.svg"
 
 import "react-select/dist/react-select.css"
 
@@ -313,11 +314,17 @@ class renderTherapies extends React.Component {
     constructor(props) {
         super(props)
         this.pushNewFields = this.pushNewFields.bind(this)
+        this.removeFields = this.removeFields.bind(this)
     }
 
-    pushNewFields(e) {
+    pushNewFields = e => {
         e.preventDefault()
         this.props.fields.push({})
+    }
+
+    removeFields = index => e => {
+        e.preventDefault()
+        this.props.fields.remove(index)
     }
 
     render() {
@@ -330,6 +337,10 @@ class renderTherapies extends React.Component {
                             <div className="form-group col-sm-12">
                                 <Field name={`${therapy}.medicine`} component={renderInput} label="Medicine" />
                             </div>
+                            <button className="btn btn-link remove" onClick={this.removeFields(index)}>
+                                <NegativeIcon />
+                                Remove
+                            </button>
                         </div>
                         <div className="form-row">
                             <div className="form-group col-sm-12">
