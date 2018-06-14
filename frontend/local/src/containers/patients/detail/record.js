@@ -341,13 +341,15 @@ HealthRecord = connect(
     (state, props) => {
         let records = state.patient.patientRecords.data
         // sort records by creation time and reverse to have latest record as first
-        records = _.reverse(
-            _.sortBy(records, [
-                function(obj) {
-                    return obj.meta.created
-                }
-            ])
-        )
+        records = records
+            ? _.reverse(
+                  _.sortBy(records, [
+                      function(obj) {
+                          return obj.meta.created
+                      }
+                  ])
+              )
+            : undefined
 
         return {
             patientID: props.match.params.patientID || state.patient.patient.ID,
