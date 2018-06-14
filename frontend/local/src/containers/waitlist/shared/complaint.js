@@ -12,8 +12,7 @@ const priorityOptions = [{ value: 1, label: "Yes" }, { value: 4, label: "No" }]
 
 class ComplaintFormModalContent extends Component {
     render() {
-        const { waitlistItem, patient, onSave, onClose } = this.props
-        const { handleSubmit } = this.props
+        const { waitlistItem, patient, onSave, onClose, handleSubmit } = this.props
 
         return (
             <div className="complaintForm">
@@ -112,7 +111,7 @@ class ComplaintSummary extends Component {
     render() {
         const { waitlistItem, patient, headerMessage, onEnableEdit, onClose } = this.props
         return (
-            <div className="complaintSummary">
+            <div className="summary">
                 <div className="modal-header">
                     <Patient data={patient} big={true} />
                     <h2 className="headerMessage">{headerMessage}</h2>
@@ -124,16 +123,12 @@ class ComplaintSummary extends Component {
                         </div>
                         <div className="row">
                             <label htmlFor="complaint">Main complaint</label>
-                            <div id="complaint" className="complaint">
-                                {waitlistItem.mainComplaint.complaint}
-                            </div>
+                            <dt>{waitlistItem.mainComplaint.complaint}</dt>
                         </div>
                         {waitlistItem.mainComplaint.comment && (
                             <div className="row">
                                 <label htmlFor="complaint">Details</label>
-                                <div id="complaint" className="comment">
-                                    {waitlistItem.mainComplaint.comment}
-                                </div>
+                                <dd>{waitlistItem.mainComplaint.comment}</dd>
                             </div>
                         )}
                     </div>

@@ -19,6 +19,14 @@
             margin-top: -15px;
         }
 
+        .measurements {
+            margin: 0px;
+            .col-sm-4 {
+                padding-left: 0px;
+                padding-right: 8px;
+            }
+        }
+
         h5 {
             font-weight: normal;
             text-transform: uppercase;

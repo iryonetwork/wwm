@@ -1,6 +1,7 @@
 import React from "react"
 import { connect } from "react-redux"
 import { NavLink, Route, Redirect } from "react-router-dom"
+import _ from "lodash"
 
 import Consultation from "../../waitlist/detail"
 import Data from "./data"
@@ -19,7 +20,7 @@ import {
     RESOURCE_EXAMINATION,
     READ
 } from "../../../modules/validations"
-import { fetchPatient } from "../../../modules/patient"
+import { fetchPatient, fetchHealthRecords } from "../../../modules/patient"
 import { get as getWaitlistItem } from "../../../modules/waitlist"
 
 import { ReactComponent as InConsultationIcon } from "shared/icons/in-consultation-active.svg"
@@ -37,7 +38,9 @@ class PatientDetail extends React.Component {
         if (props.match.params.waitlistID && props.match.params.itemID) {
             props
                 .getWaitlistItem(props.match.params.waitlistID, props.match.params.itemID)
-                .then(item => props.fetchPatient(item.patientID))
+                .then(item => {
+                    props.fetchPatient(item.patientID)
+                })
                 .catch(ex => console.warn("Failed to load patient", ex))
         } else {
             props.fetchPatient(props.match.params.patientID).catch(ex => console.warn("Failed to load patient", ex))
@@ -45,27 +48,38 @@ class PatientDetail extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (this.props.match.params.waitlistID && this.props.match.params.itemID && this.props.match.params.itemID !== prevProps.match.params.itemID) {
-            this.props
-                .getWaitlistItem(this.props.match.params.waitlistID, this.props.match.params.itemID)
-                .then(item => this.props.fetchPatient(item.patientID))
-                .catch(ex => console.warn("Failed to load patient", ex))
-        } else if (this.props.match.params.patientID !== prevProps.match.params.patientID) {
-            this.props.fetchPatient(this.props.match.params.patientID).catch(ex => console.warn("Failed to load patient", ex))
+        if (!this.props.patientLoading) {
+            if (this.props.match.params.waitlistID && this.props.match.params.itemID && this.props.match.params.itemID !== prevProps.match.params.itemID) {
+                this.props
+                    .getWaitlistItem(this.props.match.params.waitlistID, this.props.match.params.itemID)
+                    .then(item => this.props.fetchPatient(item.patientID))
+                    .catch(ex => console.warn("Failed to load patient", ex))
+            } else if (this.props.match.params.patientID !== prevProps.match.params.patientID) {
+                this.props.fetchPatient(this.props.match.params.patientID).catch(ex => console.warn("Failed to load patient", ex))
+            }
+
+            if (
+                this.props.patientID &&
+                this.props.loadedPatientID === this.props.patientID &&
+                this.props.patientRecordsNeeded &&
+                !this.props.patientRecords &&
+                !this.props.patientRecordsLoading
+            ) {
+                this.props.fetchHealthRecords(this.props.patientID)
+            }
         }
     }
 
     render() {
-        const { waitlistFetching, patientLoading, waitlistItem, patient, match } = this.props
+        const { inConsultation, waitlistFetching, patientLoading, patientRecordsLoading, patient, bodyMeasurements, match } = this.props
 
         const waitlistID = match.params.waitlistID
         const waitlistItemID = match.params.itemID
         const patientID = match.params.patientID
-        const inConsultation = waitlistID && waitlistItemID
 
         const baseURL = inConsultation ? `/waitlist/${waitlistID}/${waitlistItemID}/` : `/patients/${patientID}/`
 
-        if (waitlistFetching || patientLoading) {
+        if (waitlistFetching || patientLoading || patientRecordsLoading) {
             return <Spinner />
         }
 
@@ -75,32 +89,25 @@ class PatientDetail extends React.Component {
                     <Patient big={true} data={patient} />
                     {this.props.canSeeVitalSigns ? (
                         <div className="row measurements">
-                            {waitlistItem.vitalSigns &&
-                                waitlistItem.vitalSigns.height && (
+                            {bodyMeasurements &&
+                                bodyMeasurements.height && (
                                     <div className="col-sm-4">
                                         <h5>Height</h5>
-                                        {waitlistItem.vitalSigns.height.value} cm
+                                        {bodyMeasurements.height} cm
                                     </div>
                                 )}
-                            {waitlistItem.vitalSigns &&
-                                waitlistItem.vitalSigns.weight && (
+                            {bodyMeasurements &&
+                                bodyMeasurements.weight && (
                                     <div className="col-sm-4">
                                         <h5>Weight</h5>
-                                        {waitlistItem.vitalSigns.weight.value} kg
+                                        {bodyMeasurements.weight} kg
                                     </div>
                                 )}
-                            {waitlistItem.vitalSigns &&
-                                waitlistItem.vitalSigns.height &&
-                                waitlistItem.vitalSigns.weight && (
+                            {bodyMeasurements &&
+                                bodyMeasurements.bmi && (
                                     <div className="col-sm-4">
                                         <h5>BMI</h5>
-                                        {round(
-                                            waitlistItem.vitalSigns.weight.value /
-                                                waitlistItem.vitalSigns.height.value /
-                                                waitlistItem.vitalSigns.height.value *
-                                                10000,
-                                            2
-                                        )}
+                                        {bodyMeasurements.bmi}
                                     </div>
                                 )}
                         </div>
@@ -212,29 +219,76 @@ class PatientDetail extends React.Component {
 }
 
 PatientDetail = connect(
-    (state, props) => ({
-        waitlistFetching: state.waitlist.fetching,
-        patientLoading: state.patient.loading || state.patient.saving,
-        patient: state.patient.patient,
-        waitlistItem: state.waitlist.item || {},
-        canSeePatientId: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[READ],
-        canSeeDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[READ],
-        canSeeVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[READ],
-        canSeeHealthHistory: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[READ],
-        canSeeExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[READ]
-    }),
+    (state, props) => {
+        let inConsultation = props.match.params.waitlistID && props.match.params.itemID
+
+        // get latest body measurements
+        let bodyMeasurements = {}
+        // if in consultation, fetch data from current consultation first
+        if (inConsultation && state.waitlist.item) {
+            bodyMeasurements = {
+                height: state.waitlist.item.vitalSigns && state.waitlist.item.vitalSigns.height ? state.waitlist.item.vitalSigns.height.value : undefined,
+                weight: state.waitlist.item.vitalSigns && state.waitlist.item.vitalSigns.weight ? state.waitlist.item.vitalSigns.weight.value : undefined,
+                bmi: state.waitlist.item.vitalSigns && state.waitlist.item.vitalSigns.bmi ? state.waitlist.item.vitalSigns.bmi.value : undefined
+            }
+        }
+
+        let patientRecordsNeeded = bodyMeasurements.height && bodyMeasurements.weight && bodyMeasurements.bmi ? false : true
+
+        if (patientRecordsNeeded && state.patient.patientRecords.data) {
+            let records = state.patient.patientRecords.data
+            // sort records by creation time and reverse to have latest record as first
+            records = _.reverse(
+                _.sortBy(records, [
+                    function(obj) {
+                        return obj.meta.created
+                    }
+                ])
+            )
+
+            // collect latest data for each category
+            _.forEach(records, ({ data, meta }) => {
+                _.forEach(data.vitalSigns, (obj, key) => {
+                    if (!bodyMeasurements.height && key === "height") {
+                        bodyMeasurements.height = obj.value
+                    }
+                    if (!bodyMeasurements.weight && key === "weight") {
+                        bodyMeasurements.weight = obj.value
+                    }
+                    if (!bodyMeasurements.bmi && key === "bmi") {
+                        bodyMeasurements.bmi = obj.value
+                    }
+                    if (bodyMeasurements.height && bodyMeasurements.weight && bodyMeasurements.bmi) {
+                        return false
+                    }
+                })
+            })
+        }
+
+        return {
+            inConsultation: inConsultation,
+            waitlistFetching: state.waitlist.fetching,
+            patientLoading: state.patient.loading || state.patient.saving,
+            patient: state.patient.patient,
+            patientID: props.match.params.patientID || state.patient.patient.ID,
+            loadedPatientID: state.patient.patient.ID,
+            patientRecordsNeeded: patientRecordsNeeded,
+            patientRecordsLoading: state.patient.patientRecords.loading,
+            patientRecords: state.patient.patientRecords.data,
+            bodyMeasurements: bodyMeasurements,
+            waitlistItem: state.waitlist.item || {},
+            canSeePatientId: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[READ],
+            canSeeDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[READ],
+            canSeeVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[READ],
+            canSeeHealthHistory: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[READ],
+            canSeeExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[READ]
+        }
+    },
     {
         fetchPatient,
-        getWaitlistItem
+        getWaitlistItem,
+        fetchHealthRecords
     }
 )(PatientDetail)
 
 export default PatientDetail
-
-const round = (number, precision) => {
-    var shift = function(number, precision) {
-        var numArray = ("" + number).split("e")
-        return +(numArray[0] + "e" + (numArray[1] ? +numArray[1] + precision : precision))
-    }
-    return shift(Math.round(shift(number, +precision)), -precision)
-}

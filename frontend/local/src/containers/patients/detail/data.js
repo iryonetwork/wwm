@@ -11,7 +11,7 @@ import { fetchHealthRecords } from "../../../modules/patient"
 class MedicalData extends React.Component {
     constructor(props) {
         super(props)
-        if (props.patientID) {
+        if ((props.patientID && !props.patientRecords) || props.patientID !== props.loadedPatientID) {
             props.fetchHealthRecords(props.patientID)
         }
 
@@ -380,8 +380,8 @@ class MedicalData extends React.Component {
 MedicalData = connect(
     (state, props) => {
         let medicalData = undefined
-        let inConsultation = props.match.params.waitlistID && props.match.params.itemID && state.waitlist.item
-        if (state.patient.patientRecords) {
+        let inConsultation = props.match.params.waitlistID && props.match.params.itemID
+        if (state.patient.patientRecords.data) {
             let records = state.patient.patientRecords.data
             // sort records by creation time and reverse to have latest record as first
             records = _.reverse(
@@ -394,7 +394,7 @@ MedicalData = connect(
 
             medicalData = {}
             // if in consultation, fetch data from current consultation as well
-            if (props.match.params.waitlistID && props.match.params.itemID && state.waitlist.item) {
+            if (inConsultation && state.waitlist.item) {
                 _.forEach(state.waitlist.item.vitalSigns, (obj, key) => {
                     // set for warning only if timestamp is missing
                     let vitalSign = _.clone(obj)
@@ -423,6 +423,7 @@ MedicalData = connect(
             loadedPatientID: state.patient.patient.ID,
             medicalData: medicalData,
             medicalDataLoading: state.patient.patientRecords.loading,
+            patientRecords: state.patient.patientRecords.data,
             canSeeVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[READ]
         }
     },

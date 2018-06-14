@@ -16,7 +16,7 @@ import { ReactComponent as TherapyIcon } from "shared/icons/therapy.svg"
 class HealthRecord extends React.Component {
     constructor(props) {
         super(props)
-        if (props.patientID) {
+        if ((props.patientID && !props.records) || props.patientID !== props.loadedPatientID) {
             props.fetchHealthRecords(props.patientID)
         }
 

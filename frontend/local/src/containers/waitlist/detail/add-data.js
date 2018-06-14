@@ -102,12 +102,12 @@ class MedicalData extends React.Component {
                                 <Patient data={item.patient && cardToObject({ connections: item.patient })} />
                                 <h1>
                                     <MedicalDataIcon />
-                                    Add medical data
+                                    Add Medical Data
                                 </h1>
                             </div>
 
                             <div className="modal-body">
-                                <h3>Body measurements</h3>
+                                <h3>Body Measurements</h3>
                                 <div>
                                     <Fields
                                         label="Height"
@@ -126,7 +126,7 @@ class MedicalData extends React.Component {
                                     />
                                 </div>
 
-                                <h3>Vital signs</h3>
+                                <h3>Vital Signs</h3>
 
                                 <div>
                                     <Fields

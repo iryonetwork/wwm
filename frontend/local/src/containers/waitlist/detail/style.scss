@@ -25,6 +25,10 @@
             margin: 40px 0 20px 0;
         }
 
+        button {
+            font-weight: bold;
+        }
+
         .section {
             margin: 20px 0 20px;
             padding: 0;
@@ -143,7 +147,11 @@
     .Select-arrow,
     .Select-value-label,
     .Select-clear-zone {
+        text-transform: none;
+        margin: 0;
+        outline: none;
         position: initial;
+        font-size: 14px;
         top: 0;
     }
 
@@ -162,6 +170,9 @@
     }
     .form-row {
         margin-top: 25px;
+        &:first-child {
+            margin-top: 20px;
+        }
     }
 
     .therapies {
@@ -171,6 +182,76 @@
             border-top: 1px solid $grey2;
             &:last-child {
                 border-bottom: 1px solid $grey2;
+            }
+        }
+    }
+}
+
+.summary {
+    .modal-header {
+        text-align: center;
+        .headerMessage {
+            padding-top:30px;
+        }
+    }
+
+    .modal-body {
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 0 !important;
+            margin-bottom: 0.5rem !important;
+        }
+
+
+        .row {
+            margin: 0px 0px 20px 0px;
+            &:last-child {
+                margin-bottom: 0px;
+            }
+            dl {
+                margin-bottom: 0px;
+            }
+            dd {
+                &:last-child {
+                    margin-bottom: 0px;
+                }
+            }
+        }
+
+        .summaryBox {
+            padding: 60px;
+            border-radius: 6px;
+            background-color: $grey1;
+            border: solid 1px $grey2;
+            border: solid 1px $grey2;
+
+            .header {
+                border-bottom: 1px solid $grey2;
+                padding-bottom: 5px;
+                margin-bottom: 30px;
+            }
+
+            label {
+                text-transform: uppercase;
+                margin-bottom: .1rem;
+                font-size: 11px;
+                letter-spacing: 0.5px;
+                text-align: left;
+                color: $grey5;
+            }
+        }
+    }
+
+    .modal-footer {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+        .col {
+            button {
+                margin-left: auto;
+                margin-right: auto;
+                text-align: center;
+                max-width: 260px;
             }
         }
     }
