@@ -63,6 +63,9 @@ const onMedicalDataFormSubmit = (form, dispatch, props) => {
         vitalSigns.bmi = {}
         vitalSigns.bmi.value = round(vitalSigns.weight.value / vitalSigns.height.value / vitalSigns.height.value * 10000, 2)
         vitalSigns.bmi.timestamp = moment.max(moment(vitalSigns.height.timestamp), moment(vitalSigns.weight.timestamp)).format()
+    } else if (props.item.vitalSigns && props.item.vitalSigns.bmi) {
+        // remove bmi if bmi cannot be set anymore
+        delete vitalSigns.bmi
     }
 
     let newItem = _.clone(props.item)
