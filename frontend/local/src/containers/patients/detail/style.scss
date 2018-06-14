@@ -6,6 +6,10 @@
 
 .btn {
     max-height: 40px;
+    margin-left: 15px;
+    &:first-child {
+        margin-left: 0px;
+    }
 }
 
 .waitlist-detail {

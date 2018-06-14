@@ -230,38 +230,6 @@ ViewFamily = connect(
     {}
 )(ViewFamily)
 
-let Edit = ({ match, location, canEditDemographicInformation }) => {
-    return canEditDemographicInformation ? (
-        <div>
-            <header>
-                <h1>Personal Info</h1>
-                <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-wide">
-                    Close
-                </Link>
-            </header>
-
-            <div className="navigation">
-                <NavLink exact to={match.url}>
-                    Patient
-                </NavLink>
-                <NavLink to={joinPaths(match.url, "family")}>Family details</NavLink>
-            </div>
-
-            <Switch>
-                <Route path={match.url + "/family"} component={EditFamily} />
-                <Route path={match.url} component={EditPersonal} />
-            </Switch>
-        </div>
-    ) : null
-}
-
-Edit = connect(
-    state => ({
-        canEditDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[UPDATE]
-    }),
-    {}
-)(Edit)
-
 class EditPersonal extends React.Component {
     constructor(props) {
         super(props)
@@ -280,7 +248,7 @@ class EditPersonal extends React.Component {
     }
 
     render() {
-        let { codesLoading, getCodes, handleSubmit, updating, location } = this.props
+        let { match, codesLoading, getCodes, handleSubmit, updating, location } = this.props
 
         if (codesLoading && !updating) {
             return <Spinner />
@@ -288,28 +256,47 @@ class EditPersonal extends React.Component {
 
         return this.props.canEditDemographicInformation ? (
             <div>
-                <form onSubmit={handleSubmit(this.update)}>
-                    <PatientForm
-                        countries={getCodes("countries")}
-                        maritalStatus={getCodes("maritalStatus")}
-                        genders={getCodes("gender")}
-                        documentTypes={getCodes("documentTypes")}
-                    />
-                    <div className="section">
-                        <div className="row buttons">
-                            <div className="col-sm-4">
-                                <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-block">
-                                    Close
-                                </Link>
-                            </div>
-                            <div className="col-sm-4">
-                                <button type="submit" className="btn btn-primary btn-block" disabled={updating}>
-                                    {updating ? "Saving..." : "Save"}
-                                </button>
+                <header>
+                    <h1>Personal Info</h1>
+                    <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-wide">
+                        Cancel
+                    </Link>
+                    <button onClick={handleSubmit(this.update)} className="btn btn-primary btn-wide">
+                        {updating ? "Saving..." : "Save"}
+                    </button>
+                </header>
+
+                <div className="navigation">
+                    <NavLink exact to={match.url}>
+                        Patient
+                    </NavLink>
+                    <NavLink to={joinPaths(match.url, "family")}>Family details</NavLink>
+                </div>
+
+                <div>
+                    <form onSubmit={handleSubmit(this.update)}>
+                        <PatientForm
+                            countries={getCodes("countries")}
+                            maritalStatus={getCodes("maritalStatus")}
+                            genders={getCodes("gender")}
+                            documentTypes={getCodes("documentTypes")}
+                        />
+                        <div className="section">
+                            <div className="row buttons">
+                                <div className="col-sm-4">
+                                    <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-block">
+                                        Cancel
+                                    </Link>
+                                </div>
+                                <div className="col-sm-4">
+                                    <button type="submit" className="btn btn-primary btn-block" disabled={updating}>
+                                        {updating ? "Saving..." : "Save"}
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         ) : null
     }
@@ -352,26 +339,47 @@ class EditFamily extends React.Component {
     }
 
     render() {
-        let { location, updating, handleSubmit } = this.props
+        let { match, location, updating, handleSubmit } = this.props
         return this.props.canEditDemographicInformation ? (
             <div>
-                <form onSubmit={handleSubmit(this.handleSubmit)}>
-                    <FamilyForm />
-                    <div className="section">
-                        <div className="row buttons">
-                            <div className="col-sm-4">
-                                <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-block">
-                                    Close
-                                </Link>
-                            </div>
-                            <div className="col-sm-4">
-                                <button type="submit" className="btn btn-primary btn-block" disabled={updating}>
-                                    {updating ? "Saving..." : "Save"}
-                                </button>
+                <header>
+                    <h1>Personal Info</h1>
+                    <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-wide">
+                        Cancel
+                    </Link>
+                    <button onClick={handleSubmit(this.handleSubmit)} className="btn btn-primary btn-wide">
+                        {updating ? "Saving..." : "Save"}
+                    </button>
+                </header>
+
+                <div className="navigation">
+                    <NavLink exact to={location.pathname.replace("/family", "")}>
+                        Patient
+                    </NavLink>
+                    <NavLink exact to={match.url}>
+                        Family details
+                    </NavLink>
+                </div>
+
+                <div>
+                    <form onSubmit={handleSubmit(this.handleSubmit)}>
+                        <FamilyForm />
+                        <div className="section">
+                            <div className="row buttons">
+                                <div className="col-sm-4">
+                                    <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-block">
+                                        Cancel
+                                    </Link>
+                                </div>
+                                <div className="col-sm-4">
+                                    <button type="submit" className="btn btn-primary btn-block" disabled={updating}>
+                                        {updating ? "Saving..." : "Save"}
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         ) : null
     }
@@ -395,7 +403,8 @@ EditFamily = connect(
 let PersonalInfoRoutes = ({ match, canSeeDemographicInformation, canEditDemographicInformation }) => (
     <div className="personal">
         <Switch>
-            {canEditDemographicInformation && <Route path={match.url + "/edit"} component={Edit} />}
+            {canEditDemographicInformation && <Route exact path={match.url + "/edit"} component={EditPersonal} />}
+            {canEditDemographicInformation && <Route exact path={match.url + "/edit/family"} component={EditFamily} />}
             {canSeeDemographicInformation && <Route path={match.url} component={View} />}
         </Switch>
     </div>

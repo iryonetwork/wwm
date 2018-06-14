@@ -217,7 +217,7 @@ class MedicalData extends React.Component {
                                         <button
                                             type="button"
                                             tabIndex="-1"
-                                            className="btn btn-link btn-block"
+                                            className="btn btn-secondary btn-block"
                                             datadismiss="modal"
                                             onClick={() => history.goBack()}
                                         >
