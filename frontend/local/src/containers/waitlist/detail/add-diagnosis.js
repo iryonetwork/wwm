@@ -34,7 +34,8 @@ class AddDiagnosis extends React.Component {
         }
 
         this.onSave = this.onSave.bind(this)
-        this.onClose = this.onClose.bind(this)
+        this.onCancel = this.onCancel.bind(this)
+        this.onContinueConsultation = this.onContinueConsultation.bind(this)
         this.onCloseConsultation = this.onCloseConsultation.bind(this)
     }
 
@@ -58,7 +59,11 @@ class AddDiagnosis extends React.Component {
         this.props.updateWaitlistItem(this.props.match.params.waitlistID, newItem)
     }
 
-    onClose() {
+    onCancel() {
+        this.props.goBack()
+    }
+
+    onContinueConsultation() {
         this.props.push(`/waitlist/${this.props.match.params.waitlistID}/${this.props.match.params.itemID}/consultation`)
     }
 
@@ -79,7 +84,7 @@ class AddDiagnosis extends React.Component {
                         diagnosis={diagnosis}
                         patient={this.props.waitlistItem.patient && cardToObject({ connections: this.props.waitlistItem.patient })}
                         onSave={this.onSave}
-                        onCancel={this.onClose}
+                        onCancel={this.onCancel}
                     />
                 </Modal>
             ) : (
@@ -88,7 +93,7 @@ class AddDiagnosis extends React.Component {
                         diagnosis={diagnosis}
                         patient={this.props.waitlistItem.patient && cardToObject({ connections: this.props.waitlistItem.patient })}
                         onCloseConsultation={this.onCloseConsultation}
-                        onContinueConsultation={this.onClose}
+                        onContinueConsultation={this.onContinueConsultation}
                     />
                 </Modal>
             )

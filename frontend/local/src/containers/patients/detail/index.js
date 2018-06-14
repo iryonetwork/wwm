@@ -1,6 +1,6 @@
 import React from "react"
 import { connect } from "react-redux"
-import { NavLink, Route, Redirect } from "react-router-dom"
+import { Link, NavLink, Route, Redirect } from "react-router-dom"
 import _ from "lodash"
 
 import Consultation from "../../waitlist/detail"
@@ -18,7 +18,8 @@ import {
     RESOURCE_VITAL_SIGNS,
     RESOURCE_HEALTH_HISTORY,
     RESOURCE_EXAMINATION,
-    READ
+    READ,
+    WRITE
 } from "../../../modules/validations"
 import { fetchPatient, fetchHealthRecords } from "../../../modules/patient"
 import { get as getWaitlistItem } from "../../../modules/waitlist"
@@ -28,6 +29,7 @@ import { ReactComponent as MedicalDataIcon } from "shared/icons/medical-data-act
 import { ReactComponent as MedicalHistoryIcon } from "shared/icons/medical-history-active.svg"
 import { ReactComponent as PersonalInfoIcon } from "shared/icons/personal-info-active.svg"
 import { ReactComponent as HealthRecordIcon } from "shared/icons/health-record-active.svg"
+import { ReactComponent as AddIcon } from "shared/icons/add.svg"
 
 import "./style.css"
 
@@ -204,6 +206,32 @@ class PatientDetail extends React.Component {
                             </div>
                         </div>
                     ) : null}
+                    {inConsultation && (this.props.canAddExamination || this.props.canAddVitalSigns) ? (
+                        <div className="row menu">
+                            <div className="col-sm-12">
+                                <h4>Actions</h4>
+
+                                <ul>
+                                    {this.props.canAddExamination && (
+                                        <li>
+                                            <Link className="btn btn-link" to={baseURL + "consultation/add-diagnosis"}>
+                                                <AddIcon />
+                                                Add Diagnosis
+                                            </Link>
+                                        </li>
+                                    )}
+                                    {this.props.canAddVitalSigns && (
+                                        <li>
+                                            <Link className="btn btn-link" to={baseURL + "consultation/add-data"}>
+                                                <AddIcon />
+                                                Add Medical Data
+                                            </Link>
+                                        </li>
+                                    )}
+                                </ul>
+                            </div>
+                        </div>
+                    ) : null}
                 </div>
                 <div className="container">
                     {this.props.canSeePatientId && <Route exact path="/patients/:patientID" render={() => <Redirect to={baseURL + "personal"} />} />}
@@ -279,8 +307,10 @@ PatientDetail = connect(
             waitlistItem: state.waitlist.item || {},
             canSeePatientId: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[READ],
             canSeeDemographicInformation: ((state.validations.userRights || {})[RESOURCE_DEMOGRAPHIC_INFORMATION] || {})[READ],
+            canAddVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[WRITE],
             canSeeVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[READ],
             canSeeHealthHistory: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[READ],
+            canAddExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[WRITE],
             canSeeExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[READ]
         }
     },
