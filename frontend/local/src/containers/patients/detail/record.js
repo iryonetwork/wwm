@@ -86,28 +86,6 @@ class HealthRecord extends React.Component {
                                                 )}
                                             </div>
 
-                                            {!_.isEmpty(data.mainComplaint) ? (
-                                                <div className="part" key="mainComplaint">
-                                                    <div className="partHeader" onClick={this.togglePart(meta.name, "mainComplaint")}>
-                                                        <h4>
-                                                            <ComplaintIcon /> Main complaint
-                                                        </h4>
-                                                    </div>
-                                                    <Collapse isOpen={this.state[meta.name] ? this.state[meta.name]["mainComplaint"] : false}>
-                                                        <dl>
-                                                            <dt>{data.mainComplaint ? data.mainComplaint.complaint : null}</dt>
-                                                            {data.mainComplaint && data.mainComplaint.comment && <dd>{data.mainComplaint.comment}</dd>}
-                                                        </dl>
-                                                    </Collapse>
-                                                </div>
-                                            ) : (
-                                                <div className="part">
-                                                    <h4 className="missing">
-                                                        <ComplaintIcon /> Main complaint was not set
-                                                    </h4>
-                                                </div>
-                                            )}
-
                                             {data.diagnoses.length > 1 && (
                                                 <div className="part" key="complementaryDiagnoses">
                                                     <div className="partHeader" onClick={this.togglePart(meta.name, "complementaryDiagnoses")}>
@@ -156,6 +134,28 @@ class HealthRecord extends React.Component {
                                                             ))}
                                                         </dl>
                                                     </Collapse>
+                                                </div>
+                                            )}
+
+                                            {!_.isEmpty(data.mainComplaint) ? (
+                                                <div className="part" key="mainComplaint">
+                                                    <div className="partHeader" onClick={this.togglePart(meta.name, "mainComplaint")}>
+                                                        <h4>
+                                                            <ComplaintIcon /> Main complaint
+                                                        </h4>
+                                                    </div>
+                                                    <Collapse isOpen={this.state[meta.name] ? this.state[meta.name]["mainComplaint"] : false}>
+                                                        <dl>
+                                                            <dt>{data.mainComplaint ? data.mainComplaint.complaint : null}</dt>
+                                                            {data.mainComplaint && data.mainComplaint.comment && <dd>{data.mainComplaint.comment}</dd>}
+                                                        </dl>
+                                                    </Collapse>
+                                                </div>
+                                            ) : (
+                                                <div className="part">
+                                                    <h4 className="missing">
+                                                        <ComplaintIcon /> Main complaint was not set
+                                                    </h4>
                                                 </div>
                                             )}
 
