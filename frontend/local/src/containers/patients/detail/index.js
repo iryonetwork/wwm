@@ -174,7 +174,7 @@ class PatientDetail extends React.Component {
                                         {this.props.canSeeVitalSigns ? (
                                             <NavLink to={baseURL + "data"}>
                                                 <MedicalDataIcon />
-                                                Medical data
+                                                Medical Data
                                             </NavLink>
                                         ) : null}
                                     </li>
