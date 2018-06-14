@@ -60,6 +60,9 @@ class AddDiagnosis extends React.Component {
     }
 
     onCancel() {
+        if (_.isEmpty(this.props.diagnosis.diagnosis)) {
+            this.props.goBack()
+        }
         this.props.goBack()
     }
 
