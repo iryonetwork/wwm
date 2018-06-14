@@ -179,46 +179,50 @@ ViewPersonal = connect(
 
 let ViewFamily = ({ patient, canSeeDemographicInformation }) => {
     return canSeeDemographicInformation ? (
-        <div>
-            <div className="section">
-                <h3>Summary</h3>
-                <div className="content">
-                    <div className="row">
-                        <Column width="4" label="No. of people in the family" value={patient.peopleInFamily} key="peopleInFamily" />
-                        <Column width="4" label="No. of people living together" value={patient.peopleLivingTogether} key="peopleLivingTogether" />
-                    </div>
-                </div>
-            </div>
-
-            {(patient.familyMembers || []).map(member => (
-                <div className="section" key={member.patientID}>
-                    <h3>{(_.find(relationOptions, { value: member.relation }) || { label: member.relation }).label}</h3>
+        patient.peopleInFamily || patient.peopleLivingTogether || (patient.familyMembers && patient.familyMembers.length > 0) ? (
+            <div>
+                <div className="section">
+                    <h3>Summary</h3>
                     <div className="content">
                         <div className="row">
-                            <div className="col-sm-4">
-                                <div className="label">Name</div>
-                                <div className="value">
-                                    <Link to={`/patients/${member.patientID}/personal`}>
-                                        {member.lastName}, {member.firstName}
-                                    </Link>
-                                </div>
-                            </div>
-                            <Column width="4" label="Date of birth" value={member.dateOfBirth} />
-                            <Column
-                                width="4"
-                                label="Living together"
-                                value={(_.find(livingTogetherOptions, { value: member.livingTogether }) || { label: member.livingTogether }).label}
-                            />
+                            <Column width="4" label="No. of people in the family" value={patient.peopleInFamily} key="peopleInFamily" />
+                            <Column width="4" label="No. of people living together" value={patient.peopleLivingTogether} key="peopleLivingTogether" />
                         </div>
-
-                        {member.documents &&
-                            member.documents.length > 0 && (
-                                <div className="row">{member.documents.map((el, i) => <Column width="4" label={el.type} value={el.number} key={i} />)}</div>
-                            )}
                     </div>
                 </div>
-            ))}
-        </div>
+
+                {(patient.familyMembers || []).map(member => (
+                    <div className="section" key={member.patientID}>
+                        <h3>{(_.find(relationOptions, { value: member.relation }) || { label: member.relation }).label}</h3>
+                        <div className="content">
+                            <div className="row">
+                                <div className="col-sm-4">
+                                    <div className="label">Name</div>
+                                    <div className="value">
+                                        <Link to={`/patients/${member.patientID}/personal`}>
+                                            {member.lastName}, {member.firstName}
+                                        </Link>
+                                    </div>
+                                </div>
+                                <Column width="4" label="Date of birth" value={member.dateOfBirth} />
+                                <Column
+                                    width="4"
+                                    label="Living together"
+                                    value={(_.find(livingTogetherOptions, { value: member.livingTogether }) || { label: member.livingTogether }).label}
+                                />
+                            </div>
+
+                            {member.documents &&
+                                member.documents.length > 0 && (
+                                    <div className="row">{member.documents.map((el, i) => <Column width="4" label={el.type} value={el.number} key={i} />)}</div>
+                                )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        ) : (
+            <h3>No information about family was found.</h3>
+        )
     ) : null
 }
 
