@@ -25,18 +25,39 @@ class AddDiagnosis extends React.Component {
         props.resetIndicators()
         if (!props.waitlistItem) {
             props.listAll(props.match.params.waitlistID)
-        } else if (!props.match.params.diagnosisIndex) {
-            props.push(
-                `/waitlist/${this.props.match.params.waitlistID}/${this.props.match.params.itemID}/consultation/diagnoses/${
-                    props.waitlistItem.diagnoses ? props.waitlistItem.diagnoses.length : 0
-                }/edit`
-            )
         }
 
         this.onSave = this.onSave.bind(this)
         this.onCancel = this.onCancel.bind(this)
         this.onContinueConsultation = this.onContinueConsultation.bind(this)
         this.onCloseConsultation = this.onCloseConsultation.bind(this)
+        this.state = {
+            diagnosis: this.getDiagnosisState(props.match.params.diagnosisIndex, props.waitlistItem)
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        if (!prevProps.waitlistItem && this.props.waitlistItem && this.props.match.params.diagnosisIndex) {
+            this.setState({
+                diagnosis: this.getDiagnosisState(this.props.match.params.diagnosisIndex, this.props.waitlistItem)
+            })
+        }
+    }
+
+    getDiagnosisState(diagnosisIndex, waitlistItem) {
+        let diagnosis =
+            diagnosisIndex && waitlistItem && waitlistItem.diagnoses && waitlistItem.diagnoses[diagnosisIndex]
+                ? {
+                      diagnosis: {
+                          id: waitlistItem.diagnoses[diagnosisIndex].diagnosis,
+                          label: waitlistItem.diagnoses[diagnosisIndex].label
+                      },
+                      comment: waitlistItem.diagnoses[diagnosisIndex].comment,
+                      therapies: waitlistItem.diagnoses[diagnosisIndex].therapies
+                  }
+                : { diagnosis: {} }
+
+        return diagnosis
     }
 
     onSave(formData) {
@@ -50,19 +71,20 @@ class AddDiagnosis extends React.Component {
 
         let newItem = Object.assign({}, this.props.waitlistItem)
         newItem.diagnoses = newItem.diagnoses || []
-        if (this.props.diagnosisIndex) {
+        if (this.props.match.params.diagnosisIndex) {
             newItem.diagnoses[this.props.diagnosisIndex] = diagnosis
         } else {
             newItem.diagnoses.push(diagnosis)
         }
 
         this.props.updateWaitlistItem(this.props.match.params.waitlistID, newItem)
+
+        this.setState({
+            diagnosis: this.getDiagnosisState(this.props.match.params.diagnosisIndex || newItem.diagnoses.length - 1, newItem)
+        })
     }
 
     onCancel() {
-        if (_.isEmpty(this.props.diagnosis.diagnosis)) {
-            this.props.goBack()
-        }
         this.props.goBack()
     }
 
@@ -78,13 +100,13 @@ class AddDiagnosis extends React.Component {
     }
 
     render() {
-        const { waitlistLoading, waitlistUpdated, waitlistItem, diagnosis } = this.props
+        const { waitlistLoading, waitlistUpdated, waitlistItem } = this.props
         let loading = !waitlistItem || waitlistLoading
         return !loading ? (
             !waitlistUpdated ? (
                 <Modal>
                     <DiagnosisFormModalContent
-                        diagnosis={diagnosis}
+                        diagnosis={this.state.diagnosis}
                         patient={this.props.waitlistItem.patient && cardToObject({ connections: this.props.waitlistItem.patient })}
                         onSave={this.onSave}
                         onCancel={this.onCancel}
@@ -93,7 +115,7 @@ class AddDiagnosis extends React.Component {
             ) : (
                 <Modal>
                     <DiagnosisSummary
-                        diagnosis={diagnosis}
+                        diagnosis={this.state.diagnosis}
                         patient={this.props.waitlistItem.patient && cardToObject({ connections: this.props.waitlistItem.patient })}
                         onCloseConsultation={this.onCloseConsultation}
                         onContinueConsultation={this.onContinueConsultation}
@@ -110,27 +132,10 @@ class AddDiagnosis extends React.Component {
 
 AddDiagnosis = connect(
     (state, props) => {
-        let loading = state.waitlist.listing || state.waitlist.fetching || state.waitlist.items[props.match.params.itemID].updating
-        let item = state.waitlist.items[props.match.params.itemID]
-
-        let diagnosis =
-            !loading && props.match.params.diagnosisIndex && item.diagnoses && item.diagnoses[props.match.params.diagnosisIndex]
-                ? {
-                      diagnosis: {
-                          id: item.diagnoses[props.match.params.diagnosisIndex].diagnosis,
-                          label: item.diagnoses[props.match.params.diagnosisIndex].label
-                      },
-                      comment: item.diagnoses[props.match.params.diagnosisIndex].comment,
-                      therapies: item.diagnoses[props.match.params.diagnosisIndex].therapies
-                  }
-                : { diagnosis: {} }
-
         return {
-            waitlistLoading: loading,
+            waitlistLoading: state.waitlist.listing || state.waitlist.fetching || state.waitlist.items[props.match.params.itemID].updating,
             waitlistUpdated: state.waitlist.updated,
-            diagnosisIndex: props.match.params.diagnosisIndex,
-            waitlistItem: item,
-            diagnosis: diagnosis
+            waitlistItem: state.waitlist.items[props.match.params.itemID]
         }
     },
     {

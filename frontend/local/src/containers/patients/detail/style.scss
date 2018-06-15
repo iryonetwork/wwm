@@ -4,16 +4,16 @@
 @import "bootstrap/scss/mixins/grid-framework";
 @import "bootstrap/scss/grid";
 
-.btn {
-    max-height: 40px;
-    margin-left: 15px;
-    &:first-child {
-        margin-left: 0px;
-    }
-}
-
 .waitlist-detail {
     display: flex;
+
+    .btn {
+        max-height: 40px;
+        margin-left: 15px;
+        &:first-child {
+            margin-left: 0px;
+        }
+    }
 
     .sidebar {
         width: 210px;
