@@ -1,5 +1,7 @@
 // DEV ONLY MODULE
 import produce from "immer"
+import moment from "moment"
+
 // insert into storage
 import { open, COLOR_DANGER } from "shared/modules/alert"
 import { newPatient, updatePatient as updateDiscoveryPatient, get, cardToObject } from "./discovery"
@@ -22,6 +24,10 @@ export const UPDATE_FAILED = "patient/UPDATE_FAILED"
 export const FETCH_RECORDS = "patient/FETCH_RECORDS"
 export const FETCH_RECORDS_DONE = "patient/FETCH_RECORDS_DONE"
 export const FETCH_RECORDS_FAILED = "patient/FETCH_RECORDS_FAILED"
+
+export const CLEAR_RECORDS_CACHE = "patient/CLEAR_RECORDS_CACHE"
+
+const RECORDS_CACHE_DURATION = moment.duration(180, "seconds")
 
 const newPatientFormData = {
     documents: [
@@ -148,7 +154,9 @@ const newPatientFormData = {
 const initialState = {
     newData: process.env.NODE_ENV === "development" ? newPatientFormData : { documents: [] },
     patient: {},
-    patientRecords: {},
+    patientRecords: {
+        cache: {}
+    },
     patients: {}
 }
 
@@ -206,17 +214,29 @@ export default (state = initialState, action) => {
                 break
 
             case FETCH_RECORDS:
-                draft.patientRecords = { loading: true }
+                draft.patientRecords.loading = true
                 break
 
             case FETCH_RECORDS_DONE:
                 draft.patientRecords.loading = false
+                draft.patientRecords.cache[action.patientID] = {
+                    records: action.data,
+                    fetchTimestamp: action.fetchTimestamp
+                }
                 draft.patientRecords.data = action.data
                 break
 
             case FETCH_RECORDS_FAILED:
                 draft.patientRecords.loading = false
                 draft.patientRecords.data = undefined
+                break
+
+            case CLEAR_RECORDS_CACHE:
+                if (action.patientID) {
+                    delete draft.patientRecords.cache[action.patientID]
+                } else {
+                    draft.patientRecords.cache = {}
+                }
                 break
 
             default:
@@ -397,10 +417,16 @@ export const saveConsultation = (waitlistID, itemID) => dispatch => {
             // create the document
             .then(data => Promise.all([Promise.resolve(data.patientID), dispatch(composeEncounterData(data))]))
             // upload the file
-            .then(([patientID, doc]) => dispatch(uploadFile(patientID, doc, "encounter", "openEHR-EHR-COMPOSITION.encounter.v1")))
+            .then(([patientID, doc]) =>
+                Promise.all([Promise.resolve(patientID), dispatch(uploadFile(patientID, doc, "encounter", "openEHR-EHR-COMPOSITION.encounter.v1"))])
+            )
             // remove from waitlist
-            .then(() => {
+            .then(([patientID, fileMeta]) => {
                 dispatch(waitlistRemove(waitlistID, itemID, "finished"))
+                dispatch({
+                    type: CLEAR_RECORDS_CACHE,
+                    patientID: patientID
+                })
                 dispatch({ type: SAVED_CONSULTATION })
             })
             .catch(ex => {
@@ -415,13 +441,26 @@ export const saveConsultation = (waitlistID, itemID) => dispatch => {
 export const fetchHealthRecords = patientID => dispatch => {
     dispatch({ type: FETCH_RECORDS })
 
+    let cachedRecords = dispatch(fetchCachedRecord(patientID))
+    if (cachedRecords) {
+        dispatch({
+            type: FETCH_RECORDS_DONE,
+            patientID: patientID,
+            data: cachedRecords.records,
+            fetchTimestamp: cachedRecords.fetchTimestamp
+        })
+        return
+    }
+
     return dispatch(readFilesByLabel(patientID, "encounter"))
         .then(documents => Promise.all(documents.map(document => Promise.all([dispatch(extractEncounterDataWithContext(document.data)), document.meta]))))
         .then(documents => documents.map(([data, meta]) => ({ data, meta })))
         .then(documents => {
             dispatch({
                 type: FETCH_RECORDS_DONE,
-                data: documents
+                patientID: patientID,
+                data: documents,
+                fetchTimestamp: moment()
             })
         })
         .catch(ex => {
@@ -429,4 +468,24 @@ export const fetchHealthRecords = patientID => dispatch => {
             dispatch({ type: FETCH_RECORDS_FAILED })
             dispatch(open("Failed to fetch health records", "", COLOR_DANGER))
         })
+}
+
+const fetchCachedRecord = patientID => (dispatch, getState) => {
+    let cachedRecords = getState().patient.patientRecords.cache ? getState().patient.patientRecords.cache[patientID] : undefined
+    if (cachedRecords) {
+        if (
+            cachedRecords.fetchTimestamp
+                .clone()
+                .add(RECORDS_CACHE_DURATION)
+                .isAfter(moment())
+        ) {
+            return cachedRecords
+        }
+        dispatch({
+            type: CLEAR_RECORDS_CACHE,
+            patientID: patientID
+        })
+    }
+
+    return undefined
 }

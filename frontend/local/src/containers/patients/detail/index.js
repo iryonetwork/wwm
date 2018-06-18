@@ -42,10 +42,12 @@ class PatientDetail extends React.Component {
                 .getWaitlistItem(props.match.params.waitlistID, props.match.params.itemID)
                 .then(item => {
                     props.fetchPatient(item.patientID)
+                    props.fetchHealthRecords(item.patientID)
                 })
                 .catch(ex => console.warn("Failed to load patient", ex))
         } else {
             props.fetchPatient(props.match.params.patientID).catch(ex => console.warn("Failed to load patient", ex))
+            props.fetchHealthRecords(props.match.params.patientID)
         }
     }
 
@@ -54,20 +56,14 @@ class PatientDetail extends React.Component {
             if (this.props.match.params.waitlistID && this.props.match.params.itemID && this.props.match.params.itemID !== prevProps.match.params.itemID) {
                 this.props
                     .getWaitlistItem(this.props.match.params.waitlistID, this.props.match.params.itemID)
-                    .then(item => this.props.fetchPatient(item.patientID))
+                    .then(item => {
+                        this.props.fetchPatient(item.patientID)
+                        this.props.fetchHealthRecords(item.patientID)
+                    })
                     .catch(ex => console.warn("Failed to load patient", ex))
             } else if (this.props.match.params.patientID !== prevProps.match.params.patientID) {
                 this.props.fetchPatient(this.props.match.params.patientID).catch(ex => console.warn("Failed to load patient", ex))
-            }
-
-            if (
-                this.props.patientID &&
-                this.props.loadedPatientID === this.props.patientID &&
-                this.props.patientRecordsNeeded &&
-                !this.props.patientRecords &&
-                !this.props.patientRecordsLoading
-            ) {
-                this.props.fetchHealthRecords(this.props.patientID)
+                this.props.fetchHealthRecords(this.props.match.params.patientID)
             }
         }
     }
