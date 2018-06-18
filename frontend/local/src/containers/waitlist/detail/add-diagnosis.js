@@ -46,7 +46,7 @@ class AddDiagnosis extends React.Component {
 
     getDiagnosisState(diagnosisIndex, waitlistItem) {
         let diagnosis =
-            diagnosisIndex && waitlistItem && waitlistItem.diagnoses && waitlistItem.diagnoses[diagnosisIndex]
+            diagnosisIndex !== undefined && waitlistItem && waitlistItem.diagnoses && waitlistItem.diagnoses[diagnosisIndex]
                 ? {
                       diagnosis: {
                           id: waitlistItem.diagnoses[diagnosisIndex].diagnosis,
@@ -78,7 +78,6 @@ class AddDiagnosis extends React.Component {
         }
 
         this.props.updateWaitlistItem(this.props.match.params.waitlistID, newItem)
-
         this.setState({
             diagnosis: this.getDiagnosisState(this.props.match.params.diagnosisIndex || newItem.diagnoses.length - 1, newItem)
         })
