@@ -30,17 +30,18 @@ const Form = () => (
     <div className="patient-form">
         <h3>Summary</h3>
 
-        <div className="form-row">
-            <div className="form-group col-sm-4">
-                <Field name="peopleInFamily" type="number" min="0" component={renderInput} label="No. of people in the family" />
-            </div>
-            <div className="form-group col-sm-4">
-                <Field name="peopleLivingTogether" type="number" min="0" component={renderInput} label="No. of people living together" />
+        <div className="section">
+            <div className="form-row">
+                <div className="form-group col-sm-4">
+                    <Field name="peopleInFamily" type="number" min="0" component={renderInput} label="No. of people in the family" />
+                </div>
+                <div className="form-group col-sm-4">
+                    <Field name="peopleLivingTogether" type="number" min="0" component={renderInput} label="No. of people living together" />
+                </div>
             </div>
         </div>
 
         <h3>Family Members</h3>
-
         <FieldArray name="familyMembers" component={familyMembers} />
     </div>
 )
@@ -108,8 +109,8 @@ class familyMembers extends React.Component {
                 {fields.map((member, index) => {
                     let editDisabled = fields.get(index).patientID !== undefined
                     return (
-                        <div key={fields.get(index).patientID || index}>
-                            <div className="form-row">
+                        <div className="section" key={fields.get(index).patientID || index}>
+                            <div className="form-row searchBar">
                                 <div className="col-sm-12 search">
                                     <Select.Async
                                         value={editDisabled ? fields.get(index) : undefined}
@@ -136,6 +137,16 @@ class familyMembers extends React.Component {
                                 <div className="form-group col-sm-4">
                                     <Field disabled={editDisabled} name={`${member}.dateOfBirth`} type="date" component={renderInput} label="Date of birth" />
                                 </div>
+                                <button
+                                    className="btn btn-link remove"
+                                    onClick={e => {
+                                        e.preventDefault()
+                                        fields.remove(index)
+                                    }}
+                                >
+                                    <RemoveIcon />
+                                    Remove
+                                </button>
                             </div>
 
                             <div className="form-row">
@@ -161,31 +172,19 @@ class familyMembers extends React.Component {
                                     <Field name={`${member}.livingTogether`} options={livingTogetherOptions} component={renderRadio} label="Living together?" />
                                 </div>
                             </div>
-
-                            <a
-                                onClick={e => {
-                                    e.preventDefault()
-                                    fields.remove(index)
-                                }}
-                                href="/"
-                                className="remove"
-                            >
-                                <RemoveIcon />
-                                Remove
-                            </a>
                         </div>
                     )
                 })}
-                <div className="link">
-                    <a
-                        href="/"
+                <div className="section">
+                    <button
+                        className="btn btn-link addFamilyMember"
                         onClick={e => {
                             e.preventDefault()
                             fields.push({})
                         }}
                     >
                         Add family member
-                    </a>
+                    </button>
                 </div>
             </div>
         )

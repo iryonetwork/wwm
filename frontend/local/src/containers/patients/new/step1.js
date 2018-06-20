@@ -31,85 +31,88 @@ const educationOptions = [
 const Form = props => (
     <div className="patient-form">
         <h3>Identification</h3>
+        <div className="section">
+            <div className="form-row">
+                <div className="form-group col-sm-4">
+                    <Field name="firstName" component={renderInput} label="First name" />
+                </div>
+                <div className="form-group col-sm-4">
+                    <Field name="lastName" component={renderInput} label="Last name" />
+                </div>
+                <div className="form-group col-sm-4">
+                    <Field name="dateOfBirth" component={renderInput} type="date" label="Date of birth" />
+                </div>
+            </div>
 
-        <div className="form-row">
-            <div className="form-group col-sm-4">
-                <Field name="firstName" component={renderInput} label="First name" />
+            <div className="form-row">
+                <div className="form-group col-sm-4">
+                    <Field name="gender" component={renderSelect} options={props.genders} label="Gender" />
+                </div>
+                <div className="form-group col-sm-4">
+                    <Field name="maritalStatus" component={renderSelect} options={props.maritalStatus} label="Marital status" />
+                </div>
+                <div className="form-group col-sm-4">
+                    <Field name="numberOfKids" component={renderSelect} options={numberOfKidsOptions} label="Number of kids" />
+                </div>
             </div>
-            <div className="form-group col-sm-4">
-                <Field name="lastName" component={renderInput} label="Last name" />
+
+            <div className="form-row">
+                <div className="form-group col-sm-4">
+                    <Field name="nationality" component={renderSelect} options={props.countries} label="Nationality" />
+                </div>
+                <div className="form-group col-sm-4">
+                    <Field name="countryOfOrigin" component={renderSelect} options={props.countries} label="Country of origin" />
+                </div>
             </div>
-            <div className="form-group col-sm-4">
-                <Field name="dateOfBirth" component={renderInput} type="date" label="Date of birth" />
+
+            <div className="form-row">
+                <div className="form-group col-sm-4">
+                    <Field name="education" optional={true} component={renderSelect} options={educationOptions} label="Education" />
+                </div>
+                <div className="form-group col-sm-4">
+                    <Field name="profession" optional={true} component={renderInput} label="Profession" />
+                </div>
             </div>
+
+            <FieldArray name="documents" component={renderDocuments} documentTypes={props.documentTypes} />
         </div>
 
-        <div className="form-row">
-            <div className="form-group col-sm-4">
-                <Field name="gender" component={renderSelect} options={props.genders} label="Gender" />
+        <h3>Contact and Demographics</h3>
+        <div className="section">
+            <div className="form-row">
+                <div className="form-group col-sm-4">
+                    <Field name="country" component={renderSelect} options={props.countries} label="Country" />
+                </div>
+                <div className="form-group col-sm-4">
+                    <Field name="region" component={renderInput} label="Region" />
+                </div>
+                <div className="form-group col-sm-4">
+                    <Field name="address" component={renderInput} label="Address" />
+                </div>
             </div>
-            <div className="form-group col-sm-4">
-                <Field name="maritalStatus" component={renderSelect} options={props.maritalStatus} label="Marital status" />
-            </div>
-            <div className="form-group col-sm-4">
-                <Field name="numberOfKids" component={renderSelect} options={numberOfKidsOptions} label="Number of kids" />
-            </div>
-        </div>
 
-        <div className="form-row">
-            <div className="form-group col-sm-4">
-                <Field name="nationality" component={renderSelect} options={props.countries} label="Nationality" />
+            <div className="form-row">
+                <div className="form-group col-sm-4">
+                    <Field name="phone" optional={true} component={renderInput} label="Phone number" />
+                </div>
+                <div className="form-group col-sm-4">
+                    <Field name="email" optional={true} component={renderInput} label="Email address" />
+                </div>
+                <div className="form-group col-sm-4">
+                    <Field name="whatsapp" optional={true} component={renderInput} label="WhatsApp" />
+                </div>
             </div>
-            <div className="form-group col-sm-4">
-                <Field name="countryOfOrigin" component={renderSelect} options={props.countries} label="Country of origin" />
-            </div>
-        </div>
 
-        <div className="form-row">
-            <div className="form-group col-sm-4">
-                <Field name="education" optional={true} component={renderSelect} options={educationOptions} label="Education" />
-            </div>
-            <div className="form-group col-sm-4">
-                <Field name="profession" optional={true} component={renderInput} label="Profession" />
-            </div>
-        </div>
-
-        <FieldArray name="documents" component={renderDocuments} documentTypes={props.documentTypes} />
-
-        <h3>Contact</h3>
-        <div className="form-row">
-            <div className="form-group col-sm-4">
-                <Field name="country" component={renderSelect} options={props.countries} label="Country" />
-            </div>
-            <div className="form-group col-sm-4">
-                <Field name="region" component={renderInput} label="Region" />
-            </div>
-            <div className="form-group col-sm-4">
-                <Field name="address" component={renderInput} label="Address" />
-            </div>
-        </div>
-
-        <div className="form-row">
-            <div className="form-group col-sm-4">
-                <Field name="phone" optional={true} component={renderInput} label="Phone number" />
-            </div>
-            <div className="form-group col-sm-4">
-                <Field name="email" optional={true} component={renderInput} label="Email address" />
-            </div>
-            <div className="form-group col-sm-4">
-                <Field name="whatsapp" optional={true} component={renderInput} label="WhatsApp" />
-            </div>
-        </div>
-
-        <div className="form-row">
-            <div className="form-group col-sm-4">
-                <Field name="dateOfLeaving" component={renderInput} type="date" label="Date of leaving home country" />
-            </div>
-            <div className="form-group col-sm-4">
-                <Field name="transitCountries" component={renderInput} label="Transit countries" />
-            </div>
-            <div className="form-group col-sm-4">
-                <Field name="dateOfArrival" component={renderInput} type="date" label="Date of arrival" />
+            <div className="form-row">
+                <div className="form-group col-sm-4">
+                    <Field name="dateOfLeaving" component={renderInput} type="date" label="Date of leaving home country" />
+                </div>
+                <div className="form-group col-sm-4">
+                    <Field name="transitCountries" component={renderInput} label="Transit countries" />
+                </div>
+                <div className="form-group col-sm-4">
+                    <Field name="dateOfArrival" component={renderInput} type="date" label="Date of arrival" />
+                </div>
             </div>
         </div>
     </div>

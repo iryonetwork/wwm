@@ -204,7 +204,8 @@
                     border-top: none;
                 }
 
-                &.habits {
+                &.habits,
+                &.vaccination {
                     border-top: 1px solid $grey2;
                     padding-top: 30px;
                     margin-bottom: 30px;
@@ -251,6 +252,7 @@
             }
         }
 
+		.vaccination,
         .habits {
             margin-top: 50px;
             padding: 20px 0 0;
@@ -258,7 +260,7 @@
             border-bottom: none;
 
             .label {
-                padding: 0 5px;
+                padding: 0 5px 0px 5px;
             }
 
             /*

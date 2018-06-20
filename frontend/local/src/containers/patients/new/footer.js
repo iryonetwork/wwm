@@ -8,7 +8,7 @@ const Footer = ({ history, reset, previousPage, creating }) => (
                 <button
                     type="button"
                     tabIndex="-1"
-                    className="btn btn-link btn-block"
+                    className="btn btn-link btn-block btn-cancel"
                     data-dismiss="has-modal"
                     onClick={() => {
                         reset()

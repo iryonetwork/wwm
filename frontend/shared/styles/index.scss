@@ -236,7 +236,8 @@ header {
     padding: 4px 6px 2px;
 }
 
-.habits {
+.habits,
+.vaccination {
     .label {
         @include make-col-ready();
 
@@ -258,7 +259,7 @@ header {
     }
 
     .comment {
-        .col-sm-4 {
+        .col-sm-4, .col-sm-6 {
             padding: 0 8px;
             margin-top: 20px;
         }
@@ -340,6 +341,11 @@ label {
     position: relative;
     width: 100%;
 
+    input,
+    select {
+        height: 40px;
+    }
+
     .form-control {
         position: relative;
         z-index: 1;
@@ -391,4 +397,12 @@ label {
 
 .form-inline-container span {
     margin-right: 0;
+}
+
+.btn-cancel {
+    color: $black;
+    &:hover {
+        color: $grey5;
+        text-decoration: none;
+    }
 }

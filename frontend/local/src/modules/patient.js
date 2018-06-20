@@ -42,7 +42,7 @@ const newPatientFormData = {
     ],
     firstName: "Patient",
     lastName: "Num1",
-    dateOfBirth: "1983-05-21",
+    dateOfBirth: "2018-05-21",
     gender: "CODED-at0310",
     maritalStatus: "SNOMED-125681006",
     numberOfKids: "1",
