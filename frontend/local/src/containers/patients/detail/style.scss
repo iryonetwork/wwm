@@ -205,6 +205,25 @@ dt {
     .history {
         .section {
             display: flex;
+            .content {
+                flex: 1;
+
+                .label {
+                    text-transform: uppercase;
+                    color: $grey5;
+                    font-size: 11px;
+                }
+                .value {
+                    font-weight: bold;
+                }
+
+                .row {
+                    margin-bottom: 40px;
+                    &:last-child {
+                        margin-bottom: 0px;
+                    }
+                }
+            }
         }
 
         .name {

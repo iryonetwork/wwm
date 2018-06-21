@@ -11,6 +11,7 @@ import validate from "../shared/validatePersonal"
 import { relationOptions, livingTogetherOptions } from "shared/forms/options"
 
 import { joinPaths } from "shared/utils"
+import Column from "shared/containers/valueColumn"
 import Spinner from "shared/containers/spinner"
 import { Form as PatientForm } from "../new/step1"
 import { Form as FamilyForm } from "../new/step2"
@@ -54,38 +55,6 @@ View = connect(
     }),
     {}
 )(View)
-
-const Column = ({ value, label, codes, width }) => {
-    // don't render if empty
-    if (value === undefined) {
-        return null
-    }
-
-    // convert for a code
-    if (codes && codes.length > 0) {
-        value = codes.reduce((acc, code) => {
-            if (code.id === value) {
-                return code.title
-            }
-            return acc
-        }, undefined)
-        // don't render if code is not found
-        if (value === undefined) {
-            return null
-        }
-    }
-
-    return (
-        <div className={`col-sm-${width}`}>
-            <div className="label" key="label">
-                {label}
-            </div>
-            <div className="value" key="value">
-                {value}
-            </div>
-        </div>
-    )
-}
 
 class ViewPersonal extends React.Component {
     constructor(props) {

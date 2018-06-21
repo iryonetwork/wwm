@@ -2,6 +2,7 @@ import React, { Component } from "react"
 import { Field, Fields, FieldArray, formValueSelector, reduxForm } from "redux-form"
 import { connect } from "react-redux"
 import classnames from "classnames"
+import moment from "moment"
 
 import Footer from "./footer"
 import validate from "../shared/validatePersonal"
@@ -57,7 +58,7 @@ let RenderForm = ({ dateOfBirth, babyFoods, communicationTypes, deliveryTypes, c
         return null
     }
 
-    const age = (Date.now() - new Date(dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365)
+    const age = moment().diff(moment(dateOfBirth), "years")
 
     if (age <= maxBabyAge) {
         return renderBabyForm({ babyFoods, deliveryTypes, communicationTypes })
@@ -206,9 +207,7 @@ const renderChildForm = () => (
                 <div className="vaccination">
                     <Fields
                         names={["vaccinationUpToDate", "vaccinationUpToDateComment"]}
-                        commentLabel="Comment"
-                        commentAlways={true}
-                        commentMultiline={true}
+                        commentNever={true}
                         component={renderComplexHorizontalRadio}
                         options={yesNoOptions}
                         label="Was this child up to date with the home country vaccination schedule?"
@@ -217,9 +216,7 @@ const renderChildForm = () => (
                 <div className="vaccination">
                     <Fields
                         names={["vaccinationCertificates", "vaccinationCertificatesComment"]}
-                        commentLabel="Comment"
-                        commentAlways={true}
-                        commentMultiline={true}
+                        commentNever={true}
                         component={renderComplexHorizontalRadio}
                         options={yesNoOptions}
                         label="Do you have this child's immunization certificates?"
@@ -254,22 +251,13 @@ const renderChildForm = () => (
                 </div>
                 <div className="vaccination">
                     <Fields
-                        names={["vaccinationReaction"]}
+                        names={["vaccinationReaction", "vaccinationReactionDetails"]}
                         component={renderComplexHorizontalRadio}
                         options={yesNoOptions}
-                        label="Has the child ever experienced vaccine reaction?"
-                    />
-                    <Fields
-                        names={["vaccinationReactionInvestigation", "vaccinationReactionInvestigationDetails"]}
-                        subField={true}
                         commentWhen="true"
-                        commentLabel="Investigation details"
-                        commentPlaceholder="Investigation details"
-                        commentLabelAlwaysVisible={true}
+                        commentLabel="Details"
                         commentMultiline={true}
-                        component={renderComplexHorizontalRadio}
-                        options={yesNoOptions}
-                        label="Any additional investigation done?"
+                        label="Has the child ever experienced vaccination reaction?"
                     />
                 </div>
             </div>
