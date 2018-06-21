@@ -172,25 +172,25 @@ const renderBabyForm = ({ babyFoods, deliveryTypes, communicationTypes }) => (
             <div className="habits">
                 <Fields
                     label="Do you have access to clean water?"
-                    names={["conditions_clean_water", "conditions_clean_water_comment"]}
+                    names={["conditions_clean_water"]}
                     component={renderComplexHorizontalRadio}
                     options={yesNoOptions}
                 />
                 <Fields
                     label="Do you have sufficient food supply?"
-                    names={["conditions_food_supply", "conditions_food_supply_comment"]}
+                    names={["conditions_food_supply"]}
                     component={renderComplexHorizontalRadio}
                     options={yesNoOptions}
                 />
                 <Fields
                     label="Does your accomodation have heating?"
-                    names={["conditions_heating", "conditions_heating_comment"]}
+                    names={["conditions_heating"]}
                     component={renderComplexHorizontalRadio}
                     options={yesNoOptions}
                 />
                 <Fields
                     label="Does your accomodation have electricity?"
-                    names={["conditions_electricity", "conditions_electricity_comment"]}
+                    names={["conditions_electricity"]}
                     component={renderComplexHorizontalRadio}
                     options={yesNoOptions}
                 />
@@ -288,37 +288,17 @@ const HabitsAndLivingConditions = () => (
             <Fields label="Are you a smoker?" names={["habits_smoking", "habits_smoking_comment"]} commentWhen="true" component={renderHabitFields} />
             <Fields label="Are you taking drugs?" names={["habits_drugs", "habits_drugs_comment"]} commentWhen="true" component={renderHabitFields} />
 
-            <Fields
-                label="Do you have resources for basic hygiene?"
-                names={["conditions_basic_hygiene", "conditions_basic_hygiene_comment"]}
-                component={renderHabitFields}
-            />
+            <Fields label="Do you have resources for basic hygiene?" names={["conditions_basic_hygiene"]} component={renderHabitFields} />
 
-            <Fields
-                label="Do you have access to clean water?"
-                names={["conditions_clean_water", "conditions_clean_water_comment"]}
-                component={renderHabitFields}
-            />
+            <Fields label="Do you have access to clean water?" names={["conditions_clean_water"]} component={renderHabitFields} />
 
-            <Fields
-                label="Do you have sufficient food supply?"
-                names={["conditions_food_supply", "conditions_food_supply_comment"]}
-                component={renderHabitFields}
-            />
+            <Fields label="Do you have sufficient food supply?" names={["conditions_food_supply"]} component={renderHabitFields} />
 
-            <Fields
-                label="Do you have a good appetite?"
-                names={["conditions_good_appetite", "conditions_good_appetite_comment"]}
-                component={renderHabitFields}
-            />
+            <Fields label="Do you have a good appetite?" names={["conditions_good_appetite"]} component={renderHabitFields} />
 
-            <Fields label="Does your accomodation have heating?" names={["conditions_heating", "conditions_heating_comment"]} component={renderHabitFields} />
+            <Fields label="Does your accomodation have heating?" names={["conditions_heating"]} component={renderHabitFields} />
 
-            <Fields
-                label="Does your accomodation have electricity?"
-                names={["conditions_electricity", "conditions_electricity_comment"]}
-                component={renderHabitFields}
-            />
+            <Fields label="Does your accomodation have electricity?" names={["conditions_electricity"]} component={renderHabitFields} />
         </div>
     </div>
 )

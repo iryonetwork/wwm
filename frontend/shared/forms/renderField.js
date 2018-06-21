@@ -203,17 +203,18 @@ const renderHabitFields = fields => (
                     </div>
                 </div>
             </div>
-            {fields[fields.names[0]].input.value === (fields.commentWhen || "false") && (
-                <div className="form-row comment">
-                    <div className="label" />
-                    <div className="col-sm-4">
-                        <label>
-                            <input {...fields[fields.names[1]].input} className="form-control" placeholder="Comment (optional)" />
-                            <span>Comment</span>
-                        </label>
+            {fields.names[1] &&
+                fields[fields.names[0]].input.value === (fields.commentWhen || "false") && (
+                    <div className="form-row comment">
+                        <div className="label" />
+                        <div className="col-sm-4">
+                            <label>
+                                <input {...fields[fields.names[1]].input} className="form-control" placeholder="Comment (optional)" />
+                                <span>Comment</span>
+                            </label>
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
         </div>
     </div>
 )
