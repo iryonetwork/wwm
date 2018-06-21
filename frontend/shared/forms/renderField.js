@@ -20,10 +20,10 @@ const renderInput = ({ input, optional, disabled, label, placeholder, type, meta
     </label>
 )
 
-const renderHorizontalInput = ({ input, optional, label, placeholder, unit, hideLabel, type, meta: { touched, error } }) => (
+const renderHorizontalInput = ({ input, optional, label, placeholder, unit, small, hideLabel, type, meta: { touched, error } }) => (
     <div className="form-row">
         <div className="label">{!hideLabel && label}</div>
-        <div className={"form-group " + (unit ? "col-sm-4" : "col-sm-6")}>
+        <div className={"form-group " + (small ? "col-sm-1" : unit ? "col-sm-4" : "col-sm-6")}>
             <input
                 {...input}
                 className={classnames("form-control", { "is-invalid": touched && error })}
@@ -32,7 +32,7 @@ const renderHorizontalInput = ({ input, optional, label, placeholder, unit, hide
             />
             {touched && error && <div className="invalid-feedback">{error}</div>}
         </div>
-        {unit && <div className="col-sm-2">{unit}</div>}
+        {unit && <div className="unit">{unit}</div>}
     </div>
 )
 

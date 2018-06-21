@@ -2,11 +2,14 @@ import React from "react"
 import _ from "lodash"
 import { connect } from "react-redux"
 import { Collapse } from "reactstrap"
+import { Route, Link } from "react-router-dom"
 
+import { joinPaths } from "shared/utils"
 import Spinner from "shared/containers/spinner"
 import VitalSignCard from "shared/containers/vitalSign"
-import { RESOURCE_VITAL_SIGNS, READ } from "../../../modules/validations"
+import { RESOURCE_VITAL_SIGNS, READ, WRITE } from "../../../modules/validations"
 import { fetchHealthRecords } from "../../../modules/patient"
+import AddMedicalData from "../../waitlist/detail/add-data"
 
 class MedicalData extends React.Component {
     constructor(props) {
@@ -39,7 +42,7 @@ class MedicalData extends React.Component {
     }
 
     render() {
-        let { medicalData, medicalDataLoading, canSeeVitalSigns, inConsultation } = this.props
+        let { match, medicalData, medicalDataLoading, canSeeVitalSigns, canAddVitalSigns, inConsultation } = this.props
 
         if (medicalDataLoading) {
             return <Spinner />
@@ -49,9 +52,18 @@ class MedicalData extends React.Component {
             <div className="medicalData">
                 <header>
                     <h1>Medical Data</h1>
+                    {inConsultation &&
+                        canAddVitalSigns && (
+                            <React.Fragment>
+                                <Route exact path={match.path + "/add-data"} component={AddMedicalData} />
+                                <Link to={joinPaths(match.url, "add-data")} className="btn btn-secondary btn-wide">
+                                    Add Medical Data
+                                </Link>
+                            </React.Fragment>
+                        )}
                 </header>
                 <div>
-                    {medicalData ? (
+                    {medicalData && !_.isEmpty(medicalData) ? (
                         <React.Fragment>
                             {medicalData.height || medicalData.weight || medicalData.bmi ? (
                                 <React.Fragment>
@@ -424,7 +436,8 @@ MedicalData = connect(
             medicalData: medicalData,
             medicalDataLoading: state.patient.patientRecords.loading,
             patientRecords: state.patient.patientRecords.data,
-            canSeeVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[READ]
+            canSeeVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[READ],
+            canAddVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[WRITE]
         }
     },
     { fetchHealthRecords }

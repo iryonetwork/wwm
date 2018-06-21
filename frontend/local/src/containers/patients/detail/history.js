@@ -161,24 +161,27 @@ class EditHistory extends React.Component {
                 <header>
                     <h1>Edit Medical History</h1>
                     <Link to="." className="btn btn-secondary btn-wide">
-                        Close
+                        Cancel
                     </Link>
+                    <button onClick={handleSubmit(this.handleSubmit)} className="btn btn-primary btn-wide">
+                        {updating ? "Saving..." : "Save"}
+                    </button>
                 </header>
-                <form onSubmit={handleSubmit(this.handleSubmit)} className="patient-form">
-                    <RenderForm
-                        dateOfBirth={dateOfBirth}
-                        babyFoods={getCodes("babyFood")}
-                        communicationTypes={getCodes("childCommunication")}
-                        deliveryTypes={getCodes("deliveryType")}
-                        codesLoading={codesLoading && !updating}
-                    />
+                <div className="formContainer">
+                    <form onSubmit={handleSubmit(this.handleSubmit)} className="patient-form">
+                        <RenderForm
+                            dateOfBirth={dateOfBirth}
+                            babyFoods={getCodes("babyFood")}
+                            communicationTypes={getCodes("childCommunication")}
+                            deliveryTypes={getCodes("deliveryType")}
+                            codesLoading={codesLoading && !updating}
+                        />
 
-                    <div className="section">
                         <div className="row buttons">
                             <div className="col-sm-4">
-                                <button type="button" className="btn btn-secondary btn-block">
-                                    Close
-                                </button>
+                                <Link to="." className="btn btn-secondary btn-block">
+                                    Cancel
+                                </Link>
                             </div>
                             <div className="col-sm-4">
                                 <button type="submit" className="btn btn-primary btn-block" disabled={updating}>
@@ -186,8 +189,8 @@ class EditHistory extends React.Component {
                                 </button>
                             </div>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         ) : null
     }

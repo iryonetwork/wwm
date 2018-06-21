@@ -24,7 +24,13 @@ const ListRow = ({ patient, canAddToWaitlist, waitlistID }) => {
             <td>{p.nationality}</td>
             <td>{id}</td>
             <td>{p.region}</td>
-            <td>{canAddToWaitlist && <Link to={`/to-waitlist/${waitlistID}/${patient.patientID}`}>Add to Waiting List</Link>}</td>
+            <td>
+                {canAddToWaitlist && (
+                    <Link className="btn btn-link" to={`/to-waitlist/${waitlistID}/${patient.patientID}`}>
+                        Add to Waiting List
+                    </Link>
+                )}
+            </td>
         </tr>
     )
 }

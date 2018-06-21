@@ -24,7 +24,7 @@
         display: inline-block;
         border-radius: 50px;
         background-color: $gray-100;
-        border: 1px solid $gray-300;
+        border: 1px solid $grey2;
         background-size: contain;
     }
 
@@ -57,10 +57,10 @@
             max-width: 66.6666%;
         }
         .unit {
-            position: relative;
             display: inline;
-            flex: 0 0 33.33333%;
-            max-width: 33.33333%;
+            position: relative;
+            margin-top: auto;
+            margin-bottom: auto;
             padding-left: 8px;
         }
     }
@@ -96,6 +96,7 @@
     }
 
     .section {
+        display: block !important;
         padding-top: 10px;
         padding-bottom: 10px;
         border-top: 1px solid $grey2;
@@ -123,13 +124,17 @@
         padding-bottom: 0px;
         .section {
             padding: 0px;
-            padding-bottom: 15px;
+            padding-bottom: 35px;
             border-bottom: 0px;
             .attributes {
                 padding: 10px 0 10px;
                 border-top: 1px solid $grey2;
                 &:first-child {
                     border-top:0px;
+                }
+
+                &:last-child {
+                    margin-bottom: -20px;
                 }
 
                 &.open {
@@ -148,10 +153,7 @@
             .vaccination {
                 padding-top: 20px;
                 padding-bottom: 20px;
-                border-bottom: 1px solid $gray-300;
-                &:last-child {
-                    border-bottom: 0px;
-                }
+                border-bottom: 1px solid $grey2;
                 .complexHorizontalRadio {
                     margin-top: 15px;
                     margin-bottom: 0px;
@@ -166,18 +168,19 @@
                         margin-top: 0px;
                     }
                     &.comment {
-                        margin-top: 5px;
+                        margin-top: 8px;
                     }
                 }
             }
 
             .birth {
-                padding-top: 20px;
+                padding-top: 25px;
                 padding-bottom: 20px;
-                border-bottom: 1px solid $gray-300;
+                border-bottom: 1px solid $grey2;
                 &:last-child {
                     margin-bottom: 0px;
                     border-bottom: 0px;
+                    padding-bottom: 0px;
                 }
                 .form-row {
                     margin-top: 10px;
@@ -188,7 +191,7 @@
             .habits {
                 padding-top: 25px;
                 padding-bottom: 25px;
-                border-bottom: 1px solid $gray-300;
+                border-bottom: 1px solid $grey2;
                 .complexHorizontalRadio {
                     margin-top: 15px;
                     margin-bottom: 0px;
@@ -196,6 +199,11 @@
                         margin-top: 0px;
                     }
                 }
+
+                &:last-child {
+                    margin-bottom: -30px;
+                }
+
                 .form-row {
                     margin-top: 10px;
                     margin-bottom: 0px;
@@ -203,7 +211,7 @@
                         margin-top: 0px;
                     }
                     &.comment {
-                        margin-top: 5px;
+                        margin-top: 8px;
                     }
                 }
             }

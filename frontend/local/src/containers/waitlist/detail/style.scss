@@ -148,11 +148,23 @@
     .Select-value-label,
     .Select-clear-zone {
         text-transform: none;
-        margin: 0;
+        margin: auto;
         outline: none;
         position: initial;
         font-size: 14px;
-        top: 0;
+    }
+
+    .Select-value {
+        top: auto;
+        margin-top: 1px;
+    }
+
+    .Select-input {
+        margin: auto;
+        input {
+            margin: auto;
+            height: initial;
+        }
     }
 
     .Select-control{

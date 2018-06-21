@@ -4,11 +4,14 @@
 @import "bootstrap/scss/mixins/grid-framework";
 @import "bootstrap/scss/grid";
 
+.buttons {
+    padding-top: 25px;
+}
+
 .waitlist-detail {
     display: flex;
 
     .btn {
-        max-height: 40px;
         margin-left: 15px;
         &:first-child {
             margin-left: 0px;
@@ -186,7 +189,6 @@
 
     .edit-history {
         position: relative;
-
         .remove {
             z-index: 1;
             right: 10px;
@@ -196,37 +198,98 @@
             border-bottom: 0;
         }
 
-        .section {
-            .form-row {
-                border-top: 1px solid $grey2;
 
+        .section {
+            padding: 0px;
+            padding-bottom: 35px;
+            border-bottom: 0px;
+            .attributes {
+                padding: 10px 0 10px;
+                border-top: 1px solid $grey2;
                 &:first-child {
-                    border-top: none;
+                    border-top:0px;
                 }
 
-                &.habits,
-                &.vaccination {
-                    border-top: 1px solid $grey2;
-                    padding-top: 30px;
-                    margin-bottom: 30px;
+                &:last-child {
+                    margin-bottom: -15px;
+                }
+
+                &.open {
+                    padding: 10px 0 10px;
+                    margin-top: 0;
+
                 }
             }
 
-            &.blood-type {
-                .form-row {
-                    margin-top: 40px;
-                    margin-bottom: 0;
-                    border-top: none;
+            .label {
+                padding: 0 5px 0px 5px;
+                margin-top: auto;
+                margin-bottom: auto;
+            }
 
-                    .form-group {
-                        margin-bottom: 0;
+            .vaccination {
+                padding-top: 20px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid $grey2;
+                .complexHorizontalRadio {
+                    margin-top: 15px;
+                    margin-bottom: 0px;
+                    &:first-child {
+                        margin-top: 0px;
+                    }
+                }
+                .form-row {
+                    margin-top: 10px;
+                    margin-bottom: 0px;
+                    &:first-child {
+                        margin-top: 0px;
+                    }
+                    &.comment {
+                        margin-top: 5px;
+                    }
+                }
+            }
+
+            .birth {
+                padding-top: 25px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid $grey2;
+                &:last-child {
+                    margin-bottom: 0px;
+                    border-bottom: 0px;
+                    padding-bottom: 0px;
+                }
+                .form-row {
+                    margin-top: 10px;
+                    margin-bottom: 0px;
+                }
+            }
+
+            .habits {
+                padding-top: 25px;
+                padding-bottom: 25px;
+                border-bottom: 1px solid $grey2;
+                .complexHorizontalRadio {
+                    margin-top: 15px;
+                    margin-bottom: 0px;
+                    &:first-child {
+                        margin-top: 0px;
                     }
                 }
 
-                .warning {
-                    color: $danger;
-                    margin: 10px 0 0;
-                    font-weight: bold;
+                &:last-child {
+                    margin-bottom: -30px;
+                }
+
+                .form-row {
+                    margin-top: 10px;
+                    margin-bottom: 0px;
+                    &:first-child {
+                        margin-top: 0px;
+                    }
+                    &.comment {
+                        margin-top: 5px;
+                    }
                 }
             }
         }
@@ -254,11 +317,6 @@
 
 		.vaccination,
         .habits {
-            margin-top: 50px;
-            padding: 20px 0 0;
-            border-top: 1px solid $grey2;
-            border-bottom: none;
-
             .label {
                 padding: 0 5px 0px 5px;
             }
@@ -312,7 +370,6 @@
         h3 {
             width: 240px;
             font-size: 18px;
-            padding-top: 10px;
         }
 
         .buttons {
@@ -338,25 +395,119 @@
     }
 
     .patient-form {
-        position: relative;
-
-        .remove {
-            right: 0;
-            z-index: 1;
+        h3 {
+            font-size: 18px;
+            margin-bottom: 5px;
         }
 
-        h3 {
-            border-top: 1px solid $grey3;
-            border-bottom: none;
-            padding-top: 35px;
-            margin-bottom: 20px;
+        .btn-link {
+            font-weight: bold;
+            padding-left: 5px;
+        }
+
+        .image {
+            width: 100px;
+            height: 100px;
+            display: inline-block;
+            border-radius: 50px;
+            background-color: $gray-100;
+            border: 1px solid $grey2;
+            background-size: contain;
+        }
+
+        .btn-image {
+            margin: 30px 10px;
+        }
+
+        .custom-file-input {
+            position: absolute;
+            top: 0;
+            left: -100px;
+            height: 100px;
+            cursor: pointer;
         }
 
         .form-row {
-            margin-left: -10px;
-            margin-right: -10px;
+            margin-top: 25px;
+            .form-group {
+                margin-bottom:0px;
+            }
+            &:first-child {
+                margin-top: 20px;
+            }
+            &:last-child {
+                margin-bottom: 10px;
+            }
+            .valueWithUnit {
+                display: inline-block;
+                flex: 0 0 66.6666%;
+                max-width: 66.6666%;
+            }
+            .unit {
+                position: relative;
+                display: inline;
+                flex: 0 0 33.33333%;
+                max-width: 33.33333%;
+                padding-left: 8px;
+            }
+        }
+
+        .search {
+            margin-bottom: 30px;
+
+            .Select-menu-outer {
+                z-index: 1000;
+            }
+
+            .patientCard {
+                margin: 0;
+            }
+
+            .table.patients th,
+            .table.patients td {
+                border-bottom: 0;
+            }
+
+            .Select-control {
+                background: url("~shared/icons/search.svg") 5px 1px no-repeat !important;
+
+                border-radius: 3px;
+                border-color: $gray-300;
+            }
+
+            .Select-placeholder,
+            .Select-input,
+            .Select-value {
+                padding-left: 40px !important;
+            }
+        }
+
+        .section {
+            display: block !important;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            border-top: 1px solid $grey2;
+            &:last-child {
+                border-bottom: 1px solid $grey2;
+            }
+            .remove {
+                padding: 0;
+            }
+        }
+
+        .familyMembers {
+            .searchBar {
+                margin-top: 10px;
+                margin-bottom: -20px;
+            }
+            .form-row {
+                &:last-child {
+                    margin-bottom:0px;
+                }
+            }
         }
     }
+
 }
 
 .records {
@@ -406,7 +557,6 @@
     }
 
     h3 {
-        font-size: 20px;
         line-height: 30px;
         margin-top: 0;
         margin-bottom: 0;

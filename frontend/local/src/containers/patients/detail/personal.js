@@ -285,18 +285,16 @@ class EditPersonal extends React.Component {
                             genders={getCodes("gender")}
                             documentTypes={getCodes("documentTypes")}
                         />
-                        <div className="section">
-                            <div className="row buttons">
-                                <div className="col-sm-4">
-                                    <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-block">
-                                        Cancel
-                                    </Link>
-                                </div>
-                                <div className="col-sm-4">
-                                    <button type="submit" className="btn btn-primary btn-block" disabled={updating}>
-                                        {updating ? "Saving..." : "Save"}
-                                    </button>
-                                </div>
+                        <div className="row buttons">
+                            <div className="col-sm-4">
+                                <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-block">
+                                    Cancel
+                                </Link>
+                            </div>
+                            <div className="col-sm-4">
+                                <button type="submit" className="btn btn-primary btn-block" disabled={updating}>
+                                    {updating ? "Saving..." : "Save"}
+                                </button>
                             </div>
                         </div>
                     </form>
@@ -368,18 +366,16 @@ class EditFamily extends React.Component {
                 <div>
                     <form onSubmit={handleSubmit(this.handleSubmit)}>
                         <FamilyForm />
-                        <div className="section">
-                            <div className="row buttons">
-                                <div className="col-sm-4">
-                                    <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-block">
-                                        Cancel
-                                    </Link>
-                                </div>
-                                <div className="col-sm-4">
-                                    <button type="submit" className="btn btn-primary btn-block" disabled={updating}>
-                                        {updating ? "Saving..." : "Save"}
-                                    </button>
-                                </div>
+                        <div className="row buttons">
+                            <div className="col-sm-4">
+                                <Link to={location.pathname.replace("/edit", "")} className="btn btn-secondary btn-block">
+                                    Cancel
+                                </Link>
+                            </div>
+                            <div className="col-sm-4">
+                                <button type="submit" className="btn btn-primary btn-block" disabled={updating}>
+                                    {updating ? "Saving..." : "Save"}
+                                </button>
                             </div>
                         </div>
                     </form>

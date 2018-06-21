@@ -127,7 +127,15 @@ const renderBabyForm = ({ babyFoods, deliveryTypes, communicationTypes }) => (
         <div className="section">
             <div className="habits">
                 <Fields names={["breastfeeding"]} component={renderComplexHorizontalRadio} options={yesNoOptions} label="Breastfeeding?" />
-                <Field name="breastfeedingDuration" type="number" component={renderHorizontalInput} label="For how long?" />
+                <Field
+                    name="breastfeedingDuration"
+                    type="number"
+                    component={renderHorizontalInput}
+                    label="For how long?"
+                    unit="weeks"
+                    placeholder=" "
+                    small={true}
+                />
             </div>
             <div className="habits">
                 <Field name="babyEatsAndDrinks" component={renderHorizontalSelect} options={babyFoods} label="What does your baby eat and drink?" />{" "}
@@ -330,7 +338,7 @@ const HabitsAndLivingConditions = () => (
 const renderAllergies = ({ fields, meta: { error, submitFailed } }) => (
     <div className={classnames("attributes", { open: fields.length })}>
         {fields.map((allergy, index) => (
-            <div key={allergy} className="form-row">
+            <div key={allergy} className="form-row withRemove">
                 <div className="form-group col-sm-4">
                     <Field name={`${allergy}.allergy`} component={renderInput} label="Allergy" />
                 </div>
@@ -353,22 +361,24 @@ const renderAllergies = ({ fields, meta: { error, submitFailed } }) => (
                 </button>
             </div>
         ))}
-        <button
-            className="btn btn-link add"
-            onClick={e => {
-                e.preventDefault()
-                fields.push({})
-            }}
-        >
-            Add allergy
-        </button>
+        <div>
+            <button
+                className="btn btn-link add"
+                onClick={e => {
+                    e.preventDefault()
+                    fields.push({})
+                }}
+            >
+                Add allergy
+            </button>
+        </div>
     </div>
 )
 
 const renderImmunizations = ({ fields, meta: { error, submitFailed } }) => (
     <div className={classnames("attributes", { open: fields.length })}>
         {fields.map((immunization, index) => (
-            <div key={immunization} className="form-row">
+            <div key={immunization} className="form-row withRemove">
                 <div className="form-group col-sm-4">
                     <Field name={`${immunization}.immunization`} component={renderInput} label="Immunization" />
                 </div>
@@ -388,22 +398,24 @@ const renderImmunizations = ({ fields, meta: { error, submitFailed } }) => (
                 </button>
             </div>
         ))}
-        <button
-            className="btn btn-link"
-            onClick={e => {
-                e.preventDefault()
-                fields.push({})
-            }}
-        >
-            Add immunization
-        </button>
+        <div>
+            <button
+                className="btn btn-link"
+                onClick={e => {
+                    e.preventDefault()
+                    fields.push({})
+                }}
+            >
+                Add immunization
+            </button>
+        </div>
     </div>
 )
 
 const renderChronicDiseases = ({ fields, meta: { error, submitFailed } }) => (
     <div className={classnames("attributes", { open: fields.length })}>
         {fields.map((disease, index) => (
-            <div key={disease} className="form-row">
+            <div key={disease} className="form-row withRemove">
                 <div className="form-group col-sm-4">
                     <Field name={`${disease}.disease`} component={renderInput} label="Disease" />
                 </div>
@@ -426,22 +438,24 @@ const renderChronicDiseases = ({ fields, meta: { error, submitFailed } }) => (
                 </button>
             </div>
         ))}
-        <button
-            className="btn btn-link"
-            onClick={e => {
-                e.preventDefault()
-                fields.push({})
-            }}
-        >
-            Add chronic disease
-        </button>
+        <div>
+            <button
+                className="btn btn-link"
+                onClick={e => {
+                    e.preventDefault()
+                    fields.push({})
+                }}
+            >
+                Add chronic disease
+            </button>
+        </div>
     </div>
 )
 
 const renderInjuries = ({ fields, meta: { error, submitFailed } }) => (
     <div className={classnames("attributes", { open: fields.length })}>
         {fields.map((injury, index) => (
-            <div key={injury} className="form-row">
+            <div key={injury} className="form-row withRemove">
                 <div className="form-group col-sm-4">
                     <Field name={`${injury}.injury`} component={renderInput} label="Injury or handicap" />
                 </div>
@@ -464,22 +478,24 @@ const renderInjuries = ({ fields, meta: { error, submitFailed } }) => (
                 </button>
             </div>
         ))}
-        <button
-            className="btn btn-link"
-            onClick={e => {
-                e.preventDefault()
-                fields.push({})
-            }}
-        >
-            Add injury or handicap
-        </button>
+        <div>
+            <button
+                className="btn btn-link"
+                onClick={e => {
+                    e.preventDefault()
+                    fields.push({})
+                }}
+            >
+                Add injury or handicap
+            </button>
+        </div>
     </div>
 )
 
 const renderSurgeries = ({ fields, meta: { error, submitFailed } }) => (
     <div className={classnames("attributes", { open: fields.length })}>
         {fields.map((injury, index) => (
-            <div key={injury} className="form-row">
+            <div key={injury} className="form-row withRemove">
                 <div className="form-group col-sm-4">
                     <Field name={`${injury}.injury`} component={renderInput} label="Surgery" />
                 </div>
@@ -502,22 +518,24 @@ const renderSurgeries = ({ fields, meta: { error, submitFailed } }) => (
                 </button>
             </div>
         ))}
-        <button
-            className="btn btn-link"
-            onClick={e => {
-                e.preventDefault()
-                fields.push({})
-            }}
-        >
-            Add surgery
-        </button>
+        <div>
+            <button
+                className="btn btn-link"
+                onClick={e => {
+                    e.preventDefault()
+                    fields.push({})
+                }}
+            >
+                Add surgery
+            </button>
+        </div>
     </div>
 )
 
 const renderMedications = ({ fields, meta: { error, submitFailed } }) => (
     <div className={classnames("attributes", { open: fields.length })}>
         {fields.map((medication, index) => (
-            <div key={medication} className="form-row">
+            <div key={medication} className="form-row withRemove">
                 <div className="form-group col-sm-4">
                     <Field name={`${medication}.medication`} component={renderInput} label="Additional medication" />
                 </div>
@@ -537,15 +555,17 @@ const renderMedications = ({ fields, meta: { error, submitFailed } }) => (
                 </button>
             </div>
         ))}
-        <button
-            className="btn btn-link"
-            onClick={e => {
-                e.preventDefault()
-                fields.push({})
-            }}
-        >
-            Add additional medication
-        </button>
+        <div>
+            <button
+                className="btn btn-link"
+                onClick={e => {
+                    e.preventDefault()
+                    fields.push({})
+                }}
+            >
+                Add additional medication
+            </button>
+        </div>
     </div>
 )
 
