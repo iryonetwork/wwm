@@ -87,20 +87,32 @@ class PatientDetail extends React.Component {
                     <Patient big={true} data={patient} />
                     {this.props.canSeeVitalSigns ? (
                         <div className="row measurements">
-                            {bodyMeasurements &&
-                                bodyMeasurements.height && (
+                            {bodyMeasurements && bodyMeasurements.height ? (
+                                <div className="col-sm-4">
+                                    <h5>Height</h5>
+                                    {bodyMeasurements.height} cm
+                                </div>
+                            ) : (
+                                patient.heightAtBirth && (
                                     <div className="col-sm-4">
                                         <h5>Height</h5>
-                                        {bodyMeasurements.height} cm
+                                        {patient.heightAtBirth} cm
                                     </div>
-                                )}
-                            {bodyMeasurements &&
-                                bodyMeasurements.weight && (
+                                )
+                            )}
+                            {bodyMeasurements && bodyMeasurements.weight ? (
+                                <div className="col-sm-4">
+                                    <h5>Weight</h5>
+                                    {bodyMeasurements.weight} kg
+                                </div>
+                            ) : (
+                                patient.weightAtBirth && (
                                     <div className="col-sm-4">
                                         <h5>Weight</h5>
-                                        {bodyMeasurements.weight} kg
+                                        {patient.weightAtBirth} grams
                                     </div>
-                                )}
+                                )
+                            )}
                             {bodyMeasurements &&
                                 bodyMeasurements.bmi && (
                                     <div className="col-sm-4">
