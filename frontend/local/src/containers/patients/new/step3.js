@@ -161,7 +161,7 @@ const renderBabyForm = ({ babyFoods, deliveryTypes, communicationTypes }) => (
                 <Fields names={["babySleepOnBack"]} component={renderComplexHorizontalRadio} options={yesNoOptions} label="Does your baby sleep on the back?" />
             </div>
             <div className="habits">
-                <Fields names={["babyVitaminD"]} component={renderComplexHorizontalRadio} options={yesNoOptions} label="Do you or your baby take vitamin D?" />
+                <Fields names={["babyVitaminD"]} component={renderComplexHorizontalRadio} options={yesNoOptions} label="Does your baby take vitamin D?" />
                 <Field name="babyGetsAround" component={renderHorizontalInput} label="How does your child get around?" />
                 <Field name="babyCommunicates" component={renderHorizontalSelect} options={communicationTypes} label="How does your child communicate?" />
             </div>
@@ -169,32 +169,11 @@ const renderBabyForm = ({ babyFoods, deliveryTypes, communicationTypes }) => (
                 <Fields names={["babyAnyoneSmokes"]} component={renderComplexHorizontalRadio} options={yesNoOptions} label="Does anyone at your house smoke?" />
                 <Field name="babyNumberOfSmokers" component={renderHorizontalSelect} options={numberOptions} label="How many smokers?" />
             </div>
-            <div className="habits">
-                <Fields
-                    label="Do you have access to clean water?"
-                    names={["conditions_clean_water"]}
-                    component={renderComplexHorizontalRadio}
-                    options={yesNoOptions}
-                />
-                <Fields
-                    label="Do you have sufficient food supply?"
-                    names={["conditions_food_supply"]}
-                    component={renderComplexHorizontalRadio}
-                    options={yesNoOptions}
-                />
-                <Fields
-                    label="Does your accomodation have heating?"
-                    names={["conditions_heating"]}
-                    component={renderComplexHorizontalRadio}
-                    options={yesNoOptions}
-                />
-                <Fields
-                    label="Does your accomodation have electricity?"
-                    names={["conditions_electricity"]}
-                    component={renderComplexHorizontalRadio}
-                    options={yesNoOptions}
-                />
-            </div>
+            <Fields label="Do you have resources for basic hygiene?" names={["conditions_basic_hygiene"]} component={renderHabitFields} />
+            <Fields label="Do you have access to clean water?" names={["conditions_clean_water"]} component={renderHabitFields} />
+            <Fields label="Do you have sufficient food supply?" names={["conditions_food_supply"]} component={renderHabitFields} />
+            <Fields label="Does your accomodation have heating?" names={["conditions_heating"]} component={renderHabitFields} />
+            <Fields label="Does your accomodation have electricity?" names={["conditions_electricity"]} component={renderHabitFields} />
         </div>
     </div>
 )

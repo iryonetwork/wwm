@@ -234,16 +234,32 @@ dt {
 
         .values {
             margin-top: 4px;
-        }
+            flex: 1;
 
-        .item {
-            margin-bottom: 20px;
-            dt,
-            dd {
-                padding-left: 25px;
+            .label {
+                text-transform: uppercase;
+                color: $grey5;
+                font-size: 11px;
             }
-            &:last-child {
-                margin-bottom: 0px;
+            .value {
+                font-weight: bold;
+            }
+
+            .row {
+                margin-bottom: 40px;
+                &:last-child {
+                    margin-bottom: 0px;
+                }
+            }
+            .item {
+                margin-bottom: 20px;
+                dt,
+                dd {
+                    padding-left: 25px;
+                }
+                &:last-child {
+                    margin-bottom: 0px;
+                }
             }
         }
     }
