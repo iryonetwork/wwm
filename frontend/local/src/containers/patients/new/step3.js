@@ -182,13 +182,13 @@ const renderBabyForm = ({ babyFoods, deliveryTypes, communicationTypes }) => (
                     options={yesNoOptions}
                 />
                 <Fields
-                    label="Does your tent have heating?"
+                    label="Does your accomodation have heating?"
                     names={["conditions_heating", "conditions_heating_comment"]}
                     component={renderComplexHorizontalRadio}
                     options={yesNoOptions}
                 />
                 <Fields
-                    label="Does your tent have electricity?"
+                    label="Does your accomodation have electricity?"
                     names={["conditions_electricity", "conditions_electricity_comment"]}
                     component={renderComplexHorizontalRadio}
                     options={yesNoOptions}
@@ -324,10 +324,10 @@ const HabitsAndLivingConditions = () => (
                 component={renderHabitFields}
             />
 
-            <Fields label="Does your tent have heating?" names={["conditions_heating", "conditions_heating_comment"]} component={renderHabitFields} />
+            <Fields label="Does your accomodation have heating?" names={["conditions_heating", "conditions_heating_comment"]} component={renderHabitFields} />
 
             <Fields
-                label="Does your tent have electricity?"
+                label="Does your accomodation have electricity?"
                 names={["conditions_electricity", "conditions_electricity_comment"]}
                 component={renderHabitFields}
             />

@@ -245,7 +245,7 @@ const renderComplexHorizontalRadio = fields => {
                 </div>
             </div>
             {fields.names[1] &&
-                (fields.commentAlways || fields[fields.names[0]].input.value === (fields.commentWhen || "false")) && (
+                (!fields.commentNever && (fields.commentAlways || fields[fields.names[0]].input.value === (fields.commentWhen || "false"))) && (
                     <div className="form-row comment">
                         <div className="label" />
                         <div className={classnames({ "col-sm-4": fields.commentShort }, { "col-sm-6": !fields.commentShort })}>

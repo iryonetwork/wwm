@@ -8,6 +8,48 @@
     padding-top: 25px;
 }
 
+.danger {
+    color: $danger;
+    background: url("~shared/icons/warning.svg") no-repeat;
+    padding-left: 25px;
+}
+
+.negative {
+    color: $black;
+    font-weight: bold;
+    background: url("~shared/icons/negative.svg") no-repeat;
+    padding-left: 25px;
+}
+
+.positive {
+    color: $black;
+    font-weight: bold;
+    background: url("~shared/icons/positive.svg") no-repeat;
+    padding-left: 25px;
+}
+
+span {
+    &.danger,
+    &.negative,
+    &.positive {
+        padding-top: 2px;
+    }
+}
+
+dt {
+    &.danger,
+    &.negative
+    &.positive {
+        padding-top: 1px;
+    }
+}
+
+.withIconComment {
+    padding-left: 25px;
+    padding-top: 2px;
+}
+
+
 .waitlist-detail {
     display: flex;
 
@@ -46,13 +88,6 @@
             margin-top: 20px;
             margin-bottom: 20px;
             font-weight: bold;
-        }
-
-        .danger {
-            color: $danger;
-            background: url("~shared/icons/warning.svg") no-repeat;
-            padding-left: 30px;
-            padding-top: 2px;
         }
 
         .menu {
@@ -179,11 +214,18 @@
         }
 
         .values {
-            margin-top: 5px;
+            margin-top: 4px;
         }
 
-        dd {
+        .item {
             margin-bottom: 20px;
+            dt,
+            dd {
+                padding-left: 25px;
+            }
+            &:last-child {
+                margin-bottom: 0px;
+            }
         }
     }
 
@@ -290,27 +332,6 @@
                     &.comment {
                         margin-top: 5px;
                     }
-                }
-            }
-        }
-
-        .attributes {
-            padding: 20px 0;
-            border-top: 1px solid $grey2;
-
-            &.open {
-                margin-top: 0;
-
-                .form-row {
-                    padding: 40px 0 10px;
-                    margin-top: 0;
-                    margin-bottom: 0;
-                }
-
-                .link {
-                    border-bottom: none;
-                    margin: 0;
-                    padding: 0;
                 }
             }
         }
@@ -673,8 +694,8 @@
             &.with-btn {
                 display: flex;
             }
-
             margin-bottom: 5px;
+
             h3, h4 {
                 margin: 0px;
                 flex-grow: 1;
