@@ -301,7 +301,7 @@ const assignBoolean = (ehrPath, formPath) => (data, formData) => {
     if (!has(formData, formPath)) {
         return data
     }
-    return Object.assign(data, { [ehrPath]: get(formData, formPath) ? "true" : "false" })
+    return Object.assign(data, { [ehrPath]: get(formData, formPath) === "true" ? "true" : "false" })
 }
 
 const assignFixedValue = (ehrPath, value) => (data, formData) => {
