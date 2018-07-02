@@ -72,7 +72,7 @@ class AddDiagnosis extends React.Component {
         let newItem = Object.assign({}, this.props.waitlistItem)
         newItem.diagnoses = newItem.diagnoses || []
         if (this.props.match.params.diagnosisIndex) {
-            newItem.diagnoses[this.props.diagnosisIndex] = diagnosis
+            newItem.diagnoses[this.props.match.params.diagnosisIndex] = diagnosis
         } else {
             newItem.diagnoses.push(diagnosis)
         }
