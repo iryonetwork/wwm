@@ -569,12 +569,15 @@ definitions:
     type: array
     readOnly: true
     items:
-      type: object
-      properties:
-        key:
-          type: string
-        value:
-          type: string
+      $ref: '#/definitions/PatientData'
+
+  PatientData:
+    type: object
+    properties:
+      key:
+        type: string
+      value:
+        type: string
 
   Complaint:
     description: Object describing patient's complaint

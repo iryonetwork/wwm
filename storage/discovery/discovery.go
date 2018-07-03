@@ -223,7 +223,7 @@ var getCard = func(tx db.DB, patientID strfmt.UUID) (*models.Card, error) {
 
 	// process connections
 	for _, conn := range p.Connections {
-		card.Connections = append(card.Connections, &models.ConnectionsItems{
+		card.Connections = append(card.Connections, &models.Connection{
 			Key:   conn.Key,
 			Value: conn.Value,
 		})

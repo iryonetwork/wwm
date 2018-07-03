@@ -219,7 +219,7 @@ func TestUpdatePatient(t *testing.T) {
 		Priority:      swag.Int64(1),
 		PatientID:     swag.String(patient1ID.String()),
 		Patient: models.Patient{
-			&models.PatientItems{
+			&models.PatientData{
 				Key:   "status",
 				Value: "added",
 			},
@@ -231,7 +231,7 @@ func TestUpdatePatient(t *testing.T) {
 		Priority:      swag.Int64(1),
 		PatientID:     swag.String(patient1ID.String()),
 		Patient: models.Patient{
-			&models.PatientItems{
+			&models.PatientData{
 				Key:   "status",
 				Value: "added",
 			},
@@ -241,7 +241,7 @@ func TestUpdatePatient(t *testing.T) {
 	updatedItems, err := storage.UpdatePatient(
 		patient1ID.Bytes(),
 		models.Patient{
-			&models.PatientItems{
+			&models.PatientData{
 				Key:   "status",
 				Value: "updated",
 			},

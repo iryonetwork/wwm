@@ -30,11 +30,11 @@ var (
 	card       = &models.Card{
 		PatientID: uuid1,
 		Connections: models.Connections{
-			&models.ConnectionsItems{
+			&models.Connection{
 				Key:   "K1",
 				Value: "V1",
 			},
-			&models.ConnectionsItems{
+			&models.Connection{
 				Key:   "K2",
 				Value: "V2",
 			},
@@ -84,8 +84,8 @@ func TestCreate(t *testing.T) {
 			&models.Card{
 				PatientID: uuid1,
 				Connections: models.Connections{
-					&models.ConnectionsItems{Key: "K1", Value: "V1"},
-					&models.ConnectionsItems{Key: "K2", Value: "V2"},
+					&models.Connection{Key: "K1", Value: "V1"},
+					&models.Connection{Key: "K2", Value: "V2"},
 				},
 				Locations: models.Locations{uuid1},
 			},
@@ -153,8 +153,8 @@ func TestCreate(t *testing.T) {
 
 			// call the method
 			out, err := s.Create(models.Connections{
-				&models.ConnectionsItems{Key: "K1", Value: "V1"},
-				&models.ConnectionsItems{Key: "K2", Value: "V2"},
+				&models.Connection{Key: "K1", Value: "V1"},
+				&models.Connection{Key: "K2", Value: "V2"},
 			}, models.Locations{uuid1})
 
 			// check expected results
@@ -253,8 +253,8 @@ func TestUpdate(t *testing.T) {
 			&models.Card{
 				PatientID: uuid1,
 				Connections: models.Connections{
-					&models.ConnectionsItems{Key: "K2", Value: "V2.2"},
-					&models.ConnectionsItems{Key: "K3", Value: "V3"},
+					&models.Connection{Key: "K2", Value: "V2.2"},
+					&models.Connection{Key: "K3", Value: "V3"},
 				},
 				Locations: models.Locations{uuid2},
 			},
@@ -293,8 +293,8 @@ func TestUpdate(t *testing.T) {
 
 			// call the method
 			out, err := s.Update(uuid1, models.Connections{
-				&models.ConnectionsItems{Key: "K2", Value: "V2.2"},
-				&models.ConnectionsItems{Key: "K3", Value: "V3"},
+				&models.Connection{Key: "K2", Value: "V2.2"},
+				&models.Connection{Key: "K3", Value: "V3"},
 			}, models.Locations{uuid2})
 
 			// check expected results
@@ -348,8 +348,8 @@ func TestGet(t *testing.T) {
 			&models.Card{
 				PatientID: uuid1,
 				Connections: models.Connections{
-					&models.ConnectionsItems{Key: "K1", Value: "V1"},
-					&models.ConnectionsItems{Key: "K2", Value: "V2"},
+					&models.Connection{Key: "K1", Value: "V1"},
+					&models.Connection{Key: "K2", Value: "V2"},
 				},
 				Locations: models.Locations{uuid1},
 			},
@@ -633,8 +633,8 @@ func TestFind(t *testing.T) {
 				&models.Card{
 					PatientID: uuid1,
 					Connections: models.Connections{
-						&models.ConnectionsItems{Key: "K1", Value: "V1"},
-						&models.ConnectionsItems{Key: "K2", Value: "V2"},
+						&models.Connection{Key: "K1", Value: "V1"},
+						&models.Connection{Key: "K2", Value: "V2"},
 					},
 					Locations: models.Locations{uuid1},
 				},
@@ -666,8 +666,8 @@ func TestFind(t *testing.T) {
 				&models.Card{
 					PatientID: uuid1,
 					Connections: models.Connections{
-						&models.ConnectionsItems{Key: "K1", Value: "V1"},
-						&models.ConnectionsItems{Key: "K2", Value: "V2"},
+						&models.Connection{Key: "K1", Value: "V1"},
+						&models.Connection{Key: "K2", Value: "V2"},
 					},
 					Locations: models.Locations{uuid1},
 				},

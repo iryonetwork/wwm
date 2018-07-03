@@ -389,12 +389,15 @@ definitions:
   Connections:
     type: array
     items:
-      type: object
-      properties:
-        key:
-          type: string
-        value:
-          type: string
+      $ref: '#/definitions/Connection'
+
+  Connection:
+    type: object
+    properties:
+      key:
+        type: string
+      value:
+        type: string
 
   Locations:
     type: array

@@ -86,8 +86,8 @@ func processCardDiff(tx db.DB, current *models.Card, new *models.Card) error {
 	return nil
 }
 
-func connectionsToMap(conns models.Connections) ([]string, map[string]*models.ConnectionsItems) {
-	m := make(map[string]*models.ConnectionsItems, len(conns))
+func connectionsToMap(conns models.Connections) ([]string, map[string]*models.Connection) {
+	m := make(map[string]*models.Connection, len(conns))
 	k := []string{}
 
 	for _, c := range conns {
