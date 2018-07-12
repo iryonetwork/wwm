@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
-	"errors"
 	"io"
 	"time"
 
@@ -70,9 +69,6 @@ var ErrNotFound = s3.ErrNotFound
 
 // Item already exists
 var ErrAlreadyExists = s3.ErrAlreadyExists
-
-// Item already exists and conflicts
-var ErrAlreadyExistsConflict = errors.New("Item already exists and its checksum is different")
 
 type service struct {
 	s3          s3.Storage
@@ -366,9 +362,12 @@ func (s *service) SyncFile(ctx context.Context, bucketID, fileID, version string
 		return fd, ErrAlreadyExists
 	// Already exists and conflicts
 	case err == nil && checksum != fd.Checksum:
-		s.logger.Error().
-			Msg("File already exists and has conflicting checksum")
-		return nil, ErrAlreadyExistsConflict
+		s.logger.Info().
+			Msg("File already exists and has conflicting checksum. Local file will be removed and replaced with sync file.")
+		err = s.s3.Delete(ctx, bucketID, fileID, version)
+		if err != nil {
+			return nil, err
+		}
 	// Storage returned error and it is not "not found"
 	case err != nil && err != s3.ErrNotFound:
 		s.logger.Error().Err(err).

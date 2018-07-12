@@ -296,8 +296,6 @@ func (h *handlers) SyncFile() operations.SyncFileHandler {
 			switch err {
 			case ErrAlreadyExists:
 				return operations.NewSyncFileOK().WithPayload(fd)
-			case ErrAlreadyExistsConflict:
-				return operations.NewSyncFileConflict()
 			default:
 				return operations.NewSyncFileInternalServerError().WithPayload(&models.Error{
 					Code:    "server_error",
@@ -317,8 +315,6 @@ func (h *handlers) SyncFileDelete() operations.SyncFileDeleteHandler {
 			switch err {
 			case ErrNotFound:
 				return operations.NewSyncFileDeleteNotFound()
-			case ErrDeleted:
-				return operations.NewSyncFileDeleteConflict()
 			default:
 				return operations.NewSyncFileDeleteInternalServerError().WithPayload(&models.Error{
 					Code:    "server_error",

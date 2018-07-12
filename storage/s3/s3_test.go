@@ -107,6 +107,10 @@ var (
 		Key:         "Error.V1.w.invalid.CHS...",
 		Size:        15698,
 	}
+	removeErr = minio.RemoveObjectError{
+		ObjectName: "File1.V2.w.1516979775123.CHS.dGV4dC9vcGVuRWhyWG1s.b3BlbkVIUi1FSFItT0JTRVJWQVRJT04uYmxvb2RfcHJlc3N1cmUudjE=.dml0YWxTaWduLGJhc2ljUGF0aWVudEluZm8=",
+		Err:        errors.New("error occurred"),
+	}
 	newInfo = &object.NewObjectInfo{
 		Archetype:   "openEHR-EHR-OBSERVATION.blood_pressure.v1",
 		Checksum:    "CHS",
@@ -476,24 +480,6 @@ func TestS3Read(t *testing.T) {
 			nil,
 		},
 		{
-			"valid call with a version",
-			"VERSION",
-			[]minio.ObjectInfo{info1V2},
-			func(i chan minio.ObjectInfo, m *mock.MockMinio, k *mock.MockKeyProvider) []*gomock.Call {
-				rc := noopCloser{bytes.NewBuffer([]byte("contents"))}
-				return []*gomock.Call{
-					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
-					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX.VERSION.", false, gomock.Any()).Return(i),
-					k.EXPECT().Get("BUCKET").Return("SECRET-KEY", nil),
-					m.EXPECT().GetObjectWithContext(gomock.Any(), "BUCKET", expectedFileName, gomock.Any()).Return(rc, nil),
-				}
-			},
-			[]byte("contents"),
-			file1V2,
-			noErrors,
-			nil,
-		},
-		{
 			"list fails",
 			"",
 			[]minio.ObjectInfo{infoErr},
@@ -702,6 +688,146 @@ func TestS3Write(t *testing.T) {
 
 			// call List method
 			_, err := s.Write(context.TODO(), "BUCKET", test.newObject, reader)
+
+			// assert error
+			if test.errorExpected && err == nil {
+				t.Error("Expected error, got nil")
+			} else if !test.errorExpected && err != nil {
+				t.Errorf("Expected error to be nil, got %v", err)
+			}
+
+			// assert actual error
+			if test.exactError != nil && test.exactError != err {
+				t.Errorf("Expected error to equal '%v'; got %v", test.exactError, err)
+			}
+		})
+	}
+}
+
+func TestS3Delete(t *testing.T) {
+	testCases := []struct {
+		description            string
+		version                string
+		listInfos              []minio.ObjectInfo
+		listRemoveObjectErrors []minio.RemoveObjectError
+		calls                  func(chan minio.ObjectInfo, chan minio.RemoveObjectError, *mock.MockMinio) []*gomock.Call
+		errorExpected          bool
+		exactError             error
+	}{
+		{
+			"valid call without a version",
+			"",
+			[]minio.ObjectInfo{info1V2},
+			[]minio.RemoveObjectError{},
+			func(i chan minio.ObjectInfo, errCh chan minio.RemoveObjectError, m *mock.MockMinio) []*gomock.Call {
+				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
+					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX.", false, gomock.Any()).Return(i),
+					m.EXPECT().RemoveObjects("BUCKET", gomock.Any()).Return(errCh),
+				}
+			},
+			noErrors,
+			nil,
+		},
+		{
+			"valid call with a version",
+			"VERSION",
+			[]minio.ObjectInfo{info1V2},
+			[]minio.RemoveObjectError{},
+			func(i chan minio.ObjectInfo, errCh chan minio.RemoveObjectError, m *mock.MockMinio) []*gomock.Call {
+				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
+					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX.VERSION.", false, gomock.Any()).Return(i),
+					m.EXPECT().RemoveObjects("BUCKET", gomock.Any()).Return(errCh),
+				}
+			},
+			noErrors,
+			nil,
+		},
+		{
+			"list fails",
+			"VERSION",
+			[]minio.ObjectInfo{infoErr},
+			[]minio.RemoveObjectError{},
+			func(i chan minio.ObjectInfo, errCh chan minio.RemoveObjectError, m *mock.MockMinio) []*gomock.Call {
+				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
+					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX.VERSION.", false, gomock.Any()).Return(i),
+				}
+			},
+			withErrors,
+			nil,
+		},
+		{
+			"list is empty",
+			"VERSION",
+			[]minio.ObjectInfo{},
+			[]minio.RemoveObjectError{},
+			func(i chan minio.ObjectInfo, errCh chan minio.RemoveObjectError, m *mock.MockMinio) []*gomock.Call {
+				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
+					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX.VERSION.", false, gomock.Any()).Return(i),
+					m.EXPECT().RemoveObjects("BUCKET", gomock.Any()).Return(errCh),
+				}
+			},
+			noErrors,
+			nil,
+		},
+		{
+			"list is empty (bucket does not exist)",
+			"VERSION",
+			[]minio.ObjectInfo{},
+			[]minio.RemoveObjectError{},
+			func(i chan minio.ObjectInfo, errCh chan minio.RemoveObjectError, m *mock.MockMinio) []*gomock.Call {
+				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(false, nil),
+				}
+			},
+			noErrors,
+			nil,
+		},
+		{
+			"failed to remove object",
+			"VERSION",
+			[]minio.ObjectInfo{info1V2},
+			[]minio.RemoveObjectError{removeErr},
+			func(i chan minio.ObjectInfo, errCh chan minio.RemoveObjectError, m *mock.MockMinio) []*gomock.Call {
+				return []*gomock.Call{
+					m.EXPECT().BucketExists("BUCKET").Return(true, nil),
+					m.EXPECT().ListObjectsV2("BUCKET", "PREFIX.VERSION.", false, gomock.Any()).Return(i),
+					m.EXPECT().RemoveObjects("BUCKET", gomock.Any()).Return(errCh),
+				}
+			},
+			withErrors,
+			nil,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.description, func(t *testing.T) {
+			// init storage
+			s, m, _, c := getTestStorage(t)
+			defer c()
+
+			// prepare ObjectInfos channel
+			infos := make(chan minio.ObjectInfo, len(test.listInfos))
+			for _, info := range test.listInfos {
+				infos <- info
+			}
+			close(infos)
+
+			// prepare RemoveObjectErrors channel
+			removeObjectErrors := make(chan minio.RemoveObjectError, len(test.listRemoveObjectErrors))
+			for _, removeObjectError := range test.listRemoveObjectErrors {
+				removeObjectErrors <- removeObjectError
+			}
+			close(removeObjectErrors)
+
+			// setup calls
+			test.calls(infos, removeObjectErrors, m)
+
+			// call List method
+			err := s.Delete(context.TODO(), "BUCKET", "PREFIX", test.version)
 
 			// assert error
 			if test.errorExpected && err == nil {

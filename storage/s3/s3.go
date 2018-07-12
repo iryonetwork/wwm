@@ -64,6 +64,7 @@ type Storage interface {
 	List(ctx context.Context, bucketID, prefix string) ([]*models.FileDescriptor, error)
 	Read(ctx context.Context, bucketID, fileID, version string) (io.ReadCloser, *models.FileDescriptor, error)
 	Write(ctx context.Context, bucketID string, newFile *object.NewObjectInfo, r io.Reader) (*models.FileDescriptor, error)
+	Delete(ctx context.Context, bucketID, fileID, version string) error
 }
 
 // KeyProvider lists methods required for reading encryption keys
@@ -83,6 +84,7 @@ type Minio interface {
 	PutObjectWithContext(ctx context.Context, bucketName, objectName string, reader io.Reader, objectSize int64,
 		opts minio.PutObjectOptions) (n int64, err error)
 	PutEncryptedObject(bucketName, objectName string, reader io.Reader, encryptMaterials encrypt.Materials) (n int64, err error)
+	RemoveObjects(bucketName string, objectsCh <-chan string) <-chan minio.RemoveObjectError
 }
 
 var nameVersionRE = regexp.MustCompile("^(.*)\\.(\\d+)$")
@@ -333,6 +335,56 @@ func (s *s3storage) Write(ctx context.Context, bucketID string, newFile *object.
 	}
 
 	return fd, nil
+}
+
+// Delete removes files completely from storage, used only in case of conflicting files with the same ID and version
+func (s *s3storage) Delete(_ context.Context, bucketID, fileID, version string) error {
+	s.logger.Debug().Str("cmd", "s3::Delete").Msgf("('%s', '%s', '%s')", bucketID, fileID, version)
+
+	// Check if bucket exists first
+	exists, err := s.client.BucketExists(bucketID)
+	if err != nil {
+		s.logger.Info().Err(err).Str("cmd", "s3::Delete").Msg("Failed to check if bucket exists")
+		return errors.Wrap(err, "Failed to check if bucket exists")
+	}
+	if !exists {
+		// Nothing to delete
+		return nil
+	}
+
+	// Set object prefix
+	prefix := fmt.Sprintf("%s.", fileID)
+	if version != "" {
+		prefix += fmt.Sprintf("%s.", version)
+	}
+
+	// first objects keys will be saved to array to prevent deleting any if listing fails
+	objKeys := []string{}
+	for info := range s.client.ListObjectsV2(bucketID, prefix, false, nil) {
+		s.logger.Info().Msg(fmt.Sprintf("%v", info))
+		if info.Err != nil {
+			s.logger.Error().Err(info.Err).Str("cmd", "s3::Delete").Msg("Failed to list all objects")
+			return errors.Wrap(info.Err, "Failed to list all objects")
+		}
+		objKeys = append(objKeys, info.Key)
+	}
+
+	// make objects channel
+	ch := make(chan string, len(objKeys))
+	for _, objKey := range objKeys {
+		ch <- objKey
+	}
+
+	for removeObjErr := range s.client.RemoveObjects(bucketID, ch) {
+		err = removeObjErr.Err
+		s.logger.Error().Err(err).Str("cmd", "s3::Delete").Msg("Failed to delete the object")
+	}
+
+	if err != nil {
+		return errors.New("Failed to delete all matching objects")
+	}
+
+	return nil
 }
 
 func objectInfoToFileDescriptor(info minio.ObjectInfo, bucketID string) (*models.FileDescriptor, error) {

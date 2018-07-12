@@ -919,18 +919,6 @@ func TestSyncFile(t *testing.T) {
 			ErrAlreadyExists,
 		},
 		{
-			"Already exists - conflict",
-			func(s *mock.MockStorage) []*gomock.Call {
-				return []*gomock.Call{
-					s.EXPECT().MakeBucket(gomock.Any(), "BUCKET").Return(nil),
-					s.EXPECT().Read(gomock.Any(), "BUCKET", "FILE3", "V1").Return(nil, file3V1ALT, nil),
-				}
-			},
-			nil,
-			withErrors,
-			ErrAlreadyExistsConflict,
-		},
-		{
 			"Write fails",
 			func(s *mock.MockStorage) []*gomock.Call {
 				return []*gomock.Call{
@@ -960,6 +948,67 @@ func TestSyncFile(t *testing.T) {
 				return []*gomock.Call{
 					s.EXPECT().MakeBucket(gomock.Any(), "BUCKET").Return(nil),
 					s.EXPECT().Read(gomock.Any(), "BUCKET", "FILE3", "V1").Return(nil, nil, s3.ErrNotFound),
+					s.EXPECT().Write(gomock.Any(), "BUCKET", no, gomock.Any()).Return(file3V1, nil),
+				}
+			},
+			file3V1,
+			noErrors,
+			nil,
+		},
+		{
+			"Already exists - conflict, failed delete",
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().MakeBucket(gomock.Any(), "BUCKET").Return(nil),
+					s.EXPECT().Read(gomock.Any(), "BUCKET", "FILE3", "V1").Return(nil, file3V1ALT, nil),
+					s.EXPECT().Delete(gomock.Any(), "BUCKET", "FILE3", "V1").Return(fmt.Errorf("Error")),
+				}
+			},
+			nil,
+			withErrors,
+			nil,
+		},
+		{
+			"Already exists - conflict, successful delete and failed write",
+			func(s *mock.MockStorage) []*gomock.Call {
+				no := &object.NewObjectInfo{
+					Archetype:   "ARCH",
+					Size:        int64(8),
+					Checksum:    "0bKln76n4gB3r5-Rsn6V6GUGGycL4D_1Oas7c1h4gug=",
+					Created:     strfmt.DateTime(time2),
+					ContentType: "text/openEhrXml",
+					Version:     "V1",
+					Name:        "FILE3",
+					Operation:   "w",
+				}
+				return []*gomock.Call{
+					s.EXPECT().MakeBucket(gomock.Any(), "BUCKET").Return(nil),
+					s.EXPECT().Read(gomock.Any(), "BUCKET", "FILE3", "V1").Return(nil, file3V1ALT, nil),
+					s.EXPECT().Delete(gomock.Any(), "BUCKET", "FILE3", "V1").Return(nil),
+					s.EXPECT().Write(gomock.Any(), "BUCKET", no, gomock.Any()).Return(nil, fmt.Errorf("Error")),
+				}
+			},
+			nil,
+			withErrors,
+			nil,
+		},
+		{
+			"Already exists - conflict, successful delete and write",
+			func(s *mock.MockStorage) []*gomock.Call {
+				no := &object.NewObjectInfo{
+					Archetype:   "ARCH",
+					Size:        int64(8),
+					Checksum:    "0bKln76n4gB3r5-Rsn6V6GUGGycL4D_1Oas7c1h4gug=",
+					Created:     strfmt.DateTime(time2),
+					ContentType: "text/openEhrXml",
+					Version:     "V1",
+					Name:        "FILE3",
+					Operation:   "w",
+				}
+				return []*gomock.Call{
+					s.EXPECT().MakeBucket(gomock.Any(), "BUCKET").Return(nil),
+					s.EXPECT().Read(gomock.Any(), "BUCKET", "FILE3", "V1").Return(nil, file3V1ALT, nil),
+					s.EXPECT().Delete(gomock.Any(), "BUCKET", "FILE3", "V1").Return(nil),
 					s.EXPECT().Write(gomock.Any(), "BUCKET", no, gomock.Any()).Return(file3V1, nil),
 				}
 			},
