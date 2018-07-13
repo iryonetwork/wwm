@@ -1,0 +1,37 @@
+global:
+    locationId: f7e41e48-ec79-4c78-9db6-37c0c4f78326
+    appVersion: v0.0.1
+    imageRegistry: localhost:5000/
+    caIssuer: ca-cloudissuer
+    baseUrl: https://iryo.k8s.cloud
+    domain: iryo.k8s.cloud
+    externalNameIngress:
+      enabled: true
+
+certManagerCert:
+  enabled: true
+  caIssuer: ca-clusterissuer
+  caIssuerKind: ClusterIssuer
+  commonName: iryo.k8s.cloud
+
+cloudStorage:
+  minio:
+      key: cloud
+      secret: cloudsecret
+  s3:
+    endpoint: minio.cloud.svc.cluster.local:9000
+    key: cloud
+    secret: cloudsecret
+    region: eu-west-1
+    encryptionKey: 6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
+
+cloudDiscovery:
+    db:
+        host: cloud-postgresql.cloud.svc.cluster.local
+        password: i62r16x64973ue33m3m4x042339092674140213w
+
+postgresql:
+    postgresPassword: 86q8w7h70j7t2b80056160x256598732t2760958
+
+cloudAuth:
+    encryptionKey: 6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=

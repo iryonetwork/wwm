@@ -1,0 +1,43 @@
+global:
+    locationId: 2d04b22e-1cc3-46b4-96dd-2bee5bad9ffa
+    appVersion: v0.0.1
+    imageRegistry: localhost:5000/
+    caIssuer: ca-localissuer
+    baseUrl: https://iryo.k8s.local
+    domain: iryo.k8s.local
+    externalNameIngress:
+      enabled: true
+    clinicId: e4ebb41b-7c62-4db7-9e1c-f47058b96dd0
+    locationId: 2d04b22e-1cc3-46b4-96dd-2bee5bad9ffa
+    defaultWaitlistId: 22afd921-0630-49f4-89a8-d1ad7639ee83
+
+certManagerCert:
+  enabled: true
+  caIssuer: ca-clusterissuer
+  caIssuerKind: ClusterIssuer
+  commonName: iryo.k8s.local
+
+localStorage:
+  minio:
+      key: local
+      secret: localsecret
+  s3:
+    endpoint: minio.local.svc.cluster.local:9000
+    key: local
+    secret: localsecret
+    region: eu-west-1
+    encryptionKey: 6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
+
+localWaitlist:
+    encryptionKey: 6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
+
+localDiscovery:
+    db:
+        host: local-postgresql.local.svc.cluster.local
+        password: 434256y99m0ue5e46y77777769h3691v91049399
+
+postgresql:
+    postgresPassword: p3mw4m64623077144465r9352w90471972081945
+
+localAuth:
+    encryptionKey: 6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=

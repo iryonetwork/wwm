@@ -1,0 +1,23 @@
+## development values for traefik
+imageTag: 1.7
+internalRootCA:
+  enabled: true
+  secret: ca-key-pair
+ssl:
+  enabled: true
+  enforced: true
+  insecureSkipVerify: false
+  defaultCert:
+    enabled: true
+    caIssuer: ca-issuer
+    commonName: k8s.local
+    dnsNames:
+      - traefik-dashboard.k8s.local
+      - iryo.k8s.local
+      - iryo.k8s.cloud
+dashboard:
+  enabled: true
+  domain: traefik-dashboard.k8s.local
+rbac:
+  enabled: true
+sendAnonymousUsage: false
