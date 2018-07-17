@@ -27,7 +27,7 @@ export default dispatch =>
         },
         {
             type: "dateTime",
-            ehrPath: "/context/start_time",
+            ehrPath: "/context/end_time",
             formPath: "context.endTime"
         },
         {
