@@ -14,3 +14,9 @@ psql --dbname=clouddiscovery --file=/docker-entrypoint-initdb.d/files/cloudDisco
 
 # Import localdiscovery data
 # psql --dbname=localdiscovery --file=/docker-entrypoint-initdb.d/files/localDiscoveryData.sql
+
+# Create reports databases and roles
+psql --file /docker-entrypoint-initdb.d/files/reportsInit.sql
+
+# Import reports schema
+psql --dbname=reports --file=/docker-entrypoint-initdb.d/files/reportsSchema.sql
