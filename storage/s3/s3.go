@@ -361,7 +361,6 @@ func (s *s3storage) Delete(_ context.Context, bucketID, fileID, version string) 
 	// first objects keys will be saved to array to prevent deleting any if listing fails
 	objKeys := []string{}
 	for info := range s.client.ListObjectsV2(bucketID, prefix, false, nil) {
-		s.logger.Info().Msg(fmt.Sprintf("%v", info))
 		if info.Err != nil {
 			s.logger.Error().Err(info.Err).Str("cmd", "s3::Delete").Msg("Failed to list all objects")
 			return errors.Wrap(info.Err, "Failed to list all objects")
@@ -374,6 +373,7 @@ func (s *s3storage) Delete(_ context.Context, bucketID, fileID, version string) 
 	for _, objKey := range objKeys {
 		ch <- objKey
 	}
+	close(ch)
 
 	for removeObjErr := range s.client.RemoveObjects(bucketID, ch) {
 		err = removeObjErr.Err

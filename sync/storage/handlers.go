@@ -59,7 +59,7 @@ func (h *handlers) SyncFile(ctx context.Context, bucketID, fileID, version strin
 				Str("bucket", bucketID).
 				Str("fileID", fileID).
 				Str("version", version).
-				Msg("File does not exist in source operations.")
+				Msg("File does not exist in source storage.")
 
 			// File might have been already deleted; mark as succesful
 			return ResultSyncNotNeeded, nil
@@ -69,7 +69,7 @@ func (h *handlers) SyncFile(ctx context.Context, bucketID, fileID, version strin
 			Str("bucket", bucketID).
 			Str("fileID", fileID).
 			Str("version", version).
-			Msg("Error on trying to fetch file from source operations.")
+			Msg("Error on trying to fetch file from source storage.")
 		return ResultError, err
 	}
 
@@ -98,7 +98,7 @@ func (h *handlers) SyncFile(ctx context.Context, bucketID, fileID, version strin
 		syncParams.SetLabels(formatLabelsFromHeader(resp.XLabels))
 	}
 
-	syncParams.SetContentType(resp.ContentType)
+	syncParams.SetContentType(resp.XContentType)
 	syncParams.SetFile(runtime.NamedReader("FileReader", &buf))
 	ok, created, err := h.destination.SyncFile(syncParams, h.destinationAuth)
 
@@ -222,7 +222,9 @@ func (h *handlers) needsSync(ctx context.Context, bucketID, fileID, version, sou
 				Str("bucket", bucketID).
 				Str("fileID", fileID).
 				Str("version", version).
-				Msg("File already exists in destination storage and has different checksum.")
+				Msg("File already exists in destination storage and has different checksum, resync.")
+
+			return true, nil
 		}
 		// Nothing to do
 		return false, nil

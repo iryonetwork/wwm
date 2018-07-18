@@ -155,6 +155,7 @@ func (s *service) FileNew(ctx context.Context, bucketID string, r io.Reader, con
 	// calculate the checksum
 	var buf bytes.Buffer
 	tee := io.TeeReader(r, &buf)
+
 	checksum, err := s.Checksum(tee)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("Failed to calculate checksum")
@@ -189,7 +190,7 @@ func (s *service) FileNew(ctx context.Context, bucketID string, r io.Reader, con
 		for _, label := range labels {
 			err := s.updateFilesCollection(ctx, s3.Write, bucketID, label, fd)
 			if err != nil {
-				s.logger.Error().Err(err).Msgf("failed to update files collection %s", label)
+				s.logger.Error().Err(err).Str("method", "FileNew").Msgf("failed to update files collection %s", label)
 			}
 		}
 	}
@@ -212,7 +213,7 @@ func (s *service) FileUpdate(ctx context.Context, bucketID, fileID string, r io.
 	tee := io.TeeReader(r, &buf)
 	checksum, err := s.Checksum(tee)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("Failed to calculate checksum")
+		s.logger.Error().Err(err).Str("method", "FileUpdate").Msg("Failed to calculate checksum")
 		return nil, err
 	}
 
@@ -243,7 +244,7 @@ func (s *service) FileUpdate(ctx context.Context, bucketID, fileID string, r io.
 		for _, label := range labels {
 			err := s.updateFilesCollection(ctx, s3.Write, bucketID, label, fd)
 			if err != nil {
-				s.logger.Error().Err(err).Msgf("failed to update files collection %s", label)
+				s.logger.Error().Err(err).Str("method", "FileUpdate").Msgf("failed to update files collection %s", label)
 			}
 		}
 
@@ -251,7 +252,7 @@ func (s *service) FileUpdate(ctx context.Context, bucketID, fileID string, r io.
 		for _, label := range droppedLabels {
 			err := s.updateFilesCollection(ctx, s3.Delete, bucketID, label, fd)
 			if err != nil {
-				s.logger.Error().Err(err).Msgf("failed to update files collection %s", label)
+				s.logger.Error().Err(err).Str("method", "FileUpdate").Msgf("failed to update files collection %s", label)
 			}
 		}
 	}
@@ -294,7 +295,7 @@ func (s *service) FileDelete(ctx context.Context, bucketID, fileID string) error
 		for _, label := range fd.Labels {
 			err := s.updateFilesCollection(ctx, s3.Delete, bucketID, label, fd)
 			if err != nil {
-				s.logger.Error().Err(err).Msgf("failed to update files collection %s", label)
+				s.logger.Error().Err(err).Str("method", "FileDelete").Msgf("failed to update files collection %s", label)
 			}
 		}
 	}
@@ -308,7 +309,7 @@ func (s *service) SyncFileList(ctx context.Context, bucketID string) ([]*models.
 	// check if bucket exists
 	exists, err := s.s3.BucketExists(ctx, bucketID)
 	if err != nil {
-		s.logger.Info().Err(err).Str("bucket", bucketID).Msg("Failed to check if bucket exists")
+		s.logger.Info().Err(err).Str("method", "SyncFileList").Str("bucket", bucketID).Msg("Failed to check if bucket exists")
 		return nil, err
 	}
 	if !exists {
@@ -342,10 +343,11 @@ func (s *service) SyncFile(ctx context.Context, bucketID, fileID, version string
 
 	// calculate the checksum
 	var buf bytes.Buffer
+
 	tee := io.TeeReader(r, &buf)
 	checksum, err := s.Checksum(tee)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("Failed to calculate checksum")
+		s.logger.Error().Err(err).Str("method", "SyncFile").Msg("Failed to calculate checksum")
 		return nil, err
 	}
 
@@ -357,20 +359,26 @@ func (s *service) SyncFile(ctx context.Context, bucketID, fileID, version string
 	switch {
 	// Already exists and does not conflict
 	case err == nil && checksum == fd.Checksum:
-		s.logger.Info().
+		s.logger.Info().Str("method", "SyncFile").
 			Msg("File already exists")
 		return fd, ErrAlreadyExists
 	// Already exists and conflicts
 	case err == nil && checksum != fd.Checksum:
-		s.logger.Info().
+		s.logger.Info().Str("method", "SyncFile").
 			Msg("File already exists and has conflicting checksum. Local file will be removed and replaced with sync file.")
+
+		start = time.Now()
 		err = s.s3.Delete(ctx, bucketID, fileID, version)
+		s.logger.Info().Str("method", "SyncFile").Msgf("s3 delete time %s", time.Since(start))
+
 		if err != nil {
+			s.logger.Error().Err(err).Str("method", "SyncFile").
+				Msg("Error while trying to delete file")
 			return nil, err
 		}
 	// Storage returned error and it is not "not found"
 	case err != nil && err != s3.ErrNotFound:
-		s.logger.Error().Err(err).
+		s.logger.Error().Err(err).Str("method", "SyncFile").
 			Msg("Error while trying to read file")
 		return nil, err
 	}
@@ -407,11 +415,11 @@ func (s *service) SyncFileDelete(ctx context.Context, bucketID, fileID, version 
 	// File was already deleted
 	if fd.Operation == string(s3.Delete) {
 		if fd.Version == version {
-			s.logger.Debug().
+			s.logger.Debug().Str("method", "SyncFileDelete").
 				Msg("File delete already synced")
 			return nil
 		}
-		s.logger.Error().
+		s.logger.Error().Str("method", "SyncFileDelete").
 			Msg("File already deleted and delete has conflicting version")
 		return ErrDeleted
 	}
