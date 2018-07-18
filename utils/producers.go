@@ -35,7 +35,7 @@ func UseProducer(responder middleware.Responder, p producer) middleware.Responde
 			responder.WriteResponse(rw, runtime.ByteStreamProducer())
 
 		case FileProducer:
-			// content type is expected to be set already
+			rw.Header().Set(runtime.HeaderContentType, "application/octet-stream")
 			responder.WriteResponse(rw, runtime.ByteStreamProducer())
 
 		default:

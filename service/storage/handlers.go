@@ -70,7 +70,7 @@ func (h *handlers) FileGet() operations.FileGetHandler {
 
 		return utils.UseProducer(operations.NewFileGetOK().
 			WithPayload(r).
-			WithContentType(fd.ContentType).
+			WithXContentType(fd.ContentType).
 			WithXCreated(fd.Created).
 			WithXVersion(fd.Version).
 			WithXArchetype(fd.Archetype).
@@ -99,7 +99,7 @@ func (h *handlers) FileGetVersion() operations.FileGetVersionHandler {
 
 		return utils.UseProducer(operations.NewFileGetVersionOK().
 			WithPayload(r).
-			WithContentType(fd.ContentType).
+			WithXContentType(fd.ContentType).
 			WithXCreated(fd.Created).
 			WithXVersion(fd.Version).
 			WithXArchetype(fd.Archetype).
@@ -264,7 +264,7 @@ func (h *handlers) SyncFileMetadata() operations.SyncFileMetadataHandler {
 		}
 
 		return operations.NewSyncFileMetadataOK().
-			WithContentType(fd.ContentType).
+			WithXContentType(fd.ContentType).
 			WithXCreated(fd.Created).
 			WithXVersion(fd.Version).
 			WithXArchetype(fd.Archetype).

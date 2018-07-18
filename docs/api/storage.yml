@@ -126,10 +126,6 @@ paths:
       operationId: fileGet
       produces:
         - application/octet-stream
-        - application/json; charset=utf-8
-        - text/openEhrXml
-        - text/openEhrJson
-        - application/x-collection+json
 
       parameters:
         - in: path
@@ -150,7 +146,7 @@ paths:
           schema:
             type: file
           headers:
-            Content-Type:
+            X-Content-Type:
               type: string
               description: Content type of the file
             X-Created:
@@ -335,10 +331,6 @@ paths:
       operationId: fileGetVersion
       produces:
         - application/octet-stream
-        - application/json; charset=utf-8
-        - text/openEhrXml
-        - text/openEhrJson
-        - application/x-collection+json
 
       parameters:
         - in: path
@@ -365,7 +357,7 @@ paths:
           schema:
             type: file
           headers:
-            Content-Type:
+            X-Content-Type:
               type: string
               description: Content type of the file
             X-Created:
@@ -532,7 +524,7 @@ paths:
         200:
           description: File found
           headers:
-            Content-Type:
+            X-Content-Type:
               type: string
               description: Content type of the file
             X-Created:
