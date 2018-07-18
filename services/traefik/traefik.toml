@@ -194,7 +194,7 @@ address = ":8080"
   [frontends.cloudstorage]
   backend = "cloudstorage"
     [frontends.cloudstorage.routes.route1]
-    rule = "Host:iryo.cloud;PathPrefix:/api/v1/storage;AddPrefix:/e;ReplacePathRegexStrip: ^/api/v1/(.*)$ /$storage"
+    rule = "Host:iryo.cloud;PathPrefixStrip:/api/v1/storage;AddPrefix:/storage"
 
   [frontends.cloudMinio]
   backend = "cloudMinio"
