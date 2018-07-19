@@ -14,20 +14,29 @@ import (
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 )
 
+type Cfg struct {
+	BucketsRateLimit        int
+	FilesPerBucketRateLimit int
+}
+
 type syncError struct {
 	id  string // identifier of resource that failed to sync
 	err error
 }
 
 type batchStorageSync struct {
-	handlers          storageSync.Handlers
-	logger            zerolog.Logger
-	metricsCollection map[metrics.ID]prometheus.Collector
+	handlers                storageSync.Handlers
+	bucketsRateLimit        int
+	filesPerBucketRateLimit int
+	logger                  zerolog.Logger
+	metricsCollection       map[metrics.ID]prometheus.Collector
 }
 
 const syncSeconds metrics.ID = "syncSeconds"
 
 func (s *batchStorageSync) Sync(ctx context.Context, lastSuccessfulRun time.Time) error {
+	bucketRateLimit := make(chan bool, s.bucketsRateLimit)
+
 	buckets, err := s.handlers.ListSourceBuckets(ctx)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to list source buckets")
@@ -36,7 +45,7 @@ func (s *batchStorageSync) Sync(ctx context.Context, lastSuccessfulRun time.Time
 
 	ch := make(chan *syncError)
 	for _, b := range buckets {
-		go s.syncBucket(ctx, lastSuccessfulRun, b.Name, ch)
+		go s.syncBucket(ctx, lastSuccessfulRun, b.Name, ch, bucketRateLimit)
 	}
 
 	var errCount int
@@ -61,7 +70,7 @@ func (s *batchStorageSync) GetPrometheusMetricsCollection() map[metrics.ID]prome
 	return s.metricsCollection
 }
 
-func New(handlers storageSync.Handlers, logger zerolog.Logger) storageSync.BatchSync {
+func New(handlers storageSync.Handlers, cfg Cfg, logger zerolog.Logger) storageSync.BatchSync {
 	logger = logger.With().Str("component", "sync/storage/batch").Logger()
 
 	metricsCollection := make(map[metrics.ID]prometheus.Collector)
@@ -73,13 +82,19 @@ func New(handlers storageSync.Handlers, logger zerolog.Logger) storageSync.Batch
 	metricsCollection[syncSeconds] = h
 
 	return &batchStorageSync{
-		handlers:          handlers,
-		logger:            logger,
-		metricsCollection: metricsCollection,
+		handlers:                handlers,
+		bucketsRateLimit:        cfg.BucketsRateLimit,
+		filesPerBucketRateLimit: cfg.FilesPerBucketRateLimit,
+		logger:                  logger,
+		metricsCollection:       metricsCollection,
 	}
 }
 
-func (s *batchStorageSync) syncBucket(ctx context.Context, lastSuccessfulRun time.Time, bucketID string, errCh chan *syncError) {
+func (s *batchStorageSync) syncBucket(ctx context.Context, lastSuccessfulRun time.Time, bucketID string, errCh chan *syncError, rateLimit chan bool) {
+	rateLimit <- true
+
+	fileRateLimit := make(chan bool, s.filesPerBucketRateLimit)
+
 	files, err := s.handlers.ListSourceFilesAsc(ctx, bucketID)
 	if err != nil {
 		s.logger.Error().Err(err).Str("bucket", bucketID).Msg("failed to list source files")
@@ -94,7 +109,7 @@ func (s *batchStorageSync) syncBucket(ctx context.Context, lastSuccessfulRun tim
 	for _, f := range files {
 		if time.Time(f.Created).After(lastSuccessfulRun) {
 			syncCount++
-			go s.syncFile(ctx, lastSuccessfulRun, bucketID, f.Name, ch)
+			go s.syncFile(ctx, lastSuccessfulRun, bucketID, f.Name, ch, fileRateLimit)
 		}
 	}
 
@@ -109,12 +124,17 @@ func (s *batchStorageSync) syncBucket(ctx context.Context, lastSuccessfulRun tim
 	if errCount > 0 {
 		s.logger.Error().Str("bucket", bucketID).Msgf("%d failure(s) out of %d file(s) to sync", errCount, syncCount)
 		errCh <- &syncError{bucketID, errors.Errorf("%d failure(s) out of %d file(s) to sync in bucket %s", errCount, syncCount, bucketID)}
+		<-rateLimit
 		return
 	}
+	<-rateLimit
+
 	errCh <- nil
 }
 
-func (s *batchStorageSync) syncFile(ctx context.Context, lastSuccessfulRun time.Time, bucketID, fileID string, errCh chan *syncError) {
+func (s *batchStorageSync) syncFile(ctx context.Context, lastSuccessfulRun time.Time, bucketID, fileID string, errCh chan *syncError, rateLimit chan bool) {
+	rateLimit <- true
+
 	versions, err := s.handlers.ListSourceFileVersionsAsc(ctx, bucketID, fileID)
 	if err != nil {
 		s.logger.Error().Err(err).Str("bucket", bucketID).Str("file", fileID).Msg("failed to list source versions")
@@ -145,8 +165,11 @@ func (s *batchStorageSync) syncFile(ctx context.Context, lastSuccessfulRun time.
 	if errCount > 0 {
 		s.logger.Error().Str("bucket", bucketID).Str("file", fileID).Msgf("%d failure(s) out of %d version(s) to sync", errCount, syncCount)
 		errCh <- &syncError{fileID, errors.Errorf("%d failure(s) out of %d version(s) to sync for file %s in bucket %s", errCount, syncCount, fileID, bucketID)}
+		<-rateLimit
 		return
 	}
+
+	<-rateLimit
 	errCh <- nil
 }
 

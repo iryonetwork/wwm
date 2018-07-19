@@ -363,5 +363,12 @@ func getMockHandlers(t *testing.T) (*mock.MockHandlers, func()) {
 }
 
 func getTestService(t *testing.T, handlers storageSync.Handlers) storageSync.BatchSync {
-	return New(handlers, zerolog.New(os.Stdout))
+	return New(
+		handlers,
+		Cfg{
+			BucketsRateLimit:        1,
+			FilesPerBucketRateLimit: 1,
+		},
+		zerolog.New(os.Stdout),
+	)
 }

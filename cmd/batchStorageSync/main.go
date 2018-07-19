@@ -88,7 +88,12 @@ func main() {
 	handlers := storageSync.NewHandlers(localClient.Operations, auth, cloudClient.Operations, auth, logger)
 
 	// initialize batchStorageSync
-	s := batch.New(handlers, logger)
+	batchCfg := batch.Cfg{
+		BucketsRateLimit:        cfg.BucketsRateLimit,
+		FilesPerBucketRateLimit: cfg.FilesPerBucketRateLimit,
+	}
+	s := batch.New(handlers, batchCfg, logger)
+
 	// get prometheus metrics collection for batch sync and register in registry
 	m = s.GetPrometheusMetricsCollection()
 	for _, metric := range m {
