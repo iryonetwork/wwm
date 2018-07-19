@@ -9,8 +9,8 @@ import (
 // Config represents configuration of batchStorageSync
 type Config struct {
 	config.Config
-	BucketsRateLimit             int    `env:"BUCKETS_RATE_LIMIT" envDefault:"3"`
-	FilesPerBucketRateLimit      int    `env:"FILES_PER_BUCKET_RATE_LIMIT" envDefault:"5"`
+	BucketsRateLimit             int    `env:"BUCKETS_RATE_LIMIT" envDefault:"2"`
+	FilesPerBucketRateLimit      int    `env:"FILES_PER_BUCKET_RATE_LIMIT" envDefault:"3"`
 	CloudStorageHost             string `env:"CLOUD_STORAGE_HOST" envDefault:"cloudStorage"`
 	CloudStoragePath             string `env:"CLOUD_STORAGE_PATH" envDefault:"storage"`
 	BoltDBFilepath               string `env:"BOLT_DB_FILEPATH" envDefault:"/data/batchStorageSync.db"`
