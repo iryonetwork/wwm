@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	runtimeClient "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
@@ -92,9 +91,10 @@ func main() {
 
 	// initalize consumer
 	consumerCfg := consumer.Cfg{
-		Connection: sc,
-		AckWait:    time.Duration(time.Second),
-		Handlers:   handlers,
+		Connection:  sc,
+		AckWait:     cfg.AckWait,
+		MaxInflight: cfg.MaxInflight,
+		Handlers:    handlers,
 	}
 	c := consumer.New(ctx, consumerCfg, logger)
 	// Register metrics

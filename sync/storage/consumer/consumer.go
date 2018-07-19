@@ -20,15 +20,17 @@ const subID contextKey = "ID"
 const taskSeconds metrics.ID = "taskSeconds"
 
 type Cfg struct {
-	Connection stan.Conn
-	AckWait    time.Duration
-	Handlers   storageSync.Handlers
+	Connection  stan.Conn
+	AckWait     time.Duration
+	MaxInflight int
+	Handlers    storageSync.Handlers
 }
 
 type stanConsumer struct {
 	ctx               context.Context
 	conn              stan.Conn
 	ackWait           time.Duration
+	maxInflight       int
 	handlers          storageSync.Handlers
 	subs              []stan.Subscription
 	subsLock          sync.Mutex
@@ -63,6 +65,7 @@ func (c *stanConsumer) StartSubscription(typ storageSync.EventType) error {
 		mh,
 		stan.SetManualAckMode(),
 		stan.AckWait(c.ackWait),
+		stan.MaxInflight(c.maxInflight),
 		stan.DurableName(string(typ)),
 	)
 
@@ -174,6 +177,7 @@ func New(ctx context.Context, cfg Cfg, logger zerolog.Logger) storageSync.Consum
 		ctx:               ctx,
 		conn:              cfg.Connection,
 		handlers:          cfg.Handlers,
+		maxInflight:       cfg.MaxInflight,
 		ackWait:           cfg.AckWait,
 		logger:            logger,
 		metricsCollection: metricsCollection,

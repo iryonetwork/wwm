@@ -3,27 +3,30 @@
 Service consuming sync messages from local Storage published via NATS streaming. It continuously syncs local Storage to cloud Storage.
 
 ## Configuration environment variables
-Environment variable | Default value | Description
------------- | ------------- | -------------
-`DOMAIN_TYPE` | `global` | *Domain in which component is operating, normally it should be 'cloud' for all cloud components and 'clinic' for local components.*
-`DOMAIN_ID` | `*` |  *Domain in which component is operating, normally it should be '*' for all cloud components and clinic ID for local components.*
-`KEY_PATH` | *none*, ***required*** | *Path to service's private key (PEM-formatted file).*
-`CERT_PATH` | *none*, ***required*** | *Path to service's public key (PEM-formatted file).*
-`SERVER_HOST` | `0.0.0.0` | *Hostname under which service exposes its HTTP servers.*
-`SERVER_PORT` | `443` | *Port under which service exposes its main HTTP server.*
-`METRICS_PORT` | `9090` | *Port under which service exposes its metrics HTTP server.*
-`METRICS_NAMESPACE` | `""` | *Namespace/path under which service exposes its metrics HTTP server.*
-`STATUS_PORT` | `4433` | *Port under which service exposes its metrics HTTP server.*
-`STATUS_NAMESPACE` | `""` | *Namespace/path under which service exposes its status HTTP server.*
-`STORAGE_HOST` | `cloudStorage` | *Hostname of local Storage service API, used as source storage for sync.*
-`STORAGE_PATH` | `storage` | *Root path of local Storage service API, used as source storage for sync.*
-`CLOUD_STORAGE_HOST` | `cloudStorage` | *Hostname of cloud Storage service API, used as destination storage for sync.*
-`CLOUD_STORAGE_PATH` | `storage` | *Root path of cloud Storage service API, used as destination storage for sync.*
-`NATS_ADDR` | `localNats:4242` | *NATS server address.*
-`NATS_USERNAME` | `nats` | *Username used to connect to NATS.*
-`NATS_SECRET` | *none*, ***required*** | *Secret used to connect to NATS.*
-`NATS_CONN_RETRIES` | `10` | *Number of attempts to connect to NATS.*
-`NATS_CONN_WAIT` | `500ms` | *Initial wait time before reattempting to connect to NATS after failed attempt.*
-`NATS_CONN_WAIT_FACTOR` | `3.0` | *Factor by which wait time increases after each consecutive failed retry.*
-`NATS_CLUSTER_ID` | `localNats` | *NATS Streaming cluster ID*
-`NATS_CLIENT_ID` | `storageSync` | *NATS Streaming client ID*
+
+| Environment variable    | Default value          | Description                                                                                                                                                                                                         |
+| ----------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DOMAIN_TYPE`           | `global`               | _Domain in which component is operating, normally it should be 'cloud' for all cloud components and 'clinic' for local components._                                                                                 |
+| `DOMAIN_ID`             | `*`                    | _Domain in which component is operating, normally it should be '_' for all cloud components and clinic ID for local components.\*                                                                                   |
+| `KEY_PATH`              | _none_, **_required_** | _Path to service's private key (PEM-formatted file)._                                                                                                                                                               |
+| `CERT_PATH`             | _none_, **_required_** | _Path to service's public key (PEM-formatted file)._                                                                                                                                                                |
+| `SERVER_HOST`           | `0.0.0.0`              | _Hostname under which service exposes its HTTP servers._                                                                                                                                                            |
+| `SERVER_PORT`           | `443`                  | _Port under which service exposes its main HTTP server._                                                                                                                                                            |
+| `METRICS_PORT`          | `9090`                 | _Port under which service exposes its metrics HTTP server._                                                                                                                                                         |
+| `METRICS_NAMESPACE`     | `""`                   | _Namespace/path under which service exposes its metrics HTTP server._                                                                                                                                               |
+| `STATUS_PORT`           | `4433`                 | _Port under which service exposes its metrics HTTP server._                                                                                                                                                         |
+| `STATUS_NAMESPACE`      | `""`                   | _Namespace/path under which service exposes its status HTTP server._                                                                                                                                                |
+| `STORAGE_HOST`          | `cloudStorage`         | _Hostname of local Storage service API, used as source storage for sync._                                                                                                                                           |
+| `STORAGE_PATH`          | `storage`              | _Root path of local Storage service API, used as source storage for sync._                                                                                                                                          |
+| `CLOUD_STORAGE_HOST`    | `cloudStorage`         | _Hostname of cloud Storage service API, used as destination storage for sync._                                                                                                                                      |
+| `CLOUD_STORAGE_PATH`    | `storage`              | _Root path of cloud Storage service API, used as destination storage for sync._                                                                                                                                     |
+| `NATS_ADDR`             | `localNats:4242`       | _NATS server address._                                                                                                                                                                                              |
+| `NATS_USERNAME`         | `nats`                 | _Username used to connect to NATS._                                                                                                                                                                                 |
+| `NATS_SECRET`           | _none_, **_required_** | _Secret used to connect to NATS._                                                                                                                                                                                   |
+| `NATS_CONN_RETRIES`     | `10`                   | _Number of attempts to connect to NATS._                                                                                                                                                                            |
+| `NATS_CONN_WAIT`        | `500ms`                | _Initial wait time before reattempting to connect to NATS after failed attempt._                                                                                                                                    |
+| `NATS_CONN_WAIT_FACTOR` | `3.0`                  | _Factor by which wait time increases after each consecutive failed retry._                                                                                                                                          |
+| `NATS_CLUSTER_ID`       | `localNats`            | _NATS Streaming cluster ID_                                                                                                                                                                                         |
+| `NATS_CLIENT_ID`        | `storageSync`          | _NATS Streaming client ID_                                                                                                                                                                                          |
+| `ACK_WAIT`              | `10000ms`              | _Time after which NATS-Streaming will assume that unacknowledged message failed and needs to be redelivered._                                                                                                       |
+| `MAX_INFLIGHT`          | `10`                   | _Maximum number of unacknowledged messages per subscription (one per event type: FileNew, FileUpdate, FileDelete). When it's exceeded NATS-Streaming suspends delivery of messages until it drops below the limit._ |

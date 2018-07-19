@@ -431,9 +431,10 @@ func getTestService(t *testing.T, ctx context.Context, clientID string, h storag
 
 	// initalize consumer
 	cfg := Cfg{
-		Connection: conn,
-		AckWait:    time.Duration(time.Second),
-		Handlers:   h,
+		Connection:  conn,
+		AckWait:     time.Duration(time.Second),
+		MaxInflight: 1,
+		Handlers:    h,
 	}
 
 	c := New(ctx, cfg, zerolog.New(os.Stdout))
