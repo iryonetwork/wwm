@@ -34,17 +34,17 @@ type (
 	// Handlers describes public API for reports data export handlers
 	Handlers interface {
 		// ExportFile export new files and file updates to reports storage.
-		ExportFile(ctx context.Context, bucketID, fileID, version strfmt.UUID, timestamp strfmt.DateTime) (ExportResult, error)
+		ExportFile(ctx context.Context, bucketID, fileID, version string, timestamp strfmt.DateTime) (ExportResult, error)
 		// ExportFileDelete export file deletion to reports storage.
-		ExportFileDelete(ctx context.Context, bucketID, fileID strfmt.UUID, version strfmt.UUID, timestamp strfmt.DateTime) (ExportResult, error)
+		ExportFileDelete(ctx context.Context, bucketID, fileID string, version string, timestamp strfmt.DateTime) (ExportResult, error)
 		// ListSourceBuckets lists all the buckets in source storage.
 		ListSourceBuckets(ctx context.Context) ([]*models.BucketDescriptor, error)
 		// ListSourceFiles lists all the files in the bucket of source storage including files marked as delete, ascending order by Created timestamp ensured.
-		ListSourceFilesAsc(ctx context.Context, bucketID strfmt.UUID) ([]*models.FileDescriptor, error)
+		ListSourceFilesAsc(ctx context.Context, bucketID string) ([]*models.FileDescriptor, error)
 	}
 
 	// Handler describes reports/filesDataExporter handler function
-	Handler func(ctx context.Context, bucketID, fileID, version strfmt.UUID, created strfmt.DateTime) (ExportResult, error)
+	Handler func(ctx context.Context, bucketID, fileID, version string, created strfmt.DateTime) (ExportResult, error)
 
 	// FileInfo defines file info struct
 	FileInfo struct {
