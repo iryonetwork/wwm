@@ -4,3 +4,5 @@
   - /api/storage/sync/*
 /certs/batchStorageSync.pem:
   - /api/storage/sync/*
+/certs/batchDataExporter.pem:
+  - /api/storage/*
