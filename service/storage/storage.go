@@ -39,7 +39,7 @@ type Service interface {
 	FileGetVersion(ctx context.Context, bucketID, fileID, version string) (io.ReadCloser, *models.FileDescriptor, error)
 
 	// FileListVersions returns a list of all modifications to a file.
-	FileListVersions(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error)
+	FileListVersions(ctx context.Context, bucketID, fileID string, createdAtSince, createdAtUntil *strfmt.DateTime) ([]*models.FileDescriptor, error)
 
 	// FileNew creates a new file.
 	FileNew(ctx context.Context, bucketID string, r io.Reader, contentType string, archetype string, labels []string) (*models.FileDescriptor, error)
@@ -52,7 +52,7 @@ type Service interface {
 
 	// SyncFileList returns a list of latest versions of files. Older versions are removed from the list.
 	// Files marked as deleted are kept in the list.
-	SyncFileList(ctx context.Context, bucketID string) ([]*models.FileDescriptor, error)
+	SyncFileList(ctx context.Context, bucketID string, createdAtSince, createdAtUntil *strfmt.DateTime) ([]*models.FileDescriptor, error)
 
 	// SyncFile syncs file with provided fileID and version.
 	SyncFile(ctx context.Context, bucketID, fileID, version string, r io.Reader, contentType string, created strfmt.DateTime, archetype string, labels []string) (*models.FileDescriptor, error)
@@ -142,8 +142,34 @@ func (s *service) FileGetVersion(ctx context.Context, bucketID, fileID, version 
 	return rc, fd, err
 }
 
-func (s *service) FileListVersions(ctx context.Context, bucketID, fileID string) ([]*models.FileDescriptor, error) {
-	return s.s3.List(ctx, bucketID, fileID)
+func (s *service) FileListVersions(ctx context.Context, bucketID, fileID string, createdAtSince, createdAtUntil *strfmt.DateTime) ([]*models.FileDescriptor, error) {
+	// init list to return
+	list := []*models.FileDescriptor{}
+
+	// check if bucket exists
+	exists, err := s.s3.BucketExists(ctx, bucketID)
+	if err != nil {
+		s.logger.Info().Err(err).Str("bucket", bucketID).Msg("Failed to check if bucket exists")
+		return nil, err
+	}
+	if !exists {
+		return list, nil
+	}
+
+	l, err := s.s3.List(ctx, bucketID, fileID)
+	if (createdAtSince == nil && createdAtUntil == nil) || err != nil {
+		return l, err
+	}
+
+	// extract only versions fitting the created timestamp filtering specified
+	for _, f := range l {
+		if (createdAtSince == nil || (createdAtSince != nil && time.Time(*createdAtSince).Before(time.Time(f.Created)))) &&
+			(createdAtUntil == nil || (createdAtUntil != nil && time.Time(*createdAtUntil).After(time.Time(f.Created)))) {
+			list = append(list, f)
+		}
+	}
+
+	return list, nil
 }
 
 func (s *service) FileNew(ctx context.Context, bucketID string, r io.Reader, contentType string, archetype string, labels []string) (*models.FileDescriptor, error) {
@@ -302,7 +328,7 @@ func (s *service) FileDelete(ctx context.Context, bucketID, fileID string) error
 	return err
 }
 
-func (s *service) SyncFileList(ctx context.Context, bucketID string) ([]*models.FileDescriptor, error) {
+func (s *service) SyncFileList(ctx context.Context, bucketID string, createdAtSince, createdAtUntil *strfmt.DateTime) ([]*models.FileDescriptor, error) {
 	// init list to return
 	list := []*models.FileDescriptor{}
 
@@ -322,13 +348,17 @@ func (s *service) SyncFileList(ctx context.Context, bucketID string) ([]*models.
 		return nil, err
 	}
 
-	// extract only latest versions; latest version is already sorted
+	// extract only latest versions of files; latest version is already sorted
+	// omit files that don't fit specified created timestamp filtering
 	// on top, add to return list
 	m := map[string]bool{}
 	for _, f := range l {
 		if _, ok := m[f.Name]; !ok {
 			m[f.Name] = true
-			list = append(list, f)
+			if (createdAtSince == nil || (createdAtSince != nil && time.Time(*createdAtSince).Before(time.Time(f.Created)))) &&
+				(createdAtUntil == nil || (createdAtUntil != nil && time.Time(*createdAtUntil).After(time.Time(f.Created)))) {
+				list = append(list, f)
+			}
 		}
 	}
 

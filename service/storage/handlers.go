@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/rs/zerolog"
 
@@ -112,7 +113,7 @@ func (h *handlers) FileGetVersion() operations.FileGetVersionHandler {
 
 func (h *handlers) FileListVersions() operations.FileListVersionsHandler {
 	return operations.FileListVersionsHandlerFunc(func(params operations.FileListVersionsParams, principal *string) middleware.Responder {
-		list, err := h.service.FileListVersions(params.HTTPRequest.Context(), params.Bucket, params.FileID)
+		list, err := h.service.FileListVersions(params.HTTPRequest.Context(), params.Bucket, params.FileID, nil, nil)
 
 		if err != nil {
 			return operations.NewFileListVersionsInternalServerError().WithPayload(&models.Error{
@@ -215,7 +216,31 @@ func (h *handlers) SyncBucketList() operations.SyncBucketListHandler {
 
 func (h *handlers) SyncFileList() operations.SyncFileListHandler {
 	return operations.SyncFileListHandlerFunc(func(params operations.SyncFileListParams, principal *string) middleware.Responder {
-		list, err := h.service.SyncFileList(params.HTTPRequest.Context(), params.Bucket)
+		var createdAtSince *strfmt.DateTime
+		var createdAtUntil *strfmt.DateTime
+
+		if params.CreatedAtSince != nil {
+			d, err := strfmt.ParseDateTime(*params.CreatedAtSince)
+			if err != nil {
+				return operations.NewSyncFileListBadRequest().WithPayload(&models.Error{
+					Code:    "bad_request",
+					Message: "Badly formatted query parameeter createdAtSince",
+				})
+			}
+			createdAtSince = &d
+		}
+		if params.CreatedAtUntil != nil {
+			d, err := strfmt.ParseDateTime(*params.CreatedAtUntil)
+			if err != nil {
+				return operations.NewSyncFileListBadRequest().WithPayload(&models.Error{
+					Code:    "bad_request",
+					Message: "Badly formatted query parameeter createdAtUntil",
+				})
+			}
+			createdAtUntil = &d
+		}
+
+		list, err := h.service.SyncFileList(params.HTTPRequest.Context(), params.Bucket, createdAtSince, createdAtUntil)
 
 		if err != nil {
 			return operations.NewSyncFileListInternalServerError().WithPayload(&models.Error{
@@ -233,7 +258,31 @@ func (h *handlers) SyncFileList() operations.SyncFileListHandler {
 
 func (h *handlers) SyncFileListVersions() operations.SyncFileListVersionsHandler {
 	return operations.SyncFileListVersionsHandlerFunc(func(params operations.SyncFileListVersionsParams, principal *string) middleware.Responder {
-		list, err := h.service.FileListVersions(params.HTTPRequest.Context(), params.Bucket, params.FileID)
+		var createdAtSince *strfmt.DateTime
+		var createdAtUntil *strfmt.DateTime
+
+		if params.CreatedAtSince != nil {
+			d, err := strfmt.ParseDateTime(*params.CreatedAtSince)
+			if err != nil {
+				return operations.NewSyncFileListBadRequest().WithPayload(&models.Error{
+					Code:    "bad_request",
+					Message: "Badly formatted query parameeter createdAtSince",
+				})
+			}
+			createdAtSince = &d
+		}
+		if params.CreatedAtUntil != nil {
+			d, err := strfmt.ParseDateTime(*params.CreatedAtUntil)
+			if err != nil {
+				return operations.NewSyncFileListBadRequest().WithPayload(&models.Error{
+					Code:    "bad_request",
+					Message: "Badly formatted query parameeter createdAtUntil",
+				})
+			}
+			createdAtUntil = &d
+		}
+
+		list, err := h.service.FileListVersions(params.HTTPRequest.Context(), params.Bucket, params.FileID, createdAtSince, createdAtUntil)
 
 		if err != nil {
 			return operations.NewSyncFileListVersionsInternalServerError().WithPayload(&models.Error{

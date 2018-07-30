@@ -783,16 +783,20 @@ func TestFileDelete(t *testing.T) {
 	}
 }
 
-func TestSyncFileList(t *testing.T) {
+func TestFileListVersions(t *testing.T) {
 	testCases := []struct {
-		description   string
-		calls         func(*mock.MockStorage) []*gomock.Call
-		expected      []*models.FileDescriptor
-		errorExpected bool
-		exactError    error
+		description    string
+		createdAtSince *strfmt.DateTime
+		createdAtUntil *strfmt.DateTime
+		calls          func(*mock.MockStorage) []*gomock.Call
+		expected       []*models.FileDescriptor
+		errorExpected  bool
+		exactError     error
 	}{
 		{
 			"BucketExsits fails",
+			nil,
+			nil,
 			func(s *mock.MockStorage) []*gomock.Call {
 				return []*gomock.Call{
 					s.EXPECT().BucketExists(gomock.Any(), "BUCKET").Return(false, fmt.Errorf("Error")),
@@ -804,10 +808,12 @@ func TestSyncFileList(t *testing.T) {
 		},
 		{
 			"List fails",
+			nil,
+			nil,
 			func(s *mock.MockStorage) []*gomock.Call {
 				return []*gomock.Call{
 					s.EXPECT().BucketExists(gomock.Any(), "BUCKET").Return(true, nil),
-					s.EXPECT().List(gomock.Any(), "BUCKET", "").Return(nil, fmt.Errorf("Error")),
+					s.EXPECT().List(gomock.Any(), "BUCKET", "File1").Return(nil, fmt.Errorf("Error")),
 				}
 			},
 			nil,
@@ -816,6 +822,8 @@ func TestSyncFileList(t *testing.T) {
 		},
 		{
 			"Bucket does not exist",
+			nil,
+			nil,
 			func(s *mock.MockStorage) []*gomock.Call {
 				return []*gomock.Call{
 					s.EXPECT().BucketExists(gomock.Any(), "BUCKET").Return(false, nil),
@@ -827,13 +835,57 @@ func TestSyncFileList(t *testing.T) {
 		},
 		{
 			"Successful call",
+			nil,
+			nil,
 			func(s *mock.MockStorage) []*gomock.Call {
 				return []*gomock.Call{
 					s.EXPECT().BucketExists(gomock.Any(), "BUCKET").Return(true, nil),
-					s.EXPECT().List(gomock.Any(), "BUCKET", "").Return([]*models.FileDescriptor{file1V2, file2V2, file1V1, file2V1}, nil),
+					s.EXPECT().List(gomock.Any(), "BUCKET", "File1").Return([]*models.FileDescriptor{file1V2, file1V1}, nil),
 				}
 			},
-			[]*models.FileDescriptor{file1V2, file2V2},
+			[]*models.FileDescriptor{file1V2, file1V1},
+			noErrors,
+			nil,
+		},
+		{
+			"Successful call with createdAtSince filtering",
+			&time1,
+			nil,
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().BucketExists(gomock.Any(), "BUCKET").Return(true, nil),
+					s.EXPECT().List(gomock.Any(), "BUCKET", "File1").Return([]*models.FileDescriptor{file1V2, file1V1}, nil),
+				}
+			},
+			[]*models.FileDescriptor{file1V2},
+			noErrors,
+			nil,
+		},
+		{
+			"Successful call with createdAtUntil filtering",
+			nil,
+			&time2,
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().BucketExists(gomock.Any(), "BUCKET").Return(true, nil),
+					s.EXPECT().List(gomock.Any(), "BUCKET", "File1").Return([]*models.FileDescriptor{file1V2, file1V1}, nil),
+				}
+			},
+			[]*models.FileDescriptor{file1V1},
+			noErrors,
+			nil,
+		},
+		{
+			"Successful call with createdAtSince and createdAtUntil filtering",
+			&time1,
+			&time2,
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().BucketExists(gomock.Any(), "BUCKET").Return(true, nil),
+					s.EXPECT().List(gomock.Any(), "BUCKET", "File1").Return([]*models.FileDescriptor{file1V2, file1V1}, nil),
+				}
+			},
+			[]*models.FileDescriptor{},
 			noErrors,
 			nil,
 		},
@@ -849,7 +901,151 @@ func TestSyncFileList(t *testing.T) {
 			test.calls(s)
 
 			// call SyncFileList
-			out, err := svc.SyncFileList(context.TODO(), "BUCKET")
+			out, err := svc.FileListVersions(context.TODO(), "BUCKET", "File1", test.createdAtSince, test.createdAtUntil)
+
+			// check expected results
+			if !reflect.DeepEqual(out, test.expected) {
+				fmt.Println("Expected")
+				printJson(test.expected)
+				fmt.Println("Got")
+				printJson(out)
+				t.Errorf("Expected list to equal\n%+v\ngot\n%+v", test.expected, out)
+			}
+
+			// assert error
+			if test.errorExpected && err == nil {
+				t.Error("Expected error, got nil")
+			} else if !test.errorExpected && err != nil {
+				t.Errorf("Expected error to be nil, got %v", err)
+			}
+
+			// assert actual error
+			if test.exactError != nil && test.exactError != err {
+				t.Errorf("Expected error to equal '%v'; got %v", test.exactError, err)
+			}
+		})
+	}
+}
+
+func TestSyncFileList(t *testing.T) {
+	testCases := []struct {
+		description    string
+		createdAtSince *strfmt.DateTime
+		createdAtUntil *strfmt.DateTime
+		calls          func(*mock.MockStorage) []*gomock.Call
+		expected       []*models.FileDescriptor
+		errorExpected  bool
+		exactError     error
+	}{
+		{
+			"BucketExsits fails",
+			nil,
+			nil,
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().BucketExists(gomock.Any(), "BUCKET").Return(false, fmt.Errorf("Error")),
+				}
+			},
+			nil,
+			withErrors,
+			nil,
+		},
+		{
+			"List fails",
+			nil,
+			nil,
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().BucketExists(gomock.Any(), "BUCKET").Return(true, nil),
+					s.EXPECT().List(gomock.Any(), "BUCKET", "").Return(nil, fmt.Errorf("Error")),
+				}
+			},
+			nil,
+			withErrors,
+			nil,
+		},
+		{
+			"Bucket does not exist",
+			nil,
+			nil,
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().BucketExists(gomock.Any(), "BUCKET").Return(false, nil),
+				}
+			},
+			[]*models.FileDescriptor{},
+			noErrors,
+			nil,
+		},
+		{
+			"Successful call",
+			nil,
+			nil,
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().BucketExists(gomock.Any(), "BUCKET").Return(true, nil),
+					s.EXPECT().List(gomock.Any(), "BUCKET", "").Return([]*models.FileDescriptor{file1V2, file2V2, file1V1, file2V1}, nil),
+				}
+			},
+			[]*models.FileDescriptor{file1V2, file2V2},
+			noErrors,
+			nil,
+		},
+		{
+			"Successful call with createdAtSince filtering",
+			&time2,
+			nil,
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().BucketExists(gomock.Any(), "BUCKET").Return(true, nil),
+					s.EXPECT().List(gomock.Any(), "BUCKET", "").Return([]*models.FileDescriptor{file1V2, file2V2, file1V1, file2V1}, nil),
+				}
+			},
+			[]*models.FileDescriptor{file2V2},
+			noErrors,
+			nil,
+		},
+		{
+			"Successful call with createdAtUntil filtering",
+			nil,
+			&time3,
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().BucketExists(gomock.Any(), "BUCKET").Return(true, nil),
+					s.EXPECT().List(gomock.Any(), "BUCKET", "").Return([]*models.FileDescriptor{file1V2, file2V2, file1V1, file2V1}, nil),
+				}
+			},
+			[]*models.FileDescriptor{file1V2},
+			noErrors,
+			nil,
+		},
+		{
+			"Successful call with createdAtSince and createdAtUntil filtering",
+			&time2,
+			&time3,
+			func(s *mock.MockStorage) []*gomock.Call {
+				return []*gomock.Call{
+					s.EXPECT().BucketExists(gomock.Any(), "BUCKET").Return(true, nil),
+					s.EXPECT().List(gomock.Any(), "BUCKET", "").Return([]*models.FileDescriptor{file1V2, file2V2, file1V1, file2V1}, nil),
+				}
+			},
+			[]*models.FileDescriptor{},
+			noErrors,
+			nil,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.description, func(t *testing.T) {
+			// init service
+			svc, s, _, _, c := getTestService(t)
+			defer c()
+
+			// setup calls
+			test.calls(s)
+
+			// call SyncFileList
+			out, err := svc.SyncFileList(context.TODO(), "BUCKET", test.createdAtSince, test.createdAtUntil)
 
 			// check expected results
 			if !reflect.DeepEqual(out, test.expected) {

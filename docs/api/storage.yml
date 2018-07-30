@@ -426,7 +426,7 @@ paths:
         - local
         - cloud
       summary: Lists all files in the bucket
-      description: Lists all files in the bucket. Only latest versions of the file are listed but files marked as deleted are not omitted.
+      description: Lists all files in the bucket. Only latest versions of the file are listed but files marked as deleted are not omitted. Query parameters allow for filtering based on createdAt timestamp.
       operationId: syncFileList
 
       parameters:
@@ -434,7 +434,14 @@ paths:
           name: bucket
           type: string
           required: true
-
+        - in: query
+          name: createdAtSince
+          type: string
+          description: ISO 8601 date-time string
+        - in: query
+          name: createdAtUntil
+          type: string
+          description: ISO 8601 date-time string
       responses:
         200:
           description: List of files
@@ -442,6 +449,9 @@ paths:
             type: array
             items:
               $ref: '#/definitions/FileDescriptor'
+
+        400:
+          $ref: '#/responses/400'
 
         403:
           $ref: '#/responses/403'
@@ -468,13 +478,19 @@ paths:
           description: Name of the bucket
           type: string
           required: true
-
         - in: path
           name: fileID
           description: File name
           type: string
           required: true
-
+        - in: query
+          name: createdAtSince
+          type: string
+          description: ISO 8601 date-time string
+        - in: query
+          name: createdAtUntil
+          type: string
+          description: ISO 8601 date-time string
       responses:
         200:
           description: List of versions
@@ -482,6 +498,9 @@ paths:
             type: array
             items:
               $ref: '#/definitions/FileDescriptor'
+
+        400:
+          $ref: '#/responses/400'
 
         403:
           $ref: '#/responses/403'
