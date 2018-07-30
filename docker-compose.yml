@@ -83,6 +83,7 @@ services:
     environment:
     - DOMAIN_TYPE=cloud
     - DOMAIN_ID=*
+    - AUTH_HOST=cloudAuth
     - KEY_PATH=/certs/cloudStorage-key.pem
     - CERT_PATH=/certs/cloudStorage.pem
     - S3_SECRET=cloudminio
@@ -341,3 +342,22 @@ services:
 
   waiter:
     image: martin/wait:latest
+
+  batchDataExporter:
+    image: golang:1.9-alpine
+    command:
+    - /wwm/batchDataExporter
+    volumes:
+    - ./.bin/:/wwm
+    - ./.data/batchDataExporter:/data/
+    - ./bin/tls:/certs:ro
+    - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - ./cmd/batchDataExporter/sanitizerConfig.json:/sanitizerConfig.json:ro
+    environment:
+    - STORAGE_HOST=cloudStorage
+    - AUTH_HOST=cloudAuth
+    - KEY_PATH=/certs/batchDataExporter-key.pem
+    - CERT_PATH=/certs/batchDataExporter.pem
+    - DB_USERNAME=batchdataexporter
+    - DB_PASSWORD=batchdataexporter
+    - DATA_ENCRYPTION_KEY=6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
