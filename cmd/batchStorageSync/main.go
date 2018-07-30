@@ -16,6 +16,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/client"
+	"github.com/iryonetwork/wwm/service/serviceAuthenticator"
 	"github.com/iryonetwork/wwm/storage/keyvalue"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 	"github.com/iryonetwork/wwm/sync/storage/batch"
@@ -81,7 +82,7 @@ func main() {
 	cloudClient := client.New(cloud, strfmt.Default)
 
 	// initialize request authenticator
-	auth, err := storageSync.NewRequestAuthenticator(cfg.CertPath, cfg.KeyPath, logger)
+	auth, err := serviceAuthenticator.New(cfg.CertPath, cfg.KeyPath, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to initialize storage API request authenticator")
 	}

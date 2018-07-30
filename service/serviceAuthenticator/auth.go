@@ -1,4 +1,7 @@
-package filesDataExporter
+// Package serviceAuthenticator provides implementation of runtime.ClientAuthInfoWriter
+// interface for internal services using cert and key to authorize its requests to other
+// internal services.
+package serviceAuthenticator
 
 import (
 	"crypto/rsa"
@@ -38,10 +41,10 @@ func (a *storageRequestAuthenticator) AuthenticateRequest(r runtime.ClientReques
 }
 
 // New returns new instance of storageRequestAuthenticator that implements runtime.ClientAuthInfoWriter
-func NewRequestAuthenticator(certFile, keyFile string, logger zerolog.Logger) (runtime.ClientAuthInfoWriter, error) {
-	logger = logger.With().Str("component", "reports/filesDataExporter/auth").Logger()
+func New(certFile, keyFile string, logger zerolog.Logger) (runtime.ClientAuthInfoWriter, error) {
+	logger = logger.With().Str("component", "service/serviceAuthenticator").Logger()
 
-	logger.Debug().Msg("Initialize storage API request authenticator")
+	logger.Debug().Msg("Initialize service's request authenticator")
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
 		return nil, err

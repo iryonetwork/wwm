@@ -19,6 +19,7 @@ import (
 
 	"github.com/iryonetwork/wwm/gen/storage/client"
 	metricsServer "github.com/iryonetwork/wwm/metrics/server"
+	"github.com/iryonetwork/wwm/service/serviceAuthenticator"
 	statusServer "github.com/iryonetwork/wwm/status/server"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 	"github.com/iryonetwork/wwm/sync/storage/consumer"
@@ -53,7 +54,7 @@ func main() {
 	cloudClient := client.New(cloud, strfmt.Default)
 
 	// initialize request authenticator
-	auth, err := storageSync.NewRequestAuthenticator(cfg.CertPath, cfg.KeyPath, logger)
+	auth, err := serviceAuthenticator.New(cfg.CertPath, cfg.KeyPath, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to initialize storage API request authenticator")
 	}
