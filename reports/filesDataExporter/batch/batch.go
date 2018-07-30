@@ -111,11 +111,18 @@ func (s *batchDataExporter) exportBucket(ctx context.Context, lastSuccessfulRun 
 	var errCount int
 
 	for _, f := range files {
-		if !utils.SliceContains(f.Labels, labelFilesCollection) && time.Time(f.Created).After(lastSuccessfulRun) {
-			exportCount++
-			err := s.exportFile(ctx, bucketID, f)
-			if err != nil {
-				errCount++
+		select {
+		case <-ctx.Done():
+			s.logger.Error().Str("bucket", bucketID).Msg("aborting bucket export due to context cancellation")
+			errCh <- &exportError{bucketID, errors.Wrap(ctx.Err(), fmt.Sprintf("aborting bucket export due to context cancellation"))}
+			return
+		default:
+			if !utils.SliceContains(f.Labels, labelFilesCollection) && time.Time(f.Created).After(lastSuccessfulRun) {
+				exportCount++
+				err := s.exportFile(ctx, bucketID, f)
+				if err != nil {
+					errCount++
+				}
 			}
 		}
 	}
