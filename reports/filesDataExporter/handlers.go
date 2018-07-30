@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/client/operations"
@@ -108,8 +109,8 @@ func (h *handlers) ListSourceBuckets(ctx context.Context) ([]*models.BucketDescr
 }
 
 // ListSourceFiles lists all the files in the bucket of source storage including files marked as deleted.
-func (h *handlers) ListSourceFilesAsc(ctx context.Context, bucketID string) ([]*models.FileDescriptor, error) {
-	return h.listFilesAsc(ctx, h.source, h.sourceAuth, bucketID)
+func (h *handlers) ListSourceFilesAsc(ctx context.Context, bucketID string, createdAtSince strfmt.DateTime) ([]*models.FileDescriptor, error) {
+	return h.listFilesAsc(ctx, h.source, h.sourceAuth, bucketID, createdAtSince)
 }
 
 // NewApiHandlers returns Handlers with cloudStorage and localStorage API used.
@@ -151,8 +152,11 @@ func (h *handlers) listBuckets(ctx context.Context, c *operations.Client, auth r
 	return resp.Payload, nil
 }
 
-func (h *handlers) listFilesAsc(ctx context.Context, c *operations.Client, auth runtime.ClientAuthInfoWriter, bucketID string) ([]*models.FileDescriptor, error) {
-	params := operations.NewSyncFileListParams().WithBucket(bucketID).WithContext(ctx)
+func (h *handlers) listFilesAsc(ctx context.Context, c *operations.Client, auth runtime.ClientAuthInfoWriter, bucketID string, createdAtSince strfmt.DateTime) ([]*models.FileDescriptor, error) {
+	params := operations.NewSyncFileListParams().
+		WithBucket(bucketID).
+		WithCreatedAtSince(swag.String(createdAtSince.String())).
+		WithContext(ctx)
 	resp, err := c.SyncFileList(params, auth)
 
 	if err != nil {

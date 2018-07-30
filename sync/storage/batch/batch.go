@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-openapi/strfmt"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
@@ -96,7 +97,7 @@ func (s *batchStorageSync) syncBucket(ctx context.Context, lastSuccessfulRun tim
 
 	fileRateLimit := make(chan bool, s.filesPerBucketRateLimit)
 
-	files, err := s.handlers.ListSourceFilesAsc(ctx, bucketID)
+	files, err := s.handlers.ListSourceFilesAsc(ctx, bucketID, strfmt.DateTime(lastSuccessfulRun))
 	if err != nil {
 		s.logger.Error().Err(err).Str("bucket", bucketID).Msg("failed to list source files")
 		errCh <- &syncError{bucketID, errors.Wrap(err, fmt.Sprintf("failed to list source files in bucket %s", bucketID))}
@@ -135,7 +136,7 @@ func (s *batchStorageSync) syncFile(ctx context.Context, lastSuccessfulRun time.
 	lockSlot(rateLimit)
 	defer freeSlot(rateLimit)
 
-	versions, err := s.handlers.ListSourceFileVersionsAsc(ctx, bucketID, fileID)
+	versions, err := s.handlers.ListSourceFileVersionsAsc(ctx, bucketID, fileID, strfmt.DateTime(lastSuccessfulRun))
 	if err != nil {
 		s.logger.Error().Err(err).Str("bucket", bucketID).Str("file", fileID).Msg("failed to list source versions")
 		errCh <- &syncError{fileID, errors.Wrap(err, fmt.Sprintf("failed to list source versions of file %s in bucket %s", fileID, bucketID))}

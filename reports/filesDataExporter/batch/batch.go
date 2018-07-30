@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-openapi/strfmt"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
@@ -99,7 +100,7 @@ func New(handlers filesDataExporter.Handlers, bucketsRateLimit int, logger zerol
 func (s *batchDataExporter) exportBucket(ctx context.Context, lastSuccessfulRun time.Time, bucketID string, errCh chan *exportError, rateLimit chan bool) {
 	rateLimit <- true
 
-	files, err := s.handlers.ListSourceFilesAsc(ctx, bucketID)
+	files, err := s.handlers.ListSourceFilesAsc(ctx, bucketID, strfmt.DateTime(lastSuccessfulRun))
 	if err != nil {
 		s.logger.Error().Err(err).Str("bucket", bucketID).Msg("failed to list source files")
 		errCh <- &exportError{bucketID, errors.Wrap(err, fmt.Sprintf("failed to list source files in bucket %s", bucketID))}

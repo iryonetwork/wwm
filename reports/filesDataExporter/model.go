@@ -40,7 +40,7 @@ type (
 		// ListSourceBuckets lists all the buckets in source storage.
 		ListSourceBuckets(ctx context.Context) ([]*models.BucketDescriptor, error)
 		// ListSourceFiles lists all the files in the bucket of source storage including files marked as delete, ascending order by Created timestamp ensured.
-		ListSourceFilesAsc(ctx context.Context, bucketID string) ([]*models.FileDescriptor, error)
+		ListSourceFilesAsc(ctx context.Context, bucketID string, createdAtSince strfmt.DateTime) ([]*models.FileDescriptor, error)
 	}
 
 	// Handler describes reports/filesDataExporter handler function
