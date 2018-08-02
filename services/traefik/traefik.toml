@@ -76,6 +76,18 @@ address = ":8080"
     [backends.cloudstorage.servers.server1]
     url = "https://cloudStorage"
 
+  [backends.reportsstorage]
+    [backends.reportsstorage.servers.server1]
+    url = "https://reportsStorage"
+
+  [backends.reportsstorageMetrics]
+    [backends.reportsstorageMetrics.servers.server1]
+    url = "http://reportsStorage:9090"
+
+  [backends.reportsstorageStatus]
+    [backends.reportsstorageStatus.servers.server1]
+    url = "https://reportsStorage:4433"
+
   [backends.cloudstorageMetrics]
     [backends.cloudstorageMetrics.servers.server1]
     url = "http://cloudStorage:9090"
@@ -250,3 +262,8 @@ address = ":8080"
   backend = "pgweb"
     [frontends.pgweb.routes.route1]
     rule = "Host:pgweb.iryo.local"
+
+  [frontends.reportsstorage]
+  backend = "reportsstorage"
+    [frontends.reportsstorage.routes.route1]
+    rule = "Host:iryo.cloud;PathPrefixStrip:/api/v1/reports;AddPrefix:/reports"

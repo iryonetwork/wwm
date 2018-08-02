@@ -1,0 +1,15 @@
+{
+    "CN": "reportsStorage",
+    "hosts": ["127.0.0.1", "reportsStorage", "reports.iryo.cloud"],
+    "key": {
+        "algo": "rsa",
+        "size": 4096
+    },
+    "names": [
+        {
+            "C": "SI",
+            "ST": "Kranj",
+            "L": "Kranj"
+        }
+    ]
+}
