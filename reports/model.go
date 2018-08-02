@@ -1,5 +1,7 @@
 package reports
 
+//go:generate ../bin/mockgen.sh reports Storage $GOFILE
+
 import (
 	"github.com/go-openapi/strfmt"
 )
