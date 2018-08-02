@@ -1,0 +1,15 @@
+{
+    "CN": "batchReportGenerator",
+    "hosts": [],
+    "key": {
+        "algo": "rsa",
+        "size": 4096
+    },
+    "names": [
+        {
+            "C": "SI",
+            "ST": "Kranj",
+            "L": "Kranj"
+        }
+    ]
+}

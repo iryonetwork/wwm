@@ -1,0 +1,131 @@
+{
+    "type": "encounters",
+    "fileCategory": "openehr::433|event|",
+    "includeAll": false,
+    "columns": [
+        "Encounter ID",
+        "Patient ID",
+        "Encounter time",
+        "Main diagnosis",
+        "Complementary diagnoses",
+        "Medications"
+    ],
+    "columnsSpecs": {
+        "Encounter ID": {
+            "type": "value",
+            "desciption": "Unique encounter file identifier",
+            "source": "FileID"
+        },
+        "Patient ID": {
+            "type": "value",
+            "desciption": "Unique patient identifier",
+            "source": "PatientID"
+        },
+        "Encounter time": {
+            "type": "value",
+            "desciption": "Time of encounter",
+            "source": "Data",
+            "ehrPath": "/context/end_time"
+        },
+        "Author": {
+            "type": "mutlipleValues",
+            "desciption": "User that created the encounter file",
+            "source": "Data",
+            "format": "%s (%s)",
+            "properties": [
+                {
+                    "type": "value",
+                    "ehrPath": "/composer|identifier"
+                },
+                {
+                    "type": "value",
+                    "ehrPath": "/composer|name"
+                }
+            ]
+        },
+        "Main diagnosis": {
+            "type": "array",
+            "description":
+                "Main diagnosis (first diagnosis in the array of diagnoses)",
+            "source": "Data",
+            "ehrPath":
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-EVALUATION.problem_diagnosis.v1]",
+            "includeItems": {
+                "start": 0,
+                "end": 0
+            },
+            "format": "%s (%s: %s)",
+            "properties": [
+                {
+                    "desciption": "Diagnosis label",
+                    "type": "value",
+                    "ehrPath": "/data/items[at0001]/item[at0002]"
+                },
+                {
+                    "desciption": "Diagnosis ID terminology",
+                    "type": "value",
+                    "ehrPath":
+                        "/data/items[at0001]/item[at0002]/_mapping:0/target|terminology"
+                },
+                {
+                    "desciption": "Diagnosis ID",
+                    "type": "value",
+                    "ehrPath":
+                        "/data/items[at0001]/item[at0002]/_mapping:0/target|code"
+                }
+            ]
+        },
+        "Complementary diagnoses": {
+            "type": "array",
+            "description":
+                "Complementary diagnoses (all but first diagnoses in the array of diagnoses)",
+            "source": "Data",
+            "ehrPath":
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-EVALUATION.problem_diagnosis.v1]",
+            "includeItems": {
+                "start": 1,
+                "end": -1
+            },
+            "format": "%s (%s: %s)",
+            "properties": [
+                {
+                    "desciption": "Diagnosis label",
+                    "type": "value",
+                    "ehrPath": "/data/items[at0001]/item[at0002]"
+                },
+                {
+                    "desciption": "Diagnosis ID terminology",
+                    "type": "value",
+                    "ehrPath":
+                        "/data/items[at0001]/item[at0002]/_mapping:0/target|terminology"
+                },
+                {
+                    "desciption": "Diagnosis ID",
+                    "type": "value",
+                    "ehrPath":
+                        "/data/items[at0001]/item[at0002]/_mapping:0/target|code"
+                }
+            ]
+        },
+        "Medications": {
+            "type": "array",
+            "description": "Prescribed medications",
+            "source": "Data",
+            "ehrPath":
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-INSTRUCTION.medication_order.v2]",
+            "includeItems": {
+                "start": 0,
+                "end": -1
+            },
+            "format": "%s",
+            "properties": [
+                {
+                    "desciption": "Medication",
+                    "type": "value",
+                    "ehrPath":
+                        "/activities[at0001]/description[at0002]/items[at0070]"
+                }
+            ]
+        }
+    }
+}

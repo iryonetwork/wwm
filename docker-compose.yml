@@ -361,3 +361,40 @@ services:
     - DB_USERNAME=batchdataexporter
     - DB_PASSWORD=batchdataexporter
     - DATA_ENCRYPTION_KEY=6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
+
+  reportsStorage:
+    image: golang:1.9-alpine
+    command:
+    - /wwm/reportsStorage
+    volumes:
+    - ./.bin/:/wwm
+    - ./bin/tls:/certs:ro
+    - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    environment:
+    - DOMAIN_TYPE=cloud
+    - DOMAIN_ID=*
+    - AUTH_HOST=cloudAuth
+    - KEY_PATH=/certs/reportsStorage-key.pem
+    - CERT_PATH=/certs/reportsStorage.pem
+    - S3_SECRET=cloudminio
+    - STORAGE_ENCRYPTION_KEY=6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
+
+  batchReportGenerator:
+    image: golang:1.9-alpine
+    command:
+    - /wwm/batchReportGenerator
+    volumes:
+    - ./.bin/:/wwm
+    - ./.data/batchReportGenerator:/data/
+    - ./bin/tls:/certs:ro
+    - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - ./cmd/batchReportGenerator/encountersReportSpec.json:/encountersReportSpec.json:ro
+    environment:
+    - STORAGE_HOST=reportsStorage
+    - STORAGE_PATH=reports
+    - AUTH_HOST=cloudAuth
+    - KEY_PATH=/certs/batchReportGenerator-key.pem
+    - CERT_PATH=/certs/batchReportGenerator.pem
+    - DB_USERNAME=reportgenerator
+    - DB_PASSWORD=reportgenerator
+    - REPORT_SPECS_FILEPATHS=/encountersReportSpec.json
