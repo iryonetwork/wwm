@@ -91,7 +91,8 @@ func New(handlers storageSync.Handlers, cfg Cfg, logger zerolog.Logger) storageS
 }
 
 func (s *batchStorageSync) syncBucket(ctx context.Context, lastSuccessfulRun time.Time, bucketID string, errCh chan *syncError, rateLimit chan bool) {
-	rateLimit <- true
+	lockSlot(rateLimit)
+	defer freeSlot(rateLimit)
 
 	fileRateLimit := make(chan bool, s.filesPerBucketRateLimit)
 
@@ -124,16 +125,15 @@ func (s *batchStorageSync) syncBucket(ctx context.Context, lastSuccessfulRun tim
 	if errCount > 0 {
 		s.logger.Error().Str("bucket", bucketID).Msgf("%d failure(s) out of %d file(s) to sync", errCount, syncCount)
 		errCh <- &syncError{bucketID, errors.Errorf("%d failure(s) out of %d file(s) to sync in bucket %s", errCount, syncCount, bucketID)}
-		<-rateLimit
 		return
 	}
-	<-rateLimit
 
 	errCh <- nil
 }
 
 func (s *batchStorageSync) syncFile(ctx context.Context, lastSuccessfulRun time.Time, bucketID, fileID string, errCh chan *syncError, rateLimit chan bool) {
-	rateLimit <- true
+	lockSlot(rateLimit)
+	defer freeSlot(rateLimit)
 
 	versions, err := s.handlers.ListSourceFileVersionsAsc(ctx, bucketID, fileID)
 	if err != nil {
@@ -165,11 +165,9 @@ func (s *batchStorageSync) syncFile(ctx context.Context, lastSuccessfulRun time.
 	if errCount > 0 {
 		s.logger.Error().Str("bucket", bucketID).Str("file", fileID).Msgf("%d failure(s) out of %d version(s) to sync", errCount, syncCount)
 		errCh <- &syncError{fileID, errors.Errorf("%d failure(s) out of %d version(s) to sync for file %s in bucket %s", errCount, syncCount, fileID, bucketID)}
-		<-rateLimit
 		return
 	}
 
-	<-rateLimit
 	errCh <- nil
 }
 
@@ -211,4 +209,12 @@ func (s *batchStorageSync) syncFileVersion(ctx context.Context, bucketID, fileID
 	}
 
 	return err
+}
+
+func lockSlot(rateLimit chan bool) {
+	rateLimit <- true
+}
+
+func freeSlot(rateLimit chan bool) {
+	<-rateLimit
 }
