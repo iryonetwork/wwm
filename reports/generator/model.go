@@ -23,11 +23,12 @@ type (
 
 	// ReportSpec represents specficiation for generating report
 	ReportSpec struct {
-		Type         string               `json:"type"`
-		IncludeAll   bool                 `json:"includeAll"`
-		FileCategory string               `json:"fileCategory"`
-		Columns      []string             `json:"columns"`
-		ColumnsSpecs map[string]ValueSpec `json:"columnsSpecs"`
+		Type             string               `json:"type"`
+		IncludeAll       bool                 `json:"includeAll"`
+		GroupByPatientID bool                 `json:"groupByPatientID"`
+		FileCategory     string               `json:"fileCategory"`
+		Columns          []string             `json:"columns"`
+		ColumnsSpecs     map[string]ValueSpec `json:"columnsSpecs"`
 	}
 
 	// Column represents specification for report column

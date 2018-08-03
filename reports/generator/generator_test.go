@@ -21,7 +21,7 @@ var (
 	noErrors   = false
 	withErrors = true
 
-	testSpec = ReportSpec{
+	testSpec1 = ReportSpec{
 		Type:         "testReport",
 		FileCategory: "openehr::111|test|",
 		Columns:      []string{"file ID", "version", "patient ID", "createdAt", "updatedAt", "multiple values from data", "twice nested array first item", "twice nested array"},
@@ -136,6 +136,38 @@ var (
 		},
 	}
 
+	testSpec2 = ReportSpec{
+		Type:             "testReport",
+		FileCategory:     "openehr::111|test|",
+		GroupByPatientID: true,
+		Columns:          []string{"patient ID", "createdAt", "multiple values from data"},
+		ColumnsSpecs: map[string]ValueSpec{
+			"patient ID": ValueSpec{
+				Type:   "value",
+				Source: "PatientID",
+			},
+			"createdAt": ValueSpec{
+				Type:   "value",
+				Source: "CreatedAt",
+			},
+			"multiple values from data": ValueSpec{
+				Type:   "multipleValues",
+				Source: "Data",
+				Format: "%s %s",
+				Properties: []ValueSpec{
+					ValueSpec{
+						Type:    "value",
+						EhrPath: "/valueFromFile1",
+					},
+					ValueSpec{
+						Type:    "value",
+						EhrPath: "/valueFromFile2",
+					},
+				},
+			},
+		},
+	}
+
 	time1, _ = strfmt.ParseDateTime("2018-07-27T13:55:59.123Z")
 	time2, _ = strfmt.ParseDateTime("2018-07-29T13:55:59.123Z")
 
@@ -177,6 +209,24 @@ var (
 		UpdatedAt: time2,
 		Data:      "{this is invalid json}",
 	}
+
+	file1_groupByPatientID = reports.File{
+		FileID:    "file_id_1",
+		Version:   "version_1",
+		PatientID: "patient_1",
+		CreatedAt: time1,
+		UpdatedAt: time2,
+		Data:      "{\"/valueFromFile1\": \"1\"}",
+	}
+	file2_groupByPatientID = reports.File{
+		FileID:    "file_id_2",
+		Version:   "version_1",
+		PatientID: "patient_1",
+		CreatedAt: time2,
+		UpdatedAt: time2,
+		Data:      "{\"/valueFromFile2\": \"2\"}",
+	}
+	groupedByPatientIDReportRow = []string{"patient_1", "2018-07-27T13:55:59.123Z, 2018-07-29T13:55:59.123Z", "1 2"}
 )
 
 func TestGenerate(t *testing.T) {
@@ -191,7 +241,7 @@ func TestGenerate(t *testing.T) {
 	}{
 		{
 			"Only empty file returned",
-			testSpec,
+			testSpec1,
 			nil,
 			nil,
 			func(storage *storageMock.MockStorage, reportWriter *generatorMock.MockReportWriter) {
@@ -199,7 +249,7 @@ func TestGenerate(t *testing.T) {
 					storage.EXPECT().Find("", map[string]string{"/category": "openehr::111|test|"}, nil, nil).Return(
 						&[]reports.File{fileNoData}, nil,
 					),
-					reportWriter.EXPECT().Write(testSpec.Columns).Return(nil).Times(1),
+					reportWriter.EXPECT().Write(testSpec1.Columns).Return(nil).Times(1),
 					reportWriter.EXPECT().Write(fileNoDataReportRow).Return(nil).Times(1),
 				)
 			},
@@ -208,7 +258,7 @@ func TestGenerate(t *testing.T) {
 		},
 		{
 			"Full file and partial file returned, filter by date",
-			testSpec,
+			testSpec1,
 			&time1,
 			&time2,
 			func(storage *storageMock.MockStorage, reportWriter *generatorMock.MockReportWriter) {
@@ -216,7 +266,7 @@ func TestGenerate(t *testing.T) {
 					storage.EXPECT().Find("", map[string]string{"/category": "openehr::111|test|"}, &time1, &time2).Return(
 						&[]reports.File{fileAllData, fileMissingData}, nil,
 					),
-					reportWriter.EXPECT().Write(testSpec.Columns).Return(nil).Times(1),
+					reportWriter.EXPECT().Write(testSpec1.Columns).Return(nil).Times(1),
 					reportWriter.EXPECT().Write(fileAllDataReportRow).Return(nil).Times(1),
 					reportWriter.EXPECT().Write(fileMissingDataReportRow).Return(nil).Times(1),
 				)
@@ -226,7 +276,7 @@ func TestGenerate(t *testing.T) {
 		},
 		{
 			"Invalid JSON Data file returned",
-			testSpec,
+			testSpec1,
 			&time1,
 			&time2,
 			func(storage *storageMock.MockStorage, reportWriter *generatorMock.MockReportWriter) {
@@ -234,7 +284,7 @@ func TestGenerate(t *testing.T) {
 					storage.EXPECT().Find("", map[string]string{"/category": "openehr::111|test|"}, &time1, &time2).Return(
 						&[]reports.File{invalidJSONDataFile}, nil,
 					),
-					reportWriter.EXPECT().Write(testSpec.Columns).Return(nil).Times(1),
+					reportWriter.EXPECT().Write(testSpec1.Columns).Return(nil).Times(1),
 				)
 			},
 			withErrors,
@@ -242,7 +292,7 @@ func TestGenerate(t *testing.T) {
 		},
 		{
 			"Write failed",
-			testSpec,
+			testSpec1,
 			&time1,
 			&time2,
 			func(storage *storageMock.MockStorage, reportWriter *generatorMock.MockReportWriter) {
@@ -250,11 +300,28 @@ func TestGenerate(t *testing.T) {
 					storage.EXPECT().Find("", map[string]string{"/category": "openehr::111|test|"}, &time1, &time2).Return(
 						&[]reports.File{fileAllData, fileMissingData}, nil,
 					),
-					reportWriter.EXPECT().Write(testSpec.Columns).Return(nil).Times(1),
+					reportWriter.EXPECT().Write(testSpec1.Columns).Return(nil).Times(1),
 					reportWriter.EXPECT().Write(fileAllDataReportRow).Return(fmt.Errorf("error")).Times(1),
 				)
 			},
 			withErrors,
+			nil,
+		},
+		{
+			"Test grouping by patient ID",
+			testSpec2,
+			nil,
+			nil,
+			func(storage *storageMock.MockStorage, reportWriter *generatorMock.MockReportWriter) {
+				gomock.InOrder(
+					storage.EXPECT().Find("", map[string]string{"/category": "openehr::111|test|"}, nil, nil).Return(
+						&[]reports.File{file1_groupByPatientID, file2_groupByPatientID}, nil,
+					),
+					reportWriter.EXPECT().Write(testSpec2.Columns).Return(nil).Times(1),
+					reportWriter.EXPECT().Write(groupedByPatientIDReportRow).Return(nil).Times(1),
+				)
+			},
+			noErrors,
 			nil,
 		},
 	}
