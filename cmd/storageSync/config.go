@@ -21,7 +21,7 @@ type Config struct {
 	NatsConnRetries    int           `env:"NATS_CONN_RETRIES" envDefault:"10"`
 	NatsConnWait       time.Duration `env:"NATS_CONN_WAIT" envDefault:"500ms"`
 	NatsConnWaitFactor float32       `env:"NATS_CONN_WAIT_FACTOR" envDefault:"3.0"`
-	AckWait            time.Duration `env:"ACK_WAIT" envDefault:"2500ms"`
+	AckWait            time.Duration `env:"ACK_WAIT" envDefault:"10000ms"`
 	MaxInflight        int           `env:"MAX_INFLIGHT" envDefault:"10"`
 }
 
