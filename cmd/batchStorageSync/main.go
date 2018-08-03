@@ -1,5 +1,7 @@
 package main
 
+//go:generate sh -c "mkdir -p ../../gen/storage/ && swagger generate client -A storage -t ../../gen/storage/ -f ../../docs/api/storage.yml --principal string"
+
 import (
 	"context"
 	"os"
