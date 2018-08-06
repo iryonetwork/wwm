@@ -5,10 +5,20 @@
     "columns": [
         "Encounter ID",
         "Patient ID",
+        "Clinic ID",
         "Encounter time",
+        "Author",
+        "Main complaint",
         "Main diagnosis",
         "Complementary diagnoses",
-        "Medications"
+        "Medications",
+        "Weight",
+        "Height",
+        "BMI",
+        "Body temperature",
+        "Blood pressure",
+        "Heart rate",
+        "Oxygen saturation"
     ],
     "columnsSpecs": {
         "Encounter ID": {
@@ -21,6 +31,12 @@
             "description": "Unique patient identifier",
             "source": "PatientID"
         },
+        "Clinic ID": {
+            "type": "value",
+            "description": "Clinic identifier",
+            "source": "Data",
+            "ehrPath": "/context/health_care_facility|identifier"
+        },
         "Encounter time": {
             "type": "value",
             "description": "Time of encounter",
@@ -28,7 +44,7 @@
             "ehrPath": "/context/end_time"
         },
         "Author": {
-            "type": "mutlipleValues",
+            "type": "multipleValues",
             "description": "User that created the encounter file",
             "source": "Data",
             "format": "%s (%s)",
@@ -135,7 +151,7 @@
             ]
         },
         "Weight": {
-            "type": "mutlipleValues",
+            "type": "multipleValues",
             "description": "Weight measured during encounter",
             "source": "Data",
             "format": "%s kg",
@@ -148,7 +164,7 @@
             ]
         },
         "Height": {
-            "type": "mutlipleValues",
+            "type": "multipleValues",
             "description": "Height measured during encounter",
             "source": "Data",
             "format": "%s cm",
@@ -161,7 +177,7 @@
             ]
         },
         "BMI": {
-            "type": "mutlipleValues",
+            "type": "multipleValues",
             "description": "BMI measured during encounter",
             "source": "Data",
             "format": "%s kg/m2",
@@ -174,7 +190,7 @@
             ]
         },
         "Body temperature": {
-            "type": "mutlipleValues",
+            "type": "multipleValues",
             "description": "Body tempereatrue measured during encounter",
             "source": "Data",
             "format": "%s °C",
@@ -187,7 +203,7 @@
             ]
         },
         "Blood pressure": {
-            "type": "mutlipleValues",
+            "type": "multipleValues",
             "description": "Blood pressure measured during encounter",
             "source": "Data",
             "format": "%s mm[Hg] / %s mm[Hg]",
@@ -207,7 +223,7 @@
             ]
         },
         "Heart rate": {
-            "type": "mutlipleValues",
+            "type": "multipleValues",
             "description": "Heart rate measured during encounter",
             "source": "Data",
             "format": "%s bpm",
@@ -220,7 +236,7 @@
             ]
         },
         "Oxygen saturation": {
-            "type": "mutlipleValues",
+            "type": "multipleValues",
             "description": "Oxygen saturation measured during encounter",
             "source": "Data",
             "format": "%s%",
