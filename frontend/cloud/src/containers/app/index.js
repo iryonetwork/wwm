@@ -1,56 +1,57 @@
-import React from "react"
-import { Route, Link, NavLink } from "react-router-dom"
-import { connect } from "react-redux"
-import { bindActionCreators } from "redux"
+import React from "react";
+import { Route, Link, NavLink } from "react-router-dom";
+import { connect } from "react-redux";
+import { bindActionCreators } from "redux";
 
-import Home from "../home"
-import Rules from "../rules"
-import Alert from "shared/containers/alert"
-import Users from "../users"
-import UserDetail from "../users/detail"
-import Roles from "../roles"
-import UserRoles from "../userRoles"
-import Locations from "../locations"
-import LocationDetail from "../locations/detail"
-import Organizations from "../organizations"
-import OrganizationDetail from "../organizations/detail"
-import Clinics from "../clinics"
-import { SUPERADMIN_RIGHTS_RESOURCE, ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
-import { close } from "shared/modules/alert"
-import Logo from "shared/containers/logo"
-import Spinner from "shared/containers/spinner"
-import Status from "shared/containers/status"
-import { ReactComponent as LogoutIcon } from "shared/icons/logout.svg"
-import { ReactComponent as MoreIcon } from "shared/icons/more.svg"
+import Home from "../home";
+import Rules from "../rules";
+import Alert from "shared/containers/alert";
+import Users from "../users";
+import UserDetail from "../users/detail";
+import Roles from "../roles";
+import UserRoles from "../userRoles";
+import Locations from "../locations";
+import LocationDetail from "../locations/detail";
+import Organizations from "../organizations";
+import OrganizationDetail from "../organizations/detail";
+import Clinics from "../clinics";
+import { SUPERADMIN_RIGHTS_RESOURCE, ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations";
+import { close } from "shared/modules/alert";
+import Logo from "shared/containers/logo";
+import Reports from "../reports";
+import Spinner from "shared/containers/spinner";
+import Status from "shared/containers/status";
+import { ReactComponent as LogoutIcon } from "shared/icons/logout.svg";
+import { ReactComponent as MoreIcon } from "shared/icons/more.svg";
 
 class App extends React.Component {
     componentDidMount() {
         if (!this.props.configLoading) {
             if (this.props.isAdmin === undefined || this.props.isSuperadmin === undefined) {
-                this.props.loadUserRights()
+                this.props.loadUserRights();
             }
         }
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.location.pathname !== this.props.location.pathname) {
-            this.props.close()
+            this.props.close();
         }
 
         if (!this.props.configLoading) {
             if ((nextProps.isAdmin === undefined || nextProps.isSuperadmin === undefined) && !nextProps.validationsLoading) {
-                this.props.loadUserRights()
+                this.props.loadUserRights();
             }
         }
     }
 
     logout() {
-        localStorage.removeItem("token")
+        localStorage.removeItem("token");
     }
 
     render() {
         if (this.props.configLoading) {
-            return <Spinner />
+            return <Spinner />;
         }
 
         return (
@@ -79,6 +80,9 @@ class App extends React.Component {
 
                             <NavLink className="navigation" to="/clinics">
                                 Clinics
+                            </NavLink>
+                            <NavLink className="navigation" to="/reports">
+                                Reports
                             </NavLink>
                         </div>
                     ) : null}
@@ -130,10 +134,11 @@ class App extends React.Component {
                         <Route exact path="/clinics/:clinicID/users/:userID" component={Clinics} />
                         <Route path="/userRoles" component={UserRoles} />
                         <Route exact path="/rules" component={Rules} />
+                        <Route exact path="/reports" component={Reports} />
                     </div>
                 </main>
             </React.Fragment>
-        )
+        );
     }
 }
 
@@ -143,8 +148,8 @@ const mapStateToProps = state => {
         isSuperadmin: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
         validationsLoading: state.validations.loading,
         configLoading: state.config.loading
-    }
-}
+    };
+};
 const mapDispatchToProps = dispatch =>
     bindActionCreators(
         {
@@ -152,6 +157,6 @@ const mapDispatchToProps = dispatch =>
             close
         },
         dispatch
-    )
+    );
 
-export default connect(mapStateToProps, mapDispatchToProps)(App)
+export default connect(mapStateToProps, mapDispatchToProps)(App);

@@ -14,6 +14,7 @@ import organizations from "./organizations"
 import clinics from "./clinics"
 import codes from "./codes"
 import validations from "./validations"
+import reports from "./reports"
 
 export default combineReducers({
     router: routerReducer,
@@ -29,5 +30,6 @@ export default combineReducers({
     organizations,
     clinics,
     codes,
-    validations
+    validations,
+    reports
 })
