@@ -66,6 +66,10 @@ rules:
     subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
     resource: '/api/storage*'
     action: 15
+  - id: 02336966-881b-42ac-874f-d29f028886de
+    subject: b87c6866-7fb2-48ba-88c8-fe444a6a7f43 # admin role
+    resource: '/api/reports*'
+    action: 15
   - id: d8ff1782-afaa-4066-9a49-c26a29f71acd
     subject: a422f7f5-291b-4454-ae61-3d98c6091c3e # basic member role
     resource: /auth/login
