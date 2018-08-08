@@ -1,7 +1,7 @@
 {
     "type": "patients",
     "fileCategory": "openehr::431|persistent|",
-    "includeAll": false,
+    "includeAll": true,
     "groupByPatientID": true,
     "columns": [
         "Patient ID",
@@ -63,129 +63,109 @@
     ],
     "columnsSpecs": {
         "Patient ID": {
-            "type": "value",
+            "type": "fileMeta",
             "description": "Unique patient identifier",
-            "source": "PatientID"
+            "metaField": "patientID"
         },
         "Clinic ID": {
             "type": "value",
             "description": "Clinic identifier",
-            "source": "Data",
             "ehrPath": "/context/health_care_facility|identifier"
         },
         "Author ID": {
             "type": "value",
             "description": "ID of the user that created the encounter file",
-            "source": "Data",
             "ehrPath": "/composer|identifier"
         },
         "Author name": {
             "type": "value",
             "description": "Name of the user that created the encounter file",
-            "source": "Data",
             "ehrPath": "/composer|name"
         },
         "Year of birth": {
             "type": "value",
             "description": "Year of birth",
-            "source": "Data",
             "ehrPath": "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0010]"
         },
         "Country of birth": {
             "type": "code",
             "description": "Country of birth",
-            "source": "Data",
             "ehrPath": "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0012]"
         },
         "Nationality": {
             "type": "code",
             "description": "Nationality",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0048]"
         },
         "Gender": {
             "type": "code",
             "description": "Gender",
-            "source": "Data",
             "ehrPath": "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0017]"
         },
         "Martial status": {
             "type": "code",
             "description": "Martial status",
-            "source": "Data",
             "ehrPath": "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0033]"
         },
         "Gender": {
             "type": "code",
             "description": "Gender",
-            "source": "Data",
             "ehrPath": "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0017]"
         },
         "Education": {
             "type": "code",
             "description": "Education",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0050]"
         },
         "Occupation": {
             "type": "value",
             "description": "Occupation",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0058]"
         },
         "Country of origin": {
             "type": "code",
             "description": "Country of origin",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0049]"
         },
         "Date of leaving home country": {
             "type": "value",
             "description": "Date of leaving home country",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0059]"
         },
         "Date of arrival": {
             "type": "value",
             "description": "Date of arrival",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0061]"
         },
         "Transit countries": {
             "type": "value",
             "description": "Transit countries",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0060]"
         },
         "Country": {
             "type": "code",
             "description": "Country",
-            "source": "Data",
             "ehrPath":
                 "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.address.v1]:0/details[at0001]/items[at0002]/items[at0009]"
         },
         "Region": {
             "type": "value",
             "description": "Region",
-            "source": "Data",
             "ehrPath": "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.address.v1]:0/details[at0001]/items[at0003]"
         },
         "Number of people living together": {
             "type": "value",
             "description": "Number of people leaving together",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0100]"
         },
         "Number of people in the family": {
             "type": "value",
             "description": "Number of people in the family",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0108]"
         },
         "Chronic diseases": {
             "type": "array",
             "description": "Chronic diseases",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0015]",
             "includeItems": {
                 "start": 0,
@@ -208,7 +188,6 @@
         "Immunizations": {
             "type": "array",
             "description": "Immunizations",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0014]",
             "includeItems": {
                 "start": 0,
@@ -231,7 +210,6 @@
         "Allergies": {
             "type": "array",
             "description": "Allergies",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0009]",
             "includeItems": {
                 "start": 0,
@@ -249,7 +227,6 @@
         "Injuries": {
             "type": "array",
             "description": "Injuries",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0022]",
             "includeItems": {
                 "start": 0,
@@ -272,7 +249,6 @@
         "Surgeries": {
             "type": "array",
             "description": "Surgeries",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0026]",
             "includeItems": {
                 "start": 0,
@@ -295,7 +271,6 @@
         "Medications": {
             "type": "array",
             "description": "Medications",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0031]",
             "includeItems": {
                 "start": 0,
@@ -313,196 +288,164 @@
         "Smoking": {
             "type": "boolean",
             "description": "Smoking",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0036]/items[at0039]"
         },
         "Smoking comment": {
             "type": "value",
             "description": "Smoking comment",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0036]/items[at0038]"
         },
         "Taking drugs": {
             "type": "boolean",
             "description": "Taking drugs",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0051]/items[at0040]"
         },
         "Has basic hygiene resources": {
             "type": "boolean",
             "description": "Information about availability of basic hygiene resources",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0052]/items[at0041]"
         },
         "Access to clean water": {
             "type": "boolean",
             "description": "Information about access to clean water",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0053]/items[at0042]"
         },
         "Sufficient food supply": {
             "type": "boolean",
             "description": "Information about sufficiency of food supply",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0054]/items[at0043]"
         },
         "Good appetite": {
             "type": "boolean",
             "description": "Information about appetite",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0055]/items[at0044]"
         },
         "Heating": {
             "type": "boolean",
             "description": "Information about availability of heating at patient's accomodation",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0056]/items[at0045]"
         },
         "Electricity": {
             "type": "boolean",
             "description": "Information about availability of electricty at patient's accomodation",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0036]/items[at0057]/items[at0046]"
         },
         "Vaccination on schedule at home": {
             "type": "boolean",
             "description": "Information about child's vaccination being up to date before leaving the country",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0064]/items[at0065]"
         },
         "Vaccination documents available": {
             "type": "boolean",
             "description": "Information about child's vaccination documentation from home country being available",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0064]/items[at0066]"
         },
         "Tested for tuberculosis": {
             "type": "boolean",
             "description": "Information about child's tuberculosis test being done",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0064]/items[at0067]"
         },
         "Tuberculosis test result": {
             "type": "boolean",
             "description": "Tuberculosis test result",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0064]/items[at0068]"
         },
         "Additional tuberculosis tests done": {
             "type": "boolean",
             "description": "Additional tuberculosis tests done",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0064]/items[at0069]"
         },
         "Vaccine reactions identified": {
             "type": "boolean",
             "description": "Information if vaccine reaction was identified in the past",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0064]/items[at0071]"
         },
         "Vaccine reactions details": {
             "type": "value",
             "description": "Details about vaccine rection identified in the past",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0064]/items[at0072]"
         },
         "Baby's delivery type": {
             "type": "code",
             "description": "Baby's delivery type",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0074]/items[at0075]"
         },
         "Premature birth": {
             "type": "boolean",
             "description": "Information if the birt of baby was premature",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0074]/items[at0076]"
         },
         "Weeks at birth": {
             "type": "integer",
             "description": "Weeks at birth",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0074]/items[at0077]"
         },
         "Weight at birth": {
             "type": "quantity",
             "description": "Weight at birth",
-            "source": "Data",
             "unit": "g",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0074]/items[at0078]"
         },
         "Height at birth": {
             "type": "quantity",
             "description": "Height at birth",
-            "source": "Data",
             "unit": "cm",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0074]/items[at0079]"
         },
         "Breastfeeding": {
             "type": "boolean",
             "description": "Breastfeeding",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0087]/items[at0081]"
         },
         "Breastfeeding duration": {
             "type": "quantity",
             "description": "Breastfeeding duration",
-            "source": "Data",
             "unit": "weeks",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0087]/items[at0082]"
         },
         "What does baby eat and drink?": {
             "type": "code",
             "description": "Baby's diet",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0083]"
         },
         "Frequency of bowel movements": {
             "type": "code",
             "description": "Frequency of bowel movements",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0085]"
         },
         "Baby's sleep satisfaction": {
             "type": "boolean",
             "description": "Baby's sleep satisfaction",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0088]/items[at0089]"
         },
         "Baby's Vitamin D supplementation": {
             "type": "boolean",
             "description": "Baby's Vitamin D supplementation",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0091]"
         },
         "Baby sleeping on back": {
             "type": "boolean",
             "description": "Baby sleeping on back",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0092]"
         },
         "Does anybody at home smoke?": {
             "type": "boolean",
             "description": "Does anybody at home smoke?",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0093]"
         },
         "Number of smokers": {
             "type": "value",
             "description": "Number of smokers at home",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0094]"
         },
         "How does child get around?": {
             "type": "value",
             "description": "How does child get around?",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0095]"
         },
         "How does child communicate?": {
             "type": "code",
             "description": "How does child communicate?",
-            "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0096]"
         }
     }

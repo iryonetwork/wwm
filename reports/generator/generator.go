@@ -14,6 +14,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/reports"
+	"github.com/iryonetwork/wwm/utils"
 )
 
 type (
@@ -27,14 +28,7 @@ type (
 
 const dataKeyCategory = "/category"
 
-const codeRe = "^(.+)::(.+)\\|(.+)\\|$"
-
-const sourceData = "Data"
-const sourceFileID = "FileID"
-const sourceVersion = "Version"
-const sourcePatientID = "PatientID"
-const sourceCreatedAt = "CreatedAt"
-const sourceUpdatedAt = "UpdatedAt"
+const codeRe = `^(.+)::(.+)\|(.+)\|$`
 
 // Generate generates report
 func (g *generator) Generate(ctx context.Context, writer ReportWriter, reportSpec ReportSpec, createdAtStart *strfmt.DateTime, createdAtEnd *strfmt.DateTime) error {
@@ -64,20 +58,23 @@ func (g *generator) Generate(ctx context.Context, writer ReportWriter, reportSpe
 			if !ok {
 				return errors.Errorf("could not find a spec for column '%s'", column)
 			}
-			switch spec.Source {
-			case sourceData:
-				_, value := g.generateValueFromData(spec, &dataMap, "")
+			switch spec.Type {
+			case TYPE_FILE_META:
+				switch spec.MetaField {
+				case META_FIELD_FILE_ID:
+					row = append(row, file.FileID)
+				case META_FIELD_VERSION:
+					row = append(row, file.Version)
+				case META_FIELD_PATIENT_ID:
+					row = append(row, file.PatientID)
+				case META_FIELD_CREATED_AT:
+					row = append(row, file.CreatedAt.String())
+				case META_FIELD_UPDATED_AT:
+					row = append(row, file.UpdatedAt.String())
+				}
+			default:
+				_, value := g.getComplexValueFromData(spec, []*map[string]interface{}{&dataMap}, "")
 				row = append(row, strings.TrimSpace(value))
-			case sourceFileID:
-				row = append(row, file.FileID)
-			case sourceVersion:
-				row = append(row, file.Version)
-			case sourcePatientID:
-				row = append(row, file.PatientID)
-			case sourceCreatedAt:
-				row = append(row, file.CreatedAt.String())
-			case sourceUpdatedAt:
-				row = append(row, file.UpdatedAt.String())
 			}
 		}
 		err = writer.Write(row)
@@ -112,7 +109,7 @@ func (g *generator) generateGroupedByPatientID(ctx context.Context, writer Repor
 	}
 
 	for _, fileIndexes := range patientIdFileIndexMap {
-		var dataMap map[string]interface{}
+		var dataMaps []*map[string]interface{}
 		var fileIDs []string
 		var versions []string
 		var createdAts []string
@@ -120,36 +117,49 @@ func (g *generator) generateGroupedByPatientID(ctx context.Context, writer Repor
 		patientID := (*files)[fileIndexes[0]].PatientID
 
 		for _, fileIndex := range fileIndexes {
+			// unmarshal each file to separate data map
+			var dataMap map[string]interface{}
 			file := (*files)[fileIndex]
+
 			if err := json.Unmarshal([]byte(file.Data), &dataMap); err != nil {
 				return errors.Wrapf(err, "failed to unmarshal file data")
 			}
 
+			dataMaps = append(dataMaps, &dataMap)
+
 			fileIDs = append(fileIDs, file.FileID)
 			versions = append(versions, file.Version)
-			createdAts = append(createdAts, file.CreatedAt.String())
-			updatedAts = append(updatedAts, file.UpdatedAt.String())
+			if !utils.SliceContains(createdAts, file.CreatedAt.String()) {
+				createdAts = append(createdAts, file.CreatedAt.String())
+			}
+			if !utils.SliceContains(updatedAts, file.UpdatedAt.String()) {
+				updatedAts = append(updatedAts, file.UpdatedAt.String())
+			}
 		}
+
 		row := []string{}
 		for _, column := range reportSpec.Columns {
 			spec, ok := reportSpec.ColumnsSpecs[column]
 			if !ok {
 				return errors.Errorf("could not find a spec for column '%s'", column)
 			}
-			switch spec.Source {
-			case sourceData:
-				_, value := g.generateValueFromData(spec, &dataMap, "")
+			switch spec.Type {
+			case TYPE_FILE_META:
+				switch spec.MetaField {
+				case META_FIELD_FILE_ID:
+					row = append(row, strings.Join(fileIDs, ", "))
+				case META_FIELD_VERSION:
+					row = append(row, strings.Join(versions, ", "))
+				case META_FIELD_PATIENT_ID:
+					row = append(row, patientID)
+				case META_FIELD_CREATED_AT:
+					row = append(row, strings.Join(createdAts, ", "))
+				case META_FIELD_UPDATED_AT:
+					row = append(row, strings.Join(updatedAts, ", "))
+				}
+			default:
+				_, value := g.getComplexValueFromData(spec, dataMaps, "")
 				row = append(row, strings.TrimSpace(value))
-			case sourceFileID:
-				row = append(row, strings.Join(fileIDs, ", "))
-			case sourceVersion:
-				row = append(row, strings.Join(versions, ", "))
-			case sourcePatientID:
-				row = append(row, patientID)
-			case sourceCreatedAt:
-				row = append(row, strings.Join(createdAts, ", "))
-			case sourceUpdatedAt:
-				row = append(row, strings.Join(updatedAts, ", "))
 			}
 		}
 		err = writer.Write(row)
@@ -161,7 +171,7 @@ func (g *generator) generateGroupedByPatientID(ctx context.Context, writer Repor
 	return nil
 }
 
-func (g *generator) generateValueFromData(spec ValueSpec, data *map[string]interface{}, prefix string) (found bool, value string) {
+func (g *generator) getComplexValueFromData(spec ValueSpec, data []*map[string]interface{}, prefix string) (found bool, value string) {
 	found = false
 	switch spec.Type {
 	case TYPE_ARRAY:
@@ -171,7 +181,7 @@ func (g *generator) generateValueFromData(spec ValueSpec, data *map[string]inter
 			elementValues := []interface{}{}
 
 			for _, fieldSpec := range spec.Properties {
-				valueFound, value := g.generateValueFromData(fieldSpec, data, fmt.Sprintf("%s%s:%d", prefix, spec.EhrPath, i))
+				valueFound, value := g.getComplexValueFromData(fieldSpec, data, fmt.Sprintf("%s%s:%d", prefix, spec.EhrPath, i))
 				if valueFound {
 					elementFound = true
 				}
@@ -198,65 +208,87 @@ func (g *generator) generateValueFromData(spec ValueSpec, data *map[string]inter
 
 		return found, value
 	case TYPE_QUANTITY:
-		found, value = g.getData(data, fmt.Sprintf("%s%s", prefix, spec.EhrPath))
+		found, value = g.getSimpleValueFromData(data, fmt.Sprintf("%s%s", prefix, spec.EhrPath))
 		if found {
 			v := strings.Split(value, ",")
 			return true, fmt.Sprintf("%s %s", v[0], spec.Unit)
 		}
 		return found, value
 	case TYPE_CODE:
-		return g.getDataCodeTitle(data, fmt.Sprintf("%s%s", prefix, spec.EhrPath))
+		return g.getCodeValueFromData(data, fmt.Sprintf("%s%s", prefix, spec.EhrPath))
 	default:
-		return g.getData(data, fmt.Sprintf("%s%s", prefix, spec.EhrPath))
+		return g.getSimpleValueFromData(data, fmt.Sprintf("%s%s", prefix, spec.EhrPath))
 	}
 
 	return found, ""
 }
 
-func (g *generator) getData(data *map[string]interface{}, fullEhrPath string) (found bool, value string) {
-	if val, ok := (*data)[fullEhrPath]; ok {
-		switch val.(type) {
-		case string:
-			return true, val.(string)
-		case int:
-			return true, strconv.Itoa(val.(int))
-		case float32:
-			if float64(val.(float32)) == math.Trunc(float64(val.(float32))) {
-				return true, strconv.Itoa(int(val.(float32)))
+func (g *generator) getSimpleValueFromData(data []*map[string]interface{}, fullEhrPath string) (found bool, value string) {
+	// check all data maps for value and collect distinct ones
+	values := []string{}
+	for _, d := range data {
+		if val, ok := (*d)[fullEhrPath]; ok {
+			var s string
+			switch val.(type) {
+			case string:
+				s = val.(string)
+			case int:
+				s = strconv.Itoa(val.(int))
+			case float32:
+				if float64(val.(float32)) == math.Trunc(float64(val.(float32))) {
+					s = strconv.Itoa(int(val.(float32)))
+				}
+				s = strconv.FormatFloat(float64(val.(float32)), 'G', -1, 64)
+			case float64:
+				if val == math.Trunc(val.(float64)) {
+					s = strconv.Itoa(int(val.(float64)))
+				}
+				s = strconv.FormatFloat(val.(float64), 'G', -1, 64)
+			case bool:
+				s = strconv.FormatBool(val.(bool))
 			}
-			return true, strconv.FormatFloat(float64(val.(float32)), 'G', -1, 64)
-		case float64:
-			if val == math.Trunc(val.(float64)) {
-				return true, strconv.Itoa(int(val.(float64)))
+
+			if s != "" && !utils.SliceContains(values, s) {
+				values = append(values, s)
 			}
-			return true, strconv.FormatFloat(val.(float64), 'G', -1, 64)
-		case bool:
-			return true, strconv.FormatBool(val.(bool))
-		default:
-			return false, ""
 		}
 	}
 
-	return false, ""
+	if len(values) == 0 {
+		return false, ""
+	}
+
+	// if multiple distinct values present, combine them into one string
+	return true, strings.Join(values, ", ")
 }
 
-func (g *generator) getDataCodeTitle(data *map[string]interface{}, fullEhrPath string) (found bool, value string) {
-	if val, ok := (*data)[fullEhrPath]; ok {
-		switch val.(type) {
-		case string:
-			s := val.(string)
-			if !g.codeRegexp.MatchString(s) {
-				// return value even if doesn't match code regex to support legacy data with bugs
-				return true, val.(string)
+func (g *generator) getCodeValueFromData(data []*map[string]interface{}, fullEhrPath string) (found bool, value string) {
+	// check all data maps for value and collect distinct ones
+	values := []string{}
+	for _, d := range data {
+		if val, ok := (*d)[fullEhrPath]; ok {
+			var s string
+			if c, ok := val.(string); ok {
+				if g.codeRegexp.MatchString(c) {
+					v := strings.Split(c, "|")
+					s = v[1]
+				} else {
+					// return value even if doesn't match code regex to support legacy data with bugs
+					s = c
+				}
 			}
-			v := strings.Split(s, "|")
-			return true, v[1]
-		default:
-			return false, ""
+			if s != "" && !utils.SliceContains(values, s) {
+				values = append(values, s)
+			}
 		}
 	}
 
-	return false, ""
+	if len(values) == 0 {
+		return false, ""
+	}
+
+	// if multiple distinct values present, combine them into one string
+	return true, strings.Join(values, ", ")
 }
 
 // New initializes a new instance of generator

@@ -31,11 +31,11 @@ type (
 		ColumnsSpecs     map[string]ValueSpec `json:"columnsSpecs"`
 	}
 
-	// Column represents specification for report column
+	// ValueSpec represents specification for report column
 	ValueSpec struct {
 		Type         string             `json:"type"`
+		MetaField    string             `json:"metaField"`
 		EhrPath      string             `json:"ehrPath"`
-		Source       string             `json:"source"`
 		Format       string             `json:"format"`
 		Unit         string             `json:"unit"`
 		Properties   []ValueSpec        `json:"properties"`
@@ -48,6 +48,7 @@ type (
 	}
 )
 
+const TYPE_FILE_META = "fileMeta"
 const TYPE_VALUE = "value"
 const TYPE_INTEGER = "integer"
 const TYPE_ARRAY = "array"
@@ -55,3 +56,9 @@ const TYPE_QUANTITY = "quantity"
 const TYPE_BOOLEAN = "boolean"
 const TYPE_DATETIME = "dateTime"
 const TYPE_CODE = "code"
+
+const META_FIELD_FILE_ID = "fileID"
+const META_FIELD_VERSION = "version"
+const META_FIELD_PATIENT_ID = "patientID"
+const META_FIELD_CREATED_AT = "createdAt"
+const META_FIELD_UPDATED_AT = "updatedAt"

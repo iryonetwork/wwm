@@ -28,39 +28,36 @@ var (
 		Columns:      []string{"file ID", "version", "patient ID", "createdAt", "updatedAt", "quantity", "code", "twice nested array first item", "twice nested array"},
 		ColumnsSpecs: map[string]ValueSpec{
 			"file ID": ValueSpec{
-				Type:   "value",
-				Source: "FileID",
+				Type:      "fileMeta",
+				MetaField: "fileID",
 			},
 			"version": ValueSpec{
-				Type:   "value",
-				Source: "Version",
+				Type:      "fileMeta",
+				MetaField: "version",
 			},
 			"patient ID": ValueSpec{
-				Type:   "value",
-				Source: "PatientID",
+				Type:      "fileMeta",
+				MetaField: "patientID",
 			},
 			"createdAt": ValueSpec{
-				Type:   "value",
-				Source: "CreatedAt",
+				Type:      "fileMeta",
+				MetaField: "createdAt",
 			},
 			"updatedAt": ValueSpec{
-				Type:   "value",
-				Source: "UpdatedAt",
+				Type:      "fileMeta",
+				MetaField: "updatedAt",
 			},
 			"quantity": ValueSpec{
 				Type:    "quantity",
-				Source:  "Data",
 				Unit:    "unit",
 				EhrPath: "/quantityValue",
 			},
 			"code": ValueSpec{
 				Type:    "code",
-				Source:  "Data",
 				EhrPath: "/codeValue",
 			},
 			"twice nested array first item": ValueSpec{
 				Type:    "array",
-				Source:  "Data",
 				EhrPath: "/arrayLevel1",
 				IncludeItems: IncludeItemsStruct{
 					Start: 0,
@@ -70,7 +67,6 @@ var (
 				Properties: []ValueSpec{
 					ValueSpec{
 						Type:    "array",
-						Source:  "Data",
 						EhrPath: "/arrayLevel2",
 						IncludeItems: IncludeItemsStruct{
 							Start: 0,
@@ -96,7 +92,6 @@ var (
 			},
 			"twice nested array": ValueSpec{
 				Type:    "array",
-				Source:  "Data",
 				EhrPath: "/arrayLevel1",
 				IncludeItems: IncludeItemsStruct{
 					Start: 1,
@@ -106,7 +101,6 @@ var (
 				Properties: []ValueSpec{
 					ValueSpec{
 						Type:    "array",
-						Source:  "Data",
 						EhrPath: "/arrayLevel2",
 						IncludeItems: IncludeItemsStruct{
 							Start: 0,
@@ -137,25 +131,35 @@ var (
 		Type:             "testReport",
 		FileCategory:     "openehr::111|test|",
 		GroupByPatientID: true,
-		Columns:          []string{"patient ID", "createdAt", "valueFromFile1", "valueFromFile2"},
+		Columns:          []string{"patient ID", "createdAt", "updatedAt", "valueFromFile1", "valueFromFile2", "valueInBothFiles1", "valueInBothFiles2"},
 		ColumnsSpecs: map[string]ValueSpec{
 			"patient ID": ValueSpec{
-				Type:   "value",
-				Source: "PatientID",
+				Type:      "fileMeta",
+				MetaField: "patientID",
 			},
 			"createdAt": ValueSpec{
-				Type:   "value",
-				Source: "CreatedAt",
+				Type:      "fileMeta",
+				MetaField: "createdAt",
+			},
+			"updatedAt": ValueSpec{
+				Type:      "fileMeta",
+				MetaField: "updatedAt",
 			},
 			"valueFromFile1": ValueSpec{
 				Type:    "value",
-				Source:  "Data",
 				EhrPath: "/valueFromFile1",
 			},
 			"valueFromFile2": ValueSpec{
 				Type:    "value",
-				Source:  "Data",
 				EhrPath: "/valueFromFile2",
+			},
+			"valueInBothFiles1": ValueSpec{
+				Type:    "value",
+				EhrPath: "/valueInBothFiles1",
+			},
+			"valueInBothFiles2": ValueSpec{
+				Type:    "value",
+				EhrPath: "/valueInBothFiles2",
 			},
 		},
 	}
@@ -208,7 +212,7 @@ var (
 		PatientID: "patient_1",
 		CreatedAt: time1,
 		UpdatedAt: time2,
-		Data:      "{\"/valueFromFile1\": \"1\"}",
+		Data:      "{\"/valueFromFile1\": \"1\", \"/valueInBothFiles1\": \"1\", \"/valueInBothFiles2\": \"1\"}",
 	}
 	file2_groupByPatientID = reports.File{
 		FileID:    "file_id_2",
@@ -216,9 +220,9 @@ var (
 		PatientID: "patient_1",
 		CreatedAt: time2,
 		UpdatedAt: time2,
-		Data:      "{\"/valueFromFile2\": \"2\"}",
+		Data:      "{\"/valueFromFile2\": \"2\", \"/valueInBothFiles1\": \"2\", \"/valueInBothFiles2\": \"1\"}",
 	}
-	groupedByPatientIDReportRow = []string{"patient_1", "2018-07-27T13:55:59.123Z, 2018-07-29T13:55:59.123Z", "1", "2"}
+	groupedByPatientIDReportRow = []string{"patient_1", "2018-07-27T13:55:59.123Z, 2018-07-29T13:55:59.123Z", "2018-07-29T13:55:59.123Z", "1", "2", "1, 2", "1"}
 )
 
 func TestGenerate(t *testing.T) {
