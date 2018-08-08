@@ -37,6 +37,7 @@ paths:
         - in: path
           name: bucket
           type: string
+          format: uuid
           required: true
 
       responses:
@@ -71,6 +72,7 @@ paths:
         - in: path
           name: bucket
           type: string
+          format: uuid
           required: true
 
         - in: formData
@@ -132,6 +134,7 @@ paths:
           name: bucket
           description: Name of the bucket
           type: string
+          format: uuid
           required: true
 
         - in: path
@@ -196,6 +199,7 @@ paths:
         - in: path
           name: bucket
           type: string
+          format: uuid
           required: true
 
         - in: path
@@ -259,6 +263,7 @@ paths:
           name: bucket
           description: Name of the bucket
           type: string
+          format: uuid
           required: true
 
         - in: path
@@ -295,6 +300,7 @@ paths:
           name: bucket
           description: Name of the bucket
           type: string
+          format: uuid
           required: true
 
         - in: path
@@ -337,6 +343,7 @@ paths:
           name: bucket
           description: Name of the bucket
           type: string
+          format: uuid
           required: true
 
         - in: path
@@ -433,15 +440,19 @@ paths:
         - in: path
           name: bucket
           type: string
+          format: uuid
           required: true
+
         - in: query
           name: createdAtSince
           type: string
           description: ISO 8601 date-time string
+
         - in: query
           name: createdAtUntil
           type: string
           description: ISO 8601 date-time string
+
       responses:
         200:
           description: List of files
@@ -477,20 +488,25 @@ paths:
           name: bucket
           description: Name of the bucket
           type: string
+          format: uuid
           required: true
+
         - in: path
           name: fileID
           description: File name
           type: string
           required: true
+
         - in: query
           name: createdAtSince
           type: string
           description: ISO 8601 date-time string
+
         - in: query
           name: createdAtUntil
           type: string
           description: ISO 8601 date-time string
+
       responses:
         200:
           description: List of versions
@@ -525,6 +541,7 @@ paths:
           name: bucket
           description: Name of the bucket
           type: string
+          format: uuid
           required: true
 
         - in: path
@@ -590,6 +607,7 @@ paths:
         - in: path
           name: bucket
           type: string
+          format: uuid
           required: true
 
         - in: path
@@ -673,6 +691,7 @@ paths:
           name: bucket
           description: Name of the bucket
           type: string
+          format: uuid
           required: true
 
         - in: path

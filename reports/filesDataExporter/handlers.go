@@ -29,7 +29,7 @@ func (h *handlers) ExportFile(ctx context.Context, bucketID, fileID, version str
 	var buf bytes.Buffer
 
 	getParams := operations.NewFileGetVersionParams().
-		WithBucket(bucketID).
+		WithBucket(strfmt.UUID(bucketID)).
 		WithFileID(fileID).
 		WithVersion(version).
 		WithContext(ctx)
@@ -154,7 +154,7 @@ func (h *handlers) listBuckets(ctx context.Context, c *operations.Client, auth r
 
 func (h *handlers) listFilesAsc(ctx context.Context, c *operations.Client, auth runtime.ClientAuthInfoWriter, bucketID string, createdAtSince strfmt.DateTime) ([]*models.FileDescriptor, error) {
 	params := operations.NewSyncFileListParams().
-		WithBucket(bucketID).
+		WithBucket(strfmt.UUID(bucketID)).
 		WithCreatedAtSince(swag.String(createdAtSince.String())).
 		WithContext(ctx)
 	resp, err := c.SyncFileList(params, auth)

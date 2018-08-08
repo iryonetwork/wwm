@@ -37,7 +37,7 @@ type handlers struct {
 
 func (h *handlers) FileList() operations.FileListHandler {
 	return operations.FileListHandlerFunc(func(params operations.FileListParams, principal *string) middleware.Responder {
-		list, err := h.service.FileList(params.HTTPRequest.Context(), params.Bucket)
+		list, err := h.service.FileList(params.HTTPRequest.Context(), params.Bucket.String())
 
 		if err != nil {
 			return operations.NewFileListInternalServerError().WithPayload(&models.Error{
@@ -55,7 +55,7 @@ func (h *handlers) FileList() operations.FileListHandler {
 
 func (h *handlers) FileGet() operations.FileGetHandler {
 	return operations.FileGetHandlerFunc(func(params operations.FileGetParams, principal *string) middleware.Responder {
-		r, fd, err := h.service.FileGet(params.HTTPRequest.Context(), params.Bucket, params.FileID)
+		r, fd, err := h.service.FileGet(params.HTTPRequest.Context(), params.Bucket.String(), params.FileID)
 
 		if err != nil {
 			switch err {
@@ -84,7 +84,7 @@ func (h *handlers) FileGet() operations.FileGetHandler {
 
 func (h *handlers) FileGetVersion() operations.FileGetVersionHandler {
 	return operations.FileGetVersionHandlerFunc(func(params operations.FileGetVersionParams, principal *string) middleware.Responder {
-		r, fd, err := h.service.FileGetVersion(params.HTTPRequest.Context(), params.Bucket, params.FileID, params.Version)
+		r, fd, err := h.service.FileGetVersion(params.HTTPRequest.Context(), params.Bucket.String(), params.FileID, params.Version)
 
 		if err != nil {
 			switch err {
@@ -113,7 +113,7 @@ func (h *handlers) FileGetVersion() operations.FileGetVersionHandler {
 
 func (h *handlers) FileListVersions() operations.FileListVersionsHandler {
 	return operations.FileListVersionsHandlerFunc(func(params operations.FileListVersionsParams, principal *string) middleware.Responder {
-		list, err := h.service.FileListVersions(params.HTTPRequest.Context(), params.Bucket, params.FileID, nil, nil)
+		list, err := h.service.FileListVersions(params.HTTPRequest.Context(), params.Bucket.String(), params.FileID, nil, nil)
 
 		if err != nil {
 			return operations.NewFileListVersionsInternalServerError().WithPayload(&models.Error{
@@ -137,7 +137,7 @@ func (h *handlers) FileNew() operations.FileNewHandler {
 		}
 		defer params.File.Close()
 
-		fd, err := h.service.FileNew(params.HTTPRequest.Context(), params.Bucket, params.File, params.ContentType, archetype, params.Labels)
+		fd, err := h.service.FileNew(params.HTTPRequest.Context(), params.Bucket.String(), params.File, params.ContentType, archetype, params.Labels)
 
 		if err != nil {
 			return operations.NewFileNewInternalServerError().WithPayload(&models.Error{
@@ -158,7 +158,7 @@ func (h *handlers) FileUpdate() operations.FileUpdateHandler {
 		}
 		defer params.File.Close()
 
-		fd, err := h.service.FileUpdate(params.HTTPRequest.Context(), params.Bucket, params.FileID, params.File, params.ContentType, archetype, params.Labels)
+		fd, err := h.service.FileUpdate(params.HTTPRequest.Context(), params.Bucket.String(), params.FileID, params.File, params.ContentType, archetype, params.Labels)
 
 		if err != nil {
 			switch err {
@@ -178,7 +178,7 @@ func (h *handlers) FileUpdate() operations.FileUpdateHandler {
 
 func (h *handlers) FileDelete() operations.FileDeleteHandler {
 	return operations.FileDeleteHandlerFunc(func(params operations.FileDeleteParams, principal *string) middleware.Responder {
-		err := h.service.FileDelete(params.HTTPRequest.Context(), params.Bucket, params.FileID)
+		err := h.service.FileDelete(params.HTTPRequest.Context(), params.Bucket.String(), params.FileID)
 
 		if err != nil {
 			switch err {
@@ -240,7 +240,7 @@ func (h *handlers) SyncFileList() operations.SyncFileListHandler {
 			createdAtUntil = &d
 		}
 
-		list, err := h.service.SyncFileList(params.HTTPRequest.Context(), params.Bucket, createdAtSince, createdAtUntil)
+		list, err := h.service.SyncFileList(params.HTTPRequest.Context(), params.Bucket.String(), createdAtSince, createdAtUntil)
 
 		if err != nil {
 			return operations.NewSyncFileListInternalServerError().WithPayload(&models.Error{
@@ -282,7 +282,7 @@ func (h *handlers) SyncFileListVersions() operations.SyncFileListVersionsHandler
 			createdAtUntil = &d
 		}
 
-		list, err := h.service.FileListVersions(params.HTTPRequest.Context(), params.Bucket, params.FileID, createdAtSince, createdAtUntil)
+		list, err := h.service.FileListVersions(params.HTTPRequest.Context(), params.Bucket.String(), params.FileID, createdAtSince, createdAtUntil)
 
 		if err != nil {
 			return operations.NewSyncFileListVersionsInternalServerError().WithPayload(&models.Error{
@@ -300,7 +300,7 @@ func (h *handlers) SyncFileListVersions() operations.SyncFileListVersionsHandler
 
 func (h *handlers) SyncFileMetadata() operations.SyncFileMetadataHandler {
 	return operations.SyncFileMetadataHandlerFunc(func(params operations.SyncFileMetadataParams, principal *string) middleware.Responder {
-		_, fd, err := h.service.FileGetVersion(params.HTTPRequest.Context(), params.Bucket, params.FileID, params.Version)
+		_, fd, err := h.service.FileGetVersion(params.HTTPRequest.Context(), params.Bucket.String(), params.FileID, params.Version)
 
 		if err != nil {
 			switch err {
@@ -331,7 +331,7 @@ func (h *handlers) SyncFile() operations.SyncFileHandler {
 
 		fd, err := h.service.SyncFile(
 			params.HTTPRequest.Context(),
-			params.Bucket,
+			params.Bucket.String(),
 			params.FileID,
 			params.Version,
 			params.File,
@@ -359,7 +359,7 @@ func (h *handlers) SyncFile() operations.SyncFileHandler {
 
 func (h *handlers) SyncFileDelete() operations.SyncFileDeleteHandler {
 	return operations.SyncFileDeleteHandlerFunc(func(params operations.SyncFileDeleteParams, principal *string) middleware.Responder {
-		err := h.service.SyncFileDelete(params.HTTPRequest.Context(), params.Bucket, params.FileID, params.Version, params.Created)
+		err := h.service.SyncFileDelete(params.HTTPRequest.Context(), params.Bucket.String(), params.FileID, params.Version, params.Created)
 		if err != nil {
 			switch err {
 			case ErrNotFound:

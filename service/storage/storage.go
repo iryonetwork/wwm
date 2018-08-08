@@ -70,6 +70,9 @@ var ErrNotFound = s3.ErrNotFound
 // Item already exists
 var ErrAlreadyExists = s3.ErrAlreadyExists
 
+// forbidden buckets that should not be returned
+var forbiddenBuckets = [...]string{"encounters", "patients"}
+
 type service struct {
 	s3          s3.Storage
 	keyProvider s3.KeyProvider
@@ -88,7 +91,17 @@ func (s *service) Checksum(r io.Reader) (string, error) {
 
 func (s *service) BucketList(ctx context.Context) ([]*models.BucketDescriptor, error) {
 	// get the list and return
-	return s.s3.ListBuckets(ctx)
+	b, err := s.s3.ListBuckets(ctx)
+
+	// skip forbidden buckets
+	var buckets []*models.BucketDescriptor
+	for _, bucket := range b {
+		if !utils.SliceContains(forbiddenBuckets[:], bucket.Name) {
+			buckets = append(buckets, bucket)
+		}
+	}
+
+	return buckets, err
 }
 
 func (s *service) FileList(ctx context.Context, bucketID string) ([]*models.FileDescriptor, error) {

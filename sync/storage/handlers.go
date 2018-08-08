@@ -48,7 +48,7 @@ func (h *handlers) SyncFile(ctx context.Context, bucketID, fileID, version strin
 	var buf bytes.Buffer
 
 	getParams := operations.NewFileGetVersionParams().
-		WithBucket(bucketID).
+		WithBucket(strfmt.UUID(bucketID)).
 		WithFileID(fileID).
 		WithVersion(version).
 		WithContext(ctx)
@@ -87,7 +87,7 @@ func (h *handlers) SyncFile(ctx context.Context, bucketID, fileID, version strin
 
 	// Sync file
 	syncParams := operations.NewSyncFileParams().
-		WithBucket(bucketID).
+		WithBucket(strfmt.UUID(bucketID)).
 		WithFileID(fileID).
 		WithVersion(version).
 		WithContext(ctx).
@@ -140,7 +140,7 @@ func (h *handlers) SyncFile(ctx context.Context, bucketID, fileID, version strin
 // SyncFileDelete synchronizes file deletion to destination operations.
 func (h *handlers) SyncFileDelete(ctx context.Context, bucketID, fileID, version string, timestamp strfmt.DateTime) (SyncResult, error) {
 	params := operations.NewSyncFileDeleteParams().
-		WithBucket(bucketID).
+		WithBucket(strfmt.UUID(bucketID)).
 		WithFileID(fileID).
 		WithVersion(version).
 		WithCreated(timestamp).
@@ -209,7 +209,7 @@ func NewHandlers(source *operations.Client, sourceAuth runtime.ClientAuthInfoWri
 func (h *handlers) needsSync(ctx context.Context, bucketID, fileID, version, sourceChecksum string) (bool, error) {
 	// Verify in case file already exists in destination storage
 	params := operations.NewSyncFileMetadataParams().
-		WithBucket(bucketID).
+		WithBucket(strfmt.UUID(bucketID)).
 		WithFileID(fileID).
 		WithVersion(version).
 		WithContext(ctx)
@@ -256,7 +256,7 @@ func (h *handlers) listBuckets(ctx context.Context, c *operations.Client, auth r
 
 func (h *handlers) listFilesAsc(ctx context.Context, c *operations.Client, auth runtime.ClientAuthInfoWriter, bucketID string, createdAtSince strfmt.DateTime) ([]*models.FileDescriptor, error) {
 	params := operations.NewSyncFileListParams().
-		WithBucket(bucketID).
+		WithBucket(strfmt.UUID(bucketID)).
 		WithCreatedAtSince(swag.String(createdAtSince.String())).
 		WithContext(ctx)
 	resp, err := c.SyncFileList(params, auth)
@@ -279,7 +279,7 @@ func (h *handlers) listFilesAsc(ctx context.Context, c *operations.Client, auth 
 
 func (h *handlers) listFileVersionsAsc(ctx context.Context, c *operations.Client, auth runtime.ClientAuthInfoWriter, bucketID, fileID string, createdAtSince strfmt.DateTime) ([]*models.FileDescriptor, error) {
 	params := operations.NewSyncFileListVersionsParams().
-		WithBucket(bucketID).
+		WithBucket(strfmt.UUID(bucketID)).
 		WithFileID(fileID).
 		WithCreatedAtSince(swag.String(createdAtSince.String())).
 		WithContext(ctx)
