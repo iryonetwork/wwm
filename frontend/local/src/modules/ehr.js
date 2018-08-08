@@ -209,6 +209,11 @@ const specToObject = (specs, data, doc, ehrPrefix) => {
             case "integer":
             case "boolean":
             case "dateTime":
+                // temporary workaround for wrong 'education' data
+                if (value === ">education::secondary|Secondary education|<") {
+                    newValue = undefined
+                    break
+                }
                 newValue = value
                 break
 
