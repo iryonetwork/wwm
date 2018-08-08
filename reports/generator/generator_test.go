@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/go-openapi/strfmt"
@@ -24,7 +25,7 @@ var (
 	testSpec1 = ReportSpec{
 		Type:         "testReport",
 		FileCategory: "openehr::111|test|",
-		Columns:      []string{"file ID", "version", "patient ID", "createdAt", "updatedAt", "quantity", "twice nested array first item", "twice nested array"},
+		Columns:      []string{"file ID", "version", "patient ID", "createdAt", "updatedAt", "quantity", "code", "twice nested array first item", "twice nested array"},
 		ColumnsSpecs: map[string]ValueSpec{
 			"file ID": ValueSpec{
 				Type:   "value",
@@ -51,6 +52,11 @@ var (
 				Source:  "Data",
 				Unit:    "unit",
 				EhrPath: "/quantityValue",
+			},
+			"code": ValueSpec{
+				Type:    "code",
+				Source:  "Data",
+				EhrPath: "/codeValue",
 			},
 			"twice nested array first item": ValueSpec{
 				Type:    "array",
@@ -165,7 +171,7 @@ var (
 		UpdatedAt: time2,
 		Data:      "{}",
 	}
-	fileNoDataReportRow = []string{"file_id_1", "version_1", "patient_1", "2018-07-27T13:55:59.123Z", "2018-07-29T13:55:59.123Z", "", "", ""}
+	fileNoDataReportRow = []string{"file_id_1", "version_1", "patient_1", "2018-07-27T13:55:59.123Z", "2018-07-29T13:55:59.123Z", "", "", "", ""}
 
 	fileAllData = reports.File{
 		FileID:    "file_id_1",
@@ -173,9 +179,9 @@ var (
 		PatientID: "patient_1",
 		CreatedAt: time1,
 		UpdatedAt: time2,
-		Data:      "{\"/quantityValue\": \"value,unit\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemID\": \"ID0:0\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemName\": \"Name0:0\", \"/arrayLevel1:0/arrayLevel2:1/nestedArrayItemID\": \"ID0:1\", \"/arrayLevel1:0/arrayLevel2:1/nestedArrayItemName\": \"Name0:1\", \"/arrayLevel1:0/additionalData\": \"Data0\", \"/arrayLevel1:1/arrayLevel2:0/nestedArrayItemID\": \"ID1:0\", \"/arrayLevel1:1/arrayLevel2:0/nestedArrayItemName\": \"Name1:0\", \"/arrayLevel1:1/arrayLevel2:1/nestedArrayItemID\": \"ID1:1\", \"/arrayLevel1:1/arrayLevel2:1/nestedArrayItemName\": \"Name1:1\", \"/arrayLevel1:1/additionalData\": \"Data1\", \"/arrayLevel1:2/arrayLevel2:0/nestedArrayItemID\": \"ID2:0\", \"/arrayLevel1:2/arrayLevel2:0/nestedArrayItemName\": \"Name2:0\", \"/arrayLevel1:2/arrayLevel2:1/nestedArrayItemID\": \"ID2:1\", \"/arrayLevel1:2/arrayLevel2:1/nestedArrayItemName\": \"Name2:1\", \"/arrayLevel1:2/additionalData\": \"Data2\"}",
+		Data:      "{\"/quantityValue\": \"value,unit\", \"/codeValue\": \"category::code|codeTitle|\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemID\": \"ID0:0\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemName\": \"Name0:0\", \"/arrayLevel1:0/arrayLevel2:1/nestedArrayItemID\": \"ID0:1\", \"/arrayLevel1:0/arrayLevel2:1/nestedArrayItemName\": \"Name0:1\", \"/arrayLevel1:0/additionalData\": \"Data0\", \"/arrayLevel1:1/arrayLevel2:0/nestedArrayItemID\": \"ID1:0\", \"/arrayLevel1:1/arrayLevel2:0/nestedArrayItemName\": \"Name1:0\", \"/arrayLevel1:1/arrayLevel2:1/nestedArrayItemID\": \"ID1:1\", \"/arrayLevel1:1/arrayLevel2:1/nestedArrayItemName\": \"Name1:1\", \"/arrayLevel1:1/additionalData\": \"Data1\", \"/arrayLevel1:2/arrayLevel2:0/nestedArrayItemID\": \"ID2:0\", \"/arrayLevel1:2/arrayLevel2:0/nestedArrayItemName\": \"Name2:0\", \"/arrayLevel1:2/arrayLevel2:1/nestedArrayItemID\": \"ID2:1\", \"/arrayLevel1:2/arrayLevel2:1/nestedArrayItemName\": \"Name2:1\", \"/arrayLevel1:2/additionalData\": \"Data2\"}",
 	}
-	fileAllDataReportRow = []string{"file_id_1", "version_1", "patient_1", "2018-07-27T13:55:59.123Z", "2018-07-29T13:55:59.123Z", "value unit", "ID0:0/Name0:0, ID0:1/Name0:1 - Data0", "ID1:0/Name1:0, ID1:1/Name1:1 - Data1, ID2:0/Name2:0, ID2:1/Name2:1 - Data2"}
+	fileAllDataReportRow = []string{"file_id_1", "version_1", "patient_1", "2018-07-27T13:55:59.123Z", "2018-07-29T13:55:59.123Z", "value unit", "codeTitle", "ID0:0/Name0:0, ID0:1/Name0:1 - Data0", "ID1:0/Name1:0, ID1:1/Name1:1 - Data1, ID2:0/Name2:0, ID2:1/Name2:1 - Data2"}
 
 	fileMissingData = reports.File{
 		FileID:    "file_id_1",
@@ -183,9 +189,9 @@ var (
 		PatientID: "patient_1",
 		CreatedAt: time1,
 		UpdatedAt: time2,
-		Data:      "{\"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemID\": \"ID0:0\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemName\": \"Name0:0\", \"/arrayLevel1:0/arrayLevel2:1/nestedArrayItemID\": \"ID0:1\", \"/arrayLevel1:0/additionalData\": \"Data0\"}",
+		Data:      "{\"/codeValue\": \"invalidCodeValue\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemID\": \"ID0:0\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemName\": \"Name0:0\", \"/arrayLevel1:0/arrayLevel2:1/nestedArrayItemID\": \"ID0:1\", \"/arrayLevel1:0/additionalData\": \"Data0\"}",
 	}
-	fileMissingDataReportRow = []string{"file_id_1", "version_1", "patient_1", "2018-07-27T13:55:59.123Z", "2018-07-29T13:55:59.123Z", "", "ID0:0/Name0:0, ID0:1/ - Data0", ""}
+	fileMissingDataReportRow = []string{"file_id_1", "version_1", "patient_1", "2018-07-27T13:55:59.123Z", "2018-07-29T13:55:59.123Z", "", "invalidCodeValue", "ID0:0/Name0:0, ID0:1/ - Data0", ""}
 
 	invalidJSONDataFile = reports.File{
 		FileID:    "file_id_1",
@@ -339,9 +345,15 @@ func getTestService(t *testing.T, reportSpec ReportSpec) (*generator, *storageMo
 	storage := storageMock.NewMockStorage(mockCtrl)
 	writer := generatorMock.NewMockReportWriter(mockCtrl)
 
+	codeRegexp, err := regexp.Compile(codeRe)
+	if err != nil {
+		t.Fatalf("failed to compile code regex")
+	}
+
 	g := &generator{
-		storage: storage,
-		logger:  zerolog.New(os.Stdout),
+		storage:    storage,
+		logger:     zerolog.New(os.Stdout),
+		codeRegexp: codeRegexp,
 	}
 
 	cleanup := func() {

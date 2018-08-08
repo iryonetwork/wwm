@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -17,13 +18,16 @@ import (
 
 type (
 	generator struct {
-		storage reports.Storage
-		writer  ReportWriter
-		logger  zerolog.Logger
+		storage    reports.Storage
+		writer     ReportWriter
+		logger     zerolog.Logger
+		codeRegexp *regexp.Regexp
 	}
 )
 
 const dataKeyCategory = "/category"
+
+const codeRe = "^(.+)::(.+)\\|(.+)\\|$"
 
 const sourceData = "Data"
 const sourceFileID = "FileID"
@@ -200,6 +204,8 @@ func (g *generator) generateValueFromData(spec ValueSpec, data *map[string]inter
 			return true, fmt.Sprintf("%s %s", v[0], spec.Unit)
 		}
 		return found, value
+	case TYPE_CODE:
+		return g.getDataCodeTitle(data, fmt.Sprintf("%s%s", prefix, spec.EhrPath))
 	default:
 		return g.getData(data, fmt.Sprintf("%s%s", prefix, spec.EhrPath))
 	}
@@ -234,11 +240,36 @@ func (g *generator) getData(data *map[string]interface{}, fullEhrPath string) (f
 	return false, ""
 }
 
+func (g *generator) getDataCodeTitle(data *map[string]interface{}, fullEhrPath string) (found bool, value string) {
+	if val, ok := (*data)[fullEhrPath]; ok {
+		switch val.(type) {
+		case string:
+			s := val.(string)
+			if !g.codeRegexp.MatchString(s) {
+				// return value even if doesn't match code regex to support legacy data with bugs
+				return true, val.(string)
+			}
+			v := strings.Split(s, "|")
+			return true, v[1]
+		default:
+			return false, ""
+		}
+	}
+
+	return false, ""
+}
+
 // New initializes a new instance of generator
 func New(storage reports.Storage, logger zerolog.Logger) (*generator, error) {
+	codeRegexp, err := regexp.Compile(codeRe)
+	if err != nil {
+		return nil, err
+	}
+
 	s := &generator{
-		storage: storage,
-		logger:  logger.With().Str("component", "reports/generator").Logger(),
+		storage:    storage,
+		logger:     logger.With().Str("component", "reports/generator").Logger(),
+		codeRegexp: codeRegexp,
 	}
 
 	return s, nil

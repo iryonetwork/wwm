@@ -92,37 +92,37 @@
             "ehrPath": "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0010]"
         },
         "Country of birth": {
-            "type": "value",
+            "type": "code",
             "description": "Country of birth",
             "source": "Data",
             "ehrPath": "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0012]"
         },
         "Nationality": {
-            "type": "value",
+            "type": "code",
             "description": "Nationality",
             "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0048]"
         },
         "Gender": {
-            "type": "value",
+            "type": "code",
             "description": "Gender",
             "source": "Data",
             "ehrPath": "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0017]"
         },
         "Martial status": {
-            "type": "value",
+            "type": "code",
             "description": "Martial status",
             "source": "Data",
             "ehrPath": "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0033]"
         },
         "Gender": {
-            "type": "value",
+            "type": "code",
             "description": "Gender",
             "source": "Data",
             "ehrPath": "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0017]"
         },
         "Education": {
-            "type": "value",
+            "type": "code",
             "description": "Education",
             "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0050]"
@@ -134,7 +134,7 @@
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0058]"
         },
         "Country of origin": {
-            "type": "value",
+            "type": "code",
             "description": "Country of origin",
             "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0049]"
@@ -158,7 +158,7 @@
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0060]"
         },
         "Country": {
-            "type": "value",
+            "type": "code",
             "description": "Country",
             "source": "Data",
             "ehrPath":
@@ -407,7 +407,7 @@
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0064]/items[at0072]"
         },
         "Baby's delivery type": {
-            "type": "value",
+            "type": "code",
             "description": "Baby's delivery type",
             "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0074]/items[at0075]"
@@ -452,13 +452,13 @@
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0087]/items[at0082]"
         },
         "What does baby eat and drink?": {
-            "type": "values",
+            "type": "code",
             "description": "Baby's diet",
             "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0083]"
         },
         "Frequency of bowel movements": {
-            "type": "values",
+            "type": "code",
             "description": "Frequency of bowel movements",
             "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0085]"
@@ -500,7 +500,7 @@
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0095]"
         },
         "How does child communicate?": {
-            "type": "value",
+            "type": "code",
             "description": "How does child communicate?",
             "source": "Data",
             "ehrPath": "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0096]"
