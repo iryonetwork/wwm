@@ -171,9 +171,9 @@ export default dispatch => {
         },
         // Education (@TODO code)
         {
-            type: "fixedValue",
+            type: "value",
             ehrPath: "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0062]/items[at0050]",
-            value: ">education::secondary|Secondary education|<"
+            formPath: "education"
         },
         // Occupation
         {
@@ -301,13 +301,13 @@ export default dispatch => {
         {
             type: "boolean",
             ehrPath: "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0064]/items[at0069]",
-            formPath: "tuberculosisAdditionalInvestigationDetails"
+            formPath: "tuberculosisAdditionalInvestigation"
         },
         // Investigation details
         {
             type: "value",
             ehrPath: "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0064]/items[at0070]",
-            formPath: "tuberculosisAdditionalInvestigation"
+            formPath: "tuberculosisAdditionalInvestigationDetails"
         },
         // Any reaction to vaccines (BOOLEAN)
         {
@@ -348,7 +348,7 @@ export default dispatch => {
             type: "quantity",
             ehrPath: "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0074]/items[at0078]",
             formPath: "weightAtBirth",
-            unit: "gm"
+            unit: "g"
         },
         // Height at birth
         {
@@ -439,7 +439,8 @@ export default dispatch => {
         },
         // How does child communicate
         {
-            type: "value",
+            type: "code",
+            codes: communicationTypes,
             ehrPath: "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0073]/items[at0080]/items[at0096]",
             formPath: "babyCommunicates"
         }

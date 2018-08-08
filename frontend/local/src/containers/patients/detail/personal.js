@@ -96,7 +96,7 @@ class ViewPersonal extends React.Component {
                         </div>
 
                         <div className="row">
-                            <Column width="4" label="Education" value={patient.education} key="education" codes={[]} /> {/* @TODO codes */}
+                            <Column width="4" label="Education" value={patient.education} key="education" /> {/* @TODO codes */}
                             <Column width="4" label="Occupation" value={patient.profession} key="profession" />
                         </div>
 
