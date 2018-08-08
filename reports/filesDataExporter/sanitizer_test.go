@@ -178,6 +178,62 @@ func TestSanitize(t *testing.T) {
 			noErrors,
 		},
 		{
+			"Succesfully applied substring transformation",
+			[]FieldToSanitize{
+				{
+					Type:           "value",
+					EhrPath:        "field1",
+					Transformation: transformationSubstring,
+					TransformationParameters: map[string]interface{}{
+						"start": -1.0,
+						"end":   -1.0,
+					},
+				},
+				{
+					Type:           "value",
+					EhrPath:        "field3",
+					Transformation: transformationSubstring,
+					TransformationParameters: map[string]interface{}{
+						"start": 1.0,
+						"end":   -1.0,
+					},
+				},
+				{
+					Type:           "value",
+					EhrPath:        "field4",
+					Transformation: transformationSubstring,
+					TransformationParameters: map[string]interface{}{
+						"start": 1.0,
+						"end":   2.0,
+					},
+				},
+				{
+					Type:           "value",
+					EhrPath:        "field5",
+					Transformation: transformationSubstring,
+					TransformationParameters: map[string]interface{}{
+						"start": -1.0,
+						"end":   2.0,
+					},
+				},
+				{
+					Type:           "value",
+					EhrPath:        "field_that_is_not_in_data",
+					Transformation: transformationSubstring,
+				},
+			},
+			"{\"field1\": \"1234\", \"field2\": \"1234\", \"field3\": \"1234\", \"field4\": \"1234\", \"field5\": \"1234\"}",
+			nil,
+			map[string]string{
+				"field1": "1234",
+				"field2": "1234",
+				"field3": "234",
+				"field4": "2",
+				"field5": "12",
+			},
+			noErrors,
+		},
+		{
 			"Error, invalid input",
 			[]FieldToSanitize{
 				{

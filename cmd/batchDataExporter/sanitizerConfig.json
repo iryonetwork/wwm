@@ -2,22 +2,19 @@
     {
         "description": "first name",
         "type": "value",
-        "ehrPath":
-            "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/identities[openEHR-DEMOGRAPHIC-PARTY_IDENTITY.person_name.v1]/details[at0001]/items[at0002]",
+        "ehrPath": "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/identities[openEHR-DEMOGRAPHIC-PARTY_IDENTITY.person_name.v1]/details[at0001]/items[at0002]",
         "transformation": "encrypt"
     },
     {
         "description": "last name",
         "type": "value",
-        "ehrPath":
-            "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/identities[openEHR-DEMOGRAPHIC-PARTY_IDENTITY.person_name.v1]/details[at0001]/items[at0003]",
+        "ehrPath": "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/identities[openEHR-DEMOGRAPHIC-PARTY_IDENTITY.person_name.v1]/details[at0001]/items[at0003]",
         "transformation": "encrypt"
     },
     {
         "description": "diagnoses",
         "type": "array",
-        "ehrPath":
-            "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-EVALUATION.problem_diagnosis.v1]",
+        "ehrPath": "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-EVALUATION.problem_diagnosis.v1]",
         "items": [
             {
                 "description": "comment",
@@ -30,14 +27,12 @@
     {
         "description": "medications",
         "type": "array",
-        "ehrPath":
-            "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-INSTRUCTION.medication_order.v2]",
+        "ehrPath": "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-INSTRUCTION.medication_order.v2]",
         "items": [
             {
                 "description": "comment",
                 "type": "value",
-                "ehrPath":
-                    "/activities[at0001]/description[at0002]/items[at0044]",
+                "ehrPath": "/activities[at0001]/description[at0002]/items[at0044]",
                 "transformation": "remove"
             }
         ]
@@ -45,8 +40,7 @@
     {
         "description": "main complaint comment",
         "type": "value",
-        "ehrPath":
-            "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-EVALUATION.complaint.v1]/items[at0001]/item[at0003]",
+        "ehrPath": "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-EVALUATION.complaint.v1]/items[at0001]/item[at0003]",
         "transformation": "remove"
     },
     {
@@ -59,8 +53,7 @@
     {
         "description": "type of address (phone)",
         "type": "fixedValue",
-        "ehrPath":
-            "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.electronic_communication.v1.0.0]:1/name[at0014]",
+        "ehrPath": "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.electronic_communication.v1.0.0]:1/name[at0014]",
         "transformation": "remove"
     },
     {
@@ -73,8 +66,7 @@
     {
         "description": "type of address (email)",
         "type": "fixedValue",
-        "ehrPath":
-            "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.electronic_communication.v1.0.0]:2/name[at0014]",
+        "ehrPath": "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.electronic_communication.v1.0.0]:2/name[at0014]",
         "transformation": "remove"
     },
     {
@@ -87,8 +79,7 @@
     {
         "description": "type of address (whatsapp)",
         "type": "fixedValue",
-        "ehrPath":
-            "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.electronic_communication.v1.0.0]:3/name[at0013]",
+        "ehrPath": "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/contacts[openEHR-DEMOGRAPHIC-ADDRESS.electronic_communication.v1.0.0]:3/name[at0013]",
         "transformation": "remove"
     },
     {
@@ -121,9 +112,8 @@
     {
         "description": "date of birth",
         "type": "value",
-        "ehrPath":
-            "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0010]",
-        "transformation": "extractSliceFromString",
+        "ehrPath": "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0010]",
+        "transformation": "substring",
         "transformationParameters": {
             "start": 0,
             "end": 4

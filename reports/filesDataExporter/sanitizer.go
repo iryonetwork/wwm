@@ -23,7 +23,7 @@ type sanitizer struct {
 
 const transformationRemove = "remove"
 const transformationEncrypt = "encrypt"
-const transformationExtractSlice = "extractSliceFromString"
+const transformationSubstring = "substring"
 
 const nonceLength = 12
 
@@ -85,8 +85,8 @@ func (s *sanitizer) sanitize(ctx context.Context, fieldsToSanitize []FieldToSani
 					}
 
 					(*data)[fmt.Sprintf("%s%s", prefix, field.EhrPath)] = transformed
-				case transformationExtractSlice:
-					transformed, err := s.extractSliceFromString(value, int(field.TransformationParameters["start"].(float64)), int(field.TransformationParameters["end"].(float64)))
+				case transformationSubstring:
+					transformed, err := s.substring(value, int(field.TransformationParameters["start"].(float64)), int(field.TransformationParameters["end"].(float64)))
 					if err != nil {
 						return fieldFound, err
 					}
@@ -128,13 +128,21 @@ func (s *sanitizer) encrypt(value interface{}) (string, error) {
 	return encrypted, nil
 }
 
-func (s *sanitizer) extractSliceFromString(value interface{}, start, end int) (string, error) {
+func (s *sanitizer) substring(value interface{}, start, end int) (string, error) {
 	stringValue, ok := value.(string)
 	if !ok {
 		return "", fmt.Errorf("Invalid type of data field meant for extractSlice transformation")
 	}
 
-	return string([]rune(stringValue)[start:end]), nil
+	if start != -1 && end != -1 {
+		return string([]rune(stringValue)[start:end]), nil
+	} else if start == -1 && end != -1 {
+		return string([]rune(stringValue)[:end]), nil
+	} else if start != -1 && end == -1 {
+		return string([]rune(stringValue)[start:]), nil
+	}
+
+	return stringValue, nil
 }
 
 func NewSanitizer(fieldsToSanitize []FieldToSanitize, encryptionKey []byte, logger zerolog.Logger) (Sanitizer, error) {
