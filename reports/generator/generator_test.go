@@ -24,7 +24,7 @@ var (
 	testSpec1 = ReportSpec{
 		Type:         "testReport",
 		FileCategory: "openehr::111|test|",
-		Columns:      []string{"file ID", "version", "patient ID", "createdAt", "updatedAt", "multiple values from data", "twice nested array first item", "twice nested array"},
+		Columns:      []string{"file ID", "version", "patient ID", "createdAt", "updatedAt", "quantity", "twice nested array first item", "twice nested array"},
 		ColumnsSpecs: map[string]ValueSpec{
 			"file ID": ValueSpec{
 				Type:   "value",
@@ -46,20 +46,11 @@ var (
 				Type:   "value",
 				Source: "UpdatedAt",
 			},
-			"multiple values from data": ValueSpec{
-				Type:   "multipleValues",
-				Source: "Data",
-				Format: "%s %s",
-				Properties: []ValueSpec{
-					ValueSpec{
-						Type:    "value",
-						EhrPath: "/userID",
-					},
-					ValueSpec{
-						Type:    "value",
-						EhrPath: "/userName",
-					},
-				},
+			"quantity": ValueSpec{
+				Type:    "quantity",
+				Source:  "Data",
+				Unit:    "unit",
+				EhrPath: "/quantityValue",
 			},
 			"twice nested array first item": ValueSpec{
 				Type:    "array",
@@ -140,7 +131,7 @@ var (
 		Type:             "testReport",
 		FileCategory:     "openehr::111|test|",
 		GroupByPatientID: true,
-		Columns:          []string{"patient ID", "createdAt", "multiple values from data"},
+		Columns:          []string{"patient ID", "createdAt", "valueFromFile1", "valueFromFile2"},
 		ColumnsSpecs: map[string]ValueSpec{
 			"patient ID": ValueSpec{
 				Type:   "value",
@@ -150,20 +141,15 @@ var (
 				Type:   "value",
 				Source: "CreatedAt",
 			},
-			"multiple values from data": ValueSpec{
-				Type:   "multipleValues",
-				Source: "Data",
-				Format: "%s %s",
-				Properties: []ValueSpec{
-					ValueSpec{
-						Type:    "value",
-						EhrPath: "/valueFromFile1",
-					},
-					ValueSpec{
-						Type:    "value",
-						EhrPath: "/valueFromFile2",
-					},
-				},
+			"valueFromFile1": ValueSpec{
+				Type:    "value",
+				Source:  "Data",
+				EhrPath: "/valueFromFile1",
+			},
+			"valueFromFile2": ValueSpec{
+				Type:    "value",
+				Source:  "Data",
+				EhrPath: "/valueFromFile2",
 			},
 		},
 	}
@@ -187,9 +173,9 @@ var (
 		PatientID: "patient_1",
 		CreatedAt: time1,
 		UpdatedAt: time2,
-		Data:      "{\"/userID\": \"ID\", \"/userName\": \"username\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemID\": \"ID0:0\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemName\": \"Name0:0\", \"/arrayLevel1:0/arrayLevel2:1/nestedArrayItemID\": \"ID0:1\", \"/arrayLevel1:0/arrayLevel2:1/nestedArrayItemName\": \"Name0:1\", \"/arrayLevel1:0/additionalData\": \"Data0\", \"/arrayLevel1:1/arrayLevel2:0/nestedArrayItemID\": \"ID1:0\", \"/arrayLevel1:1/arrayLevel2:0/nestedArrayItemName\": \"Name1:0\", \"/arrayLevel1:1/arrayLevel2:1/nestedArrayItemID\": \"ID1:1\", \"/arrayLevel1:1/arrayLevel2:1/nestedArrayItemName\": \"Name1:1\", \"/arrayLevel1:1/additionalData\": \"Data1\", \"/arrayLevel1:2/arrayLevel2:0/nestedArrayItemID\": \"ID2:0\", \"/arrayLevel1:2/arrayLevel2:0/nestedArrayItemName\": \"Name2:0\", \"/arrayLevel1:2/arrayLevel2:1/nestedArrayItemID\": \"ID2:1\", \"/arrayLevel1:2/arrayLevel2:1/nestedArrayItemName\": \"Name2:1\", \"/arrayLevel1:2/additionalData\": \"Data2\"}",
+		Data:      "{\"/quantityValue\": \"value,unit\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemID\": \"ID0:0\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemName\": \"Name0:0\", \"/arrayLevel1:0/arrayLevel2:1/nestedArrayItemID\": \"ID0:1\", \"/arrayLevel1:0/arrayLevel2:1/nestedArrayItemName\": \"Name0:1\", \"/arrayLevel1:0/additionalData\": \"Data0\", \"/arrayLevel1:1/arrayLevel2:0/nestedArrayItemID\": \"ID1:0\", \"/arrayLevel1:1/arrayLevel2:0/nestedArrayItemName\": \"Name1:0\", \"/arrayLevel1:1/arrayLevel2:1/nestedArrayItemID\": \"ID1:1\", \"/arrayLevel1:1/arrayLevel2:1/nestedArrayItemName\": \"Name1:1\", \"/arrayLevel1:1/additionalData\": \"Data1\", \"/arrayLevel1:2/arrayLevel2:0/nestedArrayItemID\": \"ID2:0\", \"/arrayLevel1:2/arrayLevel2:0/nestedArrayItemName\": \"Name2:0\", \"/arrayLevel1:2/arrayLevel2:1/nestedArrayItemID\": \"ID2:1\", \"/arrayLevel1:2/arrayLevel2:1/nestedArrayItemName\": \"Name2:1\", \"/arrayLevel1:2/additionalData\": \"Data2\"}",
 	}
-	fileAllDataReportRow = []string{"file_id_1", "version_1", "patient_1", "2018-07-27T13:55:59.123Z", "2018-07-29T13:55:59.123Z", "ID username", "ID0:0/Name0:0, ID0:1/Name0:1 - Data0", "ID1:0/Name1:0, ID1:1/Name1:1 - Data1, ID2:0/Name2:0, ID2:1/Name2:1 - Data2"}
+	fileAllDataReportRow = []string{"file_id_1", "version_1", "patient_1", "2018-07-27T13:55:59.123Z", "2018-07-29T13:55:59.123Z", "value unit", "ID0:0/Name0:0, ID0:1/Name0:1 - Data0", "ID1:0/Name1:0, ID1:1/Name1:1 - Data1, ID2:0/Name2:0, ID2:1/Name2:1 - Data2"}
 
 	fileMissingData = reports.File{
 		FileID:    "file_id_1",
@@ -197,9 +183,9 @@ var (
 		PatientID: "patient_1",
 		CreatedAt: time1,
 		UpdatedAt: time2,
-		Data:      "{\"/userID\": \"ID\",  \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemID\": \"ID0:0\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemName\": \"Name0:0\", \"/arrayLevel1:0/arrayLevel2:1/nestedArrayItemID\": \"ID0:1\", \"/arrayLevel1:0/additionalData\": \"Data0\"}",
+		Data:      "{\"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemID\": \"ID0:0\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemName\": \"Name0:0\", \"/arrayLevel1:0/arrayLevel2:1/nestedArrayItemID\": \"ID0:1\", \"/arrayLevel1:0/additionalData\": \"Data0\"}",
 	}
-	fileMissingDataReportRow = []string{"file_id_1", "version_1", "patient_1", "2018-07-27T13:55:59.123Z", "2018-07-29T13:55:59.123Z", "ID", "ID0:0/Name0:0, ID0:1/ - Data0", ""}
+	fileMissingDataReportRow = []string{"file_id_1", "version_1", "patient_1", "2018-07-27T13:55:59.123Z", "2018-07-29T13:55:59.123Z", "", "ID0:0/Name0:0, ID0:1/ - Data0", ""}
 
 	invalidJSONDataFile = reports.File{
 		FileID:    "file_id_1",
@@ -226,7 +212,7 @@ var (
 		UpdatedAt: time2,
 		Data:      "{\"/valueFromFile2\": \"2\"}",
 	}
-	groupedByPatientIDReportRow = []string{"patient_1", "2018-07-27T13:55:59.123Z, 2018-07-29T13:55:59.123Z", "1 2"}
+	groupedByPatientIDReportRow = []string{"patient_1", "2018-07-27T13:55:59.123Z, 2018-07-29T13:55:59.123Z", "1", "2"}
 )
 
 func TestGenerate(t *testing.T) {

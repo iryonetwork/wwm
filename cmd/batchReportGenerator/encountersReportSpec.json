@@ -7,7 +7,8 @@
         "Patient ID",
         "Clinic ID",
         "Encounter time",
-        "Author",
+        "Author ID",
+        "Author name",
         "Main complaint",
         "Main diagnosis",
         "Complementary diagnoses",
@@ -16,7 +17,8 @@
         "Height",
         "BMI",
         "Body temperature",
-        "Blood pressure",
+        "Systolic blood pressure",
+        "Diastolic blood pressure",
         "Heart rate",
         "Oxygen saturation"
     ],
@@ -43,36 +45,30 @@
             "source": "Data",
             "ehrPath": "/context/end_time"
         },
-        "Author": {
-            "type": "multipleValues",
-            "description": "User that created the encounter file",
+        "Author ID": {
+            "type": "value",
+            "description": "ID of the user that created the encounter file",
             "source": "Data",
-            "format": "%s (%s)",
-            "properties": [
-                {
-                    "type": "value",
-                    "ehrPath": "/composer|identifier"
-                },
-                {
-                    "type": "value",
-                    "ehrPath": "/composer|name"
-                }
-            ]
+            "ehrPath": "/composer|identifier"
+        },
+        "Author name": {
+            "type": "value",
+            "description": "Name of the user that created the encounter file",
+            "source": "Data",
+            "ehrPath": "/composer|name"
         },
         "Main complaint": {
             "type": "value",
             "description": "Main complaint",
             "source": "Data",
             "ehrPath":
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-EVALUATION.complaint.v1]/items[at0001]/item[at0003]"
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-EVALUATION.complaint.v1]/items[at0001]/item[at0002]"
         },
         "Main diagnosis": {
             "type": "array",
-            "description":
-                "Main diagnosis (first diagnosis in the array of diagnoses)",
+            "description": "Main diagnosis (first diagnosis in the array of diagnoses)",
             "source": "Data",
-            "ehrPath":
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-EVALUATION.problem_diagnosis.v1]",
+            "ehrPath": "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-EVALUATION.problem_diagnosis.v1]",
             "includeItems": {
                 "start": 0,
                 "end": 0
@@ -87,24 +83,20 @@
                 {
                     "description": "Diagnosis ID terminology",
                     "type": "value",
-                    "ehrPath":
-                        "/data/items[at0001]/item[at0002]/_mapping:0/target|terminology"
+                    "ehrPath": "/data/items[at0001]/item[at0002]/_mapping:0/target|terminology"
                 },
                 {
                     "description": "Diagnosis ID",
                     "type": "value",
-                    "ehrPath":
-                        "/data/items[at0001]/item[at0002]/_mapping:0/target|code"
+                    "ehrPath": "/data/items[at0001]/item[at0002]/_mapping:0/target|code"
                 }
             ]
         },
         "Complementary diagnoses": {
             "type": "array",
-            "description":
-                "Complementary diagnoses (all but first diagnoses in the array of diagnoses)",
+            "description": "Complementary diagnoses (all but first diagnoses in the array of diagnoses)",
             "source": "Data",
-            "ehrPath":
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-EVALUATION.problem_diagnosis.v1]",
+            "ehrPath": "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-EVALUATION.problem_diagnosis.v1]",
             "includeItems": {
                 "start": 1,
                 "end": -1
@@ -119,14 +111,12 @@
                 {
                     "description": "Diagnosis ID terminology",
                     "type": "value",
-                    "ehrPath":
-                        "/data/items[at0001]/item[at0002]/_mapping:0/target|terminology"
+                    "ehrPath": "/data/items[at0001]/item[at0002]/_mapping:0/target|terminology"
                 },
                 {
                     "description": "Diagnosis ID",
                     "type": "value",
-                    "ehrPath":
-                        "/data/items[at0001]/item[at0002]/_mapping:0/target|code"
+                    "ehrPath": "/data/items[at0001]/item[at0002]/_mapping:0/target|code"
                 }
             ]
         },
@@ -134,8 +124,7 @@
             "type": "array",
             "description": "Prescribed medications",
             "source": "Data",
-            "ehrPath":
-                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-INSTRUCTION.medication_order.v2]",
+            "ehrPath": "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-INSTRUCTION.medication_order.v2]",
             "includeItems": {
                 "start": 0,
                 "end": -1
@@ -145,108 +134,73 @@
                 {
                     "description": "Medication",
                     "type": "value",
-                    "ehrPath":
-                        "/activities[at0001]/description[at0002]/items[at0070]"
+                    "ehrPath": "/activities[at0001]/description[at0002]/items[at0070]"
                 }
             ]
         },
         "Weight": {
-            "type": "multipleValues",
+            "type": "quantity",
             "description": "Weight measured during encounter",
             "source": "Data",
-            "format": "%s kg",
-            "properties": [
-                {
-                    "type": "value",
-                    "ehrPath":
-                        "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_weight.v2]/data[at0002]/events[at0003]:0/data[at0001]/items[at0004]"
-                }
-            ]
+            "unit": "kg",
+            "ehrPath":
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_weight.v2]/data[at0002]/events[at0003]:0/data[at0001]/items[at0004]"
         },
         "Height": {
-            "type": "multipleValues",
+            "type": "quantity",
             "description": "Height measured during encounter",
             "source": "Data",
-            "format": "%s cm",
-            "properties": [
-                {
-                    "type": "value",
-                    "ehrPath":
-                        "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.height.v2]/data[at0001]/events[at0002]:0/data[at0003]/items[at0004]"
-                }
-            ]
+            "unit": "cm",
+            "ehrPath":
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.height.v2]/data[at0001]/events[at0002]:0/data[at0003]/items[at0004]"
         },
         "BMI": {
-            "type": "multipleValues",
+            "type": "quantity",
             "description": "BMI measured during encounter",
             "source": "Data",
-            "format": "%s kg/m2",
-            "properties": [
-                {
-                    "type": "value",
-                    "ehrPath":
-                        "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_mass_index.v2]/data[at0001]/events[at0002]:0/data[at0003]/items[at0004]"
-                }
-            ]
+            "unit": "kg/m2",
+            "ehrPath":
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_mass_index.v2]/data[at0001]/events[at0002]:0/data[at0003]/items[at0004]"
         },
         "Body temperature": {
-            "type": "multipleValues",
+            "type": "quantity",
             "description": "Body tempereatrue measured during encounter",
             "source": "Data",
-            "format": "%s °C",
-            "properties": [
-                {
-                    "type": "value",
-                    "ehrPath":
-                        "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_temperature.v2]/data[at0002]/events[at0003]:0/data[at0001]/items[at0004]"
-                }
-            ]
+            "unit": "°C",
+            "ehrPath":
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_temperature.v2]/data[at0002]/events[at0003]:0/data[at0001]/items[at0004]"
         },
-        "Blood pressure": {
-            "type": "multipleValues",
-            "description": "Blood pressure measured during encounter",
+        "Systolic blood pressure": {
+            "type": "quantity",
+            "description": "Systolic blood pressure value",
             "source": "Data",
-            "format": "%s mm[Hg] / %s mm[Hg]",
-            "properties": [
-                {
-                    "type": "value",
-                    "description": "Systolic blood pressure value",
-                    "ehrPath":
-                        "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.blood_pressure.v1]/data[at0001]/events[at0006]:0/data[at0003]/items[at0004]"
-                },
-                {
-                    "type": "value",
-                    "description": "Diastolic blood pressure value",
-                    "ehrPath":
-                        "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.blood_pressure.v1]/data[at0001]/events[at0006]:0/data[at0003]/items[at0005]"
-                }
-            ]
+            "unit": "mm[Hg]",
+            "ehrPath":
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.blood_pressure.v1]/data[at0001]/events[at0006]:0/data[at0003]/items[at0004]"
+        },
+        "Diastolic blood pressure": {
+            "type": "quantity",
+            "description": "Diastolic blood pressure value",
+            "source": "Data",
+            "unit": "mm[Hg]",
+            "ehrPath":
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.blood_pressure.v1]/data[at0001]/events[at0006]:0/data[at0003]/items[at0005]"
         },
         "Heart rate": {
-            "type": "multipleValues",
+            "type": "quantity",
             "description": "Heart rate measured during encounter",
             "source": "Data",
-            "format": "%s bpm",
-            "properties": [
-                {
-                    "type": "value",
-                    "ehrPath":
-                        "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse.v1]/data[at0002]/events[at0003]:0/data[at0001]/items[at0004]"
-                }
-            ]
+            "unit": "bpm",
+            "ehrPath":
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse.v1]/data[at0002]/events[at0003]:0/data[at0001]/items[at0004]"
         },
         "Oxygen saturation": {
-            "type": "multipleValues",
+            "type": "quantity",
             "description": "Oxygen saturation measured during encounter",
             "source": "Data",
-            "format": "%s%",
-            "properties": [
-                {
-                    "type": "value",
-                    "ehrPath":
-                        "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse_oximetry.v1]/data[at0001]/events[at0002]:0/data[at0003]/items[at0006]"
-                }
-            ]
+            "unit": "%",
+            "ehrPath":
+                "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse_oximetry.v1]/data[at0001]/events[at0002]:0/data[at0003]/items[at0006]"
         }
     }
 }

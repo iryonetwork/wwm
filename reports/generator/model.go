@@ -37,6 +37,7 @@ type (
 		EhrPath      string             `json:"ehrPath"`
 		Source       string             `json:"source"`
 		Format       string             `json:"format"`
+		Unit         string             `json:"unit"`
 		Properties   []ValueSpec        `json:"properties"`
 		IncludeItems IncludeItemsStruct `json:"includeItems"`
 	}
@@ -46,3 +47,11 @@ type (
 		End   int `json:"end"`
 	}
 )
+
+const TYPE_VALUE = "value"
+const TYPE_INTEGER = "integer"
+const TYPE_ARRAY = "array"
+const TYPE_QUANTITY = "quantity"
+const TYPE_BOOLEAN = "boolean"
+const TYPE_DATETIME = "dateTime"
+const TYPE_CODE = "code"

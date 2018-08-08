@@ -160,14 +160,7 @@ func (g *generator) generateGroupedByPatientID(ctx context.Context, writer Repor
 func (g *generator) generateValueFromData(spec ValueSpec, data *map[string]interface{}, prefix string) (found bool, value string) {
 	found = false
 	switch spec.Type {
-	case "multipleValues":
-		values := []interface{}{}
-		for _, fieldSpec := range spec.Properties {
-			found, value = g.generateValueFromData(fieldSpec, data, prefix)
-			values = append(values, value)
-		}
-		return found, fmt.Sprintf(spec.Format, values...)
-	case "array":
+	case TYPE_ARRAY:
 		values := []interface{}{}
 		for i := spec.IncludeItems.Start; true; i++ {
 			elementFound := false
@@ -200,7 +193,13 @@ func (g *generator) generateValueFromData(spec ValueSpec, data *map[string]inter
 		}
 
 		return found, value
-
+	case TYPE_QUANTITY:
+		found, value = g.getData(data, fmt.Sprintf("%s%s", prefix, spec.EhrPath))
+		if found {
+			v := strings.Split(value, ",")
+			return true, fmt.Sprintf("%s %s", v[0], spec.Unit)
+		}
+		return found, value
 	default:
 		return g.getData(data, fmt.Sprintf("%s%s", prefix, spec.EhrPath))
 	}
