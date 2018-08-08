@@ -176,7 +176,7 @@ const specToDocument = (specs, data, formData, ehrPrefix) => {
 
             case "array":
                 ;(get(formData, spec.formPath, []) || []).forEach((arrEl, i) => {
-                    data = specToDocument(spec.items, data, arrEl, `${spec.ehrPath}:${i}`)
+                    data = specToDocument(spec.properties, data, arrEl, `${spec.ehrPath}:${i}`)
                 })
                 break
 
@@ -254,7 +254,7 @@ const specToObject = (specs, data, doc, ehrPrefix) => {
                 let arrVal = []
                 var j = 0
                 while (true) {
-                    const out = specToObject(spec.items, {}, doc, `${ehrPrefix}${spec.ehrPath}:${j}`)
+                    const out = specToObject(spec.properties, {}, doc, `${ehrPrefix}${spec.ehrPath}:${j}`)
                     if (Object.keys(out).length === 0) {
                         break
                     }

@@ -12,7 +12,7 @@ export default dispatch => {
             type: "array",
             ehrPath: "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0015]",
             formPath: "chronicDiseases",
-            items: [
+            properties: [
                 {
                     type: "value",
                     ehrPath: "/items[at0018]",
@@ -36,7 +36,7 @@ export default dispatch => {
             type: "array",
             ehrPath: "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0014]",
             formPath: "immunizations",
-            items: [
+            properties: [
                 {
                     type: "value",
                     ehrPath: "/items[at0019]",
@@ -55,7 +55,7 @@ export default dispatch => {
             type: "array",
             ehrPath: "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0009]",
             formPath: "allergies",
-            items: [
+            properties: [
                 {
                     type: "value",
                     ehrPath: "/items[at0010]",
@@ -79,7 +79,7 @@ export default dispatch => {
             type: "array",
             ehrPath: "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0022]",
             formPath: "injuries",
-            items: [
+            properties: [
                 {
                     type: "value",
                     ehrPath: "/items[at0023]",
@@ -103,7 +103,7 @@ export default dispatch => {
             type: "array",
             ehrPath: "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0026]",
             formPath: "surgeries",
-            items: [
+            properties: [
                 {
                     type: "value",
                     ehrPath: "/items[at0028]",
@@ -127,7 +127,7 @@ export default dispatch => {
             type: "array",
             ehrPath: "/content[openEHR-EHR-ITEM_TREE.patient_info.v0]/items[at0031]",
             formPath: "medications",
-            items: [
+            properties: [
                 {
                     type: "value",
                     ehrPath: "/items[at0032]",

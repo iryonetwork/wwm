@@ -129,7 +129,7 @@ export default dispatch => {
                 ehrPath:
                     "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0005]/items[openEHR-DEMOGRAPHIC-CLUSTER.person_identifier.v1]/item[at0001]",
                 formPath: "documents",
-                items: [
+                properties: [
                     {
                         type: "value",
                         ehrPath: "|id",
@@ -148,7 +148,7 @@ export default dispatch => {
                 type: "array",
                 ehrPath: "content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/relationships[at0004]",
                 formPath: "familyMembers",
-                items: [
+                properties: [
                     {
                         type: "value",
                         ehrPath: "|id",

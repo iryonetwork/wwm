@@ -12,7 +12,7 @@ export default dispatch =>
             type: "array",
             ehrPath: "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-EVALUATION.problem_diagnosis.v1]",
             formPath: "diagnoses",
-            items: [
+            properties: [
                 // name
                 {
                     type: "value",
@@ -48,7 +48,7 @@ export default dispatch =>
             type: "array",
             ehrPath: "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-INSTRUCTION.medication_order.v2]",
             formPath: "therapies",
-            items: [
+            properties: [
                 // medication
                 {
                     type: "value",
