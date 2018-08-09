@@ -106,13 +106,16 @@ clearGenerate:  ## clears artifacts created by generate
 	rm -f */mock/gen_*.go */*/mock/gen_*.go */*/*/mock/gen_*.go
 	rm -fr ./gen
 
-test: test/unit ## run all tests
+test: test/unit test/golint ## run all tests
 
 test/unit: ## run all unit tests
 	go test -short ./...
 
 test/unit/%: ## run unit tests for a specific project
 	go test ./$*
+
+test/golint:
+	golangci-lint run
 
 vendorSync: vendor/vendor.json ## syncs the vendor folder to match vendor.json
 	govendor sync
