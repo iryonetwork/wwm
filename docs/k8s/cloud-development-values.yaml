@@ -35,3 +35,23 @@ postgresql:
 
 cloudAuth:
     encryptionKey: 6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
+
+batchDataExporter:
+    encryptionKey: 6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
+    db:
+        host: cloud-postgresql.cloud.svc.cluster.local
+        password: vdj4532ejuf270774460687e0043825466861116
+
+batchReportGenerator:
+    encryptionKey: 6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
+    db:
+        host: cloud-postgresql.cloud.svc.cluster.local
+        password: mo99c7f3plq6690298807931203675165588007e
+
+reportsStorage:
+  s3:
+    endpoint: minio.cloud.svc.cluster.local:9000
+    key: cloud
+    secret: cloudsecret
+    region: eu-west-1
+    encryptionKey: 6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=

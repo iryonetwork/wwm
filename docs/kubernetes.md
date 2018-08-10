@@ -64,14 +64,6 @@ Alternatevely you can setup permanent node port to port 30443 with an included n
 kubectl create -f docs/k8s/dashboard-node-port.yaml
 ```
 
-And test it:
-
-```
-$ docker pull alpine
-$ docker tag alpine localhost:30500/alpine
-$ docker push localhost:30500/alpine
-```
-
 To get the token allowing to access Kubernetes Dashboard run:
 
 ```
@@ -121,7 +113,7 @@ The root certificate has to be added to your computer for you to be able to use 
 security add-trusted-cert -k $HOME/Library/Keychains/login.keychain ca.crt
 ```
 
-Finally, you should create a secret in kubernetes with the generated keys in namespaces: default, kube-system, local & cloud so all components can access it:
+Finally, you should create a secret in kubernetes with the generated keys in namespaces: default, local & cloud so all components can access it:
 
 ```
 $ kubectl create secret tls ca-key-pair \
@@ -159,8 +151,8 @@ $ kubectl apply -f docs/k8s/example-certificate.yaml
 > Download IRYO helm charts from here: https://github.com/iryonetwork/charts
 > Install the charts with values files for local deplyment:
 
-*  Local IRYO node chart values: `docs/k8s/local-development-values.yaml`
-*  Cloud IRYO node chart values:: `docs/k8s/cloud-development-values.yaml`
+*   Local IRYO node chart values: `docs/k8s/local-development-values.yaml`
+*   Cloud IRYO node chart values:: `docs/k8s/cloud-development-values.yaml`
 
 ```
 $ helm dependency update local && helm install --namespace local --values $GOPATH/src/github.com/iryonetwork/wwm/docs/k8s/local-development-values.yaml local -n local
@@ -177,7 +169,7 @@ $ kubectl get secrets -n local ca-storagesync-local -o yaml | sed 's/namespace: 
 $ kubectl get secrets -n local ca-batchstoragesync-local -o yaml | sed 's/namespace: local/namespace: cloud/'  | kubectl create -f -
 ```
 
-## 10. Provision Disocvery's database
+## 10. Provision discovery and reports database
 
 For now you need to manually provision discovery data.
 First you need to make it possible to access PostgreSQL DB.
@@ -197,8 +189,6 @@ $ psql -U postgres -h localhost -p 5432
 
 Initialize users with statements from `docs/k8s/localDiscoveryInit.sql` then connect to localdiscvoery db (`\c localdiscovery`) and create schema and data using statements from `docs/k8s/discoverySchemaAndData.sql`.
 
-Do the same for cloudDiscovery replacing `local` with `cloud` in commands where applicable.
-
 Enable port forwarding for cloud-postgresql:
 
 ```
@@ -212,7 +202,9 @@ Connect to PostgreSQL using psql:
 $ psql -U postgres -h localhost -p 5432
 ```
 
-Initialize users with statements from `docs/k8s/cloudDiscoveryInit.sql` then connect to localdiscvoery db (`\c clouddiscovery`) and create schema and data using statements from `docs/k8s/discoverySchemaAndData.sql`.
+Initialize users for discovery with statements from `docs/k8s/cloudDiscoveryInit.sql` then connect to clouddiscovery db (`\c clouddiscovery`) and create schema and data using statements from `docs/k8s/discoverySchemaAndData.sql`.
+
+Initialize users for reports with statements from `docs/k8s/reportsInit.sql` then connect to reports db (`\c reports`) and create schema using statements from `docs/k8s/reports.sql`.
 
 ## 11. Install Traefik ingress controller
 
@@ -220,7 +212,7 @@ Initialize users with statements from `docs/k8s/cloudDiscoveryInit.sql` then con
 > Install `traefik` ingress controller chart in kube-system namespace with values for local deployment.
 
 ```
-$ helm dependency update traefik && helm install --namespace default--values $GOPATH/src/github.com/iryonetwork/wwm/docs/k8s/traefik-development-values.yaml traefik -n traefik
+$ helm dependency update traefik && helm install --namespace default --values $GOPATH/src/github.com/iryonetwork/wwm/docs/k8s/traefik-development-values.yaml traefik -n traefik
 ```
 
 ## 12. Update `/etc/hosts` on your machine
@@ -231,8 +223,8 @@ $ helm dependency update traefik && helm install --namespace default--values $GO
 
 ## 13. You should be able now to:
 
-*  Access cloud dashboard frontend at `https://iryo.k8s.cloud` and cloud APIs at `https://iryo.k8s.cloud/api/v1/*` from your host;
-*  Access clinic frontend at `https://iryo.k8s.local` and clinic APIs at `https://iryo.k8s.local/api/v1/*` from your host.
+*   Access cloud dashboard frontend at `https://iryo.k8s.cloud` and cloud APIs at `https://iryo.k8s.cloud/api/v1/*` from your host;
+*   Access clinic frontend at `https://iryo.k8s.local` and clinic APIs at `https://iryo.k8s.local/api/v1/*` from your host.
 
 ## 14. Upgrading
 
@@ -242,5 +234,3 @@ Publish new images to local registry and run:
 $ helm dependency update local && helm upgrade --namespace local --values $GOPATH/src/github.com/iryonetwork/wwm/docs/k8s/local-development-values.yaml local local
 $ helm dependency update cloud && helm upgrade --namespace cloud --values $GOPATH/src/github.com/iryonetwork/wwm/docs/k8s/cloud-development-values.yaml cloud cloud
 ```
-
-

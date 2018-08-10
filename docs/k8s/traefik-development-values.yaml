@@ -1,5 +1,7 @@
 ## development values for traefik
 imageTag: 1.7
+debug:
+  enabled: true
 ssl:
   enabled: true
   enforced: true
