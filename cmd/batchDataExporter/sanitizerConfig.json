@@ -15,7 +15,7 @@
         "description": "diagnoses",
         "type": "array",
         "ehrPath": "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-EVALUATION.problem_diagnosis.v1]",
-        "items": [
+        "properties": [
             {
                 "description": "comment",
                 "type": "value",
@@ -28,7 +28,7 @@
         "description": "medications",
         "type": "array",
         "ehrPath": "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-INSTRUCTION.medication_order.v2]",
-        "items": [
+        "properties": [
             {
                 "description": "comment",
                 "type": "value",
@@ -94,7 +94,7 @@
         "type": "array",
         "ehrPath":
             "/content[openEHR-DEMOGRAPHIC-PERSON.person.v1]/details[openEHR-DEMOGRAPHIC-ITEM_TREE.person_details.v1.0.0]/items[at0005]/items[openEHR-DEMOGRAPHIC-CLUSTER.person_identifier.v1]/item[at0001]",
-        "items": [
+        "properties": [
             {
                 "description": "id",
                 "type": "value",

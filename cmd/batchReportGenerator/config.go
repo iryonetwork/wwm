@@ -17,7 +17,7 @@ type Config struct {
 	config.Config
 
 	// filepaths to json spec files
-	ReportSpecs ReportSpecs `env:"REPORT_SPECS_FILEPATHS" envDefault:"/encounterReportSpec.json"`
+	ReportSpecs ReportSpecs `env:"REPORT_SPECS_FILEPATHS" envDefault:"/encountersReportSpec.json"`
 
 	DbUsername    string `env:"DB_USERNAME,required"`
 	DbPassword    string `env:"DB_PASSWORD,required"`
