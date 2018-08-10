@@ -128,7 +128,7 @@ func TestSanitize(t *testing.T) {
 				{
 					Type:    "array",
 					EhrPath: "array",
-					Items: []FieldToSanitize{
+					Properties: []FieldToSanitize{
 						{
 							Type:           "value",
 							EhrPath:        "field1",
@@ -152,7 +152,7 @@ func TestSanitize(t *testing.T) {
 						{
 							Type:    "array",
 							EhrPath: "internalArray",
-							Items: []FieldToSanitize{
+							Properties: []FieldToSanitize{
 								{
 									Type:           "value",
 									EhrPath:        "field3",

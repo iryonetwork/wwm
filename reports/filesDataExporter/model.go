@@ -60,7 +60,7 @@ type (
 		EhrPath                  string                 `json:"ehrPath"`
 		Transformation           string                 `json:"transformation,omitempty"`
 		TransformationParameters map[string]interface{} `json:"transformationParameters,omitempty"`
-		Items                    []FieldToSanitize      `json:"items,omitempty"`
+		Properties               []FieldToSanitize      `json:"properties,omitempty"`
 	}
 )
 

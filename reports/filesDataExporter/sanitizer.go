@@ -61,7 +61,7 @@ func (s *sanitizer) sanitize(ctx context.Context, fieldsToSanitize []FieldToSani
 		switch field.Type {
 		case "array":
 			for i := 0; true; i++ {
-				ff, err := s.sanitize(ctx, field.Items, data, fmt.Sprintf("%s%s:%d", prefix, field.EhrPath, i))
+				ff, err := s.sanitize(ctx, field.Properties, data, fmt.Sprintf("%s%s:%d", prefix, field.EhrPath, i))
 				if err != nil {
 					return fieldFound, err
 				}
