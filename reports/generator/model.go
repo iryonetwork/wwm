@@ -9,7 +9,7 @@ import (
 
 type (
 	Generator interface {
-		Generate(ctx context.Context, writer ReportWriter, reportSpec ReportSpec, createdAtStart *strfmt.DateTime, createdAtEnd *strfmt.DateTime) error
+		Generate(ctx context.Context, writer ReportWriter, reportSpec ReportSpec, createdAtStart *strfmt.DateTime, createdAtEnd *strfmt.DateTime) (bool, error)
 	}
 
 	ReportWriter interface {

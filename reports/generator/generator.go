@@ -31,32 +31,37 @@ const dataKeyCategory = "/category"
 const codeRe = `^(.+)::(.+)\|(.+)\|$`
 
 // Generate generates report
-func (g *generator) Generate(ctx context.Context, writer ReportWriter, reportSpec ReportSpec, createdAtStart *strfmt.DateTime, createdAtEnd *strfmt.DateTime) error {
+func (g *generator) Generate(ctx context.Context, writer ReportWriter, reportSpec ReportSpec, createdAtStart *strfmt.DateTime, createdAtEnd *strfmt.DateTime) (bool, error) {
 	if reportSpec.GroupByPatientID {
 		return g.generateGroupedByPatientID(ctx, writer, reportSpec, createdAtStart, createdAtEnd)
 	}
 
 	files, err := g.storage.Find("", map[string]string{dataKeyCategory: reportSpec.FileCategory}, createdAtStart, createdAtEnd)
 	if err != nil {
-		return errors.Wrapf(err, "failed to fetch files")
+		return false, errors.Wrapf(err, "failed to fetch files")
+	}
+
+	if len(*files) == 0 {
+		g.logger.Info().Msg("there are no new files, exit with generating new report")
+		return false, nil
 	}
 
 	err = writer.Write(reportSpec.Columns)
 	if err != nil {
-		return errors.Wrapf(err, "failed to write report header")
+		return false, errors.Wrapf(err, "failed to write report header")
 	}
 
 	for _, file := range *files {
 		var dataMap map[string]interface{}
 		if err := json.Unmarshal([]byte(file.Data), &dataMap); err != nil {
-			return errors.Wrapf(err, "failed to unmarshal file data")
+			return false, errors.Wrapf(err, "failed to unmarshal file data")
 		}
 
 		row := []string{}
 		for _, column := range reportSpec.Columns {
 			spec, ok := reportSpec.ColumnsSpecs[column]
 			if !ok {
-				return errors.Errorf("could not find a spec for column '%s'", column)
+				return false, errors.Errorf("could not find a spec for column '%s'", column)
 			}
 			switch spec.Type {
 			case TYPE_FILE_META:
@@ -79,23 +84,28 @@ func (g *generator) Generate(ctx context.Context, writer ReportWriter, reportSpe
 		}
 		err = writer.Write(row)
 		if err != nil {
-			return errors.Wrapf(err, "failed to write report row")
+			return false, errors.Wrapf(err, "failed to write report row")
 		}
 	}
 
-	return nil
+	return true, nil
 }
 
 // Generate generates report
-func (g *generator) generateGroupedByPatientID(ctx context.Context, writer ReportWriter, reportSpec ReportSpec, createdAtStart *strfmt.DateTime, createdAtEnd *strfmt.DateTime) error {
+func (g *generator) generateGroupedByPatientID(ctx context.Context, writer ReportWriter, reportSpec ReportSpec, createdAtStart *strfmt.DateTime, createdAtEnd *strfmt.DateTime) (bool, error) {
 	files, err := g.storage.Find("", map[string]string{dataKeyCategory: reportSpec.FileCategory}, createdAtStart, createdAtEnd)
 	if err != nil {
-		return errors.Wrapf(err, "failed to fetch files")
+		return false, errors.Wrapf(err, "failed to fetch files")
+	}
+
+	if len(*files) == 0 {
+		g.logger.Info().Msg("there are no new files, exit with generating new report")
+		return false, nil
 	}
 
 	err = writer.Write(reportSpec.Columns)
 	if err != nil {
-		return errors.Wrapf(err, "failed to write report header")
+		return false, errors.Wrapf(err, "failed to write report header")
 	}
 
 	patientIdFileIndexMap := make(map[string][]int)
@@ -122,7 +132,7 @@ func (g *generator) generateGroupedByPatientID(ctx context.Context, writer Repor
 			file := (*files)[fileIndex]
 
 			if err := json.Unmarshal([]byte(file.Data), &dataMap); err != nil {
-				return errors.Wrapf(err, "failed to unmarshal file data")
+				return false, errors.Wrapf(err, "failed to unmarshal file data")
 			}
 
 			dataMaps = append(dataMaps, &dataMap)
@@ -141,7 +151,7 @@ func (g *generator) generateGroupedByPatientID(ctx context.Context, writer Repor
 		for _, column := range reportSpec.Columns {
 			spec, ok := reportSpec.ColumnsSpecs[column]
 			if !ok {
-				return errors.Errorf("could not find a spec for column '%s'", column)
+				return false, errors.Errorf("could not find a spec for column '%s'", column)
 			}
 			switch spec.Type {
 			case TYPE_FILE_META:
@@ -164,11 +174,11 @@ func (g *generator) generateGroupedByPatientID(ctx context.Context, writer Repor
 		}
 		err = writer.Write(row)
 		if err != nil {
-			return errors.Wrapf(err, "failed to write report row")
+			return false, errors.Wrapf(err, "failed to write report row")
 		}
 	}
 
-	return nil
+	return true, nil
 }
 
 func (g *generator) getComplexValueFromData(spec ValueSpec, data []*map[string]interface{}, prefix string) (found bool, value string) {

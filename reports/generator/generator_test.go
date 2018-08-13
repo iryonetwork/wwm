@@ -232,6 +232,7 @@ func TestGenerate(t *testing.T) {
 		createdAtStart *strfmt.DateTime
 		createdAtEnd   *strfmt.DateTime
 		calls          func(*storageMock.MockStorage, *generatorMock.MockReportWriter)
+		generated      bool
 		errorExpected  bool
 		exactError     error
 	}{
@@ -249,6 +250,7 @@ func TestGenerate(t *testing.T) {
 					reportWriter.EXPECT().Write(fileNoDataReportRow).Return(nil).Times(1),
 				)
 			},
+			true,
 			noErrors,
 			nil,
 		},
@@ -267,6 +269,7 @@ func TestGenerate(t *testing.T) {
 					reportWriter.EXPECT().Write(fileMissingDataReportRow).Return(nil).Times(1),
 				)
 			},
+			true,
 			noErrors,
 			nil,
 		},
@@ -283,6 +286,7 @@ func TestGenerate(t *testing.T) {
 					reportWriter.EXPECT().Write(testSpec1.Columns).Return(nil).Times(1),
 				)
 			},
+			false,
 			withErrors,
 			nil,
 		},
@@ -300,6 +304,7 @@ func TestGenerate(t *testing.T) {
 					reportWriter.EXPECT().Write(fileAllDataReportRow).Return(fmt.Errorf("error")).Times(1),
 				)
 			},
+			false,
 			withErrors,
 			nil,
 		},
@@ -317,6 +322,23 @@ func TestGenerate(t *testing.T) {
 					reportWriter.EXPECT().Write(groupedByPatientIDReportRow).Return(nil).Times(1),
 				)
 			},
+			true,
+			noErrors,
+			nil,
+		},
+		{
+			"No files returned",
+			testSpec1,
+			&time1,
+			&time2,
+			func(storage *storageMock.MockStorage, reportWriter *generatorMock.MockReportWriter) {
+				gomock.InOrder(
+					storage.EXPECT().Find("", map[string]string{"/category": "openehr::111|test|"}, &time1, &time2).Return(
+						&[]reports.File{}, nil,
+					),
+				)
+			},
+			false,
 			noErrors,
 			nil,
 		},
@@ -331,7 +353,11 @@ func TestGenerate(t *testing.T) {
 			test.calls(storageMock, writerMock)
 
 			// call genereate
-			err := svc.Generate(context.Background(), writerMock, test.reportSpec, test.createdAtStart, test.createdAtEnd)
+			generated, err := svc.Generate(context.Background(), writerMock, test.reportSpec, test.createdAtStart, test.createdAtEnd)
+
+			if test.generated != generated {
+				t.Errorf("Expected result to be %t, got %t", test.generated, generated)
+			}
 
 			// assert error
 			if test.errorExpected && err == nil {

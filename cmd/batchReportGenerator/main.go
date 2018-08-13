@@ -136,38 +136,40 @@ func main() {
 		}
 
 		// run generator
-		err = g.Generate(ctx, writer, spec, lastSuccessfulRun, nil)
+		generated, err := g.Generate(ctx, writer, spec, lastSuccessfulRun, nil)
 		if err != nil {
 			logger.Fatal().Err(err).Msgf("failed to generate report file %s", spec.Type)
 		}
 
-		// flush writer
-		writer.Flush()
+		if generated {
+			// flush writer
+			writer.Flush()
 
-		// read file and turn content into buffer
-		b, err := ioutil.ReadFile(file.Name())
-		if err != nil {
-			logger.Fatal().Err(err).Msgf("failed to read temp file")
+			// read file and turn content into buffer
+			b, err := ioutil.ReadFile(file.Name())
+			if err != nil {
+				logger.Fatal().Err(err).Msgf("failed to read temp file")
+			}
+			buf := bytes.NewBuffer(b)
+
+			// upload file to storage
+			reportNewParams := operations.NewReportNewParams().
+				WithContentType("text/csv").
+				WithDataSince(lastSuccessfulRun).
+				WithDataUntil(startTime).
+				WithReportType(spec.Type).
+				WithFile(runtime.NamedReader("reader", buf))
+
+			ok, err := filesStorageClient.Operations.ReportNew(reportNewParams, auth)
+			if err != nil {
+				logger.Fatal().Err(err).Msgf("failed to upload report file %s", spec.Type)
+			}
+
+			logger.Info().Msgf("report %s was uploaded as file %s", ok.Payload.ReportType, ok.Payload.Name)
+
+			// save lastSuccesfulRun
+			s.Update(spec.Type, storageKey, []byte(startTime.String()))
 		}
-		buf := bytes.NewBuffer(b)
-
-		// upload file to storage
-		reportNewParams := operations.NewReportNewParams().
-			WithContentType("text/csv").
-			WithDataSince(lastSuccessfulRun).
-			WithDataUntil(startTime).
-			WithReportType(spec.Type).
-			WithFile(runtime.NamedReader("reader", buf))
-
-		ok, err := filesStorageClient.Operations.ReportNew(reportNewParams, auth)
-		if err != nil {
-			logger.Fatal().Err(err).Msgf("failed to upload report file %s", spec.Type)
-		}
-
-		logger.Info().Msgf("report %s was uploaded as file %s", ok.Payload.ReportType, ok.Payload.Name)
-
-		// save lastSuccesfulRun
-		s.Update(spec.Type, storageKey, []byte(startTime.String()))
 
 		// push metrics to the push gateway
 		err = metricsPusher.Add()
