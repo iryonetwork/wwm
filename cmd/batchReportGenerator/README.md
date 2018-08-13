@@ -36,23 +36,23 @@ Reports specification files define contents of CSV file report built from data i
 Column value specs specify what value should be put under specific column. Column value specs objects have following properties:
 
 *   **type** specifies field type:
-    ⋅⋅\* _fileMeta_ - used when the column is supposed to conain value taken from file's metadata;
-    ⋅⋅\* _value_;
-    ⋅⋅\* _fixedValue_;
-    ⋅⋅\* _boolean_;
-    ⋅⋅\* _quantity_;
-    ⋅⋅\* _integer_;
-    ⋅⋅\* _fixedValue_;
-    ⋅⋅\* _array_.
+    *   _fileMeta_ - used when the column is supposed to conain value taken from file's metadata;
+    *   _value_;
+    *   _fixedValue_;
+    *   _boolean_;
+    *   _quantity_;
+    *   _integer_;
+    *   _fixedValue_;
+    *   _array_.
 *   **metaField** is used only for values of type _fileMeta_. Possible values of the _metaField_ property are:
-    ⋅⋅\* _patientID_;
-    ⋅⋅\* _fileID_;
-    ⋅⋅\* _createdAt_;
-    ⋅⋅\* _updatedAt_.
+    *   _patientID_;
+    *   _fileID_;
+    *   _createdAt_;
+    *   _updatedAt_.
 *   **ehrPath** specifies path to value of the field in EHR file. It's used for all values except those of type _fileMeta_.
 *   **unit** value specific for _quantity_ type values, specifies as a string unit in which the quantity was measured.
 *   **properties** is an array of properties of items of an _array_ type field (_each array item has at least one property_). As such _properties_ property is valid only for _array_ type fields. Objects inside _properties_ are using the same schema as root-level fields and they themselves can contain _array_ type fields.
 *   **format** specifies how multiple values that consitiute single item _array_ type field should be combined into single string (strings representing consecutive items of array are always seperated with `,`) _Format_ property follows _printf format string_ convention but only strings (`%s`) are in usage. It should contain the same number of `%s` parameters as number of fields listed in _properties_. The values of properties are inserted into final string in the same order as they are listed in _properties_.
 *   **includeItems** is _array_ type specific object specifying which items of array should be included in the column value:
-    ⋅⋅\* _start_ - index of first item to be included, 0 or -1 if items starting with first should be included
-    ⋅⋅\* _end_ - index of first item NOT to be included in column value, -1 if column value should contain all items till the end.
+    *   _start_ - index of first item to be included, 0 or -1 if items starting with first should be included
+    *   _end_ - index of first item NOT to be included in column value, -1 if column value should contain all items till the end.

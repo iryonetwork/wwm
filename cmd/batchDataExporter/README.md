@@ -30,19 +30,19 @@ Files data sanitizer configuration is a configuration for encryption, removal or
 
 *   **description** describes field to sanitize for better readability. It has no role in sanitization process.
 *   **type** specifies field type:
-    ⋅⋅\* _value_;
-    ⋅⋅\* _fixedValue_;
-    ⋅⋅\* _boolean_;
-    ⋅⋅\* _quantity_;
-    ⋅⋅\* _integer_;
-    ⋅⋅\* _code_;
-    ⋅⋅\* _array_.
+    *   _value_;
+    *   _fixedValue_;
+    *   _boolean_;
+    *   _quantity_;
+    *   _integer_;
+    *   _code_;
+    *   _array_.
 *   **ehrPath** specifies path to value of the field in EHR file.
 *   **transformation** specifies transformation to be applied to the field:
-    ⋅⋅\* _encrypt_ - value of the field will get encrypted before exporting of file's data to DB;
-    ⋅⋅\* _remove_ - value of the field will get removed before exporting of file's data to DB;
-    ⋅⋅\* _substring_ - substring specified using _transformationParameters_ will be extracted from field value and only this substring will included in data exported to DB.
+    *   _encrypt_ - value of the field will get encrypted before exporting of file's data to DB;
+    *   _remove_ - value of the field will get removed before exporting of file's data to DB;
+    *   _substring_ - substring specified using _transformationParameters_ will be extracted from field value and only this substring will included in data exported to DB.
 *   **transformationParameters** is transformation-specific object specifying parameters of transformation. Currently only _substring_ transformation supports _transformationParameters_:
-    ⋅⋅\* _start_ - index of first character to be included in substring, 0 or -1 if substring should start from the beginning;
-    ⋅⋅\* _end_ - index of first character NOT to be included in substring, -1 if substring should contain last character.
+    *   _start_ - index of first character to be included in substring, 0 or -1 if substring should start from the beginning;
+    *   _end_ - index of first character NOT to be included in substring, -1 if substring should contain last character.
 *   **properties** is an array of properties of items of an _array_ type field (_each array item has at least one property_). As such _properties_ property is valid only for _array_ type fields. Objects inside _properties_ are using the same schema as root-level fields and they themselves can contain _array_ type fields.
