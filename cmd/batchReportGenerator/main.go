@@ -29,7 +29,9 @@ import (
 )
 
 const (
-	storageKey string = "lastSuccessfulRun"
+	exporterBucket      string = "batchDataExporter"
+	exporterStorageKey  string = "lastSuccessfulRun"
+	generatorStorageKey string = "lastDataUntil"
 )
 
 func main() {
@@ -106,6 +108,17 @@ func main() {
 	// initialize prometheus metrics pusher
 	metricsPusher := push.New(cfg.PrometheusPushGatewayAddress, "batchReportGenerator").Gatherer(metricsRegistry)
 
+	zeroTime := strfmt.DateTime(time.Unix(0, 0))
+
+	exporterLastSuccessfulRun := zeroTime
+	v := s.Get(exporterBucket, exporterStorageKey)
+	if v != nil {
+		timestamp, err := strfmt.ParseDateTime(string(v))
+		if err == nil {
+			exporterLastSuccessfulRun = timestamp
+		}
+	}
+
 	for _, spec := range cfg.ReportSpecs.Slice {
 		// initialize csv writer
 		file, err := ioutil.TempFile("", spec.Type)
@@ -116,27 +129,27 @@ func main() {
 		writer := csv.NewWriter(file)
 		writer.Comma = ';'
 
-		// get current time to be saved as lastSuccesfulRun
-		startTime := strfmt.DateTime(time.Now())
-		var lastSuccessfulRun *strfmt.DateTime
-
+		// initialize last successful run with 0 value
+		generatorLastDataUntil := zeroTime
 		if !spec.IncludeAll {
-			// initialize last successful run with 0 value
-			zeroTime := strfmt.DateTime(time.Unix(0, 0))
-			lastSuccessfulRun = &zeroTime
-
 			// try to read last succesful run
-			storedTimestamp := s.Get(spec.Type, storageKey)
-			if storedTimestamp != nil {
-				timestamp, err := strfmt.ParseDateTime(string(storedTimestamp))
+			v := s.Get(spec.Type, generatorStorageKey)
+			if v != nil {
+				timestamp, err := strfmt.ParseDateTime(string(v))
 				if err == nil {
-					lastSuccessfulRun = &timestamp
+					generatorLastDataUntil = timestamp
 				}
 			}
 		}
 
+		if time.Time(generatorLastDataUntil).After(time.Time(exporterLastSuccessfulRun)) ||
+			time.Time(generatorLastDataUntil).Equal(time.Time(exporterLastSuccessfulRun)) {
+			logger.Info().Msg("BatchDataExporter did not export anything since last `dataUntil` of last report of this type, skip generating report")
+			break
+		}
+
 		// run generator
-		generated, err := g.Generate(ctx, writer, spec, lastSuccessfulRun, nil)
+		generated, err := g.Generate(ctx, writer, spec, &generatorLastDataUntil, nil)
 		if err != nil {
 			logger.Fatal().Err(err).Msgf("failed to generate report file %s", spec.Type)
 		}
@@ -155,8 +168,8 @@ func main() {
 			// upload file to storage
 			reportNewParams := operations.NewReportNewParams().
 				WithContentType("text/csv").
-				WithDataSince(lastSuccessfulRun).
-				WithDataUntil(startTime).
+				WithDataSince(&generatorLastDataUntil).
+				WithDataUntil(exporterLastSuccessfulRun).
 				WithReportType(spec.Type).
 				WithFile(runtime.NamedReader("reader", buf))
 
@@ -167,14 +180,14 @@ func main() {
 
 			logger.Info().Msgf("report %s was uploaded as file %s", ok.Payload.ReportType, ok.Payload.Name)
 
-			// save lastSuccesfulRun
-			s.Update(spec.Type, storageKey, []byte(startTime.String()))
+			// save lastSuccesfulRun of exporter as `dataUntil` of current generator run
+			s.Update(spec.Type, generatorStorageKey, []byte(exporterLastSuccessfulRun.String()))
 		}
+	}
 
-		// push metrics to the push gateway
-		err = metricsPusher.Add()
-		if err != nil {
-			logger.Error().Err(err).Msg("failed to push metrics to push gateway")
-		}
+	// push metrics to the push gateway
+	err = metricsPusher.Add()
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to push metrics to push gateway")
 	}
 }

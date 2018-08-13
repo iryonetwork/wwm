@@ -29,7 +29,7 @@ type Config struct {
 	PGRole        string `env:"POSTGRES_ROLE" envDefault:"reportgenerationservice"`
 	DbDetailedLog bool   `env:"DB_DETAILED_LOG" envDefault:"false"`
 
-	BoltDBFilepath string `env:"BOLT_DB_FILEPATH" envDefault:"/data/batchReportGenerator.db"`
+	BoltDBFilepath string `env:"BOLT_DB_FILEPATH" envDefault:"/data/dataExportAndReportGeneration.db"`
 
 	PrometheusPushGatewayAddress string `env:"PROMETHEUS_PUSH_GATEWAY_ADDRESS" envDefault:"http://localPrometheusPushGateway:9091"`
 }
