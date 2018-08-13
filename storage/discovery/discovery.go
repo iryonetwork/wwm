@@ -378,8 +378,8 @@ func (s *storage) CodesGet(category, query, parentID, locale string) (models.Cod
 		values = append(values, parentID)
 	}
 
-	// add order by
-	q += " ORDER BY ct.code_id ASC"
+	// add order by title
+	q += " ORDER BY ct.title ASC"
 
 	rows, err := s.gdb.Raw(q, values...).Rows()
 	if err != nil {
