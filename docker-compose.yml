@@ -352,7 +352,6 @@ services:
     - ./.data/batchDataExporter:/data/
     - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
-    - ./cmd/batchDataExporter/sanitizerConfig.json:/sanitizerConfig.json:ro
     environment:
     - STORAGE_HOST=cloudStorage
     - AUTH_HOST=cloudAuth
@@ -388,8 +387,6 @@ services:
     - ./.data/batchReportGenerator:/data/
     - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
-    - ./cmd/batchReportGenerator/encountersReportSpec.json:/encountersReportSpec.json:ro
-    - ./cmd/batchReportGenerator/patientsReportSpec.json:/patientsReportSpec.json:ro
     environment:
     - STORAGE_HOST=reportsStorage
     - STORAGE_PATH=reports
@@ -398,4 +395,3 @@ services:
     - CERT_PATH=/certs/batchReportGenerator.pem
     - DB_USERNAME=reportgenerator
     - DB_PASSWORD=reportgenerator
-    - REPORT_SPECS_FILEPATHS=/encountersReportSpec.json,/patientsReportSpec.json

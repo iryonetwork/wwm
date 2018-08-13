@@ -1,9 +1,12 @@
 package main
 
+//go:generate go-bindata -prefix ="assets/" -o assets.go assets/...
+
 import (
 	"encoding/json"
 	"io/ioutil"
 	"reflect"
+	"regexp"
 	"strings"
 
 	"github.com/caarlos0/env"
@@ -17,7 +20,7 @@ type Config struct {
 	config.Config
 
 	// filepaths to json spec files
-	ReportSpecs ReportSpecs `env:"REPORT_SPECS_FILEPATHS" envDefault:"/encountersReportSpec.json"`
+	ReportSpecs ReportSpecs `env:"REPORT_SPECS_FILEPATHS" envDefault:"assets/encountersReportSpec.json,assets/patientsReportSpec.json"`
 
 	DbUsername    string `env:"DB_USERNAME,required"`
 	DbPassword    string `env:"DB_PASSWORD,required"`
@@ -30,6 +33,8 @@ type Config struct {
 
 	PrometheusPushGatewayAddress string `env:"PROMETHEUS_PUSH_GATEWAY_ADDRESS" envDefault:"http://localPrometheusPushGateway:9091"`
 }
+
+const assetsRe = "^assets/.+$"
 
 // ReportSpecs is a wrapper struct for slice with ReportSpecs
 // to make env parser to execute custom parser without "type not supported" error
@@ -60,9 +65,19 @@ func parseReportSpecs(filepaths string) (interface{}, error) {
 		Slice: []generator.ReportSpec{},
 	}
 
+	re := regexp.MustCompile(assetsRe)
+
 	for _, filepath := range filepathsSlice {
 		spec := generator.ReportSpec{}
-		jsonFile, err := ioutil.ReadFile(filepath)
+		var jsonFile []byte
+		var err error
+
+		match := re.FindString(filepath)
+		if len(match) != 0 {
+			jsonFile, err = Asset(match)
+		} else {
+			jsonFile, err = ioutil.ReadFile(filepath)
+		}
 
 		if err != nil {
 			return nil, err

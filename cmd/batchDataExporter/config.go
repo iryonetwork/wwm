@@ -1,9 +1,12 @@
 package main
 
+//go:generate go-bindata -prefix ="assets/" -o assets.go assets/...
+
 import (
 	"encoding/json"
 	"io/ioutil"
 	"reflect"
+	"regexp"
 
 	"github.com/caarlos0/env"
 
@@ -17,7 +20,7 @@ type Config struct {
 	BucketsRateLimit int `env:"BUCKETS_RATE_LIMIT" envDefault:"2"`
 
 	// filepath to yaml
-	FieldsToSanitize  SanitizerCfg `env:"SANITIZER_CONFIG_FILEPATH" envDefault:"/sanitizerConfig.json"`
+	FieldsToSanitize  SanitizerCfg `env:"SANITIZER_CONFIG_FILEPATH" envDefault:"assets/sanitizerConfig.json"`
 	DataEncryptionKey string       `env:"DATA_ENCRYPTION_KEY,required"`
 
 	DbUsername    string `env:"DB_USERNAME,required"`
@@ -31,6 +34,8 @@ type Config struct {
 
 	PrometheusPushGatewayAddress string `env:"PROMETHEUS_PUSH_GATEWAY_ADDRESS" envDefault:"http://localPrometheusPushGateway:9091"`
 }
+
+const assetsRe = "^assets/.+$"
 
 // SanitizerCfg is a wrapper struct for slice with list of fields to sanitize
 // to make env parser to execute custom parser without "type not supported" error
@@ -59,7 +64,16 @@ func parseFieldsToSanitize(filepath string) (interface{}, error) {
 		Slice: []filesDataExporter.FieldToSanitize{},
 	}
 
-	jsonFile, err := ioutil.ReadFile(filepath)
+	re := regexp.MustCompile(assetsRe)
+	match := re.FindString(filepath)
+
+	var jsonFile []byte
+	var err error
+	if len(match) != 0 {
+		jsonFile, err = Asset(match)
+	} else {
+		jsonFile, err = ioutil.ReadFile(filepath)
+	}
 
 	if err != nil {
 		return nil, err
