@@ -1,8 +1,9 @@
 import React from "react"
-import { Route, Link, withRouter } from "react-router-dom"
+import { Link, withRouter } from "react-router-dom"
 import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
 import _ from "lodash"
+import { push } from "react-router-redux"
 
 import { ADVANCED_ROLE_IDS } from "shared/modules/config"
 import { loadUsers } from "../../modules/users"
@@ -91,47 +92,59 @@ class UsersList extends React.Component {
         }
     }
 
-    newUser = () => e => {
-        if (this.state.clinicUsers) {
-            let clinicUsers = [
-                ...this.state.clinicUsers,
-                { id: "", edit: true, canSave: false, domainType: "clinic", domainID: this.props.clinicID, userID: "", roleID: "" }
-            ]
+    newUser() {
+        return e => {
+            if (this.state.clinicUsers) {
+                let clinicUsers = [
+                    ...this.state.clinicUsers,
+                    { id: "", edit: true, canSave: false, domainType: "clinic", domainID: this.props.clinicID, userID: "", roleID: "" }
+                ]
+                this.setState({ clinicUsers: clinicUsers })
+            }
+        }
+    }
+
+    editUserID(index) {
+        return e => {
+            let clinicUsers = [...this.state.clinicUsers]
+            clinicUsers[index].userID = e.target.value
+            clinicUsers[index].canSave = clinicUsers[index].userID.length !== 0 && clinicUsers[index].roleID.length !== 0
             this.setState({ clinicUsers: clinicUsers })
         }
     }
 
-    editUserID = index => e => {
-        let clinicUsers = [...this.state.clinicUsers]
-        clinicUsers[index].userID = e.target.value
-        clinicUsers[index].canSave = clinicUsers[index].userID.length !== 0 && clinicUsers[index].roleID.length !== 0
-        this.setState({ clinicUsers: clinicUsers })
+    editRoleID(index) {
+        return e => {
+            let clinicUsers = [...this.state.clinicUsers]
+            clinicUsers[index].roleID = e.target.value
+            clinicUsers[index].canSave = clinicUsers[index].userID.length !== 0 && clinicUsers[index].roleID.length !== 0
+            this.setState({ clinicUsers: clinicUsers })
+        }
     }
 
-    editRoleID = index => e => {
-        let clinicUsers = [...this.state.clinicUsers]
-        clinicUsers[index].roleID = e.target.value
-        clinicUsers[index].canSave = clinicUsers[index].userID.length !== 0 && clinicUsers[index].roleID.length !== 0
-        this.setState({ clinicUsers: clinicUsers })
+    saveUser(index) {
+        return e => {
+            let clinicUsers = [...this.state.clinicUsers]
+
+            clinicUsers[index].edit = false
+            clinicUsers[index].saving = true
+
+            this.props.saveUserRoleCustomMsg(this.state.clinicUsers[index], "Added User to the Clinic")
+        }
     }
 
-    saveUser = index => e => {
-        let clinicUsers = [...this.state.clinicUsers]
-
-        clinicUsers[index].edit = false
-        clinicUsers[index].saving = true
-
-        this.props.saveUserRoleCustomMsg(this.state.clinicUsers[index], "Added user to clinic")
+    cancelNewUser(index) {
+        return e => {
+            let clinicUsers = [...this.state.clinicUsers]
+            clinicUsers.splice(index, 1)
+            this.setState({ clinicUsers: clinicUsers })
+        }
     }
 
-    cancelNewUser = index => e => {
-        let clinicUsers = [...this.state.clinicUsers]
-        clinicUsers.splice(index, 1)
-        this.setState({ clinicUsers: clinicUsers })
-    }
-
-    removeUser = userID => e => {
-        this.props.deleteUserFromClinic(this.props.clinicID, userID)
+    removeUser(userID) {
+        return e => {
+            this.props.deleteUserFromClinic(this.props.clinicID, userID)
+        }
     }
 
     render() {
@@ -144,111 +157,144 @@ class UsersList extends React.Component {
         }
 
         return (
-            <div id="users">
-                <h2>
-                    Users of clinic <em>{props.clinic.name}</em>
-                </h2>
-                <div className="row">
-                    <div className={this.state.selectedUserID ? "col-8" : "col-12"}>
-                        <table className="table table-hover text-center">
-                            <thead>
-                                <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">Username</th>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Email</th>
-                                    <th />
-                                    <th />
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {_.map(this.state.clinicUsers, (user, i) => {
-                                    return props.canEdit && user.edit ? (
-                                        <tr key={i}>
-                                            <th scope="row">{i + 1}</th>
-                                            <td colSpan="3">
-                                                <select className="form-control form-control-sm" value={user.userID || ""} onChange={this.editUserID(i)}>
-                                                    <option>Select user</option>
-                                                    {_.map(_.difference(props.allowedClinicUserIDs, props.clinicUserIDs), userID => (
-                                                        <option key={userID} value={userID || ""}>
-                                                            {props.users[userID].username} - {getName(props.users[userID])} ({props.users[userID].email})
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <select className="form-control form-control-sm" value={user.roleID || ""} onChange={this.editRoleID(i)}>
-                                                    <option>Select role</option>
-                                                    {_.map(_.pickBy(props.roles, role => !_.includes(props.advancedRoleIDs, role.id)), role => (
-                                                        <option key={role.id} value={role.id}>
-                                                            {role.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </td>
-                                            <td className="text-right">
-                                                <div className="btn-group" role="group">
-                                                    <button
-                                                        className="btn btn-sm btn-light"
-                                                        disabled={user.saving}
-                                                        type="button"
-                                                        onClick={this.cancelNewUser(i)}
-                                                    >
-                                                        <span className="icon_close" />
-                                                    </button>
-                                                    <button
-                                                        className="btn btn-sm btn-light"
-                                                        disabled={user.saving || !user.canSave}
-                                                        type="button"
-                                                        onClick={this.saveUser(i)}
-                                                    >
-                                                        <span className="icon_floppy" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        <tr key={user.id} className={this.state.selectedUserID === user.id ? "table-active" : ""}>
-                                            <th scope="row">{i + 1}</th>
-                                            <td>
+            <div>
+                <table className="table">
+                    <thead>
+                        <tr>
+                            <td className="w-7 row-details-header-column">
+                                <span className="row-details-icon" />
+                            </td>
+                            <th className="w-7" scope="col">
+                                #
+                            </th>
+                            <th className="w-15" scope="col">
+                                Username
+                            </th>
+                            <th className="w-20" scope="col">
+                                Name
+                            </th>
+                            <th scope="col">Email</th>
+                            <th />
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {_.map(this.state.clinicUsers, (user, i) => (
+                            <React.Fragment key={user.id || i}>
+                                {props.canEdit && user.edit ? (
+                                    <tr>
+                                        <td className="w-7 row-details-header-column" />
+                                        <th className="w-7" scope="row">
+                                            {i + 1}
+                                        </th>
+                                        <td className="w-35" colSpan="2">
+                                            <select className="form-control" value={user.userID || ""} onChange={this.editUserID(i)}>
+                                                <option>Select user</option>
+                                                {_.map(_.difference(props.allowedClinicUserIDs, props.clinicUserIDs), userID => (
+                                                    <option key={userID} value={userID || ""}>
+                                                        {props.users[userID].username} - {getName(props.users[userID])} ({props.users[userID].email})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select className="form-control" value={user.roleID || ""} onChange={this.editRoleID(i)}>
+                                                <option>Select role</option>
+                                                {_.map(_.pickBy(props.roles, role => !_.includes(props.advancedRoleIDs, role.id)), role => (
+                                                    <option key={role.id} value={role.id}>
+                                                        {role.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </td>
+                                        <td className="text-right">
+                                            <div>
+                                                <button className="btn btn-secondary" disabled={user.saving} type="button" onClick={this.cancelNewUser(i)}>
+                                                    Remove
+                                                </button>
+                                                <button
+                                                    className="btn btn-primary"
+                                                    disabled={user.saving || !user.canSave}
+                                                    type="button"
+                                                    onClick={this.saveUser(i)}
+                                                >
+                                                    Add
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    <tr className={this.state.selectedUserID === user.id ? "table-active" : ""}>
+                                        <td className="w-7 row-details-header-column" />
+                                        <th className="w-7" scope="row">
+                                            {i + 1}
+                                        </th>
+                                        <td className="w-15">
+                                            {this.state.selectedUserID === user.id ? (
+                                                <Link to={`/users/${user.id}`}>{user.username}</Link>
+                                            ) : (
+                                                <Link to={`/clinics/${props.clinicID}/users/${user.id}`}>{user.username}</Link>
+                                            )}
+                                        </td>
+                                        <td className="w-20">{getName(user)}</td>
+                                        <td>{user.email}</td>
+                                        <td className="text-right">
+                                            <div>
                                                 {this.state.selectedUserID === user.id ? (
-                                                    <Link to={`/users/${user.id}`}>{user.username}</Link>
+                                                    <button
+                                                        className="btn btn-link"
+                                                        type="button"
+                                                        onClick={() => this.props.push(`/clinics/${props.clinicID}`)}
+                                                    >
+                                                        Hide Roles
+                                                        <span className="arrow-up-icon" />
+                                                    </button>
                                                 ) : (
-                                                    <Link to={`/clinics/${props.clinicID}/users/${user.id}`}>{user.username}</Link>
+                                                    <button
+                                                        className="btn btn-link"
+                                                        type="button"
+                                                        onClick={() => this.props.push(`/clinics/${props.clinicID}/users/${user.id}`)}
+                                                    >
+                                                        Show Roles
+                                                        <span className="arrow-down-icon" />
+                                                    </button>
                                                 )}
-                                            </td>
-                                            <td>{getName(user)}</td>
-                                            <td>{user.email}</td>
-                                            <td />
-                                            <td className="text-right">
                                                 {props.canEdit ? (
-                                                    <div className="btn-group" role="group">
-                                                        <button onClick={this.removeUser(user.id)} className="btn btn-sm btn-light" type="button">
-                                                            <span className="icon_trash" />
-                                                        </button>
-                                                    </div>
+                                                    <button className="btn btn-link" type="button" onClick={this.removeUser(user.id)}>
+                                                        <span className="remove-link">Remove</span>
+                                                    </button>
                                                 ) : null}
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
-                        {props.canEdit ? (
-                            <button
-                                type="button"
-                                className="btn btn-sm btn-outline-primary col"
-                                disabled={this.state.clinicUsers.length !== 0 && this.state.clinicUsers[this.state.clinicUsers.length - 1].edit ? true : null}
-                                onClick={this.newUser()}
-                            >
-                                Add user
-                            </button>
-                        ) : null}
-                    </div>
-                    <div className="col">
-                        <Route path="/clinics/:clinicID/users/:userID" component={UserDetail} />
-                    </div>
-                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                                {this.state.selectedUserID === user.id ? (
+                                    <tr className="table-active">
+                                        <td colSpan="7" className="row-details-container">
+                                            <UserDetail clinicID={props.clinicID} userID={user.id} />
+                                        </td>
+                                    </tr>
+                                ) : null}
+                            </React.Fragment>
+                        ))}
+                        <tr className="table-edit">
+                            <td className="w-7 row-details-header-column" />
+                            <td colSpan="7">
+                                {props.canEdit ? (
+                                    <button
+                                        type="button"
+                                        className="btn btn-link"
+                                        disabled={
+                                            this.state.clinicUsers.length !== 0 && this.state.clinicUsers[this.state.clinicUsers.length - 1].edit ? true : null
+                                        }
+                                        onClick={this.newUser()}
+                                    >
+                                        Add User to the Clinic
+                                    </button>
+                                ) : null}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         )
     }
@@ -308,6 +354,7 @@ const makeMapStateToProps = () => {
 const mapDispatchToProps = dispatch =>
     bindActionCreators(
         {
+            push,
             loadUsers,
             loadRoles,
             loadDomainUserRoles,

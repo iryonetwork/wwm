@@ -2,7 +2,7 @@ import _ from "lodash"
 
 import api from "shared/modules/api"
 import { clearUserRoles } from "./userRoles"
-import { open, close, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
+import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 
 const LOAD_USER = "user/LOAD_USER"
 const LOAD_USER_SUCCESS = "user/LOAD_USER_SUCCESS"
@@ -12,14 +12,17 @@ const LOAD_USERS = "user/LOAD_USERS"
 const LOAD_USERS_SUCCESS = "user/LOAD_USERS_SUCCESS"
 const LOAD_USERS_FAIL = "user/LOAD_USERS_FAIL"
 
+const DELETE_USER = "user/DELETE_USER"
 const DELETE_USER_FAIL = "user/DELETE_USER_FAIL"
 const DELETE_USER_SUCCESS = "user/DELETE_USER_SUCCESS"
 
+const SAVE_USER = "user/SAVE_USER"
 const SAVE_USER_FAIL = "user/SAVE_USER_FAIL"
 const SAVE_USER_SUCCESS = "user/SAVE_USER_SUCCESS"
 
 const initialState = {
     loading: false,
+    updating: false,
     allLoaded: false,
     forbidden: false
 }
@@ -66,15 +69,28 @@ export default (state = initialState, action) => {
                 loading: false
             }
 
+        case DELETE_USER:
+            return {
+                ...state,
+                updating: true
+            }
+
         case DELETE_USER_SUCCESS:
             return {
                 ...state,
                 users: _.pickBy(state.users, user => user.id !== action.userID)
             }
 
+        case SAVE_USER:
+            return {
+                ...state,
+                updating: true
+            }
+
         case SAVE_USER_SUCCESS:
             return {
                 ...state,
+                updating: false,
                 users: _.assign({}, state.users, _.fromPairs([[action.user.id, action.user]]))
             }
         default:
@@ -129,7 +145,9 @@ export const loadUsers = () => {
 
 export const deleteUser = userID => {
     return dispatch => {
-        dispatch(close())
+        dispatch({
+            type: DELETE_USER
+        })
 
         return dispatch(api(`/auth/users/${userID}`, "DELETE"))
             .then(response => {
@@ -138,7 +156,7 @@ export const deleteUser = userID => {
                     type: DELETE_USER_SUCCESS,
                     userID: userID
                 })
-                setTimeout(() => dispatch(open("Deleted user", "", COLOR_SUCCESS, 5)), 100)
+                setTimeout(() => dispatch(open("Deleted User", "", COLOR_SUCCESS, 5)), 100)
             })
             .catch(error => {
                 dispatch({
@@ -152,7 +170,9 @@ export const deleteUser = userID => {
 
 export const saveUser = user => {
     return dispatch => {
-        dispatch(close())
+        dispatch({
+            type: SAVE_USER
+        })
 
         let url = "/auth/users"
         let method = "POST"
@@ -170,7 +190,7 @@ export const saveUser = user => {
                     type: SAVE_USER_SUCCESS,
                     user: response
                 })
-                setTimeout(() => dispatch(open("Saved user", "", COLOR_SUCCESS, 5)), 100)
+                setTimeout(() => dispatch(open("Saved User", "", COLOR_SUCCESS, 5)), 100)
 
                 return response
             })

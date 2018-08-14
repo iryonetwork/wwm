@@ -112,7 +112,7 @@ nav {
 
     .logo {
         margin-top: 50px;
-        margin-bottom: 130px;
+        margin-bottom: 110px;
     }
 
     .bottom {
@@ -122,6 +122,8 @@ nav {
     a.navigation {
         color: $gray-500;
         height: 30px;
+        margin-left: -5px;
+        font-weight: 600;
         line-height: 30px;
         display: block;
 
@@ -401,8 +403,25 @@ label {
     }
 }
 
-.form-inline-container span {
-    margin-right: 0;
+.form-inline-container {
+    width: 100%;
+    span {
+        margin-right: 0;
+    }
+
+    .label {
+        display: inline-block;
+        position: relative;
+        text-transform:none;
+        font-size: 14px;
+        font-weight: bold;
+        text-align: left;
+        color: $black
+    }
+
+    .form-check-inline {
+        margin: 0;
+    }
 }
 
 .btn-cancel {
@@ -424,5 +443,11 @@ label {
 .form-row {
     &.withRemove {
         max-width: 85%;
+    }
+}
+
+.btn-link {
+    &:hover{
+        text-decoration: none;
     }
 }

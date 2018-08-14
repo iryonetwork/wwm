@@ -21,6 +21,7 @@ const LOAD_ORGANIZATIONS_FAIL = "organization/LOAD_ORGANIZATIONS_FAIL"
 const DELETE_ORGANIZATION_FAIL = "organization/DELETE_ORGANIZATION_FAIL"
 const DELETE_ORGANIZATION_SUCCESS = "organization/DELETE_ORGANIZATION_SUCCESS"
 
+const SAVE_ORGANIZATION = "organization/SAVE_ORGANIZATION"
 const SAVE_ORGANIZATION_FAIL = "organization/SAVE_ORGANIZATION_FAIL"
 const SAVE_ORGANIZATION_SUCCESS = "organization/SAVE_ORGANIZATION_SUCCESS"
 
@@ -97,9 +98,16 @@ export default (state = initialState, action) => {
                 organizations: _.pickBy(state.organizations, organization => organization.id !== action.organizationID)
             }
 
+        case SAVE_ORGANIZATION:
+            return {
+                ...state,
+                updating: true
+            }
+
         case SAVE_ORGANIZATION_SUCCESS:
             return {
                 ...state,
+                updating: false,
                 organizations: _.assign({}, state.organizations, _.fromPairs([[action.organization.id, action.organization]]))
             }
 
@@ -199,7 +207,7 @@ export const deleteOrganization = organizationID => {
                     type: DELETE_ORGANIZATION_SUCCESS,
                     organizationID: organizationID
                 })
-                setTimeout(() => dispatch(open("Deleted organization", "", COLOR_SUCCESS, 5)), 100)
+                setTimeout(() => dispatch(open("Deleted Organization", "", COLOR_SUCCESS, 5)), 100)
             })
             .catch(error => {
                 dispatch({
@@ -213,7 +221,9 @@ export const deleteOrganization = organizationID => {
 
 export const saveOrganization = organization => {
     return dispatch => {
-        dispatch(close())
+        dispatch({
+            type: SAVE_ORGANIZATION
+        })
 
         let url = "/auth/organizations"
         let method = "POST"
@@ -231,7 +241,7 @@ export const saveOrganization = organization => {
                     type: SAVE_ORGANIZATION_SUCCESS,
                     organization: response
                 })
-                setTimeout(() => dispatch(open("Saved organization", "", COLOR_SUCCESS, 5)), 100)
+                setTimeout(() => dispatch(open("Saved Organization", "", COLOR_SUCCESS, 5)), 100)
 
                 return response
             })

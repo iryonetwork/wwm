@@ -7,6 +7,8 @@ import _ from "lodash"
 import { loadOrganizations, deleteOrganization } from "../../modules/organizations"
 import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 
+import "../../styles/style.css"
+
 class Organizations extends React.Component {
     constructor(props) {
         super(props)
@@ -42,8 +44,10 @@ class Organizations extends React.Component {
         this.setState({ loading: loading })
     }
 
-    removeOrganization = organizationID => e => {
-        this.props.deleteOrganization(organizationID)
+    removeOrganization(organizationID) {
+        return e => {
+            this.props.deleteOrganization(organizationID)
+        }
     }
 
     render() {
@@ -57,10 +61,12 @@ class Organizations extends React.Component {
 
         let i = 0
         return (
-            <table className="table table-hover text-center">
+            <table className="table">
                 <thead>
                     <tr>
-                        <th scope="col">#</th>
+                        <th className="w-7" scope="col">
+                            #
+                        </th>
                         <th scope="col">Name</th>
                         <th scope="col">Legal status</th>
                         <th scope="col">Service type</th>
@@ -71,7 +77,9 @@ class Organizations extends React.Component {
                 <tbody>
                     {_.map(_.filter(props.organizations, organization => organization), organization => (
                         <tr key={organization.id}>
-                            <th scope="row">{++i}</th>
+                            <th className="w-10" scope="row">
+                                {++i}
+                            </th>
                             <td>
                                 <Link to={`/organizations/${organization.id}`}>{organization.name}</Link>
                             </td>
@@ -80,8 +88,8 @@ class Organizations extends React.Component {
                             <td>{organization.clinics.length}</td>
                             <td className="text-right">
                                 {props.canEdit ? (
-                                    <button onClick={this.removeOrganization(organization.id)} className="btn btn-sm btn-light" type="button">
-                                        <span className="icon_trash" />
+                                    <button onClick={this.removeOrganization(organization.id)} className="btn btn-link" type="button">
+                                        <span className="remove-link">Remove</span>
                                     </button>
                                 ) : null}
                             </td>

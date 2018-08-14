@@ -6,6 +6,8 @@ import { Link, withRouter } from "react-router-dom"
 import Locations from "./list"
 import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 
+import "../../styles/style.css"
+
 class LocationsIndex extends React.Component {
     constructor(props) {
         super(props)
@@ -50,11 +52,13 @@ class LocationsIndex extends React.Component {
 
         return (
             <div>
-                <h1>Locations</h1>
+                <header>
+                    <h1>Locations</h1>
+                </header>
                 <Locations />
                 {props.canEdit ? (
-                    <Link to="/locations/new" className="btn btn-sm btn-outline-primary col">
-                        Add new location
+                    <Link to="/locations/new" className="btn btn-link">
+                        Add New Location
                     </Link>
                 ) : null}
             </div>

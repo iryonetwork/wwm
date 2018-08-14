@@ -6,6 +6,8 @@ import { withRouter } from "react-router-dom"
 import Clinics from "./list"
 import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 
+import "../../styles/style.css"
+
 class ClinicsIndex extends React.Component {
     constructor(props) {
         super(props)
@@ -50,7 +52,9 @@ class ClinicsIndex extends React.Component {
 
         return (
             <div>
-                <h1>Clinics</h1>
+                <header>
+                    <h1>Clinics</h1>
+                </header>
                 <Clinics />
             </div>
         )

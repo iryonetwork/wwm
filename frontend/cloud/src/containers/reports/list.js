@@ -38,7 +38,7 @@ class Reports extends React.Component {
         return e => {
             e.preventDefault()
             this.props.readFile(this.props.reportType, this.props.reports[index].name).then(data => {
-                let name = this.props.reportType + " (" + moment(this.props.reports[index].created).format("DD-MM-YYYY HH:mm:ss") + ").csv"
+                let name = this.props.reportType + " (" + moment(this.props.reports[index].created).format("LLL") + ").csv"
                 fileDownload(data, name)
             })
         }
@@ -53,30 +53,35 @@ class Reports extends React.Component {
             return <div>Loading...</div>
         }
         return (
-            <table className="table table-hover text-center">
+            <table className="table">
                 <thead>
-                    <tr>
-                        <th scope="col">Report creation time</th>
-                    </tr>
-                </thead>
-                <tbody>
                     {_.map(props.reports, (report, index) => (
-                        <tr key={report.name}>
-                            <td>
-                                <Link to="/" onClick={this.downloadFile(index)}>
+                        <React.Fragment key={report.name}>
+                            <tr>
+                                <th className="w-20" scope="row">
+                                    Report creation time
+                                </th>
+                                <th />
+                            </tr>
+                            <tr>
+                                <td className="w-20">
                                     <span>{moment(report.created).format("DD-MM-YYYY HH:mm:ss")}</span>
-                                </Link>
-                            </td>
-                        </tr>
+                                </td>
+                                <td>
+                                    <Link to="/" onClick={this.downloadFile(index)}>
+                                        Download
+                                    </Link>
+                                </td>
+                            </tr>
+                        </React.Fragment>
                     ))}
-                </tbody>
+                </thead>
             </table>
         )
     }
 }
 
 const mapStateToProps = (state, ownProps) => {
-    console.log(state.reports)
     return {
         reports: _.get(state.reports.reports, ownProps.reportType, undefined),
         reportsLoading: state.reports.loading,

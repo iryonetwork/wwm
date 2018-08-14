@@ -54,8 +54,10 @@ class Locations extends React.Component {
         this.setState({ loading: loading })
     }
 
-    removeLocation = locationID => e => {
-        this.props.deleteLocation(locationID)
+    removeLocation(locationID) {
+        return e => {
+            this.props.deleteLocation(locationID)
+        }
     }
 
     render() {
@@ -69,10 +71,12 @@ class Locations extends React.Component {
 
         let i = 0
         return (
-            <table className="table table-hover text-center">
+            <table className="table">
                 <thead>
                     <tr>
-                        <th scope="col">#</th>
+                        <th className="w-7" scope="col">
+                            #
+                        </th>
                         <th scope="col">Name</th>
                         <th scope="col">City</th>
                         <th scope="col">Country</th>
@@ -83,7 +87,9 @@ class Locations extends React.Component {
                 <tbody>
                     {_.map(_.filter(props.locations, location => location), location => (
                         <tr key={location.id}>
-                            <th scope="row">{++i}</th>
+                            <th className="w-10" scope="row">
+                                {++i}
+                            </th>
                             <td>
                                 <Link to={`/locations/${location.id}`}>{location.name}</Link>
                             </td>
@@ -92,8 +98,8 @@ class Locations extends React.Component {
                             <td>{location.clinics.length}</td>
                             <td className="text-right">
                                 {props.canEdit ? (
-                                    <button onClick={this.removeLocation(location.id)} className="btn btn-sm btn-light" type="button">
-                                        <span className="icon_trash" />
+                                    <button onClick={this.removeLocation(location.id)} className="btn btn-link" type="button">
+                                        <span className="remove-link">Remove</span>
                                     </button>
                                 ) : null}
                             </td>

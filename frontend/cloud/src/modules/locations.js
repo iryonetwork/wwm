@@ -20,6 +20,7 @@ const LOAD_LOCATIONS_FAIL = "location/LOAD_LOCATIONS_FAIL"
 const DELETE_LOCATION_FAIL = "location/DELETE_LOCATION_FAIL"
 const DELETE_LOCATION_SUCCESS = "location/DELETE_LOCATION_SUCCESS"
 
+const SAVE_LOCATION = "location/SAVE_LOCATION"
 const SAVE_LOCATION_FAIL = "location/SAVE_LOCATION_FAIL"
 const SAVE_LOCATION_SUCCESS = "location/SAVE_LOCATION_SUCCESS"
 
@@ -96,9 +97,16 @@ export default (state = initialState, action) => {
                 locations: _.pickBy(state.locations, location => location.id !== action.locationID)
             }
 
+        case SAVE_LOCATION:
+            return {
+                ...state,
+                updating: true
+            }
+
         case SAVE_LOCATION_SUCCESS:
             return {
                 ...state,
+                updating: false,
                 locations: _.assign({}, state.locations, _.fromPairs([[action.location.id, action.location]]))
             }
 
@@ -194,7 +202,7 @@ export const deleteLocation = locationID => {
                     type: DELETE_LOCATION_SUCCESS,
                     locationID: locationID
                 })
-                setTimeout(() => dispatch(open("Deleted location", "", COLOR_SUCCESS, 5)), 100)
+                setTimeout(() => dispatch(open("Deleted Location", "", COLOR_SUCCESS, 5)), 100)
             })
             .catch(error => {
                 dispatch({
@@ -208,7 +216,9 @@ export const deleteLocation = locationID => {
 
 export const saveLocation = location => {
     return dispatch => {
-        dispatch(close())
+        dispatch({
+            type: SAVE_LOCATION
+        })
 
         let url = "/auth/locations"
         let method = "POST"
@@ -226,7 +236,7 @@ export const saveLocation = location => {
                     type: SAVE_LOCATION_SUCCESS,
                     location: response
                 })
-                setTimeout(() => dispatch(open("Saved location", "", COLOR_SUCCESS, 5)), 100)
+                setTimeout(() => dispatch(open("Saved Location", "", COLOR_SUCCESS, 5)), 100)
 
                 return response
             })

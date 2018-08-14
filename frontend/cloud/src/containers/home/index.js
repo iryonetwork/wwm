@@ -1,11 +1,11 @@
 import React from "react"
 import { connect } from "react-redux"
 
-import UserDetail from "../users/detail"
+import User from "../users/detail"
 
 const Home = props => (
     <div>
-        <UserDetail userID={props.userID} home={true} />
+        <User userID={props.userID} home={true} />
     </div>
 )
 

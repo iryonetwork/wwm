@@ -6,6 +6,8 @@ import { withRouter } from "react-router-dom"
 import UserRoles from "./list"
 import { SUPERADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 
+import "../../styles/style.css"
+
 class UserRolesIndex extends React.Component {
     constructor(props) {
         super(props)
@@ -50,7 +52,9 @@ class UserRolesIndex extends React.Component {
 
         return (
             <div>
-                <h1>User roles</h1>
+                <header>
+                    <h1>User Roles</h1>
+                </header>
                 <UserRoles />
             </div>
         )

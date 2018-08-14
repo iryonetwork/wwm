@@ -1,13 +1,16 @@
 import React from "react"
-import { Link, withRouter } from "react-router-dom"
+import { Link, NavLink, withRouter } from "react-router-dom"
 import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
 import _ from "lodash"
 
+import { joinPaths } from "shared/utils"
+import { loadUser } from "../../modules/users"
 import { loadRoles } from "../../modules/roles"
 import { makeGetWildcardUserUserRoles } from "../../selectors/userRolesSelectors"
 import { loadUserUserRoles, deleteUserRole } from "../../modules/userRoles"
-import { SUPERADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
+import { SUPERADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
+import Spinner from "shared/containers/spinner"
 
 class WildcardUserRolesList extends React.Component {
     constructor(props) {
@@ -16,6 +19,9 @@ class WildcardUserRolesList extends React.Component {
     }
 
     componentDidMount() {
+        if (!this.props.user) {
+            this.props.loadUser(this.props.userID)
+        }
         if (!this.props.roles) {
             this.props.loadRoles()
         }
@@ -30,6 +36,9 @@ class WildcardUserRolesList extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
+        if (!nextProps.user && !nextProps.usersLoading) {
+            this.props.loadUser(nextProps.userID)
+        }
         if (!nextProps.roles && this.props.roles) {
             this.props.loadRoles()
         }
@@ -55,15 +64,17 @@ class WildcardUserRolesList extends React.Component {
         this.setState({ loading: loading })
     }
 
-    removeUserRole = userRoleID => e => {
-        this.props.deleteUserRole(userRoleID)
-        this.forceUpdate()
+    removeUserRole(userRoleID) {
+        return e => {
+            this.props.deleteUserRole(userRoleID)
+            this.forceUpdate()
+        }
     }
 
     render() {
         let props = this.props
-        if (this.state.loading) {
-            return <div>Loading...</div>
+        if (this.props.usersLoading) {
+            return <Spinner />
         }
         if (!props.canSee || props.forbidden) {
             return null
@@ -71,44 +82,72 @@ class WildcardUserRolesList extends React.Component {
 
         let i = 0
         return (
-            <div id="wildcardRoles">
-                <h2>Wildcard roles</h2>
-                <div className="row">
-                    <div className="col-12">
-                        <table className="table table-hover text-center">
-                            <thead>
-                                <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">Role</th>
-                                    <th scope="col">Domain type</th>
-                                    <th />
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {_.map(_.filter(props.wildcardUserRoles, userRole => userRole), userRole => (
-                                    <tr key={userRole.id}>
-                                        <th scope="row">{++i}</th>
-                                        <td>
-                                            {props.canEdit ? (
-                                                <Link to={`/roles/${userRole.roleID}`}>{props.roles[userRole.roleID].name}</Link>
-                                            ) : (
-                                                props.roles[userRole.roleID].name
-                                            )}
-                                        </td>
-                                        <td>{userRole.domainType}</td>
-                                        <td className="text-right">
-                                            {props.canEdit ? (
-                                                <button onClick={this.removeUserRole(userRole.id)} className="btn btn-sm btn-light" type="button">
-                                                    <span className="icon_trash" />
-                                                </button>
-                                            ) : null}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+            <div>
+                <header>
+                    {props.isSelf ? <h1>My Profile</h1> : <h1>Users</h1>}
+                    <button onClick={this.submit} className="btn btn-primary btn-wide">
+                        {props.usersUpdating ? "Saving..." : "Save"}
+                    </button>
+                </header>
+                <h2>{props.user ? props.user.username : "New user"}</h2>
+                {props.user ? (
+                    <div className="navigation">
+                        {props.canSeePersonal ? (
+                            <NavLink exact to={props.basePath}>
+                                Personal Info
+                            </NavLink>
+                        ) : null}
+                        {props.canSeeOrganizations ? <NavLink to={joinPaths(props.basePath, "organizations")}>Organizations</NavLink> : null}
+                        {props.canSeeClinics ? <NavLink to={joinPaths(props.basePath, "clinics")}>Clinics</NavLink> : null}
+                        {props.canSee ? <NavLink to={joinPaths(props.basePath, "userroles")}>Wildcard Roles</NavLink> : null}
                     </div>
-                </div>
+                ) : null}
+                {this.state.loading ? (
+                    <Spinner />
+                ) : (
+                    <div id="wildcardRoles">
+                        <div className="row">
+                            <div className="col-12">
+                                <table className="table">
+                                    <thead>
+                                        <tr>
+                                            <th className="w-7" scope="col">
+                                                #
+                                            </th>
+                                            <th scope="col">Role</th>
+                                            <th scope="col">Domain type</th>
+                                            <th />
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {_.map(_.filter(props.wildcardUserRoles, userRole => userRole), userRole => (
+                                            <tr key={userRole.id}>
+                                                <th className="w-7" scope="row">
+                                                    {++i}
+                                                </th>
+                                                <td>
+                                                    {props.canEdit ? (
+                                                        <Link to={`/roles/${userRole.roleID}`}>{props.roles[userRole.roleID].name}</Link>
+                                                    ) : (
+                                                        props.roles[userRole.roleID].name
+                                                    )}
+                                                </td>
+                                                <td>{userRole.domainType}</td>
+                                                <td className="text-right">
+                                                    {props.canEdit ? (
+                                                        <button onClick={this.removeUserRole(userRole.id)} className="btn btn-link" type="button">
+                                                            <span className="remove-link">Remove</span>
+                                                        </button>
+                                                    ) : null}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         )
     }
@@ -121,9 +160,14 @@ const makeMapStateToProps = () => {
         if (!userID) {
             userID = ownProps.match.params.userID
         }
+        let isSelf = state.authentication.token.sub === userID
 
         return {
+            basePath: ownProps.home ? "/me" : `/users/${userID}`,
+            isSelf: isSelf,
             userID: userID,
+            user: state.users.users ? state.users.users[userID] : undefined,
+            usersLoading: state.users.loading,
             roles: state.roles.roles,
             rolesLoading: state.roles.loading,
             userRoles: state.userRoles.userUserRoles ? (state.userRoles.userUserRoles[userID] ? state.userRoles.userUserRoles[userID] : undefined) : undefined,
@@ -131,6 +175,9 @@ const makeMapStateToProps = () => {
             wildcardUserRoles: getWildcardUserUserRoles(state, { userID: userID }),
             canSee: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
             canEdit: state.validations.userRights ? state.validations.userRights[SUPERADMIN_RIGHTS_RESOURCE] : undefined,
+            canSeePersonal: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
+            canSeeClinics: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
+            canSeeOrganizations: state.validations.userRights ? state.validations.userRights[SELF_RIGHTS_RESOURCE] : undefined,
             validationsLoading: state.validations.loading,
             forbidden: state.userRoles.forbidden || state.users.forbidden || state.roles.forbidden
         }
@@ -141,6 +188,7 @@ const makeMapStateToProps = () => {
 const mapDispatchToProps = dispatch =>
     bindActionCreators(
         {
+            loadUser,
             loadRoles,
             loadUserUserRoles,
             deleteUserRole,

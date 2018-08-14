@@ -1,10 +1,12 @@
 import React from "react"
 import { connect } from "react-redux"
 import { bindActionCreators } from "redux"
-import { Link, withRouter } from "react-router-dom"
+import { withRouter } from "react-router-dom"
 
 import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import Reports from "./list"
+
+import "../../styles/style.css"
 
 class ReportsIndex extends React.Component {
     constructor(props) {
@@ -49,16 +51,19 @@ class ReportsIndex extends React.Component {
         }
 
         return (
-            <React.Fragment>
-                <div>
-                    <h1>Patients report</h1>
+            <div>
+                <header>
+                    <h1>Reports</h1>
+                </header>
+                <div className="section">
+                    <h3>Patients</h3>
                     <Reports reportType="patients" />
                 </div>
-                <div>
-                    <h1>Encounters report</h1>
+                <div className="section">
+                    <h3>Encounters</h3>
                     <Reports reportType="encounters" />
                 </div>
-            </React.Fragment>
+            </div>
         )
     }
 }

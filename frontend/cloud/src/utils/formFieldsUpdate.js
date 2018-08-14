@@ -1,6 +1,27 @@
 export const processStateOnChange = (state, e) => {
     const target = e.target
-    const value = target.type === "checkbox" ? target.checked : target.value
+    let value
+    switch (target.type) {
+        case "checkbox":
+            value = target.checked
+            break
+        case "radio":
+            value = target.checked ? target.value : undefined
+            break
+        default:
+            value = target.value
+    }
+
+    if (value === undefined) {
+        return state
+    }
+
+    if (value === "true") {
+        value = true
+    }
+    if (value === "false") {
+        value = false
+    }
 
     let id
     let toAssign
@@ -38,7 +59,21 @@ export const processStateOnChange = (state, e) => {
 export const processStateOnBlur = (state, e) => {
     // trims input on blur
     const target = e.target
-    const value = target.type === "checkbox" ? target.checked : target.value
+    let value
+    switch (target.type) {
+        case "checkbox":
+            value = target.checked
+            break
+        case "radio":
+            value = target.checked ? target.value : undefined
+            break
+        default:
+            value = target.value
+    }
+
+    if (value === undefined) {
+        return state
+    }
 
     let id
     let toAssign

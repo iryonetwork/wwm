@@ -1,14 +1,17 @@
 import React from "react"
 import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
-import { withRouter } from "react-router-dom"
+import { withRouter, Link } from "react-router-dom"
 import _ from "lodash"
+import classnames from "classnames"
 
 import { loadLocation, saveLocation } from "../../modules/locations"
 import { ADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { CATEGORY_COUNTRIES, loadCodes } from "../../modules/codes"
 import { open, close, COLOR_DANGER } from "shared/modules/alert"
 import { processStateOnChange, processStateOnBlur } from "../../utils/formFieldsUpdate"
+
+import "../../styles/style.css"
 
 class LocationDetail extends React.Component {
     constructor(props) {
@@ -18,7 +21,7 @@ class LocationDetail extends React.Component {
             capacity: "",
             city: "",
             country: "",
-            electricty: false,
+            electricity: false,
             waterSupply: false,
             manager: {},
             loading: true,
@@ -41,7 +44,7 @@ class LocationDetail extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (!nextProps.location && nextProps.locationID !== "new" && !this.props.locationLoading) {
+        if (!nextProps.location && nextProps.locationID !== "new" && !this.props.locationsLoading) {
             this.props.loadLocation(this.props.locationID)
         }
         if (!nextProps.countries && !nextProps.codesLoading) {
@@ -57,7 +60,7 @@ class LocationDetail extends React.Component {
     determineState(props) {
         let loading =
             (!props.location && props.locationID !== "new") ||
-            props.locationLoading ||
+            props.locationsLoading ||
             props.canEdit === undefined ||
             props.canSee === undefined ||
             props.validationsLoading ||
@@ -73,58 +76,66 @@ class LocationDetail extends React.Component {
                 capacity: props.location.capacity || "",
                 country: props.location.country || "",
                 city: props.location.city || "",
-                electricty: props.location.electricty || false,
+                electricity: props.location.electricity || false,
                 waterSupply: props.location.waterSupply || false,
                 manager: manager || {}
             })
         }
     }
 
-    updateInput = e => {
-        this.setState(processStateOnChange(this.state, e))
-    }
-
-    onBlurInput = e => {
-        this.setState(processStateOnBlur(this.state, e))
-    }
-
-    updateCapacity = e => {
-        var parsed = parseInt(e.target.value)
-        if (!isNaN(parsed) && parsed >= 0) {
-            this.setState({ capacity: e.target.value })
+    updateInput() {
+        return e => {
+            this.setState(processStateOnChange(this.state, e))
         }
     }
 
-    submit = e => {
-        e.preventDefault()
-        this.props.close()
-
-        let validationErrors = {}
-        if (!this.state.name || this.state.name === "") {
-            validationErrors["name"] = "Required"
+    onBlurInput() {
+        return e => {
+            this.setState(processStateOnBlur(this.state, e))
         }
+    }
 
-        let location = this.props.location ? this.props.location : {}
-
-        location.name = this.state.name
-        location.capacity = parseInt(this.state.capacity)
-        location.country = this.state.country
-        location.city = this.state.city
-        location.electricty = this.state.electricty
-        location.waterSupply = this.state.waterSupply
-        location.manager = _.clone(this.state.manager)
-
-        if (!_.isEmpty(validationErrors)) {
-            this.props.open("There are errors in the data submitted", "", COLOR_DANGER)
-            this.setState({ validationErrors: validationErrors })
-            return
-        }
-
-        this.props.saveLocation(location).then(response => {
-            if (!location.id && response && response.id) {
-                this.props.history.push(`/locations/${response.id}`)
+    updateCapacity() {
+        return e => {
+            var parsed = parseInt(e.target.value)
+            if (!isNaN(parsed) && parsed >= 0) {
+                this.setState({ capacity: e.target.value })
             }
-        })
+        }
+    }
+
+    submit() {
+        return e => {
+            e.preventDefault()
+            this.props.close()
+
+            let validationErrors = {}
+            if (!this.state.name || this.state.name === "") {
+                validationErrors["name"] = "Required"
+            }
+
+            let location = this.props.location ? this.props.location : {}
+
+            location.name = this.state.name
+            location.capacity = parseInt(this.state.capacity)
+            location.country = this.state.country
+            location.city = this.state.city
+            location.electricity = this.state.electricity
+            location.waterSupply = this.state.waterSupply
+            location.manager = _.clone(this.state.manager)
+
+            if (!_.isEmpty(validationErrors)) {
+                this.props.open("There are errors in the data submitted", "", COLOR_DANGER)
+                this.setState({ validationErrors: validationErrors })
+                return
+            }
+
+            this.props.saveLocation(location).then(response => {
+                if (!location.id && response && response.id) {
+                    this.props.history.push(`/locations`)
+                }
+            })
+        }
     }
 
     render() {
@@ -138,149 +149,223 @@ class LocationDetail extends React.Component {
 
         return (
             <div>
-                <h1>Locations</h1>
-                <h2>{props.location ? this.props.location.name : "Add new location"}</h2>
-
-                <form onSubmit={this.submit} className="needs-validation" noValidate>
-                    <div className="form-group">
-                        <label htmlFor="name">Name</label>
-                        <input
-                            type="text"
-                            className={"form-control" + (this.state.validationErrors["name"] ? " is-invalid" : "")}
-                            id="name"
-                            value={this.state.name || ""}
-                            onChange={this.updateInput}
-                            onBlur={this.onBlurInput}
-                            disabled={!props.canEdit}
-                            placeholder="Location name"
-                            required="true"
-                        />
+                <header>
+                    <h1>Locations</h1>
+                    <Link to="/locations" className="btn btn-secondary btn-wide">
+                        Cancel
+                    </Link>
+                    <button onClick={this.submit()} className="btn btn-primary btn-wide">
+                        {props.locationsUpdating ? "Saving..." : "Save"}
+                    </button>
+                </header>
+                <h2>{props.location ? props.location.name : "New Location"}</h2>
+                <div className="location-form">
+                    <form onSubmit={this.submit()} className="needs-validation" noValidate>
+                        <div>
+                            <div className="section">
+                                <div className="form-row">
+                                    <div className="form-group col-sm-3">
+                                        <label>
+                                            <input
+                                                type="text"
+                                                className={"form-control" + (this.state.validationErrors["name"] ? " is-invalid" : "")}
+                                                id="name"
+                                                value={this.state.name || ""}
+                                                onChange={this.updateInput()}
+                                                onBlur={this.onBlurInput()}
+                                                disabled={!props.canEdit}
+                                                placeholder="Name"
+                                                required="true"
+                                            />
+                                            <span>Name</span>
+                                            {props.canEdit ? (
+                                                this.state.validationErrors["name"] ? (
+                                                    <div className="invalid-feedback">{this.state.validationErrors["name"]}</div>
+                                                ) : (
+                                                    <small className="form-text text-muted">Required</small>
+                                                )
+                                            ) : null}
+                                        </label>
+                                    </div>
+                                    <div className="form-group col-sm-3">
+                                        <label>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                id="capacity"
+                                                value={this.state.capacity || ""}
+                                                onChange={this.updateCapacity()}
+                                                onBlur={this.onBlurInput()}
+                                                disabled={!props.canEdit}
+                                                placeholder="Capacity"
+                                            />
+                                            <span>Capacity</span>
+                                        </label>
+                                    </div>
+                                    <div className="form-group col-sm-3">
+                                        <label>
+                                            <select
+                                                className={classnames("form-control", { selected: this.state.country })}
+                                                id="country"
+                                                value={this.state.country || ""}
+                                                onChange={this.updateInput()}
+                                                onBlur={this.onBlurInput()}
+                                                disabled={!props.canEdit}
+                                            >
+                                                <option value="">Select country</option>
+                                                {_.map(props.countries, country => (
+                                                    <option key={country.id} value={country.id}>
+                                                        {country.title}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <span>Country</span>
+                                        </label>
+                                    </div>
+                                    <div className="form-group col-sm-3">
+                                        <label>
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                id="city"
+                                                value={this.state.city || ""}
+                                                onChange={this.updateInput()}
+                                                onBlur={this.onBlurInput()}
+                                                disabled={!props.canEdit}
+                                                placeholder="City"
+                                            />
+                                            <span>City</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-inline-container">
+                                        <span className="label">Electricity</span>
+                                        <div className="form-check form-check-inline">
+                                            <input
+                                                className="form-check-input"
+                                                type="radio"
+                                                id="electricity"
+                                                checked={this.state.electricity === true}
+                                                onChange={this.updateInput()}
+                                                disabled={!props.canEdit}
+                                                value={true}
+                                            />
+                                            <label className="form-check-label">Yes</label>
+                                        </div>
+                                        <div className="form-check form-check-inline">
+                                            <input
+                                                className="form-check-input"
+                                                type="radio"
+                                                id="electricity"
+                                                checked={this.state.electricity === false}
+                                                onChange={this.updateInput()}
+                                                disabled={!props.canEdit}
+                                                value={false}
+                                            />
+                                            <label className="form-check-label">No</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-inline-container">
+                                        <span className="label">Water Supply</span>
+                                        <div className="form-check form-check-inline">
+                                            <input
+                                                className="form-check-input"
+                                                type="radio"
+                                                id="waterSupply"
+                                                checked={this.state.waterSupply === true}
+                                                onChange={this.updateInput()}
+                                                disabled={!props.canEdit}
+                                                value={true}
+                                            />
+                                            <label className="form-check-label">Yes</label>
+                                        </div>
+                                        <div className="form-check form-check-inline">
+                                            <input
+                                                className="form-check-input"
+                                                type="radio"
+                                                id="waterSupply"
+                                                checked={this.state.waterSupply === false}
+                                                onChange={this.updateInput()}
+                                                disabled={!props.canEdit}
+                                                value={false}
+                                            />
+                                            <label className="form-check-label">No</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="section">
+                                <h3>Manager</h3>
+                                <div>
+                                    <div className="form-row">
+                                        <div className="form-group col-sm-4">
+                                            <label>
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    id="manager.name"
+                                                    value={this.state.manager.name || ""}
+                                                    onChange={this.updateInput()}
+                                                    onBlur={this.onBlurInput()}
+                                                    disabled={!props.canEdit}
+                                                    placeholder="Full Name"
+                                                />
+                                                <span>Full Name</span>
+                                            </label>
+                                        </div>
+                                        <div className="form-group col-sm-4">
+                                            <label>
+                                                <input
+                                                    type="email"
+                                                    className="form-control"
+                                                    id="manager.email"
+                                                    value={this.state.manager.email || ""}
+                                                    onChange={this.updateInput()}
+                                                    onBlur={this.onBlurInput()}
+                                                    disabled={!props.canEdit}
+                                                    placeholder="user@email.com"
+                                                />
+                                                <span>Email Address</span>
+                                            </label>
+                                        </div>
+                                        <div className="form-group col-sm-4">
+                                            <label>
+                                                <input
+                                                    type="tel"
+                                                    className="form-control"
+                                                    id="manager.phoneNumber"
+                                                    value={this.state.manager.phoneNumber || ""}
+                                                    onChange={this.updateInput()}
+                                                    onBlur={this.onBlurInput()}
+                                                    disabled={!props.canEdit}
+                                                    placeholder="Phone Number"
+                                                />
+                                                <span>Phone Number</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         {props.canEdit ? (
-                            this.state.validationErrors["name"] ? (
-                                <div className="invalid-feedback">{this.state.validationErrors["name"]}</div>
-                            ) : (
-                                <small className="form-text text-muted">Required</small>
-                            )
+                            <div className="row buttons">
+                                <div className="col-sm-4">
+                                    <Link to="locations" className="btn btn-secondary btn-block">
+                                        Cancel
+                                    </Link>
+                                </div>
+                                <div className="col-sm-4">
+                                    <button type="submit" className="btn btn-primary btn-block">
+                                        {props.locationsUpdating ? "Saving..." : "Save"}
+                                    </button>
+                                </div>
+                            </div>
                         ) : null}
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="capacity">Capacity</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            id="capacity"
-                            value={this.state.capacity || ""}
-                            onChange={this.updateCapacity}
-                            onBlur={this.onBlurInput}
-                            disabled={!props.canEdit}
-                            placeholder="e.g. 1000"
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="country">Country</label>
-                        <select
-                            className="form-control form-control-sm"
-                            id="country"
-                            value={this.state.country || ""}
-                            onChange={this.updateInput}
-                            onBlur={this.onBlurInput}
-                            disabled={!props.canEdit}
-                        >
-                            <option value="">Select country</option>
-                            {_.map(props.countries, country => (
-                                <option key={country.id} value={country.id}>
-                                    {country.title}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="city">City</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            id="city"
-                            value={this.state.city || ""}
-                            onChange={this.updateInput}
-                            onBlur={this.onBlurInput}
-                            disabled={!props.canEdit}
-                            placeholder="e.g. Beirut"
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="electricty">Electricity</label>
-                        <input
-                            type="checkbox"
-                            className="form-control"
-                            id="electricty"
-                            checked={this.state.electricty}
-                            onChange={this.updateInput}
-                            onBlur={this.onBlurInput}
-                            disabled={!props.canEdit}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="waterSupply">Water supply</label>
-                        <input
-                            type="checkbox"
-                            className="form-control"
-                            id="waterSupply"
-                            checked={this.state.waterSupply}
-                            onChange={this.updateInput}
-                            onBlur={this.onBlurInput}
-                            disabled={!props.canEdit}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <h3>Manager</h3>
-                        <div className="form-group">
-                            <label htmlFor="firstName">Name</label>
-                            <input
-                                type="text"
-                                className="form-control"
-                                id="manager.name"
-                                value={this.state.manager.name || ""}
-                                onChange={this.updateInput}
-                                onBlur={this.onBlurInput}
-                                disabled={!props.canEdit}
-                                placeholder="Full name"
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="email">Email address</label>
-                            <input
-                                type="email"
-                                className="form-control"
-                                id="manager.email"
-                                value={this.state.manager.email || ""}
-                                onChange={this.updateInput}
-                                onBlur={this.onBlurInput}
-                                disabled={!props.canEdit}
-                                placeholder="user@email.com"
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="specialisation">Phone number</label>
-                            <input
-                                type="tel"
-                                className="form-control"
-                                id="manager.phoneNumber"
-                                value={this.state.manager.phoneNumber || ""}
-                                onChange={this.updateInput}
-                                onBlur={this.onBlurInput}
-                                disabled={!props.canEdit}
-                                placeholder="+38640..."
-                            />
-                        </div>
-                    </div>
-                    <div className="form-group">
-                        {props.canEdit ? (
-                            <button type="submit" className="btn btn-outline-primary col">
-                                Save
-                            </button>
-                        ) : null}
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         )
     }
@@ -295,7 +380,8 @@ const mapStateToProps = (state, ownProps) => {
     return {
         locationID: id,
         location: state.locations.locations ? state.locations.locations[id] : undefined,
-        locationLoading: state.locations.loading,
+        locationsLoading: state.locations.loading,
+        locationsUpdating: state.locations.updating,
         countries: state.codes.codes[CATEGORY_COUNTRIES],
         codesLoading: state.codes.loading,
         canEdit: state.validations.userRights ? state.validations.userRights[ADMIN_RIGHTS_RESOURCE] : undefined,

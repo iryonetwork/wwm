@@ -50,11 +50,13 @@ class OrganizationsIndex extends React.Component {
 
         return (
             <div>
-                <h1>Organizations</h1>
+                <header>
+                    <h1>Organizations</h1>
+                </header>
                 <Organizations />
                 {props.canEdit ? (
-                    <Link to="/organizations/new" className="btn btn-sm btn-outline-primary col">
-                        Add new organization
+                    <Link to="/organizations/new" className="btn btn-link">
+                        Add New Organization
                     </Link>
                 ) : null}
             </div>

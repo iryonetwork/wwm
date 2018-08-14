@@ -11,6 +11,7 @@ import { makeGetClinicUserUserRoles } from "../../selectors/userRolesSelectors"
 import { loadUserUserRoles, saveUserRole, deleteUserRole } from "../../modules/userRoles"
 import { SUPERADMIN_RIGHTS_RESOURCE, ADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { open } from "shared/modules/alert"
+import Spinner from "shared/containers/spinner"
 
 class ClinicDetail extends React.Component {
     constructor(props) {
@@ -63,45 +64,55 @@ class ClinicDetail extends React.Component {
         })
     }
 
-    newUserRole = () => e => {
-        if (this.state.userRoles) {
-            let userRoles = [
-                ...this.state.userRoles,
-                { edit: true, canSave: false, userID: this.props.userID, roleID: "", domainType: "clinic", domainID: this.props.clinicID }
-            ]
+    newUserRole() {
+        return e => {
+            if (this.state.userRoles) {
+                let userRoles = [
+                    ...this.state.userRoles,
+                    { edit: true, canSave: false, userID: this.props.userID, roleID: "", domainType: "clinic", domainID: this.props.clinicID }
+                ]
+                this.setState({ userRoles: userRoles })
+            }
+        }
+    }
+
+    editRoleID(index) {
+        return e => {
+            let userRoles = [...this.state.userRoles]
+            userRoles[index].roleID = e.target.value
+            userRoles[index].canSave = userRoles[index].roleID.length !== 0
             this.setState({ userRoles: userRoles })
         }
     }
 
-    editRoleID = index => e => {
-        let userRoles = [...this.state.userRoles]
-        userRoles[index].roleID = e.target.value
-        userRoles[index].canSave = userRoles[index].roleID.length !== 0
-        this.setState({ userRoles: userRoles })
+    saveUserRole(index) {
+        return e => {
+            let userRoles = [...this.state.userRoles]
+            userRoles[index].index = index
+            userRoles[index].edit = false
+            userRoles[index].saving = true
+            this.props.saveUserRole(this.state.userRoles[index])
+        }
     }
 
-    saveUserRole = index => e => {
-        let userRoles = [...this.state.userRoles]
-        userRoles[index].index = index
-        userRoles[index].edit = false
-        userRoles[index].saving = true
-        this.props.saveUserRole(this.state.userRoles[index])
+    cancelNewUserRole(index) {
+        return e => {
+            let userRoles = [...this.state.userRoles]
+            userRoles.splice(index, 1)
+            this.setState({ userRoles: userRoles })
+        }
     }
 
-    cancelNewUserRole = index => e => {
-        let userRoles = [...this.state.userRoles]
-        userRoles.splice(index, 1)
-        this.setState({ userRoles: userRoles })
-    }
-
-    deleteUserRole = userRoleID => e => {
-        this.props.deleteUserRole(userRoleID)
+    deleteUserRole(userRoleID) {
+        return e => {
+            this.props.deleteUserRole(userRoleID)
+        }
     }
 
     render() {
         let props = this.props
         if (this.state.loading) {
-            return <div>Loading...</div>
+            return <Spinner />
         }
         if (!props.canSee || props.forbidden) {
             return null
@@ -109,10 +120,15 @@ class ClinicDetail extends React.Component {
 
         return (
             <div>
-                <table className="table table-hover text-center">
+                <table className="table">
                     <thead>
                         <tr>
-                            <th scope="col">#</th>
+                            <td className="w-7 row-details-header-column">
+                                <span className="row-details-icon" />
+                            </td>
+                            <th className="w-7" scope="col">
+                                #
+                            </th>
                             <th scope="col">Role</th>
                             <th />
                         </tr>
@@ -120,10 +136,13 @@ class ClinicDetail extends React.Component {
                     <tbody>
                         {_.map(this.state.userRoles, (userRole, i) => (
                             <tr key={userRole.id || i + 1}>
-                                <th scope="row">{i + 1}</th>
+                                <td className="w-7 row-details-header-column" />
+                                <th className="w-7" scope="row">
+                                    {i + 1}
+                                </th>
                                 <td>
                                     {props.canEdit && userRole.edit ? (
-                                        <select className="form-control form-control-sm" value={userRole.roleID || ""} onChange={this.editRoleID(i)}>
+                                        <select className="form-control" value={userRole.roleID || ""} onChange={this.editRoleID(i)}>
                                             <option value="">Select role</option>
                                             {_.map(
                                                 _.difference(
@@ -149,28 +168,28 @@ class ClinicDetail extends React.Component {
                                 <td className="text-right">
                                     {props.canEdit ? (
                                         userRole.edit ? (
-                                            <div className="btn-group" role="group">
+                                            <div>
                                                 <button
-                                                    className="btn btn-sm btn-light"
+                                                    className="btn btn-secondary"
                                                     disabled={userRole.saving}
                                                     type="button"
                                                     onClick={this.cancelNewUserRole(i)}
                                                 >
-                                                    <span className="icon_close" />
+                                                    Remove
                                                 </button>
                                                 <button
-                                                    className="btn btn-sm btn-light"
+                                                    className="btn btn-primary"
                                                     disabled={userRole.saving || !userRole.canSave}
                                                     type="button"
                                                     onClick={this.saveUserRole(i)}
                                                 >
-                                                    <span className="icon_floppy" />
+                                                    Add
                                                 </button>
                                             </div>
                                         ) : (
                                             <div className="btn-group" role="group">
-                                                <button className="btn btn-sm btn-light" type="button" onClick={this.deleteUserRole(userRole.id)}>
-                                                    <span className="icon_trash" />
+                                                <button className="btn btn-link" type="button" onClick={this.deleteUserRole(userRole.id)}>
+                                                    <span className="remove-link">Remove</span>
                                                 </button>
                                             </div>
                                         )
@@ -178,18 +197,23 @@ class ClinicDetail extends React.Component {
                                 </td>
                             </tr>
                         ))}
+                        <tr className="table-edit">
+                            <td className="w-7 row-details-header-column" />
+                            <td colSpan="3">
+                                {props.canEdit ? (
+                                    <button
+                                        type="button"
+                                        className="btn btn-link"
+                                        disabled={this.state.userRoles.length !== 0 && this.state.userRoles[this.state.userRoles.length - 1].edit ? true : null}
+                                        onClick={this.newUserRole()}
+                                    >
+                                        Add New Role at the Clinic
+                                    </button>
+                                ) : null}
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
-                {props.canEdit ? (
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-outline-primary col"
-                        disabled={this.state.userRoles.length !== 0 && this.state.userRoles[this.state.userRoles.length - 1].edit ? true : null}
-                        onClick={this.newUserRole()}
-                    >
-                        Add new role at the clinic
-                    </button>
-                ) : null}
             </div>
         )
     }

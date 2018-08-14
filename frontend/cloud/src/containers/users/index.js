@@ -6,6 +6,8 @@ import { Link, withRouter } from "react-router-dom"
 import Users from "./list"
 import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 
+import "../../styles/style.css"
+
 class UsersIndex extends React.Component {
     constructor(props) {
         super(props)
@@ -50,10 +52,12 @@ class UsersIndex extends React.Component {
 
         return (
             <div>
-                <h1>Users</h1>
+                <header>
+                    <h1>Users</h1>
+                </header>
                 <Users />
                 {props.canEdit ? (
-                    <Link to="/users/new" className="btn btn-sm btn-outline-primary col">
+                    <Link to="/users/new" className="btn btn-link">
                         Add new user
                     </Link>
                 ) : null}

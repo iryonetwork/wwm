@@ -33,8 +33,10 @@ class Users extends React.Component {
         this.setState({ loading: loading })
     }
 
-    removeUser = userID => e => {
-        this.props.deleteUser(userID)
+    removeUser(userID) {
+        return e => {
+            this.props.deleteUser(userID)
+        }
     }
 
     render() {
@@ -47,10 +49,12 @@ class Users extends React.Component {
         }
         let i = 0
         return (
-            <table className="table table-hover text-center">
+            <table className="table">
                 <thead>
                     <tr>
-                        <th scope="col">#</th>
+                        <th className="w-7" scope="col">
+                            #
+                        </th>
                         <th scope="col">Username</th>
                         <th scope="col">Name</th>
                         <th scope="col">Email</th>
@@ -60,15 +64,17 @@ class Users extends React.Component {
                 <tbody>
                     {_.map(_.filter(props.users, user => user), user => (
                         <tr key={user.id}>
-                            <th scope="row">{++i}</th>
+                            <th className="w-7" scope="row">
+                                {++i}
+                            </th>
                             <td>
                                 <Link to={`/users/${user.id}`}>{user.username}</Link>
                             </td>
                             <td>{getName(user)}</td>
                             <td>{user.email}</td>
                             <td className="text-right">
-                                <button onClick={this.removeUser(user.id)} className="btn btn-sm btn-light" type="button">
-                                    <span className="icon_trash" />
+                                <button onClick={this.removeUser(user.id)} className="btn btn-link" type="button">
+                                    <span className="remove-link">Remove</span>
                                 </button>
                             </td>
                         </tr>

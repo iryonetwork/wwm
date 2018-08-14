@@ -349,7 +349,7 @@ export const deleteUserRole = userRoleID => {
                     type: DELETE_USERROLE_SUCCESS,
                     userRoleID: userRoleID
                 })
-                setTimeout(() => dispatch(open("Deleted user role", "", COLOR_SUCCESS, 5)), 100)
+                setTimeout(() => dispatch(open("Deleted User Role", "", COLOR_SUCCESS, 5)), 100)
             })
             .catch(error => {
                 dispatch({
@@ -402,7 +402,7 @@ export const saveUserRole = userRole => {
                     type: SAVE_USERROLE_SUCCESS,
                     userRole: response
                 })
-                setTimeout(() => dispatch(open("Saved user role", "", COLOR_SUCCESS, 5)), 100)
+                setTimeout(() => dispatch(open("Saved User Role", "", COLOR_SUCCESS, 5)), 100)
 
                 return response
             })
