@@ -24,7 +24,6 @@ type (
 	// ReportSpec represents specficiation for generating report
 	ReportSpec struct {
 		Type             string               `json:"type"`
-		IncludeAll       bool                 `json:"includeAll"`
 		GroupByPatientID bool                 `json:"groupByPatientID"`
 		FileCategory     string               `json:"fileCategory"`
 		Columns          []string             `json:"columns"`

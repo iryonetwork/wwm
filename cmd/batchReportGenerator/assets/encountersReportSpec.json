@@ -1,7 +1,6 @@
 {
     "type": "encounters",
     "fileCategory": "openehr::433|event|",
-    "includeAll": false,
     "columns": [
         "Encounter ID",
         "Patient ID",

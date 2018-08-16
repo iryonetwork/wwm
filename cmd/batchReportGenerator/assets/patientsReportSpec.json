@@ -1,7 +1,6 @@
 {
     "type": "patients",
     "fileCategory": "openehr::431|persistent|",
-    "includeAll": true,
     "groupByPatientID": true,
     "columns": [
         "Patient ID",

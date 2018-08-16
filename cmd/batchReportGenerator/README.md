@@ -28,7 +28,6 @@ Reports specification files define contents of CSV file report built from data i
 
 *   **type** specifies report type, it's used as a name of the report and defines bucket to which the report file will be uploaded.
 *   **fileCategory** specifies EHR category to be considered for creating the report. Files data stored in DB need to have field _/category_ set to this value to be used for generation.
-*   **includeAll** is a boolean value specifying if all the data should be in every report (_true_) or just the data from files added since the last succseful run (_false_).
 *   **groupByPatientID** is a boolean value specifying if report should treat multiple matching files with the same patient ID as source of data for single report row.
 *   **columns** is an array of report columns names (_labels_) in order in which they should be included in the report.
 *   **columnsSpecs** is a key-value object in which key is a column's name (_label_) and the value is column value spec.

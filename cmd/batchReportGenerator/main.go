@@ -14,7 +14,6 @@ import (
 	"github.com/go-openapi/runtime"
 	runtimeClient "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
-	"github.com/iryonetwork/wwm/storage/keyvalue"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/prometheus/client_golang/prometheus"
@@ -26,12 +25,6 @@ import (
 	"github.com/iryonetwork/wwm/reports/generator"
 	"github.com/iryonetwork/wwm/service/serviceAuthenticator"
 	reportsStorage "github.com/iryonetwork/wwm/storage/reports"
-)
-
-const (
-	exporterBucket      string = "batchDataExporter"
-	exporterStorageKey  string = "lastSuccessfulRun"
-	generatorStorageKey string = "lastDataUntil"
 )
 
 func main() {
@@ -94,30 +87,8 @@ func main() {
 		logger.Fatal().Err(err).Msg("failed to initialize generator")
 	}
 
-	// initialize bolt key value storage to read last succesful run
-	s, err := keyvalue.NewBolt(ctx, cfg.BoltDBFilepath, logger)
-	if err != nil {
-		logger.Fatal().Err(err).Msg("failed to initialize key value storage")
-	}
-	// get metrics collection for key value storage and register in registry
-	m := s.GetPrometheusMetricsCollection()
-	for _, metric := range m {
-		metricsRegistry.MustRegister(metric)
-	}
-
 	// initialize prometheus metrics pusher
 	metricsPusher := push.New(cfg.PrometheusPushGatewayAddress, "batchReportGenerator").Gatherer(metricsRegistry)
-
-	zeroTime := strfmt.DateTime(time.Unix(0, 0))
-
-	exporterLastSuccessfulRun := zeroTime
-	v := s.Get(exporterBucket, exporterStorageKey)
-	if v != nil {
-		timestamp, err := strfmt.ParseDateTime(string(v))
-		if err == nil {
-			exporterLastSuccessfulRun = timestamp
-		}
-	}
 
 	for _, spec := range cfg.ReportSpecs.Slice {
 		// initialize csv writer
@@ -129,27 +100,8 @@ func main() {
 		writer := csv.NewWriter(file)
 		writer.Comma = ';'
 
-		// initialize last successful run with 0 value
-		generatorLastDataUntil := zeroTime
-		if !spec.IncludeAll {
-			// try to read last succesful run
-			v := s.Get(spec.Type, generatorStorageKey)
-			if v != nil {
-				timestamp, err := strfmt.ParseDateTime(string(v))
-				if err == nil {
-					generatorLastDataUntil = timestamp
-				}
-			}
-		}
-
-		if time.Time(generatorLastDataUntil).After(time.Time(exporterLastSuccessfulRun)) ||
-			time.Time(generatorLastDataUntil).Equal(time.Time(exporterLastSuccessfulRun)) {
-			logger.Info().Msg("BatchDataExporter did not export anything since last `dataUntil` of last report of this type, skip generating report")
-			break
-		}
-
 		// run generator
-		generated, err := g.Generate(ctx, writer, spec, &generatorLastDataUntil, nil)
+		generated, err := g.Generate(ctx, writer, spec, nil, nil)
 		if err != nil {
 			logger.Fatal().Err(err).Msgf("failed to generate report file %s", spec.Type)
 		}
@@ -168,8 +120,7 @@ func main() {
 			// upload file to storage
 			reportNewParams := operations.NewReportNewParams().
 				WithContentType("text/csv").
-				WithDataSince(&generatorLastDataUntil).
-				WithDataUntil(exporterLastSuccessfulRun).
+				WithDataUntil(strfmt.DateTime(time.Now())).
 				WithReportType(spec.Type).
 				WithFile(runtime.NamedReader("reader", buf))
 
@@ -179,9 +130,6 @@ func main() {
 			}
 
 			logger.Info().Msgf("report %s was uploaded as file %s", ok.Payload.ReportType, ok.Payload.Name)
-
-			// save lastSuccesfulRun of exporter as `dataUntil` of current generator run
-			s.Update(spec.Type, generatorStorageKey, []byte(exporterLastSuccessfulRun.String()))
 		}
 	}
 
