@@ -36,7 +36,8 @@ const labelFilesCollection = "filesCollection"
 
 var bucketsToSkip = map[string]bool{"encounters": true, "patients": true}
 
-func (s *batchDataExporter) Export(ctx context.Context, lastSuccessfulRun time.Time) error {
+// Export runs files data export for all the files since `dataSince` timestamp
+func (s *batchDataExporter) Export(ctx context.Context, dataSince time.Time) error {
 	bucketsRateLimit := make(chan bool, s.bucketsRateLimit)
 
 	buckets, err := s.handlers.ListSourceBuckets(ctx)
@@ -50,7 +51,7 @@ func (s *batchDataExporter) Export(ctx context.Context, lastSuccessfulRun time.T
 	ch := make(chan *exportError)
 	for _, b := range buckets {
 		if _, ok := bucketsToSkip[b.Name]; !ok {
-			go s.exportBucket(ctx, lastSuccessfulRun, b.Name, ch, bucketsRateLimit)
+			go s.exportBucket(ctx, dataSince, b.Name, ch, bucketsRateLimit)
 		} else {
 			numberOfBuckets--
 		}
@@ -97,10 +98,10 @@ func New(handlers filesDataExporter.Handlers, bucketsRateLimit int, logger zerol
 	}
 }
 
-func (s *batchDataExporter) exportBucket(ctx context.Context, lastSuccessfulRun time.Time, bucketID string, errCh chan *exportError, rateLimit chan bool) {
+func (s *batchDataExporter) exportBucket(ctx context.Context, dataSince time.Time, bucketID string, errCh chan *exportError, rateLimit chan bool) {
 	rateLimit <- true
 
-	files, err := s.handlers.ListSourceFilesAsc(ctx, bucketID, strfmt.DateTime(lastSuccessfulRun))
+	files, err := s.handlers.ListSourceFilesAsc(ctx, bucketID, strfmt.DateTime(dataSince))
 	if err != nil {
 		s.logger.Error().Err(err).Str("bucket", bucketID).Msg("failed to list source files")
 		errCh <- &exportError{bucketID, errors.Wrap(err, fmt.Sprintf("failed to list source files in bucket %s", bucketID))}
@@ -117,7 +118,7 @@ func (s *batchDataExporter) exportBucket(ctx context.Context, lastSuccessfulRun 
 			errCh <- &exportError{bucketID, errors.Wrap(ctx.Err(), fmt.Sprintf("aborting bucket export due to context cancellation"))}
 			return
 		default:
-			if !utils.SliceContains(f.Labels, labelFilesCollection) && time.Time(f.Created).After(lastSuccessfulRun) {
+			if !utils.SliceContains(f.Labels, labelFilesCollection) && time.Time(f.Created).After(dataSince) {
 				exportCount++
 				err := s.exportFile(ctx, bucketID, f)
 				if err != nil {

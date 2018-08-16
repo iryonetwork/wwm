@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"reflect"
 	"regexp"
+	"time"
 
 	"github.com/caarlos0/env"
 
@@ -20,8 +21,9 @@ type Config struct {
 	BucketsRateLimit int `env:"BUCKETS_RATE_LIMIT" envDefault:"2"`
 
 	// filepath to yaml
-	FieldsToSanitize  SanitizerCfg `env:"SANITIZER_CONFIG_FILEPATH" envDefault:"assets/sanitizerConfig.json"`
-	DataEncryptionKey string       `env:"DATA_ENCRYPTION_KEY,required"`
+	ExportPeriod      time.Duration `env:"EXPORT_PERIOED" envDefault:"336h"`
+	FieldsToSanitize  SanitizerCfg  `env:"SANITIZER_CONFIG_FILEPATH" envDefault:"assets/sanitizerConfig.json"`
+	DataEncryptionKey string        `env:"DATA_ENCRYPTION_KEY,required"`
 
 	DbUsername    string `env:"DB_USERNAME,required"`
 	DbPassword    string `env:"DB_PASSWORD,required"`
@@ -30,7 +32,7 @@ type Config struct {
 	PGRole        string `env:"POSTGRES_ROLE" envDefault:"dataexportservice"`
 	DbDetailedLog bool   `env:"DB_DETAILED_LOG" envDefault:"false"`
 
-	BoltDBFilepath string `env:"BOLT_DB_FILEPATH" envDefault:"/data/dataExportAndReportGeneration.db"`
+	BoltDBFilepath string `env:"BOLT_DB_FILEPATH" envDefault:"/data/batchDataExporter.db"`
 
 	PrometheusPushGatewayAddress string `env:"PROMETHEUS_PUSH_GATEWAY_ADDRESS" envDefault:"http://localPrometheusPushGateway:9091"`
 }

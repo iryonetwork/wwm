@@ -20,8 +20,8 @@ type (
 
 	// BatchFilesDataExporter defines public API of batch files data exporter
 	BatchFilesDataExporter interface {
-		// Export runs files data export for all the files since last successful run
-		Export(ctx context.Context, lastSuccessfulRun time.Time) error
+		// Export runs files data export for all the files since `dataSince` timestamp
+		Export(ctx context.Context, dataSince time.Time) error
 		// GetPrometheusMetricsCollection returns metrics to be registered for the component.
 		GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector
 	}

@@ -29,8 +29,8 @@ import (
 )
 
 const (
-	storageBucket string = "batchDataExporter"
-	storageKey    string = "lastSuccessfulRun"
+	lastSuccessfulRunBucket string = "batchDataExporter"
+	lastSuccessfulRunKey    string = "lastSuccessfulRun"
 )
 
 func main() {
@@ -53,9 +53,6 @@ func main() {
 	// initialize promethues metrics registry
 	metricsRegistry := prometheus.NewRegistry()
 
-	// initialize last successful run with 0 value
-	lastSuccessfulRun := time.Unix(0, 0)
-
 	// initialize bolt key value storage to read last succesful run
 	s, err := keyvalue.NewBolt(ctx, cfg.BoltDBFilepath, logger)
 	if err != nil {
@@ -65,15 +62,6 @@ func main() {
 	m := s.GetPrometheusMetricsCollection()
 	for _, metric := range m {
 		metricsRegistry.MustRegister(metric)
-	}
-
-	// read last succesful run
-	storedTimestamp := s.Get(storageBucket, storageKey)
-	if storedTimestamp != nil {
-		timestamp, err := strfmt.ParseDateTime(string(storedTimestamp))
-		if err == nil {
-			lastSuccessfulRun = time.Time(timestamp)
-		}
 	}
 
 	// initialize source storage API client
@@ -137,13 +125,25 @@ func main() {
 	metricsPusher := push.New(cfg.PrometheusPushGatewayAddress, "batchDataExporter").Gatherer(metricsRegistry)
 
 	// get current time to be saved as lastSuccesfulRun
-	// do it before sync to account for anything that might have happened during sync duration
+	// do it before export to account for anything that might have happened during export duration
 	startTime := strfmt.DateTime(time.Now())
+
+	// read last succesful run calculate data since timestamp based on start time and configured export period
+	// initialize dataSince with 0 value
+	dataSince := time.Unix(0, 0)
+	// read last succesfull run
+	st := s.Get(lastSuccessfulRunBucket, lastSuccessfulRunKey)
+	if st != nil {
+		timestamp, err := strfmt.ParseDateTime(string(st))
+		if err == nil {
+			dataSince = time.Time(timestamp).Add(-cfg.ExportPeriod)
+		}
+	}
 
 	// Run export
 	exitCh := make(chan error)
 	go func() {
-		exitCh <- e.Export(ctx, time.Time(lastSuccessfulRun))
+		exitCh <- e.Export(ctx, dataSince)
 	}()
 
 	// Run cleanup when sigint or sigterm is received
@@ -159,7 +159,7 @@ Loop:
 			} else {
 				logger.Info().Msg("batch files data export successful")
 				// save lastSuccesfulRun
-				s.Update(storageBucket, storageKey, []byte(startTime.String()))
+				s.Update(lastSuccessfulRunBucket, lastSuccessfulRunKey, []byte(startTime.String()))
 			}
 			break Loop
 		case <-signalChan:
