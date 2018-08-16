@@ -365,7 +365,6 @@ func (s *storage) CodesGet(category, query, parentID, locale string) (models.Cod
 	q := `SELECT ct.category_id, ct.code_id, ct.title, ct.locale, c.parent_id
 		  FROM codes AS c INNER JOIN code_titles AS ct ON ct.category_id = c.category_id AND ct.code_id = c.code_id
 		  WHERE c.category_id = ? AND ct.locale = ?`
-	fmt.Println(q)
 	values := []interface{}{category, locale}
 
 	if query != "" {
@@ -414,7 +413,6 @@ func (s *storage) CodeGet(category, id, locale string) (*models.Code, error) {
 	q := `SELECT ct.category_id, ct.code_id, ct.title, ct.locale, c.parent_id
 		  FROM codes AS c INNER JOIN code_titles AS ct ON ct.category_id = c.category_id AND ct.code_id = c.code_id
 		  WHERE c.category_id = ? AND ct.code_id = ? AND ct.locale = ?`
-	fmt.Println(q)
 	values := []interface{}{category, id, locale}
 
 	rows, err := s.gdb.Raw(q, values...).Rows()
