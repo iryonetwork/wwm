@@ -20,7 +20,8 @@ type Config struct {
 	config.Config
 
 	// filepaths to json spec files
-	ReportSpecs ReportSpecs `env:"REPORT_SPECS_FILEPATHS" envDefault:"assets/encountersReportSpec.json,assets/patientsReportSpec.json"`
+	ReportSpecs       ReportSpecs `env:"REPORT_SPECS_FILEPATHS" envDefault:"assets/encountersReportSpec.json,assets/patientsReportSpec.json"`
+	ReportsBucketUUID string      `env:"REPORTS_BUCKET_UUID" envDefault:"c8220891-c582-41a3-893d-19e211985db5"`
 
 	DbUsername    string `env:"DB_USERNAME,required"`
 	DbPassword    string `env:"DB_PASSWORD,required"`
@@ -28,6 +29,8 @@ type Config struct {
 	PGDatabase    string `env:"POSTGRES_DATABASE" envDefault:"reports"`
 	PGRole        string `env:"POSTGRES_ROLE" envDefault:"reportgenerationservice"`
 	DbDetailedLog bool   `env:"DB_DETAILED_LOG" envDefault:"false"`
+
+	BoltDBFilepath string `env:"BOLT_DB_FILEPATH" envDefault:"/data/batchReportGenerator.db"`
 
 	PrometheusPushGatewayAddress string `env:"PROMETHEUS_PUSH_GATEWAY_ADDRESS" envDefault:"http://localPrometheusPushGateway:9091"`
 }

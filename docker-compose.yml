@@ -349,7 +349,7 @@ services:
     - /wwm/batchDataExporter
     volumes:
     - ./.bin/:/wwm
-    - ./.data/dataExportAndReportGeneration:/data/
+    - ./.data/dataDataExporter:/data/
     - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
     environment:
@@ -384,12 +384,12 @@ services:
     - /wwm/batchReportGenerator
     volumes:
     - ./.bin/:/wwm
-    - ./.data/dataExportAndReportGeneration:/data/
+    - ./.data/batchReportGenerator:/data/
     - ./bin/tls:/certs:ro
     - ./bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
     environment:
-    - STORAGE_HOST=reportsStorage
-    - STORAGE_PATH=reports
+    - STORAGE_HOST=cloudStorage
+    - STORAGE_PATH=storage
     - AUTH_HOST=cloudAuth
     - KEY_PATH=/certs/batchReportGenerator-key.pem
     - CERT_PATH=/certs/batchReportGenerator.pem

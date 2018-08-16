@@ -4,23 +4,24 @@ Command for scheduled generation of CSV reports from EHR files data exported pre
 
 ## Configuration environment variables
 
-| Environment variable              | Default value                                  | Description                                                                                                                         |
-| --------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `DOMAIN_TYPE`                     | `global`                                       | _Domain in which component is operating, normally it should be 'cloud' for all cloud components and 'clinic' for local components._ |
-| `DOMAIN_ID`                       | `*`                                            | _Domain in which component is operating, normally it should be '_' for all cloud components and clinic ID for local components.\*   |
-| `KEY_PATH`                        | _none_, **_required_**                         | _Path to service's private key (PEM-formatted file)._                                                                               |
-| `CERT_PATH`                       | _none_, **_required_**                         | _Path to service's public key (PEM-formatted file)._                                                                                |
-| `REPORT_SPECS_FILEPATHS`          | _/envDefault:"/encountersReportSpec.json.json_ | _*Path to JSON files defining CSV reports.*._                                                                                       |
-| `BOLT_DB_FILEPATH`                | `/data/batchDataExporter.db`                   | _Path to Bolt DB file in which command saves datetime of last succesful run._                                                       |
-| `STORAGE_HOST`                    | `cloudStorage`                                 | _Hostname of storage API where reports CSV files are stored._                                                                       |
-| `STORAGE_PATH`                    | `storage`                                      | _Root path of storage API where reports CSV files are stored._                                                                      |  |  |
-| `PROMETHEUS_PUSH_GATEWAY_ADDRESS` | `http://localPrometheusPushGateway:9091`       | _Full address of Prometheus Push Gateway to push metrics from a single run of the command._                                         |
-| `DB_USERNAME`                     | _none_, **_required_**                         | _PostgreSQL DB username._                                                                                                           |
-| `DB_PASSWORD`                     | _none_, **_required_**                         | _PostgreSQL DB password._                                                                                                           |
-| `POSTGRES_HOST`                   | `postgres`                                     | _Hostname on which postgres is exposed on._                                                                                         |
-| `POSTGRES_DATABASE`               | `reports`                                      | _Postgres database to connect to._                                                                                                  |
-| `POSTGRES_ROLE`                   | `dataexportservice`                            | _Postgres role to assume once connected._                                                                                           |
-| `DB_DETAILED_LOG`                 | `false`                                        | _Allows to enable detailed DB statements log, otherwise only errors are printed._                                                   |
+| Environment variable              | Default value                                                     | Description                                                                                                                            |
+| --------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `DOMAIN_TYPE`                     | `global`                                                          | _Domain in which component is operating, normally it should be 'cloud' for all cloud components and 'clinic' for local components._    |
+| `DOMAIN_ID`                       | `*`                                                               | _Domain in which component is operating, normally it should be '_' for all cloud components and clinic ID for local components.\*      |
+| `KEY_PATH`                        | _none_, **_required_**                                            | _Path to service's private key (PEM-formatted file)._                                                                                  |
+| `CERT_PATH`                       | _none_, **_required_**                                            | _Path to service's public key (PEM-formatted file)._                                                                                   |
+| `REPORT_SPECS_FILEPATHS`          | `assets/encountersReportSpec.json,assets/patientsReportSpec.json` | _*Path to JSON files defining CSV reports. If starts with "assets/" the file is assumed to be a bundled in the binary as an asset. *._ |
+| `REPORTS_BUCKET_UUID`             | `c8220891-c582-41a3-893d-19e211985db5`                            | _*UUID of storage bucket in which reports are stored.*._                                                                               |
+| `BOLT_DB_FILEPATH`                | `/data/batchDataExporter.db`                                      | _Path to Bolt DB file in which command saves file UUIDs for report types._                                                             |
+| `STORAGE_HOST`                    | `cloudStorage`                                                    | _Hostname of storage API where reports CSV files are stored._                                                                          |
+| `STORAGE_PATH`                    | `storage`                                                         | _Root path of storage API where reports CSV files are stored._                                                                         |  |  |
+| `PROMETHEUS_PUSH_GATEWAY_ADDRESS` | `http://localPrometheusPushGateway:9091`                          | _Full address of Prometheus Push Gateway to push metrics from a single run of the command._                                            |
+| `DB_USERNAME`                     | _none_, **_required_**                                            | _PostgreSQL DB username._                                                                                                              |
+| `DB_PASSWORD`                     | _none_, **_required_**                                            | _PostgreSQL DB password._                                                                                                              |
+| `POSTGRES_HOST`                   | `postgres`                                                        | _Hostname on which postgres is exposed on._                                                                                            |
+| `POSTGRES_DATABASE`               | `reports`                                                         | _Postgres database to connect to._                                                                                                     |
+| `POSTGRES_ROLE`                   | `dataexportservice`                                               | _Postgres role to assume once connected._                                                                                              |
+| `DB_DETAILED_LOG`                 | `false`                                                           | _Allows to enable detailed DB statements log, otherwise only errors are printed._                                                      |
 
 ## Report specification files
 

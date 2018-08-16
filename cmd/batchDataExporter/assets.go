@@ -127,7 +127,7 @@ func bindataAssetsSanitizerConfigjson() (*asset, error) {
 		size: 4816,
 		md5checksum: "",
 		mode: os.FileMode(420),
-		modTime: time.Unix(1533908833, 0),
+		modTime: time.Unix(1534412366, 0),
 	}
 
 	a := &asset{bytes: bytes, info: info}

@@ -1,6 +1,6 @@
 package main
 
-//go:generate sh -c "mkdir -p ../../gen/reportsStorage/ && swagger generate client -A reportsStorage -t ../../gen/reportsStorage/ -f ../../docs/api/reportsStorage.yml --principal string"
+//go:generate sh -c "mkdir -p ../../gen/storage/ && swagger generate client -A storage -t ../../gen/storage/ -f ../../docs/api/storage.yml --principal string"
 
 import (
 	"bytes"
@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"time"
 
 	"github.com/go-openapi/runtime"
 	runtimeClient "github.com/go-openapi/runtime/client"
@@ -20,11 +19,16 @@ import (
 	"github.com/prometheus/client_golang/prometheus/push"
 	"github.com/rs/zerolog"
 
-	"github.com/iryonetwork/wwm/gen/reportsStorage/client"
-	"github.com/iryonetwork/wwm/gen/reportsStorage/client/operations"
+	"github.com/iryonetwork/wwm/gen/storage/client"
+	"github.com/iryonetwork/wwm/gen/storage/client/operations"
 	"github.com/iryonetwork/wwm/reports/generator"
 	"github.com/iryonetwork/wwm/service/serviceAuthenticator"
+	"github.com/iryonetwork/wwm/storage/keyvalue"
 	reportsStorage "github.com/iryonetwork/wwm/storage/reports"
+)
+
+const (
+	fileUUIDStorageBucket string = "batchReportGenerator"
 )
 
 func main() {
@@ -90,6 +94,17 @@ func main() {
 	// initialize prometheus metrics pusher
 	metricsPusher := push.New(cfg.PrometheusPushGatewayAddress, "batchReportGenerator").Gatherer(metricsRegistry)
 
+	// initialize bolt key value storage to read filenames
+	s, err := keyvalue.NewBolt(ctx, cfg.BoltDBFilepath, logger)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to initialize key value storage")
+	}
+	// get metrics collection for key value storage and register in registry
+	m := s.GetPrometheusMetricsCollection()
+	for _, metric := range m {
+		metricsRegistry.MustRegister(metric)
+	}
+
 	for _, spec := range cfg.ReportSpecs.Slice {
 		// initialize csv writer
 		file, err := ioutil.TempFile("", spec.Type)
@@ -117,19 +132,44 @@ func main() {
 			}
 			buf := bytes.NewBuffer(b)
 
-			// upload file to storage
-			reportNewParams := operations.NewReportNewParams().
-				WithContentType("text/csv").
-				WithDataUntil(strfmt.DateTime(time.Now())).
-				WithReportType(spec.Type).
-				WithFile(runtime.NamedReader("reader", buf))
+			// get fileUUID for this type of report
+			var fileUUID string
+			fileUUIDBytes := s.Get(fileUUIDStorageBucket, spec.Type)
+			if fileUUIDBytes != nil {
+				fileUUID = string(fileUUIDBytes)
+				// if file UUID found, update file
+				fileUpdateParams := operations.NewFileUpdateParams().
+					WithBucket(strfmt.UUID(cfg.ReportsBucketUUID)).
+					WithFileID(fileUUID).
+					WithContentType("text/csv").
+					WithLabels([]string{spec.Type}).
+					WithFile(runtime.NamedReader("reader", buf))
 
-			ok, err := filesStorageClient.Operations.ReportNew(reportNewParams, auth)
-			if err != nil {
-				logger.Fatal().Err(err).Msgf("failed to upload report file %s", spec.Type)
+				_, err := filesStorageClient.Operations.FileUpdate(fileUpdateParams, auth)
+				if err != nil {
+					logger.Fatal().Err(err).Msgf("failed to upload report file %s", spec.Type)
+				}
+			} else {
+				// if file UUID not found, create new file
+				// upload file to storage
+				fileNewParams := operations.NewFileNewParams().
+					WithBucket(strfmt.UUID(cfg.ReportsBucketUUID)).
+					WithContentType("text/csv").
+					WithLabels([]string{spec.Type}).
+					WithFile(runtime.NamedReader("reader", buf))
+
+				ok, err := filesStorageClient.Operations.FileNew(fileNewParams, auth)
+				if err != nil {
+					logger.Fatal().Err(err).Msgf("failed to upload report file %s", spec.Type)
+				}
+
+				fileUUID = ok.Payload.Name
+
+				// Update file UUID for this report type in key value storage
+				s.Update(fileUUIDStorageBucket, spec.Type, []byte(fileUUID))
 			}
 
-			logger.Info().Msgf("report %s was uploaded as file %s", ok.Payload.ReportType, ok.Payload.Name)
+			logger.Info().Msgf("report %s was uploaded as file %s", spec.Type, fileUUID)
 		}
 	}
 

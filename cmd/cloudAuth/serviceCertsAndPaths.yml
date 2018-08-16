@@ -7,4 +7,4 @@
 /certs/batchDataExporter.pem:
   - /api/storage/*
 /certs/batchReportGenerator.pem:
-  - /api/reports/*
+  - /api/storage/*
