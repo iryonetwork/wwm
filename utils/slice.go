@@ -36,7 +36,7 @@ func IntersectionSlice(slice1, slice2 []string) []string {
 	return result
 }
 
-// SliceContains returns boolean value indicating if string s is in slice
+// SliceContains returns boolean value indicating if string needle is in slice
 func SliceContains(slice []string, needle string) bool {
 	for _, s := range slice {
 		if s == needle {
@@ -45,4 +45,25 @@ func SliceContains(slice []string, needle string) bool {
 	}
 
 	return false
+}
+
+// SliceContainsAny returns boolean value indicating if any of the string in needles is in slice
+func SliceContainsAny(slice []string, needles []string) bool {
+	for _, needle := range needles {
+		if SliceContains(slice, needle) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// SliceToMap converts strings slice to map with keys being elements of the slice and value set to true
+func SliceToMap(slice []string) map[string]bool {
+	m := make(map[string]bool)
+	for _, s := range slice {
+		m[s] = true
+	}
+
+	return m
 }

@@ -30,6 +30,10 @@ var (
 		Name:    "Bucket2",
 		Created: time1,
 	}
+	bucketToSkip = &models.BucketDescriptor{
+		Name:    "BUCKET_TO_SKIP",
+		Created: time1,
+	}
 	file1V1 = &models.FileDescriptor{
 		Archetype:   "openEHR-EHR-OBSERVATION.blood_pressure.v1",
 		Checksum:    "CHS",
@@ -137,7 +141,7 @@ func TestSync(t *testing.T) {
 				return []*gomock.Call{
 					c.EXPECT().
 						ListSourceBuckets(gomock.Any()).
-						Return([]*models.BucketDescriptor{bucket1, bucket2}, nil).
+						Return([]*models.BucketDescriptor{bucket1, bucket2, bucketToSkip}, nil).
 						Times(1),
 					c.EXPECT().
 						ListSourceFilesAsc(gomock.Any(), bucket1.Name, time3).
@@ -179,7 +183,7 @@ func TestSync(t *testing.T) {
 				return []*gomock.Call{
 					c.EXPECT().
 						ListSourceBuckets(gomock.Any()).
-						Return([]*models.BucketDescriptor{bucket1, bucket2}, nil).
+						Return([]*models.BucketDescriptor{bucket1, bucket2, bucketToSkip}, nil).
 						Times(1),
 					c.EXPECT().
 						ListSourceFilesAsc(gomock.Any(), bucket1.Name, time4).
@@ -209,7 +213,7 @@ func TestSync(t *testing.T) {
 				return []*gomock.Call{
 					c.EXPECT().
 						ListSourceBuckets(gomock.Any()).
-						Return([]*models.BucketDescriptor{bucket1, bucket2}, nil).
+						Return([]*models.BucketDescriptor{bucket1, bucket2, bucketToSkip}, nil).
 						Times(1),
 					c.EXPECT().
 						ListSourceFilesAsc(gomock.Any(), bucket1.Name, time3).
@@ -243,7 +247,7 @@ func TestSync(t *testing.T) {
 				return []*gomock.Call{
 					c.EXPECT().
 						ListSourceBuckets(gomock.Any()).
-						Return([]*models.BucketDescriptor{bucket1, bucket2}, nil).
+						Return([]*models.BucketDescriptor{bucket1, bucket2, bucketToSkip}, nil).
 						Times(1),
 					c.EXPECT().
 						ListSourceFilesAsc(gomock.Any(), bucket1.Name, time1).
@@ -368,6 +372,7 @@ func getTestService(t *testing.T, handlers storageSync.Handlers) storageSync.Bat
 		Cfg{
 			BucketsRateLimit:        1,
 			FilesPerBucketRateLimit: 1,
+			BucketsToSkip:           []string{"BUCKET_TO_SKIP"},
 		},
 		zerolog.New(os.Stdout),
 	)

@@ -12,6 +12,7 @@ import (
 
 	"github.com/iryonetwork/wwm/metrics"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
+	"github.com/iryonetwork/wwm/utils"
 )
 
 type contextKey string
@@ -20,10 +21,11 @@ const subID contextKey = "ID"
 const taskSeconds metrics.ID = "taskSeconds"
 
 type Cfg struct {
-	Connection  stan.Conn
-	AckWait     time.Duration
-	MaxInflight int
-	Handlers    storageSync.Handlers
+	Connection    stan.Conn
+	AckWait       time.Duration
+	MaxInflight   int
+	BucketsToSkip []string
+	Handlers      storageSync.Handlers
 }
 
 type stanConsumer struct {
@@ -31,6 +33,7 @@ type stanConsumer struct {
 	conn              stan.Conn
 	ackWait           time.Duration
 	maxInflight       int
+	bucketsToSkip     map[string]bool
 	handlers          storageSync.Handlers
 	subs              []stan.Subscription
 	subsLock          sync.Mutex
@@ -133,20 +136,22 @@ func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventT
 			return
 		}
 
-		result, err = h(ctx, f.BucketID, f.FileID, f.Version, f.Created)
-		if err != nil {
-			c.logger.Error().Err(err).
-				Str("cmd", "MsgHandler").
-				Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).
-				Msg("Failed handler invocation")
+		if _, bucketToSkip := c.bucketsToSkip[f.BucketID]; !bucketToSkip {
+			result, err = h(ctx, f.BucketID, f.FileID, f.Version, f.Created)
+			if err != nil {
+				c.logger.Error().Err(err).
+					Str("cmd", "MsgHandler").
+					Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).
+					Msg("Failed handler invocation")
 
-			if result == storageSync.ResultConflict {
-				// nothing can be done about this error, ack the message
-				ack = true
-				msg.Ack()
+				if result == storageSync.ResultConflict {
+					// nothing can be done about this error, ack the message
+					ack = true
+					msg.Ack()
+				}
+
+				return
 			}
-
-			return
 		}
 
 		// Change ack and result variables values for metrics
@@ -179,6 +184,7 @@ func New(ctx context.Context, cfg Cfg, logger zerolog.Logger) storageSync.Consum
 		handlers:          cfg.Handlers,
 		maxInflight:       cfg.MaxInflight,
 		ackWait:           cfg.AckWait,
+		bucketsToSkip:     utils.SliceToMap(cfg.BucketsToSkip),
 		logger:            logger,
 		metricsCollection: metricsCollection,
 	}

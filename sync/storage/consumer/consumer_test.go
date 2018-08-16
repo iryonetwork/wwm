@@ -23,11 +23,12 @@ import (
 
 var (
 	// clusterID for test server.
-	clusterID = "TestCluster"
-	time1, _  = strfmt.ParseDateTime("2018-02-05T15:18:15.123Z")
-	time2, _  = strfmt.ParseDateTime("2018-02-05T15:26:15.123Z")
-	file1     = &storageSync.FileInfo{"bucket", "file1", "version", time1}
-	file2     = &storageSync.FileInfo{"bucket", "file2", "version", time2}
+	clusterID  = "TestCluster"
+	time1, _   = strfmt.ParseDateTime("2018-02-05T15:18:15.123Z")
+	time2, _   = strfmt.ParseDateTime("2018-02-05T15:26:15.123Z")
+	file1      = &storageSync.FileInfo{"bucket", "file1", "version", time1}
+	file2      = &storageSync.FileInfo{"bucket", "file2", "version", time2}
+	fileToSkip = &storageSync.FileInfo{"BUCKET_TO_SKIP", "file2", "version", time2}
 )
 
 func TestMain(m *testing.M) {
@@ -155,6 +156,30 @@ func TestMessageHandling(t *testing.T) {
 	}
 
 	// wait to ensure all calls were made & ack delivered
+	<-time.After(time.Duration(50 * time.Millisecond))
+}
+
+func TestMessageHandlingBucketToSkip(t *testing.T) {
+	ctx := context.Background()
+	h, cleanHandlers := getMockHandlers(t)
+	defer cleanHandlers()
+	c, cleanService := getTestService(t, ctx, "Consumer", h)
+	defer cleanService()
+	p, cleanPublisher := getTestPublisher(t)
+	defer cleanPublisher()
+
+	// start consumer
+	err := c.StartSubscription(storageSync.FileNew)
+	if err != nil {
+		t.Fatal("Failed to start subscription")
+	}
+
+	err = p.Publish(context.Background(), storageSync.FileNew, fileToSkip)
+	if err != nil {
+		t.Fatal("Failed to publish to test nats-streaming server")
+	}
+
+	// wait to ensure no calls were made & ack delivered
 	<-time.After(time.Duration(50 * time.Millisecond))
 }
 
@@ -431,10 +456,11 @@ func getTestService(t *testing.T, ctx context.Context, clientID string, h storag
 
 	// initalize consumer
 	cfg := Cfg{
-		Connection:  conn,
-		AckWait:     time.Duration(time.Second),
-		MaxInflight: 1,
-		Handlers:    h,
+		Connection:    conn,
+		AckWait:       time.Duration(time.Second),
+		MaxInflight:   1,
+		BucketsToSkip: []string{"BUCKET_TO_SKIP"},
+		Handlers:      h,
 	}
 
 	c := New(ctx, cfg, zerolog.New(os.Stdout))

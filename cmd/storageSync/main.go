@@ -92,10 +92,11 @@ func main() {
 
 	// initalize consumer
 	consumerCfg := consumer.Cfg{
-		Connection:  sc,
-		AckWait:     cfg.AckWait,
-		MaxInflight: cfg.MaxInflight,
-		Handlers:    handlers,
+		Connection:    sc,
+		AckWait:       cfg.AckWait,
+		MaxInflight:   cfg.MaxInflight,
+		BucketsToSkip: cfg.BucketsToSkip,
+		Handlers:      handlers,
 	}
 	c := consumer.New(ctx, consumerCfg, logger)
 	// Register metrics

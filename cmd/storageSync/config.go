@@ -11,6 +11,9 @@ import (
 // Config represents configuration of storageSync
 type Config struct {
 	config.Config
+
+	BucketsToSkip []string `env:"BUCKETS_TO_SKIP" envSeparator:"," envDefault:"c8220891-c582-41a3-893d-19e211985db5"`
+
 	CloudStorageHost   string        `env:"CLOUD_STORAGE_HOST" envDefault:"cloudStorage"`
 	CloudStoragePath   string        `env:"CLOUD_STORAGE_PATH" envDefault:"storage"`
 	NatsAddr           string        `env:"NATS_ADDR" envDefault:"localNats:4242"`

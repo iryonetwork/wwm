@@ -94,6 +94,7 @@ func main() {
 	batchCfg := batch.Cfg{
 		BucketsRateLimit:        cfg.BucketsRateLimit,
 		FilesPerBucketRateLimit: cfg.FilesPerBucketRateLimit,
+		BucketsToSkip:           cfg.BucketsToSkip,
 	}
 	s := batch.New(handlers, batchCfg, logger)
 

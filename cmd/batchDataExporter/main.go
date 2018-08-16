@@ -113,7 +113,7 @@ func main() {
 	handlers := filesDataExporter.NewHandlers(sourceClient.Operations, auth, sanitizer, storage, logger)
 
 	// initialize batch file data exporter
-	e := batch.New(handlers, cfg.BucketsRateLimit, logger)
+	e := batch.New(handlers, cfg.BucketsRateLimit, cfg.BucketsToSkip, cfg.LabelsToSkip, logger)
 
 	// get prometheus metrics collection for batch sync and register in registry
 	m = e.GetPrometheusMetricsCollection()

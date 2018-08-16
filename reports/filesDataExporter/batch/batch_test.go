@@ -30,6 +30,10 @@ var (
 		Name:    "Bucket2",
 		Created: time1,
 	}
+	bucketToSkip = &models.BucketDescriptor{
+		Name:    "BUCKET_TO_SKIP",
+		Created: time1,
+	}
 	file1V1 = &models.FileDescriptor{
 		Archetype:   "openEHR-EHR-OBSERVATION.blood_pressure.v1",
 		Checksum:    "CHS",
@@ -118,6 +122,18 @@ var (
 		Size:        8,
 		Operation:   "w",
 	}
+	fileToSkip = &models.FileDescriptor{
+		Archetype:   "openEHR-EHR-OBSERVATION.blood_pressure.v1",
+		Checksum:    "CHS",
+		ContentType: "text/openEhrXml",
+		Created:     time1,
+		Name:        "FileToSkip",
+		Path:        "Bucket1/FileToSkip/V1",
+		Version:     "V1",
+		Size:        8,
+		Operation:   "w",
+		Labels:      []string{"LABEL_TO_SKIP"},
+	}
 	noErrors   = false
 	withErrors = true
 )
@@ -137,11 +153,11 @@ func TestExport(t *testing.T) {
 				return []*gomock.Call{
 					c.EXPECT().
 						ListSourceBuckets(gomock.Any()).
-						Return([]*models.BucketDescriptor{bucket1, bucket2}, nil).
+						Return([]*models.BucketDescriptor{bucket1, bucket2, bucketToSkip}, nil).
 						Times(1),
 					c.EXPECT().
 						ListSourceFilesAsc(gomock.Any(), bucket1.Name, time3).
-						Return([]*models.FileDescriptor{file1V3}, nil).
+						Return([]*models.FileDescriptor{file1V3, fileToSkip}, nil).
 						Times(1),
 					c.EXPECT().
 						ListSourceFilesAsc(gomock.Any(), bucket2.Name, time3).
@@ -167,11 +183,11 @@ func TestExport(t *testing.T) {
 				return []*gomock.Call{
 					c.EXPECT().
 						ListSourceBuckets(gomock.Any()).
-						Return([]*models.BucketDescriptor{bucket1, bucket2}, nil).
+						Return([]*models.BucketDescriptor{bucket1, bucket2, bucketToSkip}, nil).
 						Times(1),
 					c.EXPECT().
 						ListSourceFilesAsc(gomock.Any(), bucket1.Name, time4).
-						Return([]*models.FileDescriptor{file1V3}, nil).
+						Return([]*models.FileDescriptor{file1V3, fileToSkip}, nil).
 						Times(1),
 					c.EXPECT().
 						ListSourceFilesAsc(gomock.Any(), bucket2.Name, time4).
@@ -193,7 +209,7 @@ func TestExport(t *testing.T) {
 				return []*gomock.Call{
 					c.EXPECT().
 						ListSourceBuckets(gomock.Any()).
-						Return([]*models.BucketDescriptor{bucket1, bucket2}, nil).
+						Return([]*models.BucketDescriptor{bucket1, bucket2, bucketToSkip}, nil).
 						Times(1),
 					c.EXPECT().
 						ListSourceFilesAsc(gomock.Any(), bucket1.Name, time1).
@@ -254,40 +270,42 @@ func TestExport(t *testing.T) {
 	}
 }
 
-// func TestContextCancelled(t *testing.T) {
-// 	ctx, cancel := context.WithCancel(context.Background())
+func TestContextCancelled(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
 
-// 	h, cleanup := getMockHandlers(t)
-// 	defer cleanup()
-// 	s := getTestService(t, h)
+	h, cleanup := getMockHandlers(t)
+	defer cleanup()
+	s := getTestService(t, h)
 
-// 	called := make(chan bool)
-// 	contextCancelled := make(chan bool)
+	called := make(chan bool)
+	contextCancelled := make(chan bool)
 
-// 	h.EXPECT().
-// 		ListSourceBuckets(gomock.Any()).
-// 		Return([]*models.BucketDescriptor{bucket1}, nil).
-// 		Times(1)
-// 	h.EXPECT().
-// 		ListSourceFilesAsc(gomock.Any(), bucket1.Name, time2).
-// 		Return([]*models.FileDescriptor{file1V3, file2V2}, nil).
-// 		Times(1)
-// 	h.EXPECT().
-// 		ExportFileDelete(gomock.Any(), bucket1.Name, file2V2.Name, file2V2.Version, file2V2.Created).
-// 		Return(filesDataExporter.ResultExported, nil).
-// 		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
-// 			called <- true
-// 			<-contextCancelled
-// 		}).
-// 		Times(1)
+	h.EXPECT().
+		ListSourceBuckets(gomock.Any()).
+		Return([]*models.BucketDescriptor{bucket1}, nil).
+		Times(1)
+	h.EXPECT().
+		ListSourceFilesAsc(gomock.Any(), bucket1.Name, time2).
+		Return([]*models.FileDescriptor{file1V3, file1V3}, nil).
+		Times(1)
+	h.EXPECT().
+		ExportFileDelete(gomock.Any(), bucket1.Name, file1V3.Name, file1V3.Version, file1V3.Created).
+		Return(filesDataExporter.ResultExported, nil).
+		Do(func(_ context.Context, _, _, _ string, _ strfmt.DateTime) {
+			called <- true
+			<-contextCancelled
+		}).
+		Times(1)
+	//cancel()
 
-// 	go s.Export(ctx, time.Time(time2))
-// 	<-called
-// 	cancel()
-// 	contextCancelled <- true
-// 	// If context cancellation failed there will be missing mock expectations as there were files to sync
-// 	time.Sleep(time.Duration(50 * time.Millisecond))
-// }
+	go s.Export(ctx, time.Time(time2))
+
+	<-called
+	cancel()
+	contextCancelled <- true
+	// If context cancellation failed there will be missing mock expectations as there were files to sync
+	time.Sleep(time.Duration(50 * time.Millisecond))
+}
 
 func getMockHandlers(t *testing.T) (*mock.MockHandlers, func()) {
 	mockHandlersCtrl := gomock.NewController(t)
@@ -304,6 +322,8 @@ func getTestService(t *testing.T, handlers filesDataExporter.Handlers) filesData
 	return New(
 		handlers,
 		1,
+		[]string{"BUCKET_TO_SKIP"},
+		[]string{"LABEL_TO_SKIP"},
 		zerolog.New(os.Stdout),
 	)
 }

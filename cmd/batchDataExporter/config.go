@@ -21,7 +21,9 @@ type Config struct {
 	BucketsRateLimit int `env:"BUCKETS_RATE_LIMIT" envDefault:"2"`
 
 	// filepath to yaml
-	ExportPeriod      time.Duration `env:"EXPORT_PERIOED" envDefault:"336h"`
+	ExportPeriod      time.Duration `env:"EXPORT_PERIOD" envDefault:"336h"`
+	BucketsToSkip     []string      `env:"BUCKETS_TO_SKIP" envSeparator:"," envDefault:"c8220891-c582-41a3-893d-19e211985db5"`
+	LabelsToSkip      []string      `env:"LABELS_TO_SKIP" envSeparator:"," envDefault:"filesCollection"`
 	FieldsToSanitize  SanitizerCfg  `env:"SANITIZER_CONFIG_FILEPATH" envDefault:"assets/sanitizerConfig.json"`
 	DataEncryptionKey string        `env:"DATA_ENCRYPTION_KEY,required"`
 

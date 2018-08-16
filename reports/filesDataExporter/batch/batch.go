@@ -25,16 +25,14 @@ type (
 	batchDataExporter struct {
 		handlers          filesDataExporter.Handlers
 		bucketsRateLimit  int
+		bucketsToSkip     map[string]bool
+		labelsToSkip      []string
 		logger            zerolog.Logger
 		metricsCollection map[metrics.ID]prometheus.Collector
 	}
 )
 
 const exportSeconds metrics.ID = "exportSeconds"
-
-const labelFilesCollection = "filesCollection"
-
-var bucketsToSkip = map[string]bool{"encounters": true, "patients": true}
 
 // Export runs files data export for all the files since `dataSince` timestamp
 func (s *batchDataExporter) Export(ctx context.Context, dataSince time.Time) error {
@@ -50,7 +48,7 @@ func (s *batchDataExporter) Export(ctx context.Context, dataSince time.Time) err
 
 	ch := make(chan *exportError)
 	for _, b := range buckets {
-		if _, ok := bucketsToSkip[b.Name]; !ok {
+		if _, ok := s.bucketsToSkip[b.Name]; !ok {
 			go s.exportBucket(ctx, dataSince, b.Name, ch, bucketsRateLimit)
 		} else {
 			numberOfBuckets--
@@ -67,8 +65,8 @@ func (s *batchDataExporter) Export(ctx context.Context, dataSince time.Time) err
 	}
 
 	if errCount > 0 {
-		s.logger.Error().Msgf("%d failure(s) out of %d bucket(s) to export", errCount, len(buckets))
-		return errors.Errorf("%d failure(s) out of %d bucket(s) to export", errCount, len(buckets))
+		s.logger.Error().Msgf("%d failure(s) out of %d bucket(s) to export", errCount, numberOfBuckets)
+		return errors.Errorf("%d failure(s) out of %d bucket(s) to export", errCount, numberOfBuckets)
 	}
 
 	return nil
@@ -79,7 +77,7 @@ func (s *batchDataExporter) GetPrometheusMetricsCollection() map[metrics.ID]prom
 	return s.metricsCollection
 }
 
-func New(handlers filesDataExporter.Handlers, bucketsRateLimit int, logger zerolog.Logger) filesDataExporter.BatchFilesDataExporter {
+func New(handlers filesDataExporter.Handlers, bucketsRateLimit int, bucketsToSkip []string, labelsToSkip []string, logger zerolog.Logger) filesDataExporter.BatchFilesDataExporter {
 	logger = logger.With().Str("component", "reports/filesDataExporter/batch").Logger()
 
 	metricsCollection := make(map[metrics.ID]prometheus.Collector)
@@ -93,6 +91,8 @@ func New(handlers filesDataExporter.Handlers, bucketsRateLimit int, logger zerol
 	return &batchDataExporter{
 		handlers:          handlers,
 		bucketsRateLimit:  bucketsRateLimit,
+		bucketsToSkip:     utils.SliceToMap(bucketsToSkip),
+		labelsToSkip:      labelsToSkip,
 		logger:            logger,
 		metricsCollection: metricsCollection,
 	}
@@ -118,7 +118,7 @@ func (s *batchDataExporter) exportBucket(ctx context.Context, dataSince time.Tim
 			errCh <- &exportError{bucketID, errors.Wrap(ctx.Err(), fmt.Sprintf("aborting bucket export due to context cancellation"))}
 			return
 		default:
-			if !utils.SliceContains(f.Labels, labelFilesCollection) && time.Time(f.Created).After(dataSince) {
+			if !utils.SliceContainsAny(f.Labels, s.labelsToSkip) && time.Time(f.Created).After(dataSince) {
 				exportCount++
 				err := s.exportFile(ctx, bucketID, f)
 				if err != nil {

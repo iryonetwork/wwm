@@ -13,11 +13,13 @@ import (
 	"github.com/iryonetwork/wwm/gen/storage/models"
 	"github.com/iryonetwork/wwm/metrics"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
+	"github.com/iryonetwork/wwm/utils"
 )
 
 type Cfg struct {
 	BucketsRateLimit        int
 	FilesPerBucketRateLimit int
+	BucketsToSkip           []string
 }
 
 type syncError struct {
@@ -29,6 +31,7 @@ type batchStorageSync struct {
 	handlers                storageSync.Handlers
 	bucketsRateLimit        int
 	filesPerBucketRateLimit int
+	bucketsToSkip           map[string]bool
 	logger                  zerolog.Logger
 	metricsCollection       map[metrics.ID]prometheus.Collector
 }
@@ -44,13 +47,19 @@ func (s *batchStorageSync) Sync(ctx context.Context, lastSuccessfulRun time.Time
 		return errors.Wrap(err, "failed to list source buckets")
 	}
 
+	numberOfBuckets := len(buckets)
+
 	ch := make(chan *syncError)
 	for _, b := range buckets {
-		go s.syncBucket(ctx, lastSuccessfulRun, b.Name, ch, bucketRateLimit)
+		if _, ok := s.bucketsToSkip[b.Name]; !ok {
+			go s.syncBucket(ctx, lastSuccessfulRun, b.Name, ch, bucketRateLimit)
+		} else {
+			numberOfBuckets--
+		}
 	}
 
 	var errCount int
-	for i := 0; i < len(buckets); i++ {
+	for i := 0; i < numberOfBuckets; i++ {
 		syncErr := <-ch
 		if syncErr != nil {
 			s.logger.Error().Err(syncErr.err).Str("bucket", syncErr.id).Msg("failed to sync")
@@ -59,8 +68,8 @@ func (s *batchStorageSync) Sync(ctx context.Context, lastSuccessfulRun time.Time
 	}
 
 	if errCount > 0 {
-		s.logger.Error().Msgf("%d failure(s) out of %d bucket(s) to sync", errCount, len(buckets))
-		return errors.Errorf("%d failure(s) out of %d bucket(s) to sync", errCount, len(buckets))
+		s.logger.Error().Msgf("%d failure(s) out of %d bucket(s) to sync", errCount, numberOfBuckets)
+		return errors.Errorf("%d failure(s) out of %d bucket(s) to sync", errCount, numberOfBuckets)
 	}
 
 	return nil
@@ -86,6 +95,7 @@ func New(handlers storageSync.Handlers, cfg Cfg, logger zerolog.Logger) storageS
 		handlers:                handlers,
 		bucketsRateLimit:        cfg.BucketsRateLimit,
 		filesPerBucketRateLimit: cfg.FilesPerBucketRateLimit,
+		bucketsToSkip:           utils.SliceToMap(cfg.BucketsToSkip),
 		logger:                  logger,
 		metricsCollection:       metricsCollection,
 	}
