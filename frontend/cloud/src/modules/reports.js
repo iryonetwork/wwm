@@ -1,5 +1,5 @@
 import api from "shared/modules/api"
-import { read, API_URL } from "shared/modules/config"
+import { read, API_URL, REPORTS_STORAGE_BUCKET } from "shared/modules/config"
 import { open, COLOR_DANGER } from "shared/modules/alert"
 import { getToken } from "shared/modules/authentication"
 
@@ -81,7 +81,7 @@ export default (state = initialState, action) => {
 
 export const readFile = (reportType, fileName) => {
     return dispatch => {
-        const url = `${dispatch(read(API_URL))}/reports/${reportType}/${fileName}`
+        const url = `${dispatch(read(API_URL))}/storage/${dispatch(read(REPORTS_STORAGE_BUCKET))}/${fileName}`
         dispatch({
             type: READ_FILE
         })
@@ -127,7 +127,7 @@ export const loadReportsByType = reportType => {
             type: LOAD_REPORTS_BY_TYPE
         })
 
-        return dispatch(api(`/reports/${reportType}`, "GET"))
+        return dispatch(api(`/storage/${dispatch(read(REPORTS_STORAGE_BUCKET))}/${reportType}`, "GET"))
             .then(response => {
                 dispatch({
                     type: LOAD_REPORTS_BY_TYPE_SUCCESS,

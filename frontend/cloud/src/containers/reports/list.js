@@ -15,7 +15,6 @@ class Reports extends React.Component {
     }
 
     componentDidMount() {
-        console.log(this.props)
         if (!this.props.reports) {
             this.props.loadReportsByType(this.props.reportType)
         }
@@ -39,9 +38,7 @@ class Reports extends React.Component {
         return e => {
             e.preventDefault()
             this.props.readFile(this.props.reportType, this.props.reports[index].name).then(data => {
-                let name = this.props.reportType + " ("
-                name = name + (this.props.dataSinceInTitle ? moment(this.props.reports[index].dataSince).format("DD-MM-YYYY HH:mm:ss") + " - " : "")
-                name = name + moment(this.props.reports[index].dataUntil).format("DD-MM-YYYY HH:mm:ss") + ").csv"
+                let name = this.props.reportType + " (" + moment(this.props.reports[index].created).format("DD-MM-YYYY HH:mm:ss") + ").csv"
                 fileDownload(data, name)
             })
         }
@@ -59,18 +56,15 @@ class Reports extends React.Component {
             <table className="table table-hover text-center">
                 <thead>
                     <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Report period</th>
+                        <th scope="col">Report creation time</th>
                     </tr>
                 </thead>
                 <tbody>
                     {_.map(props.reports, (report, index) => (
                         <tr key={report.name}>
-                            <th scope="row">{index + 1}</th>
                             <td>
                                 <Link to="/" onClick={this.downloadFile(index)}>
-                                    {props.dataSinceInTitle ? <span>{moment(report.dataSince).format("DD-MM-YYYY HH:mm:ss") + " - "}</span> : null}
-                                    <span>{moment(report.dataUntil).format("DD-MM-YYYY HH:mm:ss")}</span>
+                                    <span>{moment(report.created).format("DD-MM-YYYY HH:mm:ss")}</span>
                                 </Link>
                             </td>
                         </tr>

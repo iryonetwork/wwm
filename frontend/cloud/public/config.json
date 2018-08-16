@@ -3,9 +3,6 @@
     "baseUrl": "https://iryo.cloud",
     "apiUrl": "https://iryo.cloud/api/v1",
     "locationId": "f7e41e48-ec79-4c78-9db6-37c0c4f78326",
-    "advancedRoleIDs": [
-        "338fae76-9859-4803-8441-c5c441319cfd",
-        "d91ff466-125b-4250-9dde-bbc282489430",
-        "3720198b-74ed-40de-a45e-8756f22e67d2"
-    ]
+    "advancedRoleIDs": ["338fae76-9859-4803-8441-c5c441319cfd", "d91ff466-125b-4250-9dde-bbc282489430", "3720198b-74ed-40de-a45e-8756f22e67d2"],
+    "reportsStorageBucket": "c8220891-c582-41a3-893d-19e211985db5"
 }
