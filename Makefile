@@ -67,6 +67,8 @@ buildFrontend/%:
 
 package: $(addprefix package/,$(COMMANDS)) localFrontend cloudFrontend
 
+package/batchDataExporter: INCLUDE_FILES = cmd/batchDataExporter/sanitizerConfig.json
+package/batchReportGenerator: INCLUDE_FILES = cmd/batchReportGenerator/patientsReportSpec.json cmd/batchReportGenerator/encountersReportSpec.json
 package/cloudAuth: INCLUDE_FILES = cmd/cloudAuth/rolesAndRules.yml
 package/localFrontend: buildFrontend/local
 package/localFrontend: DOCKERFILE = frontend/Dockerfile

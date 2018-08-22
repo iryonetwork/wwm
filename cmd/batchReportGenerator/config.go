@@ -1,12 +1,9 @@
 package main
 
-//go:generate go-bindata -prefix ="assets/" -o assets.go assets/...
-
 import (
 	"encoding/json"
 	"io/ioutil"
 	"reflect"
-	"regexp"
 	"strings"
 
 	"github.com/caarlos0/env"
@@ -20,7 +17,7 @@ type Config struct {
 	config.Config
 
 	// filepaths to json spec files
-	ReportSpecs       ReportSpecs `env:"REPORT_SPECS_FILEPATHS" envDefault:"assets/encountersReportSpec.json,assets/patientsReportSpec.json"`
+	ReportSpecs       ReportSpecs `env:"REPORT_SPECS_FILEPATHS" envDefault:"encountersReportSpec.json,patientsReportSpec.json"`
 	ReportsBucketUUID string      `env:"REPORTS_BUCKET_UUID" envDefault:"c8220891-c582-41a3-893d-19e211985db5"`
 
 	DbUsername    string `env:"DB_USERNAME,required"`
@@ -66,19 +63,10 @@ func parseReportSpecs(filepaths string) (interface{}, error) {
 		Slice: []generator.ReportSpec{},
 	}
 
-	re := regexp.MustCompile(assetsRe)
-
 	for _, filepath := range filepathsSlice {
 		spec := generator.ReportSpec{}
-		var jsonFile []byte
-		var err error
 
-		match := re.FindString(filepath)
-		if len(match) != 0 {
-			jsonFile, err = Asset(match)
-		} else {
-			jsonFile, err = ioutil.ReadFile(filepath)
-		}
+		jsonFile, err := ioutil.ReadFile(filepath)
 
 		if err != nil {
 			return nil, err
@@ -89,7 +77,6 @@ func parseReportSpecs(filepaths string) (interface{}, error) {
 			return nil, err
 		}
 		reportSpecs.Slice = append(reportSpecs.Slice, spec)
-
 	}
 
 	return reportSpecs, nil
