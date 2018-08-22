@@ -18,6 +18,7 @@ import { loadUserUserRoles, saveUserRoleCustomMsg, deleteUserRole } from "../../
 import { ADMIN_RIGHTS_RESOURCE, SUPERADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import Spinner from "shared/containers/spinner"
 import ClinicDetail from "./clinicDetail"
+import { confirmationDialog } from "shared/utils"
 
 class ClinicsList extends React.Component {
     constructor(props) {
@@ -167,12 +168,17 @@ class ClinicsList extends React.Component {
         }
     }
 
-    removeUserClinic(clinicID) {
+    removeUserClinic(index) {
         return e => {
-            this.props.deleteUserFromClinic(clinicID, this.props.userID)
-            if (this.state.selectedClinicID === clinicID) {
-                this.props.history.push(`${this.props.basePath}/clinics`)
-            }
+            confirmationDialog(
+                `Click OK to confirm that you want to remove the user from clinic ${this.props.clinics[this.state.userClinics[index].id].name}.`,
+                () => {
+                    this.props.deleteUserFromClinic(this.state.userClinics[index].id, this.props.userID)
+                    if (this.state.selectedClinicID === this.state.userClinics[index].id) {
+                        this.props.history.push(`${this.props.basePath}/clinics`)
+                    }
+                }
+            )
         }
     }
 
@@ -320,11 +326,7 @@ class ClinicsList extends React.Component {
                                                                         </button>
                                                                     )}
                                                                     {props.canEdit ? (
-                                                                        <button
-                                                                            className="btn btn-link"
-                                                                            type="button"
-                                                                            onClick={this.removeUserClinic(userClinic.id)}
-                                                                        >
+                                                                        <button className="btn btn-link" type="button" onClick={this.removeUserClinic(i)}>
                                                                             <span className="remove-link">Remove</span>
                                                                         </button>
                                                                     ) : null}

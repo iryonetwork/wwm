@@ -16,6 +16,7 @@ import { makeGetOrganizationUserIDs } from "../../selectors/userRolesSelectors"
 import { getName } from "../../utils/user"
 import UserDetail from "./userDetail"
 import Spinner from "shared/containers/spinner"
+import { confirmationDialog } from "shared/utils"
 
 class UsersList extends React.Component {
     constructor(props) {
@@ -148,9 +149,11 @@ class UsersList extends React.Component {
         }
     }
 
-    removeUser(userID) {
+    removeUser(index) {
         return e => {
-            this.props.deleteUserFromOrganization(this.props.organizationID, userID)
+            confirmationDialog(`Click OK to confirm that you want to remove user ${this.state.clinicUsers[index].username} from the organization.`, () => {
+                this.props.deleteUserFromOrganization(this.props.organizationID, this.state.organizationUsers[index].id)
+            })
         }
     }
 
@@ -293,7 +296,7 @@ class UsersList extends React.Component {
                                                                         </button>
                                                                     )}
                                                                     {props.canEdit ? (
-                                                                        <button className="btn btn-link" type="button" onClick={this.removeUser(user.id)}>
+                                                                        <button className="btn btn-link" type="button" onClick={this.removeUser(i)}>
                                                                             <span className="remove-link">Remove</span>
                                                                         </button>
                                                                     ) : null}

@@ -6,6 +6,7 @@ import _ from "lodash"
 
 import { loadUsers, deleteUser } from "../../modules/users"
 import { getName } from "../../utils/user"
+import { confirmationDialog } from "shared/utils"
 
 class Users extends React.Component {
     constructor(props) {
@@ -35,7 +36,7 @@ class Users extends React.Component {
 
     removeUser(userID) {
         return e => {
-            this.props.deleteUser(userID)
+            confirmationDialog(`Click OK to confirm that you want to remove user ${this.props.users[userID].username}.`, () => this.props.deleteUser(userID))
         }
     }
 

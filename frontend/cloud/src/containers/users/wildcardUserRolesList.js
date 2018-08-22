@@ -11,6 +11,7 @@ import { makeGetWildcardUserUserRoles } from "../../selectors/userRolesSelectors
 import { loadUserUserRoles, deleteUserRole } from "../../modules/userRoles"
 import { SUPERADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import Spinner from "shared/containers/spinner"
+import { confirmationDialog } from "shared/utils"
 
 class WildcardUserRolesList extends React.Component {
     constructor(props) {
@@ -66,8 +67,15 @@ class WildcardUserRolesList extends React.Component {
 
     removeUserRole(userRoleID) {
         return e => {
-            this.props.deleteUserRole(userRoleID)
-            this.forceUpdate()
+            confirmationDialog(
+                `Click OK to confirm that you want to remove the user from the wildcard role ${
+                    this.props.roles[this.props.userRoles[userRoleID].roleID].name
+                } at domain ${this.props.userRoles[userRoleID].domainType}.`,
+                () => {
+                    this.props.deleteUserRole(userRoleID)
+                    this.forceUpdate()
+                }
+            )
         }
     }
 

@@ -9,6 +9,7 @@ import { loadUsers } from "../../modules/users"
 import { loadRules, saveRule, deleteRule } from "../../modules/rules"
 import { loadRoles } from "../../modules/roles"
 import { SUPERADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
+import { confirmationDialog } from "shared/utils"
 
 import "../../styles/style.css"
 
@@ -192,9 +193,16 @@ class Rules extends React.Component {
     }
   }
 
-  deleteRule(ruleID) {
+  deleteRule(index) {
     return e => {
-      this.props.deleteRule(ruleID)
+      confirmationDialog(
+        `Click OK to confirm that you want to remove ACL rule for resource ${this.state.rules[index].resource} for subject ${this.subjectName(
+          this.state.rules[index].subject
+        )}.`,
+        () => {
+          this.props.deleteRule(this.state.rules[index].id)
+        }
+      )
     }
   }
 
@@ -362,7 +370,7 @@ class Rules extends React.Component {
                             <button onClick={this.editRule(i)} className="btn btn-link" type="button">
                               Edit
                             </button>
-                            <button onClick={this.deleteRule(rule.id)} className="btn btn-link" type="button">
+                            <button onClick={this.deleteRule(i)} className="btn btn-link" type="button">
                               <span className="remove-link">Remove</span>
                             </button>
                           </div>

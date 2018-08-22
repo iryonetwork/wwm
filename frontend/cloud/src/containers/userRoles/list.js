@@ -13,6 +13,7 @@ import { loadClinics } from "../../modules/clinics"
 import { loadAllUserRoles, saveUserRole, deleteUserRole } from "../../modules/userRoles"
 import { SUPERADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { getName } from "../../utils/user"
+import { confirmationDialog } from "shared/utils"
 
 class UserRoles extends React.Component {
     constructor(props) {
@@ -180,36 +181,59 @@ class UserRoles extends React.Component {
         }
     }
 
-    deleteUserRole(userRoleID) {
+    deleteUserRole(i) {
         return e => {
-            this.props.deleteUserRole(userRoleID)
+            confirmationDialog(
+                `Click OK to confirm that you want to remove the user ${this.props.users[this.state.userRoles[i].userID].username} from the role ${
+                    this.props.roles[this.state.userRoles[i].roleID].name
+                } at domain ${this.state.userRoles[i].domainType} ${this.getDomainName(
+                    this.state.userRoles[i].domainType,
+                    this.state.userRoles[i].domainID,
+                    true
+                )}.`,
+                () => {
+                    this.props.deleteUserRole(this.state.userRoles[i].id)
+                }
+            )
         }
     }
 
-    getDomainName(domainType, domainID) {
+    getDomainName(domainType, domainID, skipLink) {
         switch (domainType) {
             case "location":
                 if (this.props.locations[domainID]) {
-                    return <Link to={`/locations/${domainID}`}>{this.props.locations[domainID].name}</Link>
+                    if (!skipLink) {
+                        return <Link to={`/locations/${domainID}`}>{this.props.locations[domainID].name}</Link>
+                    }
+                    return this.props.locations[domainID].name
                 }
                 return domainID
             case "organization":
                 if (this.props.organizations[domainID]) {
-                    return <Link to={`/organizations/${domainID}`}>{this.props.organizations[domainID].name}</Link>
+                    if (!skipLink) {
+                        return <Link to={`/organizations/${domainID}`}>{this.props.organizations[domainID].name}</Link>
+                    }
+                    return this.props.organizations[domainID].name
                 }
                 return domainID
             case "clinic":
                 if (this.props.clinics[domainID]) {
-                    return <Link to={`/clinics/${domainID}`}>{this.props.clinics[domainID].name}</Link>
+                    if (!skipLink) {
+                        return <Link to={`/clinics/${domainID}`}>{this.props.clinics[domainID].name}</Link>
+                    }
+                    return this.props.clinics[domainID].name
                 }
                 return domainID
             case "user":
                 if (this.props.users[domainID]) {
-                    return (
-                        <Link to={`/users/${domainID}`} title={getName(this.props.users[domainID])}>
-                            {this.props.users[domainID].username}
-                        </Link>
-                    )
+                    if (!skipLink) {
+                        return (
+                            <Link to={`/users/${domainID}`} title={getName(this.props.users[domainID])}>
+                                {this.props.users[domainID].username}
+                            </Link>
+                        )
+                    }
+                    return this.props.users[domainID].username
                 }
                 return domainID
             default:
@@ -412,7 +436,7 @@ class UserRoles extends React.Component {
                                                 </button>
                                             </div>
                                         ) : (
-                                            <button onClick={this.deleteUserRole(userRole.id)} className="btn btn-link" type="button">
+                                            <button onClick={this.deleteUserRole(i)} className="btn btn-link" type="button">
                                                 <span className="remove-link">Remove</span>
                                             </button>
                                         )

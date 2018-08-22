@@ -7,6 +7,7 @@ import _ from "lodash"
 import { loadLocations, deleteLocation } from "../../modules/locations"
 import { CATEGORY_COUNTRIES, loadCodes } from "../../modules/codes"
 import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
+import { confirmationDialog } from "shared/utils"
 
 class Locations extends React.Component {
     constructor(props) {
@@ -56,7 +57,9 @@ class Locations extends React.Component {
 
     removeLocation(locationID) {
         return e => {
-            this.props.deleteLocation(locationID)
+            confirmationDialog(`Click OK to confirm that you want to remove location ${this.props.locations[locationID].name}.`, () => {
+                this.props.deleteLocation(locationID)
+            })
         }
     }
 

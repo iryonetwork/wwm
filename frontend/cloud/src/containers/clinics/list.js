@@ -10,6 +10,7 @@ import { loadLocations } from "../../modules/locations"
 import { loadOrganizations } from "../../modules/organizations"
 import { saveClinic, loadClinics, deleteClinic } from "../../modules/clinics"
 import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
+import { confirmationDialog } from "shared/utils"
 
 import UsersList from "./usersList"
 
@@ -142,9 +143,11 @@ class Clinics extends React.Component {
         }
     }
 
-    removeClinic(clinicID) {
+    removeClinic(index) {
         return e => {
-            this.props.deleteClinic(clinicID)
+            confirmationDialog(`Click OK to confirm that you want to remove clinic ${this.state.clinics[index].name}.`, () =>
+                this.props.deleteClinic(this.state.clinics[index].id)
+            )
         }
     }
 
@@ -270,7 +273,7 @@ class Clinics extends React.Component {
                                                                 <span className="arrow-down-icon" />
                                                             </button>
                                                         )}
-                                                        <button className="btn btn-link" type="button" onClick={this.removeClinic(clinic.id)}>
+                                                        <button className="btn btn-link" type="button" onClick={this.removeClinic(i)}>
                                                             <span className="remove-link">Remove</span>
                                                         </button>
                                                     </div>

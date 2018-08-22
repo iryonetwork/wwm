@@ -45,4 +45,12 @@ const escapeRegex = text => {
     return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")
 }
 
-export { PropRoute, joinPaths, round, escapeRegex }
+const confirmationDialog = (msg, confirmedCallback, rejectedCallback) => {
+    if (window.confirm(msg)) {
+        confirmedCallback && confirmedCallback()
+    } else {
+        rejectedCallback && rejectedCallback()
+    }
+}
+
+export { PropRoute, joinPaths, round, escapeRegex, confirmationDialog }

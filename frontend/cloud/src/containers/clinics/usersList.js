@@ -14,6 +14,7 @@ import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations
 import { makeGetClinicUserIDs, makeGetOrganizationUserIDs } from "../../selectors/userRolesSelectors"
 import { getName } from "../../utils/user"
 import UserDetail from "./userDetail"
+import { confirmationDialog } from "shared/utils"
 
 class UsersList extends React.Component {
     constructor(props) {
@@ -141,9 +142,11 @@ class UsersList extends React.Component {
         }
     }
 
-    removeUser(userID) {
+    removeUser(index) {
         return e => {
-            this.props.deleteUserFromClinic(this.props.clinicID, userID)
+            confirmationDialog(`Click OK to confirm that you want to remove user ${this.state.clinicUsers[index].username} from the clinic.`, () => {
+                this.props.deleteUserFromClinic(this.props.clinicID, this.state.clinicUsers[index].id)
+            })
         }
     }
 
@@ -259,7 +262,7 @@ class UsersList extends React.Component {
                                                     </button>
                                                 )}
                                                 {props.canEdit ? (
-                                                    <button className="btn btn-link" type="button" onClick={this.removeUser(user.id)}>
+                                                    <button className="btn btn-link" type="button" onClick={this.removeUser(i)}>
                                                         <span className="remove-link">Remove</span>
                                                     </button>
                                                 ) : null}

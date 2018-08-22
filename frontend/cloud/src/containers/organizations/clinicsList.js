@@ -9,6 +9,7 @@ import { loadClinics, saveClinic, deleteClinic } from "../../modules/clinics"
 import { loadLocations } from "../../modules/locations"
 import { ADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import Spinner from "shared/containers/spinner"
+import { confirmationDialog } from "shared/utils"
 
 class ClinicsList extends React.Component {
     constructor(props) {
@@ -128,9 +129,11 @@ class ClinicsList extends React.Component {
         }
     }
 
-    removeClinic(clinicID) {
+    removeClinic(index) {
         return e => {
-            this.props.deleteClinic(clinicID)
+            confirmationDialog(`Click OK to confirm that you want to remove clinic ${this.state.organizationClinics[index].name}.`, () => {
+                this.props.deleteClinic(this.state.organizationClinics[index].id)
+            })
         }
     }
 
@@ -241,7 +244,7 @@ class ClinicsList extends React.Component {
                                                                 </div>
                                                             ) : (
                                                                 <div>
-                                                                    <button className="btn btn-link" type="button" onClick={this.removeClinic(clinic.id)}>
+                                                                    <button className="btn btn-link" type="button" onClick={this.removeClinic(i)}>
                                                                         <span className="remove-link">Remove</span>
                                                                     </button>
                                                                 </div>

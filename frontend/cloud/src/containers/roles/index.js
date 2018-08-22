@@ -11,6 +11,7 @@ import { loadRoles, addRole, deleteRole } from "../../modules/roles"
 import { SUPERADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { open } from "shared/modules/alert"
 import RoleDetail from "./detail"
+import { confirmationDialog } from "shared/utils"
 
 import "../../styles/style.css"
 
@@ -55,7 +56,7 @@ class Roles extends React.Component {
         if (!selectedRoleID) {
             selectedRoleID = props.match.params.roleID
         }
-        console.log(props.match)
+
         this.setState({
             loading: loading,
             roles: _.values(props.roles),
@@ -110,10 +111,12 @@ class Roles extends React.Component {
         }
     }
 
-    deleteRole(id) {
+    deleteRole(index) {
         return e => {
-            this.props.deleteRole(id).then(response => {
-                this.props.history.push(`/roles`)
+            confirmationDialog(`Click OK to confirm that you want to remove role ${this.state.roles[index].name}.`, () => {
+                this.props.deleteRole(this.state.roles[index].id).then(response => {
+                    this.props.history.push(`/roles`)
+                })
             })
         }
     }
@@ -208,7 +211,7 @@ class Roles extends React.Component {
                                                             </button>
                                                         )}
                                                         {props.canEdit ? (
-                                                            <button onClick={this.deleteRole(role.id)} className="btn btn-link" type="button">
+                                                            <button onClick={this.deleteRole(i)} className="btn btn-link" type="button">
                                                                 <span className="remove-link">Remove</span>
                                                             </button>
                                                         ) : null}

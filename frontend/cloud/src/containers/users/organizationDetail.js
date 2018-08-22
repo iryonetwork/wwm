@@ -13,6 +13,7 @@ import { loadUserUserRoles, saveUserRole, deleteUserRole } from "../../modules/u
 import { SUPERADMIN_RIGHTS_RESOURCE, ADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { open } from "shared/modules/alert"
 import Spinner from "shared/containers/spinner"
+import { confirmationDialog } from "shared/utils"
 
 class OrganizationDetail extends React.Component {
     constructor(props) {
@@ -104,15 +105,20 @@ class OrganizationDetail extends React.Component {
         }
     }
 
-    deleteUserRole(userRoleID) {
+    deleteUserRole(index) {
         return e => {
-            // if there's no more organizationUserRoles after removal, remove user from organization
-            if (_.values(this.props.organizationUserRoles).length === 1) {
-                this.props.deleteUserFromOrganization(this.props.organizationID, this.props.userID)
-                this.props.history.push(`/users/${this.props.userID}`)
-            } else {
-                this.props.deleteUserRole(userRoleID)
-            }
+            confirmationDialog(
+                `Click OK to confirm that you want to remove role ${this.props.roles[this.state.userRoles[index].roleID].name} from the user.`,
+                () => {
+                    // if there's no more organizationUserRoles after removal, remove user from organization
+                    if (_.values(this.props.organizationUserRoles).length === 1) {
+                        this.props.deleteUserFromOrganization(this.props.organizationID, this.props.userID)
+                        this.props.history.push(`/users/${this.props.userID}/organizations`)
+                    } else {
+                        this.props.deleteUserRole(this.state.userRoles[index].id)
+                    }
+                }
+            )
         }
     }
 
@@ -200,7 +206,7 @@ class OrganizationDetail extends React.Component {
                                             </div>
                                         ) : (
                                             <div className="btn-group" role="group">
-                                                <button className="btn btn-link" type="button" onClick={this.deleteUserRole(userRole.id)}>
+                                                <button className="btn btn-link" type="button" onClick={this.deleteUserRole(i)}>
                                                     <span className="remove-link">Remove</span>
                                                 </button>
                                             </div>

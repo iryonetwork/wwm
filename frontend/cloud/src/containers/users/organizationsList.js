@@ -16,6 +16,7 @@ import { ADMIN_RIGHTS_RESOURCE, SELF_RIGHTS_RESOURCE, SUPERADMIN_RIGHTS_RESOURCE
 import OrganizationDetail from "./organizationDetail"
 import { joinPaths } from "shared/utils"
 import Spinner from "shared/containers/spinner"
+import { confirmationDialog } from "shared/utils"
 
 class OrganizationsList extends React.Component {
     constructor(props) {
@@ -143,12 +144,19 @@ class OrganizationsList extends React.Component {
         }
     }
 
-    removeUserOrganization(organizationID) {
+    removeUserOrganization(index) {
         return e => {
-            this.props.deleteUserFromOrganization(organizationID, this.props.userID)
-            if (this.state.selectedOrganizationID === organizationID) {
-                this.props.history.push(`${this.props.basePath}/organizations`)
-            }
+            confirmationDialog(
+                `Click OK to confirm that you want to remove the user from organization ${
+                    this.props.organizations[this.state.userOrganizations[index].id].name
+                }.`,
+                () => {
+                    this.props.deleteUserFromOrganization(this.state.userOrganizations[index].id, this.props.userID)
+                    if (this.state.selectedOrganizationID === this.state.userOrganizations[index].id) {
+                        this.props.history.push(`${this.props.basePath}/organizations`)
+                    }
+                }
+            )
         }
     }
 
@@ -301,7 +309,7 @@ class OrganizationsList extends React.Component {
                                                                             <button
                                                                                 className="btn btn-link"
                                                                                 type="button"
-                                                                                onClick={this.removeUserOrganization(userOrganization.id)}
+                                                                                onClick={this.removeUserOrganization(i)}
                                                                             >
                                                                                 <span className="remove-link">Remove</span>
                                                                             </button>

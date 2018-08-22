@@ -6,6 +6,7 @@ import _ from "lodash"
 
 import { loadOrganizations, deleteOrganization } from "../../modules/organizations"
 import { ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
+import { confirmationDialog } from "shared/utils"
 
 import "../../styles/style.css"
 
@@ -46,7 +47,9 @@ class Organizations extends React.Component {
 
     removeOrganization(organizationID) {
         return e => {
-            this.props.deleteOrganization(organizationID)
+            confirmationDialog(`Click OK to confirm that you want to remove organization ${this.props.organizations[organizationID].name}.`, () => {
+                this.props.deleteOrganization(organizationID)
+            })
         }
     }
 
