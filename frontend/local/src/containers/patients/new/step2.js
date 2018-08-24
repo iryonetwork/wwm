@@ -12,6 +12,10 @@ import { ListRow } from "../index"
 import { getCodesAsOptions, loadCategories } from "shared/modules/codes"
 
 import { ReactComponent as RemoveIcon } from "shared/icons/negative.svg"
+import { ReactComponent as SearchIcon } from "shared/icons/search.svg"
+import { ReactComponent as SearchActiveIcon } from "shared/icons/search-active.svg"
+import { ReactComponent as SpinnerIcon } from "shared/icons/spinner.svg"
+import { ReactComponent as DeleteIcon } from "shared/icons/delete.svg"
 
 const Step2 = props => {
     const { handleSubmit, reset, previousPage } = props
@@ -52,6 +56,18 @@ class familyMembers extends React.Component {
 
         this.getPatients = this.getPatients.bind(this)
         this.props.loadCategories("documentTypes")
+        this.state = {}
+    }
+
+    componentDidUpdate(prevProps) {
+        if (!this.props.searching && prevProps.searching && this.state.searchingFamily) {
+            // trigger delayed searching state change to false to prevent spinner flickering too much
+            window.setTimeout(() => {
+                this.setState({ searchingFamily: false })
+            }, 250)
+        } else if (this.props.searching !== this.state.searchingFamily) {
+            this.setState({ searchingFamily: this.props.searching })
+        }
     }
 
     onChange = index => patient => {
@@ -112,9 +128,14 @@ class familyMembers extends React.Component {
                         <div className="section" key={fields.get(index).patientID || index}>
                             <div className="form-row searchBar">
                                 <div className="col-sm-12 search">
+                                    <span className="search-prepend">
+                                        {this.state.searchingFamily ? <SpinnerIcon /> : this.state.searchFocused ? <SearchActiveIcon /> : <SearchIcon />}
+                                    </span>
                                     <Select.Async
                                         value={editDisabled ? fields.get(index) : undefined}
                                         onChange={this.onChange(index)}
+                                        onFocus={() => this.setState({ searchFocused: true })}
+                                        onBlur={() => this.setState({ searchFocused: false })}
                                         optionRenderer={this.renderSearchLine}
                                         valueRenderer={this.renderSearchValue}
                                         filterOptions={options => options}
@@ -191,11 +212,16 @@ class familyMembers extends React.Component {
     }
 }
 
-familyMembers = connect(state => ({}), {
-    getCodes: getCodesAsOptions,
-    loadCategories,
-    search
-})(familyMembers)
+familyMembers = connect(
+    state => ({
+        searching: state.discovery.searching || false
+    }),
+    {
+        getCodes: getCodesAsOptions,
+        loadCategories,
+        search
+    }
+)(familyMembers)
 
 export { Form }
 

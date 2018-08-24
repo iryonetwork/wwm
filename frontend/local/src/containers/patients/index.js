@@ -2,12 +2,18 @@ import React from "react"
 import { connect } from "react-redux"
 import { Link } from "react-router-dom"
 import { push } from "react-router-redux"
+import classnames from "classnames"
 
 import { read, DEFAULT_WAITLIST_ID } from "shared/modules/config"
 import { RESOURCE_PATIENT_IDENTIFICATION, READ, WRITE } from "../../modules/validations"
 import { search, cardToObject } from "../../modules/discovery"
 import Patient from "shared/containers/patient"
 import Spinner from "shared/containers/spinner"
+import { ReactComponent as SearchIcon } from "shared/icons/search.svg"
+import { ReactComponent as SearchActiveIcon } from "shared/icons/search-active.svg"
+import { ReactComponent as SpinnerIcon } from "shared/icons/spinner.svg"
+import { ReactComponent as DeleteIcon } from "shared/icons/delete.svg"
+
 import "./style.css"
 
 const ListRow = ({ patient, canAddToWaitlist, waitlistID }) => {
@@ -40,18 +46,46 @@ class PatientList extends React.Component {
         super(props)
         this.state = {
             waitlistID: this.props.read(DEFAULT_WAITLIST_ID),
+            searching: this.props.searching,
             searchQuery: ""
         }
         this.props.search("")
     }
 
-    updateSearchQuery = e => {
-        this.setState({ searchQuery: e.target.value })
+    componentDidUpdate(prevProps) {
+        if (!this.props.searching && prevProps.searching && this.state.searching) {
+            // trigger delayed searching state change to false to prevent spinner flickering too much
+            window.setTimeout(() => {
+                this.setState({ searching: false })
+            }, 250)
+        } else if (this.props.searching !== this.state.searching) {
+            this.setState({ searching: this.props.searching })
+        }
     }
 
-    search = e => {
-        e.preventDefault()
-        this.props.search(this.state.searchQuery)
+    updateSearchQuery = e => {
+        this.state.searchTimeout && clearTimeout(this.state.searchTimeout)
+
+        let timeout = 800
+        if (e.target.value === "") {
+            timeout = 0
+        }
+        this.setState({
+            searchQuery: e.target.value,
+            searchTimeout: window.setTimeout(this.search(e.target.value), timeout)
+        })
+    }
+
+    clearSearchQuery = e => {
+        this.state.searchTimeout && window.clearTimeout(this.state.searchTimeout)
+        this.setState({
+            searchQuery: ""
+        })
+        this.props.search("")
+    }
+
+    search = value => {
+        return () => this.props.search(value)
     }
 
     render() {
@@ -69,23 +103,28 @@ class PatientList extends React.Component {
 
                 {this.props.canSeePatients ? (
                     <div>
-                        <form onSubmit={this.search}>
-                            <div className="input-group search">
-                                <input
-                                    name="search"
-                                    placeholder="Search"
-                                    className="form-control"
-                                    value={this.state.searchQuery}
-                                    onChange={this.updateSearchQuery}
-                                />
+                        <div className="input-group search">
+                            <span className="input-group-prepend">
+                                {this.state.searching ? <SpinnerIcon /> : this.state.searchFocused ? <SearchActiveIcon /> : <SearchIcon />}
+                            </span>
+                            <input
+                                name="search"
+                                placeholder="Search"
+                                className={classnames("form-control", { searching: this.state.searching })}
+                                value={this.state.searchQuery}
+                                onChange={this.updateSearchQuery}
+                                onFocus={() => this.setState({ searchFocused: true })}
+                                onBlur={() => this.setState({ searchFocused: false })}
+                            />
+                            {this.state.searchQuery.length !== 0 && (
                                 <span className="input-group-append">
-                                    <button type="submit" className="btn btn-secondary">
-                                        Search
+                                    <button className="btn" onClick={this.clearSearchQuery}>
+                                        <DeleteIcon />
                                     </button>
                                 </span>
-                            </div>
-                        </form>
-                        {this.props.searching ? (
+                            )}
+                        </div>
+                        {this.state.searching ? (
                             <Spinner />
                         ) : (
                             <table className="table patients">
