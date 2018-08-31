@@ -67,17 +67,6 @@ var (
 		Size:        8,
 		Operation:   "d",
 	}
-	file2V1 = &models.FileDescriptor{
-		Archetype:   "",
-		Checksum:    "CHS",
-		ContentType: "image/jpeg",
-		Created:     time1,
-		Name:        "File2",
-		Path:        "Bucket1/Image/V1",
-		Version:     "V1",
-		Size:        15698,
-		Operation:   "w",
-	}
 	file2V2 = &models.FileDescriptor{
 		Archetype:   "",
 		Checksum:    "CHS",
@@ -347,12 +336,20 @@ func TestContextCancelled(t *testing.T) {
 		}).
 		Times(1)
 
-	go s.Sync(ctx, time.Time(time3))
+	errCh := make(chan error)
+	go func() {
+		errCh <- s.Sync(ctx, time.Time(time3))
+	}()
+
 	<-called
 	cancel()
 	contextCancelled <- true
 	// If context cancellation failed there will be missing mock expectations as there were files to sync
 	time.Sleep(time.Duration(50 * time.Millisecond))
+
+	if err := <-errCh; err == nil {
+		t.Fatalf("Got no error. Expected an error")
+	}
 }
 
 func getMockHandlers(t *testing.T) (*mock.MockHandlers, func()) {

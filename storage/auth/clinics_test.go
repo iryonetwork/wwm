@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/iryonetwork/wwm/log/errorChecker"
+
 	"github.com/go-openapi/swag"
 
 	authCommon "github.com/iryonetwork/wwm/auth"
@@ -33,9 +35,12 @@ func TestAddClinic(t *testing.T) {
 	testLocation1, testLocation2 := getTestLocations()
 	testClinic1, _ := getTestClinics()
 
-	storage.AddOrganization(testOrganization)
-	storage.AddLocation(testLocation1)
-	storage.AddLocation(testLocation2)
+	_, err := storage.AddOrganization(testOrganization)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddLocation(testLocation1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddLocation(testLocation2)
+	errorChecker.FatalTesting(t, err)
 
 	testClinic1.Organization = &testOrganization.ID
 	testClinic1.Location = &testLocation1.ID
@@ -96,12 +101,15 @@ func TestGetClinic(t *testing.T) {
 	testClinic, _ := getTestClinics()
 
 	// populate DB
-	storage.AddOrganization(testOrganization)
-	storage.AddLocation(testLocation)
+	_, err := storage.AddOrganization(testOrganization)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddLocation(testLocation)
+	errorChecker.FatalTesting(t, err)
 
 	testClinic.Organization = &testOrganization.ID
 	testClinic.Location = &testLocation.ID
-	storage.AddClinic(testClinic)
+	_, err = storage.AddClinic(testClinic)
+	errorChecker.FatalTesting(t, err)
 
 	// get clinic
 	clinic, err := storage.GetClinic(testClinic.ID)
@@ -142,9 +150,13 @@ func TestGetClinics(t *testing.T) {
 	testClinic1, testClinic2 := getTestClinics()
 
 	// populate DB
-	storage.AddOrganization(testOrganization)
-	storage.AddLocation(testLocation1)
-	storage.AddLocation(testLocation2)
+	_, err := storage.AddOrganization(testOrganization)
+
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddLocation(testLocation1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddLocation(testLocation2)
+	errorChecker.FatalTesting(t, err)
 
 	testClinic1.Organization = &testOrganization.ID
 	testClinic1.Location = &testLocation1.ID
@@ -152,8 +164,10 @@ func TestGetClinics(t *testing.T) {
 	testClinic2.Location = &testLocation2.ID
 
 	// add clinics
-	storage.AddClinic(testClinic1)
-	storage.AddClinic(testClinic2)
+	_, err = storage.AddClinic(testClinic1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddClinic(testClinic2)
+	errorChecker.FatalTesting(t, err)
 
 	// get clinics
 	clinics, err := storage.GetClinics()
@@ -184,14 +198,18 @@ func TestGetClinicOrganization(t *testing.T) {
 
 	// populate DB
 	testLocation, _ := getTestLocations()
-	storage.AddLocation(testLocation)
+	_, err := storage.AddLocation(testLocation)
+	errorChecker.FatalTesting(t, err)
+
 	testOrganization, _ := getTestOrganizations()
-	storage.AddOrganization(testOrganization)
+	_, err = storage.AddOrganization(testOrganization)
+	errorChecker.FatalTesting(t, err)
 
 	testClinic, _ := getTestClinics()
 	testClinic.Organization = &testOrganization.ID
 	testClinic.Location = &testLocation.ID
-	storage.AddClinic(testClinic)
+	_, err = storage.AddClinic(testClinic)
+	errorChecker.FatalTesting(t, err)
 
 	expectedOrganization, _ := storage.GetOrganization(testOrganization.ID)
 
@@ -231,14 +249,18 @@ func TestGetClinicLocation(t *testing.T) {
 
 	// populate DB
 	testLocation, _ := getTestLocations()
-	storage.AddLocation(testLocation)
+	_, err := storage.AddLocation(testLocation)
+	errorChecker.FatalTesting(t, err)
+
 	testOrganization, _ := getTestOrganizations()
-	storage.AddOrganization(testOrganization)
+	_, err = storage.AddOrganization(testOrganization)
+	errorChecker.FatalTesting(t, err)
 
 	testClinic, _ := getTestClinics()
 	testClinic.Organization = &testOrganization.ID
 	testClinic.Location = &testLocation.ID
-	storage.AddClinic(testClinic)
+	_, err = storage.AddClinic(testClinic)
+	errorChecker.FatalTesting(t, err)
 
 	expectedLocation, _ := storage.GetLocation(testLocation.ID)
 
@@ -280,16 +302,21 @@ func TestUpdateClinic(t *testing.T) {
 	testLocation1, testLocation2 := getTestLocations()
 	testClinic1, testClinic2 := getTestClinics()
 
-	storage.AddOrganization(testOrganization)
-	storage.AddLocation(testLocation1)
-	storage.AddLocation(testLocation2)
+	_, err := storage.AddOrganization(testOrganization)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddLocation(testLocation1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddLocation(testLocation2)
+	errorChecker.FatalTesting(t, err)
 
 	testClinic1.Organization = &testOrganization.ID
 	testClinic1.Location = &testLocation1.ID
 	testClinic2.Organization = &testOrganization.ID
 	testClinic2.Location = &testLocation2.ID
-	storage.AddClinic(testClinic1)
-	storage.AddClinic(testClinic2)
+	_, err = storage.AddClinic(testClinic1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddClinic(testClinic2)
+	errorChecker.FatalTesting(t, err)
 
 	// update clinic
 	updateClinic := &models.Clinic{
@@ -351,32 +378,43 @@ func TestRemoveClinic(t *testing.T) {
 	testLocation, _ := getTestLocations()
 	testClinic, _ := getTestClinics()
 
-	storage.AddOrganization(testOrganization)
-	storage.AddLocation(testLocation)
+	_, err := storage.AddOrganization(testOrganization)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddLocation(testLocation)
+	errorChecker.FatalTesting(t, err)
 
 	testClinic.Organization = &testOrganization.ID
 	testClinic.Location = &testLocation.ID
-	storage.AddClinic(testClinic)
+	_, err = storage.AddClinic(testClinic)
+	errorChecker.FatalTesting(t, err)
 
 	// add user roles to test if they are removed properly with clinic
 	testRole, _ := getTestRoles()
-	storage.AddRole(testRole)
+	_, err = storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
 	testUser1, testUser2 := getTestUsers()
-	storage.AddUser(testUser1)
-	storage.AddUser(testUser2)
+	_, err = storage.AddUser(testUser1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUser(testUser2)
+	errorChecker.FatalTesting(t, err)
 	testUserRole1 := getTestUserRole(testUser1.ID, testRole.ID, authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
-	storage.AddUserRole(testUserRole1)
+	_, err = storage.AddUserRole(testUserRole1)
+	errorChecker.FatalTesting(t, err)
 	testUserRole2 := getTestUserRole(testUser1.ID, testRole.ID, authCommon.DomainTypeOrganization, testOrganization.ID)
-	storage.AddUserRole(testUserRole2)
+	_, err = storage.AddUserRole(testUserRole2)
+	errorChecker.FatalTesting(t, err)
 	testUserRole3 := getTestUserRole(testUser2.ID, authCommon.EveryoneRole.ID, authCommon.DomainTypeOrganization, testOrganization.ID)
-	storage.AddUserRole(testUserRole3)
+	_, err = storage.AddUserRole(testUserRole3)
+	errorChecker.FatalTesting(t, err)
 	testUserRole4 := getTestUserRole(testUser1.ID, testRole.ID, authCommon.DomainTypeClinic, testClinic.ID)
-	storage.AddUserRole(testUserRole4)
+	_, err = storage.AddUserRole(testUserRole4)
+	errorChecker.FatalTesting(t, err)
 	testUserRole5 := getTestUserRole(testUser2.ID, authCommon.EveryoneRole.ID, authCommon.DomainTypeClinic, testClinic.ID)
-	storage.AddUserRole(testUserRole5)
+	_, err = storage.AddUserRole(testUserRole5)
+	errorChecker.FatalTesting(t, err)
 
 	// remove clinic
-	err := storage.RemoveClinic(testClinic.ID)
+	err = storage.RemoveClinic(testClinic.ID)
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}

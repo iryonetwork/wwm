@@ -8,6 +8,7 @@ import (
 
 	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/utils"
 )
 
@@ -69,7 +70,8 @@ func TestGetOrganization(t *testing.T) {
 	defer storage.Close()
 
 	testOrganization1, _ := getTestOrganizations()
-	storage.AddOrganization(testOrganization1)
+	_, err := storage.AddOrganization(testOrganization1)
+	errorChecker.FatalTesting(t, err)
 
 	// get organization
 	organization, err := storage.GetOrganization(testOrganization1.ID)
@@ -106,8 +108,10 @@ func TestGetOrganizations(t *testing.T) {
 	defer storage.Close()
 
 	testOrganization1, testOrganization2 := getTestOrganizations()
-	storage.AddOrganization(testOrganization1)
-	storage.AddOrganization(testOrganization2)
+	_, err := storage.AddOrganization(testOrganization1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddOrganization(testOrganization2)
+	errorChecker.FatalTesting(t, err)
 
 	// get organizations
 	organizations, err := storage.GetOrganizations()
@@ -139,16 +143,20 @@ func TestGetOrganizationClinics(t *testing.T) {
 	// populate DB
 	testOrganization, _ := getTestOrganizations()
 	testLocation, _ := getTestLocations()
-	storage.AddOrganization(testOrganization)
-	storage.AddLocation(testLocation)
+	_, err := storage.AddOrganization(testOrganization)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddLocation(testLocation)
+	errorChecker.FatalTesting(t, err)
 
 	testClinic1, testClinic2 := getTestClinics()
 	testClinic1.Organization = &testOrganization.ID
 	testClinic1.Location = &testLocation.ID
 	testClinic2.Organization = &testOrganization.ID
 	testClinic2.Location = &testLocation.ID
-	storage.AddClinic(testClinic1)
-	storage.AddClinic(testClinic2)
+	_, err = storage.AddClinic(testClinic1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddClinic(testClinic2)
+	errorChecker.FatalTesting(t, err)
 
 	expectedClinicsMap := map[string]*models.Clinic{
 		testClinic1.ID: testClinic1,
@@ -184,7 +192,7 @@ func TestGetOrganizationClinics(t *testing.T) {
 	}
 
 	// get organization clinics of non existing organization
-	organizationClinics, err = storage.GetOrganizationClinics("E4363A8D-4041-4B17-A43E-17705C96C1CD")
+	_, err = storage.GetOrganizationClinics("E4363A8D-4041-4B17-A43E-17705C96C1CD")
 	uErr, ok = err.(utils.Error)
 	if !ok {
 		t.Fatalf("Expected error to be of type 'utils.Error'; got '%T'", err)
@@ -201,23 +209,29 @@ func TestGetOrganizationLocationIDs(t *testing.T) {
 	// populate DB
 	testOrganization, _ := getTestOrganizations()
 	testLocation1, testLocation2 := getTestLocations()
-	storage.AddOrganization(testOrganization)
-	storage.AddLocation(testLocation1)
-	storage.AddLocation(testLocation2)
+	_, err := storage.AddOrganization(testOrganization)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddLocation(testLocation1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddLocation(testLocation2)
+	errorChecker.FatalTesting(t, err)
 
 	testClinic1, testClinic2 := getTestClinics()
 	testClinic1.Organization = &testOrganization.ID
 	testClinic1.Location = &testLocation1.ID
 	testClinic2.Organization = &testOrganization.ID
 	testClinic2.Location = &testLocation1.ID
-	storage.AddClinic(testClinic1)
-	storage.AddClinic(testClinic2)
+	_, err = storage.AddClinic(testClinic1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddClinic(testClinic2)
+	errorChecker.FatalTesting(t, err)
 	testClinic3 := &models.Clinic{
 		Name:         testClinic1.Name,
 		Location:     &testLocation2.ID,
 		Organization: &testOrganization.ID,
 	}
-	storage.AddClinic(testClinic3)
+	_, err = storage.AddClinic(testClinic3)
+	errorChecker.FatalTesting(t, err)
 
 	// each location should be returned once
 	expectedLocations := []string{testLocation1.ID, testLocation2.ID}
@@ -245,7 +259,7 @@ func TestGetOrganizationLocationIDs(t *testing.T) {
 	}
 
 	// get organization locations of non existing organization
-	organizationLocations, err = storage.GetOrganizationLocationIDs("E4363A8D-4041-4B17-A43E-17705C96C1CD")
+	_, err = storage.GetOrganizationLocationIDs("E4363A8D-4041-4B17-A43E-17705C96C1CD")
 	uErr, ok = err.(utils.Error)
 	if !ok {
 		t.Fatalf("Expected error to be of type 'utils.Error'; got '%T'", err)
@@ -260,8 +274,10 @@ func TestUpdateOrganization(t *testing.T) {
 	defer storage.Close()
 
 	testOrganization1, testOrganization2 := getTestOrganizations()
-	storage.AddOrganization(testOrganization1)
-	storage.AddOrganization(testOrganization2)
+	_, err := storage.AddOrganization(testOrganization1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddOrganization(testOrganization2)
+	errorChecker.FatalTesting(t, err)
 
 	// update organization
 	updatedName := "updatedName"
@@ -294,35 +310,46 @@ func TestRemoveOrganization(t *testing.T) {
 	defer storage.Close()
 
 	testOrganization, _ := getTestOrganizations()
-	storage.AddOrganization(testOrganization)
+	_, err := storage.AddOrganization(testOrganization)
+	errorChecker.FatalTesting(t, err)
 
 	// add location & clinic to check if clinic gets removed on organization
 	testLocation, _ := getTestLocations()
-	storage.AddLocation(testLocation)
+	_, err = storage.AddLocation(testLocation)
+	errorChecker.FatalTesting(t, err)
 	testClinic, _ := getTestClinics()
 	testClinic.Organization = &testOrganization.ID
 	testClinic.Location = &testLocation.ID
-	storage.AddClinic(testClinic)
+	_, err = storage.AddClinic(testClinic)
+	errorChecker.FatalTesting(t, err)
 
 	// add user roles to test if they are removed properly with organization
 	testRole, _ := getTestRoles()
-	storage.AddRole(testRole)
+	_, err = storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
 	testUser1, testUser2 := getTestUsers()
-	storage.AddUser(testUser1)
-	storage.AddUser(testUser2)
+	_, err = storage.AddUser(testUser1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUser(testUser2)
+	errorChecker.FatalTesting(t, err)
 	testUserRole1 := getTestUserRole(testUser1.ID, testRole.ID, authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
-	storage.AddUserRole(testUserRole1)
+	_, err = storage.AddUserRole(testUserRole1)
+	errorChecker.FatalTesting(t, err)
 	testUserRole2 := getTestUserRole(testUser1.ID, testRole.ID, authCommon.DomainTypeOrganization, testOrganization.ID)
-	storage.AddUserRole(testUserRole2)
+	_, err = storage.AddUserRole(testUserRole2)
+	errorChecker.FatalTesting(t, err)
 	testUserRole3 := getTestUserRole(testUser2.ID, authCommon.EveryoneRole.ID, authCommon.DomainTypeOrganization, testOrganization.ID)
-	storage.AddUserRole(testUserRole3)
+	_, err = storage.AddUserRole(testUserRole3)
+	errorChecker.FatalTesting(t, err)
 	testUserRole4 := getTestUserRole(testUser1.ID, testRole.ID, authCommon.DomainTypeClinic, testClinic.ID)
-	storage.AddUserRole(testUserRole4)
+	_, err = storage.AddUserRole(testUserRole4)
+	errorChecker.FatalTesting(t, err)
 	testUserRole5 := getTestUserRole(testUser2.ID, authCommon.EveryoneRole.ID, authCommon.DomainTypeLocation, testLocation.ID)
-	storage.AddUserRole(testUserRole5)
+	_, err = storage.AddUserRole(testUserRole5)
+	errorChecker.FatalTesting(t, err)
 
 	// remove organization
-	err := storage.RemoveOrganization(testOrganization.ID)
+	err = storage.RemoveOrganization(testOrganization.ID)
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}

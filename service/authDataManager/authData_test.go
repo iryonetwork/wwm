@@ -27,10 +27,6 @@ var (
 		ID:       "f78cb507-e8ea-4f1e-af13-4d3e148e8dc8",
 		Username: swag.String("testUser2"),
 	}
-	testUser3 = &models.User{
-		ID:       "d4bfca48-74ed-4381-808a-11a92d23fe55",
-		Username: swag.String("testUser3"),
-	}
 	testOrganization1 = &models.Organization{
 		ID:   "f8c5c01f-f782-4ac2-9d85-55c35ed81f34",
 		Name: swag.String("testOrganization1"),
@@ -58,18 +54,6 @@ var (
 		Organization: swag.String(testOrganization1.ID),
 		Location:     swag.String(testLocation2.ID),
 		Name:         swag.String("testClinic2"),
-	}
-	testClinic3 = &models.Clinic{
-		ID:           "3740beaf-b4d2-4918-a07a-4dbc9b186276",
-		Organization: swag.String(testOrganization2.ID),
-		Location:     swag.String(testLocation1.ID),
-		Name:         swag.String("testClinic3"),
-	}
-	testClinic4 = &models.Clinic{
-		ID:           "1b952067-ab1f-40c4-82b8-cfda6d8adf72",
-		Organization: swag.String(testOrganization2.ID),
-		Location:     swag.String(testLocation2.ID),
-		Name:         swag.String("tesClinic4"),
 	}
 	noErrors   = false
 	withErrors = true

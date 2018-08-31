@@ -11,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/rs/zerolog"
 
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 	"github.com/iryonetwork/wwm/sync/storage/publisher/mock"
 )
@@ -157,7 +158,7 @@ func TestPublishContextCancelled(t *testing.T) {
 			return fmt.Errorf("error")
 		}).Times(1)
 
-	s.PublishAsyncWithRetries(pubCtx, storageSync.FileNew, file)
+	errorChecker.FatalTesting(t, s.PublishAsyncWithRetries(pubCtx, storageSync.FileNew, file))
 
 	<-publishCallReceived
 	cancel()
@@ -172,7 +173,7 @@ func TestClose(t *testing.T) {
 	pubCall := conn.EXPECT().Publish(string(storageSync.FileNew), msg).Return(fmt.Errorf("error")).Times(5)
 	conn.EXPECT().Close().After(pubCall).Return(nil)
 
-	s.PublishAsyncWithRetries(context.Background(), storageSync.FileNew, file)
+	errorChecker.FatalTesting(t, s.PublishAsyncWithRetries(context.Background(), storageSync.FileNew, file))
 	s.Close()
 }
 
@@ -186,7 +187,7 @@ func TestGeneralContextCancelled(t *testing.T) {
 	pubCall := conn.EXPECT().Publish(string(storageSync.FileNew), msg).Return(fmt.Errorf("error")).Times(5)
 	conn.EXPECT().Close().After(pubCall).Return(nil)
 
-	s.PublishAsyncWithRetries(context.Background(), storageSync.FileNew, file)
+	errorChecker.FatalTesting(t, s.PublishAsyncWithRetries(context.Background(), storageSync.FileNew, file))
 	cancel()
 	time.Sleep(time.Duration(50 * time.Millisecond))
 }

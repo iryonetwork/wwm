@@ -14,6 +14,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/rs/zerolog"
 
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/reports"
 	"github.com/iryonetwork/wwm/storage/reports/db/mock"
 )
@@ -35,14 +36,6 @@ var (
 	file1 = reports.File{
 		FileID:    uuid1,
 		Version:   version1UUID,
-		PatientID: uuid2,
-		CreatedAt: time1,
-		UpdatedAt: time1,
-		Data:      data,
-	}
-	file1V2 = reports.File{
-		FileID:    uuid1,
-		Version:   version2UUID,
 		PatientID: uuid2,
 		CreatedAt: time1,
 		UpdatedAt: time1,
@@ -675,6 +668,6 @@ func getTestStorage(t *testing.T) (*storage, *mock.MockDB, func()) {
 
 func toJSON(in interface{}) string {
 	buf := bytes.NewBuffer(nil)
-	json.NewEncoder(buf).Encode(in)
+	errorChecker.FatalError(json.NewEncoder(buf).Encode(in))
 	return buf.String()
 }

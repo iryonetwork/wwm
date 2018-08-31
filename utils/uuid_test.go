@@ -19,7 +19,7 @@ func TestUUIDToBytes(t *testing.T) {
 		t.Fatalf("error should be nil; got %v", err)
 	}
 
-	if bytes.Compare(uuid.Bytes(), b) != 0 {
+	if !bytes.Equal(uuid.Bytes(), b) {
 		t.Fatalf("bytes should equal")
 	}
 }

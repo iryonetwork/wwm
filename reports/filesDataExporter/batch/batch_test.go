@@ -34,28 +34,6 @@ var (
 		Name:    "BUCKET_TO_SKIP",
 		Created: time1,
 	}
-	file1V1 = &models.FileDescriptor{
-		Archetype:   "openEHR-EHR-OBSERVATION.blood_pressure.v1",
-		Checksum:    "CHS",
-		ContentType: "text/openEhrXml",
-		Created:     time1,
-		Name:        "File1",
-		Path:        "Bucket1/File1/V1",
-		Version:     "V1",
-		Size:        8,
-		Operation:   "w",
-	}
-	file1V2 = &models.FileDescriptor{
-		Archetype:   "openEHR-EHR-OBSERVATION.blood_pressure.v1",
-		Checksum:    "CHS",
-		ContentType: "text/openEhrXml",
-		Created:     time4,
-		Name:        "File1",
-		Path:        "Bucket1/File1/V2",
-		Version:     "V2",
-		Size:        8,
-		Operation:   "w",
-	}
 	file1V3 = &models.FileDescriptor{
 		Archetype:   "openEHR-EHR-OBSERVATION.blood_pressure.v1",
 		Checksum:    "CHS",
@@ -66,50 +44,6 @@ var (
 		Version:     "V3",
 		Size:        8,
 		Operation:   "d",
-	}
-	file2V1 = &models.FileDescriptor{
-		Archetype:   "",
-		Checksum:    "CHS",
-		ContentType: "image/jpeg",
-		Created:     time1,
-		Name:        "File2",
-		Path:        "Bucket1/Image/V1",
-		Version:     "V1",
-		Size:        15698,
-		Operation:   "w",
-	}
-	file2V2 = &models.FileDescriptor{
-		Archetype:   "",
-		Checksum:    "CHS",
-		ContentType: "image/jpeg",
-		Created:     time3,
-		Name:        "File2",
-		Path:        "Bucket1/Image/V2",
-		Version:     "V2",
-		Size:        0,
-		Operation:   "d",
-	}
-	file3V1 = &models.FileDescriptor{
-		Archetype:   "openEHR-EHR-OBSERVATION.body_mass_index.v2",
-		Checksum:    "CHS",
-		ContentType: "text/openEhrXml",
-		Created:     time1,
-		Name:        "File3",
-		Path:        "Bucket2/File3/V1",
-		Version:     "V1",
-		Size:        8,
-		Operation:   "w",
-	}
-	file3V2 = &models.FileDescriptor{
-		Archetype:   "openEHR-EHR-OBSERVATION.body_mass_index.v2",
-		Checksum:    "CHS",
-		ContentType: "text/openEhrXml",
-		Created:     time2,
-		Name:        "File3",
-		Path:        "Bucket2/File3/V2",
-		Version:     "V2",
-		Size:        8,
-		Operation:   "w",
 	}
 	file3V3 = &models.FileDescriptor{
 		Archetype:   "openEHR-EHR-OBSERVATION.body_mass_index.v2",
@@ -298,13 +232,20 @@ func TestContextCancelled(t *testing.T) {
 		Times(1)
 	//cancel()
 
-	go s.Export(ctx, time.Time(time2))
+	errCh := make(chan error)
+	go func() {
+		errCh <- s.Export(ctx, time.Time(time2))
+	}()
 
 	<-called
 	cancel()
 	contextCancelled <- true
 	// If context cancellation failed there will be missing mock expectations as there were files to sync
 	time.Sleep(time.Duration(50 * time.Millisecond))
+
+	if err := <-errCh; err == nil {
+		t.Fatal("Got no error. Expected an error")
+	}
 }
 
 func getMockHandlers(t *testing.T) (*mock.MockHandlers, func()) {

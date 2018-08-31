@@ -9,6 +9,7 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"golang.org/x/crypto/acme"
 )
 
@@ -78,6 +79,7 @@ func TestSyncAuthentication(t *testing.T) {
 			token, _ := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(pk)
 
 			request, err := http.NewRequest(http.MethodGet, test.url, nil)
+			errorChecker.FatalTesting(t, err)
 			request.Header.Add("Authorization", token)
 
 			tr := &http.Transport{

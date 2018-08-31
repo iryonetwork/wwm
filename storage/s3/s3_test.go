@@ -22,7 +22,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/iryonetwork/wwm/gen/storage/models"
 	"github.com/iryonetwork/wwm/storage/s3/mock"
-	objectmock "github.com/iryonetwork/wwm/storage/s3/object/mock"
 )
 
 // simple wrapper for turning a Reader to ReadCloser
@@ -111,16 +110,6 @@ var (
 		ObjectName: "File1.V2.w.1516979775123.CHS.dGV4dC9vcGVuRWhyWG1s.b3BlbkVIUi1FSFItT0JTRVJWQVRJT04uYmxvb2RfcHJlc3N1cmUudjE=.dml0YWxTaWduLGJhc2ljUGF0aWVudEluZm8=",
 		Err:        errors.New("error occurred"),
 	}
-	newInfo = &object.NewObjectInfo{
-		Archetype:   "openEHR-EHR-OBSERVATION.blood_pressure.v1",
-		Checksum:    "CHS",
-		ContentType: "text/openEhrXml",
-		Created:     time1,
-		Name:        "File1",
-		Version:     "version",
-		Size:        8,
-		Labels:      []string{string("vitalSign")},
-	}
 	noErrors   = false
 	withErrors = true
 )
@@ -147,17 +136,6 @@ func getTestStorage(t *testing.T) (*s3storage, *mock.MockMinio, *mock.MockKeyPro
 	}
 
 	return s, minio, keyProvider, cleanup
-}
-
-func getTestObject(t *testing.T) (*objectmock.MockObject, func()) {
-	objectCtrl := gomock.NewController(t)
-	obj := objectmock.NewMockObject(objectCtrl)
-
-	f := func() {
-		objectCtrl.Finish()
-	}
-
-	return obj, f
 }
 
 func TestBucketExists(t *testing.T) {

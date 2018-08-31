@@ -12,6 +12,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/iryonetwork/wwm/gen/waitlist/models"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 	"github.com/iryonetwork/wwm/utils"
 )
@@ -83,7 +84,7 @@ func TestAddItem(t *testing.T) {
 		t.Fatalf("Expected error code to be '%s'; got '%s'", utils.ErrConflict, uErr.Code())
 	}
 
-	storage.db.View(func(tx *bolt.Tx) error {
+	errorChecker.FatalTesting(t, storage.db.View(func(tx *bolt.Tx) error {
 		var q [32]byte
 		copy(q[:], tx.Bucket(bucketCurrent).Bucket(waitlistID).Get(append(keyQueue, byte(1))))
 
@@ -108,7 +109,7 @@ func TestAddItem(t *testing.T) {
 		}
 
 		return nil
-	})
+	}))
 
 	_, err = storage.AddItem(waitlistID, &models.Item{Priority: swag.Int64(0)})
 	if err == nil {
@@ -164,14 +165,14 @@ func TestUpdateItem(t *testing.T) {
 	})
 	id1, _ := uuid.FromString(item1.ID)
 
-	storage.db.View(func(tx *bolt.Tx) error {
+	errorChecker.FatalTesting(t, storage.db.View(func(tx *bolt.Tx) error {
 		q := tx.Bucket(bucketCurrent).Bucket(waitlistID).Get(append(keyQueue, byte(4)))
 		if !bytes.Equal(q, id1.Bytes()) {
 			t.Fatalf("Expected queue 4 to be have '%v'; got '%v'", id1.Bytes(), q)
 		}
 
 		return nil
-	})
+	}))
 
 	item1.Priority = swag.Int64(1)
 	updatedItem, err := storage.UpdateItem(waitlistID, item1)
@@ -182,7 +183,7 @@ func TestUpdateItem(t *testing.T) {
 		t.Fatalf("Expected item priority to be 1, got %d", *updatedItem.Priority)
 	}
 
-	storage.db.View(func(tx *bolt.Tx) error {
+	errorChecker.FatalTesting(t, storage.db.View(func(tx *bolt.Tx) error {
 		q := tx.Bucket(bucketCurrent).Bucket(waitlistID).Get(append(keyQueue, byte(4)))
 		if len(q) != 0 {
 			t.Fatalf("Expected queue 4 to be empty; got '%v'", q)
@@ -197,7 +198,7 @@ func TestUpdateItem(t *testing.T) {
 		}
 
 		return nil
-	})
+	}))
 }
 
 func TestUpdatePatient(t *testing.T) {
@@ -214,7 +215,7 @@ func TestUpdatePatient(t *testing.T) {
 	waitlist2ID := waitlist2UUID.Bytes()
 
 	// add item for patient1 to waitlist1
-	storage.AddItem(waitlist1ID, &models.Item{
+	_, err = storage.AddItem(waitlist1ID, &models.Item{
 		MainComplaint: &models.Complaint{"something", "comment"},
 		Priority:      swag.Int64(1),
 		PatientID:     swag.String(patient1ID.String()),
@@ -225,8 +226,10 @@ func TestUpdatePatient(t *testing.T) {
 			},
 		},
 	})
+	errorChecker.FatalTesting(t, err)
+
 	// add item for patient2 to waitlist1
-	storage.AddItem(waitlist2ID, &models.Item{
+	_, err = storage.AddItem(waitlist2ID, &models.Item{
 		MainComplaint: &models.Complaint{"something", "comment"},
 		Priority:      swag.Int64(1),
 		PatientID:     swag.String(patient1ID.String()),
@@ -237,6 +240,7 @@ func TestUpdatePatient(t *testing.T) {
 			},
 		},
 	})
+	errorChecker.FatalTesting(t, err)
 
 	updatedItems, err := storage.UpdatePatient(
 		patient1ID.Bytes(),
@@ -293,14 +297,14 @@ func TestMoveItemToTop(t *testing.T) {
 	})
 	id1, _ := uuid.FromString(item1.ID)
 
-	storage.db.View(func(tx *bolt.Tx) error {
+	errorChecker.FatalTesting(t, storage.db.View(func(tx *bolt.Tx) error {
 		q := tx.Bucket(bucketCurrent).Bucket(waitlistID).Get(append(keyQueue, byte(4)))
 		if !bytes.Equal(q, id1.Bytes()) {
 			t.Fatalf("Expected queue 4 to be have '%v'; got '%v'", id1.Bytes(), q)
 		}
 
 		return nil
-	})
+	}))
 
 	updatedItem, err := storage.MoveItemToTop(waitlistID, id1.Bytes())
 	if err != nil {
@@ -310,7 +314,7 @@ func TestMoveItemToTop(t *testing.T) {
 		t.Fatalf("Expected item priorityQueue to be 1, got %d", updatedItem.PriorityQueue)
 	}
 
-	storage.db.View(func(tx *bolt.Tx) error {
+	errorChecker.FatalTesting(t, storage.db.View(func(tx *bolt.Tx) error {
 		q := tx.Bucket(bucketCurrent).Bucket(waitlistID).Get(append(keyQueue, byte(4)))
 		if len(q) != 0 {
 			t.Fatalf("Expected queue 4 to be empty; got '%v'", q)
@@ -322,7 +326,7 @@ func TestMoveItemToTop(t *testing.T) {
 		}
 
 		return nil
-	})
+	}))
 
 	id2, _ := uuid.NewV4()
 	_, err = storage.UpdateItem(waitlistID, &models.Item{ID: id2.String(), Priority: swag.Int64(1)})
@@ -355,7 +359,7 @@ func TestDeleteItem(t *testing.T) {
 	id2, _ := uuid.FromString(item2.ID)
 	id3, _ := uuid.FromString(item3.ID)
 
-	storage.db.View(func(tx *bolt.Tx) error {
+	errorChecker.FatalTesting(t, storage.db.View(func(tx *bolt.Tx) error {
 		q := tx.Bucket(bucketCurrent).Bucket(waitlistID).Get(append(keyQueue, byte(4)))
 		expectedQ := append(id1.Bytes(), append(id2.Bytes(), id3.Bytes()...)...)
 
@@ -364,14 +368,14 @@ func TestDeleteItem(t *testing.T) {
 		}
 
 		return nil
-	})
+	}))
 
 	err := storage.DeleteItem(waitlistID, id2.Bytes(), models.ItemStatusCanceled)
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
 
-	storage.db.View(func(tx *bolt.Tx) error {
+	errorChecker.FatalTesting(t, storage.db.View(func(tx *bolt.Tx) error {
 		q := tx.Bucket(bucketCurrent).Bucket(waitlistID).Get(append(keyQueue, byte(4)))
 		expectedQ := append(id1.Bytes(), id3.Bytes()...)
 
@@ -380,14 +384,14 @@ func TestDeleteItem(t *testing.T) {
 		}
 
 		return nil
-	})
+	}))
 
 	err = storage.DeleteItem(waitlistID, id1.Bytes(), models.ItemStatusCanceled)
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
 
-	storage.db.View(func(tx *bolt.Tx) error {
+	errorChecker.FatalTesting(t, storage.db.View(func(tx *bolt.Tx) error {
 		q := tx.Bucket(bucketCurrent).Bucket(waitlistID).Get(append(keyQueue, byte(4)))
 		expectedQ := id3.Bytes()
 
@@ -396,14 +400,14 @@ func TestDeleteItem(t *testing.T) {
 		}
 
 		return nil
-	})
+	}))
 
 	err = storage.DeleteItem(waitlistID, id3.Bytes(), models.ItemStatusCanceled)
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
 
-	storage.db.View(func(tx *bolt.Tx) error {
+	errorChecker.FatalTesting(t, storage.db.View(func(tx *bolt.Tx) error {
 		q := tx.Bucket(bucketCurrent).Bucket(waitlistID).Get(append(keyQueue, byte(4)))
 		expectedQ := []byte{}
 
@@ -412,7 +416,7 @@ func TestDeleteItem(t *testing.T) {
 		}
 
 		return nil
-	})
+	}))
 }
 
 func TestListHistoryItems(t *testing.T) {
@@ -597,7 +601,7 @@ func TestUpdateHistoryItem(t *testing.T) {
 	}
 
 	var item models.Item
-	storage.db.View(func(tx *bolt.Tx) error {
+	errorChecker.FatalTesting(t, storage.db.View(func(tx *bolt.Tx) error {
 		data := tx.Bucket(bucketHistory).Bucket(waitlistID).Get(id1.Bytes())
 		if data == nil {
 			t.Fatal("Expected item to be in history bucket, got nil")
@@ -608,7 +612,7 @@ func TestUpdateHistoryItem(t *testing.T) {
 			t.Fatal("Failed to unmarshal binary")
 		}
 		return nil
-	})
+	}))
 
 	if item.Status != models.ItemStatusCanceled {
 		t.Fatalf("Expected item status to be `canceled`, got %s", item.Status)
@@ -627,7 +631,8 @@ func benchmarkListItems(i int, b *testing.B) {
 			PatientID:     swag.String(patient1ID.String()),
 		}
 
-		storage.AddItem(id, item)
+		_, err := storage.AddItem(id, item)
+		errorChecker.FatalTesting(b, err)
 	}
 	b.ResetTimer()
 
@@ -662,7 +667,7 @@ func benchmarkListItemsSort(i int, b *testing.B) {
 			PatientID:     swag.String(patient1ID.String()),
 		}
 
-		storage.db.Update(func(tx *bolt.Tx) error {
+		errorChecker.FatalTesting(b, storage.db.Update(func(tx *bolt.Tx) error {
 			bCurrent := tx.Bucket(bucketCurrent).Bucket(id)
 
 			id, err := uuid.NewV4()
@@ -678,7 +683,7 @@ func benchmarkListItemsSort(i int, b *testing.B) {
 			}
 
 			return bCurrent.Put(id.Bytes(), data)
-		})
+		}))
 	}
 
 	b.ResetTimer()
@@ -686,19 +691,19 @@ func benchmarkListItemsSort(i int, b *testing.B) {
 	var res []*models.Item
 	for n := 0; n < b.N; n++ {
 		itms := []*models.Item{}
-		storage.db.View(func(tx *bolt.Tx) error {
+		errorChecker.FatalTesting(b, storage.db.View(func(tx *bolt.Tx) error {
 			bCurrent := tx.Bucket(bucketCurrent).Bucket(id)
 
-			bCurrent.ForEach(func(_, v []byte) error {
+			errorChecker.FatalTesting(b, bCurrent.ForEach(func(_, v []byte) error {
 				var currentItem models.Item
-				currentItem.UnmarshalBinary(v)
+				errorChecker.FatalTesting(b, currentItem.UnmarshalBinary(v))
 
 				itms = append(itms, &currentItem)
 				return nil
-			})
+			}))
 
 			return nil
-		})
+		}))
 
 		sort.Sort(sorted(itms))
 

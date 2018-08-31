@@ -11,6 +11,7 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-openapi/swag"
 	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/rs/zerolog"
 )
 
@@ -139,7 +140,7 @@ func TestAuthorizer(t *testing.T) {
 			body, _ := ioutil.ReadAll(r.Body)
 
 			pairs := []*models.ValidationPair{}
-			swag.ReadJSON(body, &pairs)
+			errorChecker.FatalTesting(t, swag.ReadJSON(body, &pairs))
 
 			if *pairs[0].DomainType != test.domainType {
 				t.Errorf("#%d Authorize(domainType: %s, domainID: %s, method: %s, path: %s) domainType = %s; expected %s", i, test.domainType, test.domainID, test.requestMethod, test.requestPath, *pairs[0].DomainType, test.domainType)
@@ -166,7 +167,8 @@ func TestAuthorizer(t *testing.T) {
 
 				w.WriteHeader(http.StatusUnauthorized)
 				body, _ := err.MarshalBinary()
-				w.Write(body)
+				_, erro := w.Write(body)
+				errorChecker.FatalTesting(t, erro)
 				return
 			}
 

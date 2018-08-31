@@ -16,6 +16,7 @@ import (
 	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
 
 	"github.com/iryonetwork/wwm/gen/discovery/models"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/storage/discovery/db"
 	"github.com/iryonetwork/wwm/storage/discovery/db/mock"
 	"github.com/iryonetwork/wwm/utils"
@@ -1369,6 +1370,6 @@ func getTestDB(t *testing.T) (*storage, sqlmock.Sqlmock, func()) {
 
 func toJSON(in interface{}) string {
 	buf := bytes.NewBuffer(nil)
-	json.NewEncoder(buf).Encode(in)
+	errorChecker.FatalError(json.NewEncoder(buf).Encode(in))
 	return buf.String()
 }

@@ -18,6 +18,7 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	bolt "github.com/iryonetwork/wwm/storage/encrypted_bolt"
 )
 
@@ -31,15 +32,14 @@ const pageHeaderSize = 16
 
 // meta represents a simplified version of a database meta page for testing.
 type meta struct {
-	magic    uint32
-	version  uint32
-	_        uint32
-	_        uint32
-	_        [16]byte
-	_        uint64
-	pgid     uint64
-	_        uint64
-	checksum uint64
+	magic   uint32
+	version uint32
+	_       uint32
+	_       uint32
+	_       [16]byte
+	_       uint64
+	pgid    uint64
+	_       uint64
 }
 
 var testKey []byte = []byte{0x47, 0x41, 0xf2, 0xd6, 0xa5, 0xa0, 0x46, 0x33, 0x87, 0xa8, 0x2, 0xa2, 0x52, 0xd0, 0x20, 0xed, 0x8c, 0x65, 0x76, 0x50, 0x77, 0x79, 0x4c, 0x7c, 0x76, 0x49, 0xbf, 0x85, 0x18, 0x27, 0x4f, 0xa0}
@@ -136,6 +136,11 @@ func TestOpen_ErrVersionMismatch(t *testing.T) {
 	// Reopen data file.
 	if _, err := bolt.Open(testKey, path, 0666, nil); err != bolt.ErrVersionMismatch {
 		t.Fatalf("unexpected error: %s", err)
+	}
+
+	// Satisfy the linter
+	if meta0.magic == 0 {
+		t.Fatal("Expected meta0.magic to not be 0")
 	}
 }
 
@@ -356,7 +361,7 @@ func TestOpen_FileTooSmall(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	db, err = bolt.Open(testKey, path, 0666, nil)
+	_, err = bolt.Open(testKey, path, 0666, nil)
 	if err == nil || err.Error() != "file size too small" {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -403,15 +408,18 @@ func TestDB_Open_InitialMmapSize(t *testing.T) {
 	}
 
 	done := make(chan struct{})
+	errCh := make(chan error)
 
 	go func() {
 		if err := wtx.Commit(); err != nil {
-			t.Fatal(err)
+			errCh <- err
 		}
 		done <- struct{}{}
 	}()
 
 	select {
+	case err := <-errCh:
+		t.Fatal(err)
 	case <-time.After(5 * time.Second):
 		t.Errorf("unexpected that the reader blocks writer")
 	case <-done:
@@ -608,8 +616,9 @@ func TestDB_Concurrent_WriteTo(t *testing.T) {
 			panic(err)
 		}
 		time.Sleep(time.Duration(rand.Intn(20)+1) * time.Millisecond)
-		tx.WriteTo(f)
-		tx.Rollback()
+		_, err = tx.WriteTo(f)
+		errorChecker.FatalTesting(t, err)
+		errorChecker.FatalTesting(t, tx.Rollback())
 		f.Close()
 		snap := &DB{nil, f.Name(), o, testKey}
 		snap.MustReopen()
@@ -658,11 +667,8 @@ func TestDB_BeginRW_Closed(t *testing.T) {
 	}
 }
 
-func TestDB_Close_PendingTx_RW(t *testing.T) { testDB_Close_PendingTx(t, true) }
-func TestDB_Close_PendingTx_RO(t *testing.T) { testDB_Close_PendingTx(t, false) }
-
 // Ensure that a database cannot close while transactions are open.
-func testDB_Close_PendingTx(t *testing.T, writable bool) {
+func TestDB_Close_PendingTx(t *testing.T) {
 	db := MustOpenDB()
 	defer db.MustClose()
 
@@ -674,10 +680,10 @@ func testDB_Close_PendingTx(t *testing.T, writable bool) {
 
 	// Open update in separate goroutine.
 	done := make(chan struct{})
+	errCh := make(chan error)
 	go func() {
-		if err := db.Close(); err != nil {
-			t.Fatal(err)
-		}
+		err := db.Close()
+		errCh <- err
 		close(done)
 	}()
 
@@ -694,6 +700,11 @@ func testDB_Close_PendingTx(t *testing.T, writable bool) {
 		t.Fatal(err)
 	}
 
+	// Check if there were any errors closing the database
+	if err := <-errCh; err != nil {
+		t.Fatalf("Error closing database; %v", err)
+	}
+
 	// Ensure database closed now.
 	time.Sleep(100 * time.Millisecond)
 	select {
@@ -701,6 +712,7 @@ func testDB_Close_PendingTx(t *testing.T, writable bool) {
 	default:
 		t.Fatal("database did not close")
 	}
+
 }
 
 // Ensure a database can provide a transactional block.
@@ -1491,6 +1503,7 @@ func BenchmarkDBBatchManual10x100(b *testing.B) {
 		start := make(chan struct{})
 		var wg sync.WaitGroup
 
+		errCh := make(chan error, 10)
 		for major := 0; major < 10; major++ {
 			wg.Add(1)
 			go func(id uint32) {
@@ -1507,20 +1520,25 @@ func BenchmarkDBBatchManual10x100(b *testing.B) {
 						k := h.Sum(nil)
 						b := tx.Bucket([]byte("bench"))
 						if err := b.Put(k, []byte("filler")); err != nil {
-							return err
+							errCh <- err
+							break
 						}
 					}
 					return nil
 				}
 				if err := db.Update(insert100); err != nil {
-					b.Fatal(err)
+					errCh <- err
+					return
 				}
 			}(uint32(major))
 		}
 		close(start)
 		wg.Wait()
+		close(errCh)
+		for err := range errCh {
+			b.Fatalf("Atleast one of 10 iterations failed. Got error: %v", err)
+		}
 	}
-
 	b.StopTimer()
 	validateBatchBench(b, db)
 }

@@ -12,6 +12,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 )
@@ -357,6 +358,6 @@ func decrypt(data string, encryptionKey []byte) ([]byte, error) {
 
 func toJSON(in interface{}) string {
 	buf := bytes.NewBuffer(nil)
-	json.NewEncoder(buf).Encode(in)
+	errorChecker.FatalError(json.NewEncoder(buf).Encode(in))
 	return buf.String()
 }

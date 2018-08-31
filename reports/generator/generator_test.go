@@ -1,9 +1,7 @@
 package generator
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 	"regexp"
@@ -391,10 +389,4 @@ func getTestService(t *testing.T, reportSpec ReportSpec) (*generator, *storageMo
 	}
 
 	return g, storage, writer, cleanup
-}
-
-func toJSON(in interface{}) string {
-	buf := bytes.NewBuffer(nil)
-	json.NewEncoder(buf).Encode(in)
-	return buf.String()
 }

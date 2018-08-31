@@ -12,6 +12,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/iryonetwork/wwm/gen/waitlist/models"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 )
 
@@ -100,7 +101,7 @@ func TestEnsureDefaultList(t *testing.T) {
 	}
 
 	// trying to add with invalid ID should return an error
-	list, err = s.EnsureDefaultList("invalid_id", "list with invalid id")
+	_, err = s.EnsureDefaultList("invalid_id", "list with invalid id")
 	if err == nil {
 		t.Fatalf("Expected error to error, got '%v'", err)
 	}
@@ -200,7 +201,7 @@ func TestDeleteList(t *testing.T) {
 	id2, _ := uuid.FromString(item2.ID)
 	id3, _ := uuid.FromString(item3.ID)
 
-	storage.db.View(func(tx *bolt.Tx) error {
+	errorChecker.FatalTesting(t, storage.db.View(func(tx *bolt.Tx) error {
 		q := tx.Bucket(bucketCurrent).Bucket(waitlistID).Get(append(keyQueue, byte(4)))
 		expectedQ := append(id1.Bytes(), append(id2.Bytes(), id3.Bytes()...)...)
 
@@ -209,14 +210,14 @@ func TestDeleteList(t *testing.T) {
 		}
 
 		return nil
-	})
+	}))
 
 	err := storage.DeleteList(waitlistID)
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
 
-	storage.db.View(func(tx *bolt.Tx) error {
+	errorChecker.FatalTesting(t, storage.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket(bucketCurrent).Bucket(waitlistID)
 		if b != nil {
 			t.Fatalf("Exepected bucket to be deleted")
@@ -229,5 +230,5 @@ func TestDeleteList(t *testing.T) {
 		}
 
 		return nil
-	})
+	}))
 }

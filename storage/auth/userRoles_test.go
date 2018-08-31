@@ -12,6 +12,7 @@ import (
 
 	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/utils"
 )
 
@@ -29,9 +30,11 @@ func TestAddUserRole(t *testing.T) {
 	defer storage.Close()
 
 	testRole, _ := getTestRoles()
-	storage.AddRole(testRole)
+	_, err := storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
 	testUser, _ := getTestUsers()
-	storage.AddUser(testUser)
+	_, err = storage.AddUser(testUser)
+	errorChecker.FatalTesting(t, err)
 
 	testUserRole := getTestUserRole(testUser.ID, testRole.ID, authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
 
@@ -56,14 +59,15 @@ func TestAddUserRoleUserDoesNotExist(t *testing.T) {
 	defer storage.Close()
 
 	testRole, _ := getTestRoles()
-	storage.AddRole(testRole)
+	_, err := storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
 
 	nonExistingUserID, _ := uuid.NewV4()
 
 	testUserRole := getTestUserRole(nonExistingUserID.String(), testRole.ID, authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
 
 	// add userRole
-	_, err := storage.AddUserRole(testUserRole)
+	_, err = storage.AddUserRole(testUserRole)
 	if err == nil {
 		t.Fatalf("Expected error; got '%v'", err)
 	}
@@ -81,14 +85,15 @@ func TestAddUserRoleRoleDoesNotExist(t *testing.T) {
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
-	storage.AddUser(testUser)
+	_, err := storage.AddUser(testUser)
+	errorChecker.FatalTesting(t, err)
 
 	nonExistingRoleID, _ := uuid.NewV4()
 
 	testUserRole := getTestUserRole(testUser.ID, nonExistingRoleID.String(), authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
 
 	// add userRole
-	_, err := storage.AddUserRole(testUserRole)
+	_, err = storage.AddUserRole(testUserRole)
 	if err == nil {
 		t.Fatalf("Expected error; got '%v'", err)
 	}
@@ -106,16 +111,18 @@ func TestAddUserRoleDomainClinicDoesNotExist(t *testing.T) {
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
-	storage.AddUser(testUser)
+	_, err := storage.AddUser(testUser)
+	errorChecker.FatalTesting(t, err)
 	testRole, _ := getTestRoles()
-	storage.AddRole(testRole)
+	_, err = storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
 
 	nonExistingClinicID, _ := uuid.NewV4()
 
 	testUserRole := getTestUserRole(testUser.ID, testRole.ID, authCommon.DomainTypeClinic, nonExistingClinicID.String())
 
 	// add userRole
-	_, err := storage.AddUserRole(testUserRole)
+	_, err = storage.AddUserRole(testUserRole)
 	if err == nil {
 		t.Fatalf("Expected error; got '%v'", err)
 	}
@@ -133,16 +140,18 @@ func TestAddUserRoleDomainOrganizationDoesNotExist(t *testing.T) {
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
-	storage.AddUser(testUser)
+	_, err := storage.AddUser(testUser)
+	errorChecker.FatalTesting(t, err)
 	testRole, _ := getTestRoles()
-	storage.AddRole(testRole)
+	_, err = storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
 
 	nonExistingOrganizationID, _ := uuid.NewV4()
 
 	testUserRole := getTestUserRole(testUser.ID, testRole.ID, authCommon.DomainTypeOrganization, nonExistingOrganizationID.String())
 
 	// add userRole
-	_, err := storage.AddUserRole(testUserRole)
+	_, err = storage.AddUserRole(testUserRole)
 	if err == nil {
 		t.Fatalf("Expected error; got '%v'", err)
 	}
@@ -160,16 +169,18 @@ func TestAddUserRoleDomainLocationDoesNotExist(t *testing.T) {
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
-	storage.AddUser(testUser)
+	_, err := storage.AddUser(testUser)
+	errorChecker.FatalTesting(t, err)
 	testRole, _ := getTestRoles()
-	storage.AddRole(testRole)
+	_, err = storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
 
 	nonExistingLocationID, _ := uuid.NewV4()
 
 	testUserRole := getTestUserRole(testUser.ID, testRole.ID, authCommon.DomainTypeLocation, nonExistingLocationID.String())
 
 	// add userRole
-	_, err := storage.AddUserRole(testUserRole)
+	_, err = storage.AddUserRole(testUserRole)
 	if err == nil {
 		t.Fatalf("Expected error; got '%v'", err)
 	}
@@ -187,16 +198,18 @@ func TestAddUserRoleDomainUserDoesNotExist(t *testing.T) {
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
-	storage.AddUser(testUser)
+	_, err := storage.AddUser(testUser)
+	errorChecker.FatalTesting(t, err)
 	testRole, _ := getTestRoles()
-	storage.AddRole(testRole)
+	_, err = storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
 
 	nonExistingUserID, _ := uuid.NewV4()
 
 	testUserRole := getTestUserRole(testUser.ID, testRole.ID, authCommon.DomainTypeUser, nonExistingUserID.String())
 
 	// add userRole
-	_, err := storage.AddUserRole(testUserRole)
+	_, err = storage.AddUserRole(testUserRole)
 	if err == nil {
 		t.Fatalf("Expected error; got '%v'", err)
 	}
@@ -214,14 +227,16 @@ func TestAddUserRoleInvalidDomainType(t *testing.T) {
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
-	storage.AddUser(testUser)
+	_, err := storage.AddUser(testUser)
+	errorChecker.FatalTesting(t, err)
 	testRole, _ := getTestRoles()
-	storage.AddRole(testRole)
+	_, err = storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
 
 	testUserRole := getTestUserRole(testUser.ID, testRole.ID, "something", "someID")
 
 	// add userRole
-	_, err := storage.AddUserRole(testUserRole)
+	_, err = storage.AddUserRole(testUserRole)
 	if err == nil {
 		t.Fatalf("Expected error; got '%v'", err)
 	}
@@ -239,14 +254,17 @@ func TestGetUserRole(t *testing.T) {
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
-	storage.AddUser(testUser)
+	_, err := storage.AddUser(testUser)
+	errorChecker.FatalTesting(t, err)
 	testRole, _ := getTestRoles()
-	storage.AddRole(testRole)
+	_, err = storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
 
 	testUserRole := getTestUserRole(testUser.ID, testRole.ID, authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
 
 	// add userRole
-	storage.AddUserRole(testUserRole)
+	_, err = storage.AddUserRole(testUserRole)
+	errorChecker.FatalTesting(t, err)
 
 	// get userRole
 	userRole, err := storage.GetUserRole(testUserRole.ID)
@@ -283,15 +301,20 @@ func TestGetUserRoles(t *testing.T) {
 	defer storage.Close()
 
 	testRole, _ := getTestRoles()
-	storage.AddRole(testRole)
+	_, err := storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
 	testUser1, testUser2 := getTestUsers()
-	storage.AddUser(testUser1)
-	storage.AddUser(testUser2)
+	_, err = storage.AddUser(testUser1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUser(testUser2)
+	errorChecker.FatalTesting(t, err)
 
 	testUserRole1 := getTestUserRole(testUser1.ID, testRole.ID, authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
 	testUserRole2 := getTestUserRole(testUser2.ID, testRole.ID, authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
-	storage.AddUserRole(testUserRole1)
-	storage.AddUserRole(testUserRole2)
+	_, err = storage.AddUserRole(testUserRole1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUserRole(testUserRole2)
+	errorChecker.FatalTesting(t, err)
 
 	// get userRoles
 	userRoles, err := storage.GetUserRoles()
@@ -322,14 +345,17 @@ func TestGetUserRoleByContent(t *testing.T) {
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
-	storage.AddUser(testUser)
+	_, err := storage.AddUser(testUser)
+	errorChecker.FatalTesting(t, err)
 	testRole, _ := getTestRoles()
-	storage.AddRole(testRole)
+	_, err = storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
 
 	testUserRole := getTestUserRole(testUser.ID, testRole.ID, authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
 
 	// add userRole
-	storage.AddUserRole(testUserRole)
+	_, err = storage.AddUserRole(testUserRole)
+	errorChecker.FatalTesting(t, err)
 
 	// get userRole
 	userRole, err := storage.GetUserRoleByContent(testUser.ID, testRole.ID, authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
@@ -358,59 +384,79 @@ func TestFindUserRoles(t *testing.T) {
 	// populate DB varied set of user roles
 	// add users
 	testUser1, testUser2 := getTestUsers()
-	storage.AddUser(testUser1)
-	storage.AddUser(testUser2)
+	_, err := storage.AddUser(testUser1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUser(testUser2)
+	errorChecker.FatalTesting(t, err)
 	// add roles
 	testRole1, testRole2 := getTestRoles()
-	storage.AddRole(testRole1)
-	storage.AddRole(testRole2)
+	_, err = storage.AddRole(testRole1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRole(testRole2)
+	errorChecker.FatalTesting(t, err)
 	// add organizations
 	testOrganization1, testOrganization2 := getTestOrganizations()
-	storage.AddOrganization(testOrganization1)
-	storage.AddOrganization(testOrganization2)
+	_, err = storage.AddOrganization(testOrganization1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddOrganization(testOrganization2)
+	errorChecker.FatalTesting(t, err)
 	// add locations
 	testLocation1, testLocation2 := getTestLocations()
-	storage.AddLocation(testLocation1)
-	storage.AddLocation(testLocation2)
+	_, err = storage.AddLocation(testLocation1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddLocation(testLocation2)
+	errorChecker.FatalTesting(t, err)
 	// add clinics
 	testClinic1, testClinic2 := getTestClinics()
 	testClinic1.Organization = swag.String(testOrganization1.ID)
 	testClinic1.Location = swag.String(testLocation1.ID)
-	storage.AddClinic(testClinic1)
+	_, err = storage.AddClinic(testClinic1)
+	errorChecker.FatalTesting(t, err)
 	testClinic2.Organization = swag.String(testOrganization2.ID)
 	testClinic2.Location = swag.String(testLocation2.ID)
-	storage.AddClinic(testClinic2)
+	_, err = storage.AddClinic(testClinic2)
+	errorChecker.FatalTesting(t, err)
 
 	// user 1 admin role on global domain
 	userRole1 := getTestUserRole(testUser1.ID, authCommon.SuperadminRole.ID, authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
-	storage.AddUserRole(userRole1)
+	_, err = storage.AddUserRole(userRole1)
+	errorChecker.FatalTesting(t, err)
 	// user 1 everyone role on organization 1
 	userRole2 := getTestUserRole(testUser1.ID, authCommon.EveryoneRole.ID, authCommon.DomainTypeOrganization, testOrganization1.ID)
-	storage.AddUserRole(userRole2)
+	_, err = storage.AddUserRole(userRole2)
+	errorChecker.FatalTesting(t, err)
 	// user 2 everyone role on organization 2
 	userRole3 := getTestUserRole(testUser2.ID, authCommon.EveryoneRole.ID, authCommon.DomainTypeOrganization, testOrganization2.ID)
-	storage.AddUserRole(userRole3)
+	_, err = storage.AddUserRole(userRole3)
+	errorChecker.FatalTesting(t, err)
 	// user 1 everyone role on clinic 1
 	userRole4 := getTestUserRole(testUser1.ID, authCommon.EveryoneRole.ID, authCommon.DomainTypeClinic, testClinic1.ID)
-	storage.AddUserRole(userRole4)
+	_, err = storage.AddUserRole(userRole4)
+	errorChecker.FatalTesting(t, err)
 	// user 1 testRole1 on clinic 1
 	userRole5 := getTestUserRole(testUser1.ID, testRole1.ID, authCommon.DomainTypeClinic, testClinic1.ID)
-	storage.AddUserRole(userRole5)
+	_, err = storage.AddUserRole(userRole5)
+	errorChecker.FatalTesting(t, err)
 	// user 2 everyone role on clinic 2
 	userRole6 := getTestUserRole(testUser2.ID, authCommon.EveryoneRole.ID, authCommon.DomainTypeClinic, testClinic2.ID)
-	storage.AddUserRole(userRole6)
+	_, err = storage.AddUserRole(userRole6)
+	errorChecker.FatalTesting(t, err)
 	// user 2 testRole1 on clinic 2
 	userRole7 := getTestUserRole(testUser2.ID, testRole1.ID, authCommon.DomainTypeClinic, testClinic2.ID)
-	storage.AddUserRole(userRole7)
+	_, err = storage.AddUserRole(userRole7)
+	errorChecker.FatalTesting(t, err)
 	// user 2 testRole2 on clinic 2
 	userRole8 := getTestUserRole(testUser2.ID, testRole2.ID, authCommon.DomainTypeClinic, testClinic2.ID)
-	storage.AddUserRole(userRole8)
+	_, err = storage.AddUserRole(userRole8)
+	errorChecker.FatalTesting(t, err)
 	// user 2 testRole2 on location 1 (freely assigned role)
 	userRole9 := getTestUserRole(testUser2.ID, testRole2.ID, authCommon.DomainTypeLocation, testLocation1.ID)
-	storage.AddUserRole(userRole9)
+	_, err = storage.AddUserRole(userRole9)
+	errorChecker.FatalTesting(t, err)
 	// user 2 everyone role on organization 1
 	userRole10 := getTestUserRole(testUser2.ID, authCommon.EveryoneRole.ID, authCommon.DomainTypeOrganization, testOrganization1.ID)
-	storage.AddUserRole(userRole10)
+	_, err = storage.AddUserRole(userRole10)
+	errorChecker.FatalTesting(t, err)
 
 	testCases := []struct {
 		description           string
@@ -625,7 +671,7 @@ func TestFindUserRoles(t *testing.T) {
 					printJson(expectedUserRole)
 					fmt.Println("Got")
 					printJson(outUserRole)
-					t.Errorf("Expected user role with id %s to equal\n%+v\ngot\n%+v", expectedUserRole, outUserRole)
+					t.Errorf("Expected user role with id %s to equal\n%+v\ngot\n%+v", id, expectedUserRole, outUserRole)
 				}
 			}
 
@@ -649,17 +695,20 @@ func TestRemoveUserRole(t *testing.T) {
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
-	storage.AddUser(testUser)
+	_, err := storage.AddUser(testUser)
+	errorChecker.FatalTesting(t, err)
 	testRole, _ := getTestRoles()
-	storage.AddRole(testRole)
+	_, err = storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
 
 	testUserRole := getTestUserRole(testUser.ID, testRole.ID, authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
 
 	// add userRole
-	storage.AddUserRole(testUserRole)
+	_, err = storage.AddUserRole(testUserRole)
+	errorChecker.FatalTesting(t, err)
 
 	// remove user
-	err := storage.RemoveUserRole(testUserRole.ID)
+	err = storage.RemoveUserRole(testUserRole.ID)
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}

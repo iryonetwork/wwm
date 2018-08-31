@@ -7,6 +7,7 @@ import (
 	"github.com/go-openapi/swag"
 
 	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/utils"
 )
 
@@ -32,7 +33,8 @@ func TestAddRule(t *testing.T) {
 	_, testUser2 := getTestUsers()
 
 	// add user
-	storage.AddUser(testUser2)
+	_, err := storage.AddUser(testUser2)
+	errorChecker.FatalTesting(t, err)
 	testRule.Subject = &testUser2.ID
 
 	// add rule
@@ -45,7 +47,7 @@ func TestAddRule(t *testing.T) {
 	}
 
 	// load policy manually because it's launched in goroutine
-	storage.enforcer.LoadPolicy()
+	errorChecker.FatalTesting(t, storage.enforcer.LoadPolicy())
 
 	// can't add rule that already exist
 	_, err = storage.AddRule(testRule)
@@ -77,9 +79,12 @@ func TestGetRule(t *testing.T) {
 	_, testUser2 := getTestUsers()
 
 	// add user and rule
-	storage.AddUser(testUser2)
+	_, err := storage.AddUser(testUser2)
+	errorChecker.FatalTesting(t, err)
+
 	testRule.Subject = &testUser2.ID
-	storage.AddRule(testRule)
+	_, err = storage.AddRule(testRule)
+	errorChecker.FatalTesting(t, err)
 
 	// get rule
 	rule, err := storage.GetRule(testRule.ID)
@@ -120,13 +125,17 @@ func TestGetRules(t *testing.T) {
 	_, testUser2 := getTestUsers()
 
 	// add user, role and rules
-	storage.AddUser(testUser2)
-	storage.AddRole(testRole2)
+	_, err := storage.AddUser(testUser2)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRole(testRole2)
+	errorChecker.FatalTesting(t, err)
 	testRule.Subject = &testUser2.ID
 	testRule2.Subject = &testRole2.ID
 
-	storage.AddRule(testRule)
-	storage.AddRule(testRule2)
+	_, err = storage.AddRule(testRule)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRule(testRule2)
+	errorChecker.FatalTesting(t, err)
 
 	// get rules
 	rules, err := storage.GetRules()
@@ -160,10 +169,13 @@ func TestUpdateRule(t *testing.T) {
 	_, testUser2 := getTestUsers()
 
 	// add user, role and rule
-	storage.AddUser(testUser2)
-	storage.AddRole(testRole2)
+	_, err := storage.AddUser(testUser2)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRole(testRole2)
+	errorChecker.FatalTesting(t, err)
 	testRule.Subject = &testUser2.ID
-	storage.AddRule(testRule)
+	_, err = storage.AddRule(testRule)
+	errorChecker.FatalTesting(t, err)
 
 	// update rule
 	updateRule := &models.Rule{
@@ -196,12 +208,14 @@ func TestRemoveRule(t *testing.T) {
 	_, testUser2 := getTestUsers()
 
 	// add user and rule
-	storage.AddUser(testUser2)
+	_, err := storage.AddUser(testUser2)
+	errorChecker.FatalTesting(t, err)
 	testRule.Subject = &testUser2.ID
-	storage.AddRule(testRule)
+	_, err = storage.AddRule(testRule)
+	errorChecker.FatalTesting(t, err)
 
 	// remove rule
-	err := storage.RemoveRule(testRule.ID)
+	err = storage.RemoveRule(testRule.ID)
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}

@@ -13,6 +13,7 @@ import (
 
 	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/utils"
 )
 
@@ -99,7 +100,8 @@ func TestGetUser(t *testing.T) {
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
-	storage.AddUser(testUser)
+	_, err := storage.AddUser(testUser)
+	errorChecker.FatalTesting(t, err)
 
 	// get user
 	user, err := storage.GetUser(testUser.ID)
@@ -136,7 +138,8 @@ func TestGetUserByUsername(t *testing.T) {
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
-	storage.AddUser(testUser)
+	_, err := storage.AddUser(testUser)
+	errorChecker.FatalTesting(t, err)
 
 	// get user
 	user, err := storage.GetUserByUsername(*testUser.Username)
@@ -165,8 +168,10 @@ func TestGetUsers(t *testing.T) {
 	testUser, testUser2 := getTestUsers()
 
 	// add users
-	storage.AddUser(testUser)
-	storage.AddUser(testUser2)
+	_, err := storage.AddUser(testUser)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUser(testUser2)
+	errorChecker.FatalTesting(t, err)
 
 	// get users
 	users, err := storage.GetUsers()
@@ -196,8 +201,10 @@ func TestUpdateUser(t *testing.T) {
 	defer storage.Close()
 
 	testUser1, testUser2 := getTestUsers()
-	storage.AddUser(testUser1)
-	storage.AddUser(testUser2)
+	_, err := storage.AddUser(testUser1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUser(testUser2)
+	errorChecker.FatalTesting(t, err)
 
 	password := testUser1.Password
 	updateUser := &models.User{
@@ -262,21 +269,27 @@ func TestRemoveUser(t *testing.T) {
 	defer storage.Close()
 
 	testUser, testUser2 := getTestUsers()
-	storage.AddUser(testUser)
-	storage.AddUser(testUser2)
+	_, err := storage.AddUser(testUser)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUser(testUser2)
+	errorChecker.FatalTesting(t, err)
 
 	// add user roles to test if they are removed with user
 	testRole, _ := getTestRoles()
-	storage.AddRole(testRole)
+	_, err = storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
 	testUserRole1 := getTestUserRole(testUser.ID, testRole.ID, authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
-	storage.AddUserRole(testUserRole1)
+	_, err = storage.AddUserRole(testUserRole1)
+	errorChecker.FatalTesting(t, err)
 	testUserRole2 := getTestUserRole(testUser2.ID, testRole.ID, authCommon.DomainTypeUser, testUser.ID)
-	storage.AddUserRole(testUserRole2)
+	_, err = storage.AddUserRole(testUserRole2)
+	errorChecker.FatalTesting(t, err)
 	testUserRole3 := getTestUserRole(testUser2.ID, testRole.ID, authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
-	storage.AddUserRole(testUserRole3)
+	_, err = storage.AddUserRole(testUserRole3)
+	errorChecker.FatalTesting(t, err)
 
 	// remove user
-	err := storage.RemoveUser(testUser.ID)
+	err = storage.RemoveUser(testUser.ID)
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}

@@ -8,6 +8,7 @@ import (
 
 	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 )
 
 func TestRules(t *testing.T) {
@@ -33,167 +34,195 @@ func TestRules(t *testing.T) {
 	nurseRole, _ := storage.AddRole(&models.Role{Name: swag.String("nurseRole")})
 
 	// add rules
-	storage.AddRule(&models.Rule{
+	_, err := storage.AddRule(&models.Rule{
 		Subject:  &authCommon.EveryoneRole.ID,
 		Action:   swag.Int64(Write),
 		Resource: swag.String("/auth/login"),
 	})
-	storage.AddRule(&models.Rule{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRule(&models.Rule{
 		Action:   swag.Int64(Write),
 		Subject:  swag.String(adminRole.ID),
 		Resource: swag.String("/clinic/login"),
 	})
-	storage.AddRule(&models.Rule{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRule(&models.Rule{
 		Action:   swag.Int64(Write),
 		Subject:  swag.String(doctorRole.ID),
 		Resource: swag.String("/clinic/login"),
 	})
-	storage.AddRule(&models.Rule{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRule(&models.Rule{
 		Action:   swag.Int64(Write),
 		Subject:  swag.String(nurseRole.ID),
 		Resource: swag.String("/clinic/login"),
 	})
-	storage.AddRule(&models.Rule{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRule(&models.Rule{
 		Action:   swag.Int64(Read | Write),
 		Subject:  swag.String(adminRole.ID),
 		Resource: swag.String("/frontend/admin*"),
 	})
-	storage.AddRule(&models.Rule{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRule(&models.Rule{
 		Action:   swag.Int64(Read | Write),
 		Subject:  swag.String(adminRole.ID),
 		Resource: swag.String("/storage/file*"),
 	})
-	storage.AddRule(&models.Rule{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRule(&models.Rule{
 		Action:   swag.Int64(Read | Write),
 		Subject:  swag.String(adminRole.ID),
 		Resource: swag.String("/storage/file/basicInfo"),
 		Deny:     true,
 	})
-	storage.AddRule(&models.Rule{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRule(&models.Rule{
 		Action:   swag.Int64(Read),
 		Subject:  swag.String(doctorRole.ID),
 		Resource: swag.String("/frontend/doctor*"),
 	})
-	storage.AddRule(&models.Rule{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRule(&models.Rule{
 		Action:   swag.Int64(Read | Write),
 		Subject:  swag.String(doctorRole.ID),
 		Resource: swag.String("/frontend/diagnosis*"),
 	})
-	storage.AddRule(&models.Rule{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRule(&models.Rule{
 		Action:   swag.Int64(Read | Write),
 		Subject:  swag.String(doctorRole.ID),
 		Resource: swag.String("/storage/file*"),
 	})
-	storage.AddRule(&models.Rule{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRule(&models.Rule{
 		Action:   swag.Int64(Read),
 		Subject:  swag.String(nurseRole.ID),
 		Resource: swag.String("/frontend/nurse*"),
 	})
-	storage.AddRule(&models.Rule{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRule(&models.Rule{
 		Action:   swag.Int64(Read),
 		Subject:  swag.String(nurseRole.ID),
 		Resource: swag.String("/frontend/diagnosis*"),
 	})
-	storage.AddRule(&models.Rule{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRule(&models.Rule{
 		Action:   swag.Int64(Read | Write),
 		Subject:  swag.String(nurseRole.ID),
 		Resource: swag.String("/storage/file/basicInfo"),
 	})
-	storage.AddRule(&models.Rule{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRule(&models.Rule{
 		Action:   swag.Int64(Update | Delete),
 		Subject:  swag.String(authCommon.AuthorRole.ID),
 		Resource: swag.String("/storage/file*"),
 	})
+	errorChecker.FatalTesting(t, err)
 
 	// add user roles
 	// add user 1 to both organizations
-	storage.AddUserRole(&models.UserRole{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUserRole(&models.UserRole{
 		UserID:     swag.String(u1.ID),
 		RoleID:     swag.String(authCommon.EveryoneRole.ID),
 		DomainType: swag.String(authCommon.DomainTypeOrganization),
 		DomainID:   swag.String(testOrganization1.ID),
 	})
-	storage.AddUserRole(&models.UserRole{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUserRole(&models.UserRole{
 		UserID:     swag.String(u1.ID),
 		RoleID:     swag.String(authCommon.EveryoneRole.ID),
 		DomainType: swag.String(authCommon.DomainTypeOrganization),
 		DomainID:   swag.String(testOrganization2.ID),
 	})
 	// add user 2 to both organizations
-	storage.AddUserRole(&models.UserRole{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUserRole(&models.UserRole{
 		UserID:     swag.String(u2.ID),
 		RoleID:     swag.String(authCommon.EveryoneRole.ID),
 		DomainType: swag.String(authCommon.DomainTypeOrganization),
 		DomainID:   swag.String(testOrganization1.ID),
 	})
-	storage.AddUserRole(&models.UserRole{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUserRole(&models.UserRole{
 		UserID:     swag.String(u2.ID),
 		RoleID:     swag.String(authCommon.EveryoneRole.ID),
 		DomainType: swag.String(authCommon.DomainTypeOrganization),
 		DomainID:   swag.String(testOrganization2.ID),
 	})
 	// add user 3 to both organizations
-	storage.AddUserRole(&models.UserRole{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUserRole(&models.UserRole{
 		UserID:     swag.String(u3.ID),
 		RoleID:     swag.String(authCommon.EveryoneRole.ID),
 		DomainType: swag.String(authCommon.DomainTypeOrganization),
 		DomainID:   swag.String(testOrganization1.ID),
 	})
-	storage.AddUserRole(&models.UserRole{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUserRole(&models.UserRole{
 		UserID:     swag.String(u3.ID),
 		RoleID:     swag.String(authCommon.EveryoneRole.ID),
 		DomainType: swag.String(authCommon.DomainTypeOrganization),
 		DomainID:   swag.String(testOrganization2.ID),
 	})
 	// add user 4 to both test organization 2
-	storage.AddUserRole(&models.UserRole{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUserRole(&models.UserRole{
 		UserID:     swag.String(u4.ID),
 		RoleID:     swag.String(authCommon.EveryoneRole.ID),
 		DomainType: swag.String(authCommon.DomainTypeOrganization),
 		DomainID:   swag.String(testOrganization2.ID),
 	})
 	// give user1 global admin role
-	storage.AddUserRole(&models.UserRole{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUserRole(&models.UserRole{
 		UserID:     swag.String(u1.ID),
 		RoleID:     swag.String(adminRole.ID),
 		DomainType: swag.String(authCommon.DomainTypeGlobal),
 		DomainID:   swag.String(authCommon.DomainIDWildcard),
 	})
 	// give user2 global doctor role
-	storage.AddUserRole(&models.UserRole{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUserRole(&models.UserRole{
 		UserID:     swag.String(u2.ID),
 		RoleID:     swag.String(doctorRole.ID),
 		DomainType: swag.String(authCommon.DomainTypeGlobal),
 		DomainID:   swag.String(authCommon.DomainIDWildcard),
 	})
 	// give user3 global nurse role
-	storage.AddUserRole(&models.UserRole{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUserRole(&models.UserRole{
 		UserID:     swag.String(u3.ID),
 		RoleID:     swag.String(nurseRole.ID),
 		DomainType: swag.String(authCommon.DomainTypeGlobal),
 		DomainID:   swag.String(authCommon.DomainIDWildcard),
 	})
 	//give user1 doctor role at clinic 1
-	storage.AddUserRole(&models.UserRole{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUserRole(&models.UserRole{
 		UserID:     swag.String(u1.ID),
 		RoleID:     swag.String(doctorRole.ID),
 		DomainType: swag.String(authCommon.DomainTypeClinic),
 		DomainID:   swag.String(testClinic1.ID),
 	})
 	// give user2 admin role at clinic 1
-	storage.AddUserRole(&models.UserRole{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUserRole(&models.UserRole{
 		UserID:     swag.String(u2.ID),
 		RoleID:     swag.String(adminRole.ID),
 		DomainType: swag.String(authCommon.DomainTypeClinic),
 		DomainID:   swag.String(testClinic1.ID),
 	})
 	// give user4 doctorRole at clinic 2
-	storage.AddUserRole(&models.UserRole{
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUserRole(&models.UserRole{
 		UserID:     swag.String(u4.ID),
 		RoleID:     swag.String(doctorRole.ID),
 		DomainType: swag.String(authCommon.DomainTypeClinic),
 		DomainID:   swag.String(testClinic2.ID),
 	})
+	errorChecker.FatalTesting(t, err)
 
 	// validations to be checked
 	commonValidations := []*models.ValidationPair{
@@ -451,7 +480,7 @@ func TestRules(t *testing.T) {
 	}
 
 	for testIndex, test := range tests {
-		storage.enforcer.LoadPolicy()
+		errorChecker.FatalTesting(t, storage.enforcer.LoadPolicy())
 
 		results := storage.FindACL(test.userID, test.validations)
 
@@ -459,7 +488,7 @@ func TestRules(t *testing.T) {
 			if *res.Result != test.results[i] {
 				fmt.Println(test.userID)
 				printJson(test.validations[i])
-				t.Fatalf("Test %d; validation %d: Expected validation '%v' to be %t; got %t", testIndex, i, test.validations[i], test.results[i], res.Result)
+				t.Fatalf("Test %d; validation %d: Expected validation '%v' to be %t; got %t", testIndex, i, test.validations[i], test.results[i], *res.Result)
 			}
 		}
 	}

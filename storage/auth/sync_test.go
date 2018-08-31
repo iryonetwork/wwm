@@ -20,16 +20,19 @@ func TestReplaceDB(t *testing.T) {
 	wg.Add(1000)
 
 	for j := 0; j < 10; j++ {
-		go func() {
-			for i := 0; i < 100; i++ {
+		errCh := make(chan error)
+		for i := 0; i < 100; i++ {
+			go func() {
 				_, err := storage.GetRoles()
 				wg.Done()
-
-				if err != nil {
-					t.Fatalf("Error reading from database: %s", err)
-				}
+				errCh <- err
+			}()
+			err := <-errCh
+			if err != nil {
+				t.Fatalf("Error reading from database: %s", err)
 			}
-		}()
+		}
+		close(errCh)
 	}
 
 	// replace db with test.db

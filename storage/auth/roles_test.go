@@ -8,6 +8,7 @@ import (
 
 	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/utils"
 )
 
@@ -44,7 +45,8 @@ func TestGetRole(t *testing.T) {
 	defer storage.Close()
 
 	testRole, _ := getTestRoles()
-	storage.AddRole(testRole)
+	_, err := storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
 
 	// get role
 	role, err := storage.GetRole(testRole.ID)
@@ -81,8 +83,10 @@ func TestGetRoles(t *testing.T) {
 	defer storage.Close()
 
 	testRole, testRole2 := getTestRoles()
-	storage.AddRole(testRole)
-	storage.AddRole(testRole2)
+	_, err := storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRole(testRole2)
+	errorChecker.FatalTesting(t, err)
 
 	// get roles
 	roles, err := storage.GetRoles()
@@ -112,8 +116,10 @@ func TestUpdateRole(t *testing.T) {
 	defer storage.Close()
 
 	testRole, testRole2 := getTestRoles()
-	storage.AddRole(testRole)
-	storage.AddRole(testRole2)
+	_, err := storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddRole(testRole2)
+	errorChecker.FatalTesting(t, err)
 
 	// update role
 	updateRole := &models.Role{
@@ -135,23 +141,30 @@ func TestRemoveRole(t *testing.T) {
 	defer storage.Close()
 
 	testRole, _ := getTestRoles()
-	storage.AddRole(testRole)
+	_, err := storage.AddRole(testRole)
+	errorChecker.FatalTesting(t, err)
 
 	// add user roles to test if they are removed with role
 	testUser1, testUser2 := getTestUsers()
-	storage.AddUser(testUser1)
-	storage.AddUser(testUser2)
+	_, err = storage.AddUser(testUser1)
+	errorChecker.FatalTesting(t, err)
+	_, err = storage.AddUser(testUser2)
+	errorChecker.FatalTesting(t, err)
 	testOrganization, _ := getTestOrganizations()
-	storage.AddOrganization(testOrganization)
+	_, err = storage.AddOrganization(testOrganization)
+	errorChecker.FatalTesting(t, err)
 	testUserRole1 := getTestUserRole(testUser1.ID, testRole.ID, authCommon.DomainTypeGlobal, authCommon.DomainIDWildcard)
-	storage.AddUserRole(testUserRole1)
+	_, err = storage.AddUserRole(testUserRole1)
+	errorChecker.FatalTesting(t, err)
 	testUserRole2 := getTestUserRole(testUser1.ID, testRole.ID, authCommon.DomainTypeOrganization, testOrganization.ID)
-	storage.AddUserRole(testUserRole2)
+	_, err = storage.AddUserRole(testUserRole2)
+	errorChecker.FatalTesting(t, err)
 	testUserRole3 := getTestUserRole(testUser2.ID, testRole.ID, authCommon.DomainTypeUser, testUser1.ID)
-	storage.AddUserRole(testUserRole3)
+	_, err = storage.AddUserRole(testUserRole3)
+	errorChecker.FatalTesting(t, err)
 
 	// remove role
-	err := storage.RemoveRole(testRole.ID)
+	err = storage.RemoveRole(testRole.ID)
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got '%v'", err)
 	}
