@@ -159,7 +159,7 @@ func main() {
 	for i := 0; i < 3; i++ {
 		err := <-exitCh
 		if err != nil {
-			logger.Debug().Err(err).Msg("gouroutine exit message")
+			logger.Debug().Err(err).Msg(fmt.Sprintf("goroutine exit message: %v", err))
 		}
 	}
 }

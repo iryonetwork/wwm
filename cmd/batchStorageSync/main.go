@@ -16,6 +16,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/client"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/service/serviceAuthenticator"
 	"github.com/iryonetwork/wwm/storage/keyvalue"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
@@ -130,7 +131,7 @@ Loop:
 			} else {
 				logger.Info().Msg("batch sync successfull")
 				// save lastSuccesfulRun
-				storage.Update(storageBucket, storageKey, []byte(startTime.String()))
+				errorChecker.LogError(storage.Update(storageBucket, storageKey, []byte(startTime.String())))
 			}
 			break Loop
 		case <-signalChan:

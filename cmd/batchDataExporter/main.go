@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/iryonetwork/wwm/log/errorChecker"
+
 	runtimeClient "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 	"github.com/jinzhu/gorm"
@@ -159,7 +161,7 @@ Loop:
 			} else {
 				logger.Info().Msg("batch files data export successful")
 				// save lastSuccesfulRun
-				s.Update(lastSuccessfulRunBucket, lastSuccessfulRunKey, []byte(startTime.String()))
+				errorChecker.LogError(s.Update(lastSuccessfulRunBucket, lastSuccessfulRunKey, []byte(startTime.String())))
 			}
 			break Loop
 		case <-signalChan:

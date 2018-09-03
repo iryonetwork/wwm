@@ -20,6 +20,7 @@ import (
 
 	"github.com/iryonetwork/wwm/gen/storage/client"
 	"github.com/iryonetwork/wwm/gen/storage/client/operations"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/reports/generator"
 	"github.com/iryonetwork/wwm/service/serviceAuthenticator"
 	"github.com/iryonetwork/wwm/storage/keyvalue"
@@ -167,7 +168,7 @@ func main() {
 				fileUUID = ok.Payload.Name
 
 				// Update file UUID for this report type in key value storage
-				s.Update(fileUUIDStorageBucket, spec.Type, []byte(fileUUID))
+				errorChecker.LogError(s.Update(fileUUIDStorageBucket, spec.Type, []byte(fileUUID)))
 			}
 
 			logger.Info().Msgf("report %s was uploaded as file %s", spec.Type, fileUUID)

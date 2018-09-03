@@ -18,6 +18,7 @@ import (
 
 	"github.com/iryonetwork/wwm/gen/discovery/restapi"
 	"github.com/iryonetwork/wwm/gen/discovery/restapi/operations"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	APIMetrics "github.com/iryonetwork/wwm/metrics/api"
 	metricsServer "github.com/iryonetwork/wwm/metrics/server"
 	"github.com/iryonetwork/wwm/service/authorizer"
@@ -135,7 +136,10 @@ func main() {
 
 	// start serving API
 	go func() {
-		defer server.Shutdown()
+		defer func() {
+			err := server.Shutdown()
+			errorChecker.LogError(err)
+		}()
 
 		errCh := make(chan error)
 		go func() {

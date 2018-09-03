@@ -9,6 +9,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/iryonetwork/wwm/log/errorChecker"
+
 	loads "github.com/go-openapi/loads"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/jinzhu/gorm"
@@ -141,7 +143,10 @@ func main() {
 
 	// start serving API
 	go func() {
-		defer server.Shutdown()
+		defer func() {
+			err := server.Shutdown()
+			errorChecker.LogError(err)
+		}()
 
 		errCh := make(chan error)
 		go func() {
@@ -185,7 +190,7 @@ func main() {
 	for i := 0; i < 2; i++ {
 		err := <-exitCh
 		if err != nil {
-			logger.Debug().Err(err).Msg("goroutine exit message")
+			logger.Debug().Err(err).Msg(fmt.Sprintf("goroutine exit message: %v", err))
 		}
 	}
 }

@@ -21,6 +21,7 @@ import (
 	"github.com/iryonetwork/wwm/gen/auth/restapi"
 	"github.com/iryonetwork/wwm/gen/auth/restapi/operations"
 	logMW "github.com/iryonetwork/wwm/log"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	APIMetrics "github.com/iryonetwork/wwm/metrics/api"
 	metricsServer "github.com/iryonetwork/wwm/metrics/server"
 	"github.com/iryonetwork/wwm/service/authDataManager"
@@ -60,7 +61,6 @@ func main() {
 
 	dbPath := cfg.BoltDBFilepath
 	// if there is no database file download it from cloud
-	_, err = os.Stat(dbPath)
 	if _, err := os.Stat(dbPath); err != nil {
 		storage, err := auth.New(dbPath, key, false, false, logger)
 		if err != nil {
@@ -120,7 +120,10 @@ func main() {
 	server.TLSCertificate = flags.Filename(cfg.CertPath)
 	server.TLSCertificateKey = flags.Filename(cfg.KeyPath)
 	server.EnabledListeners = []string{"http", "https"}
-	defer server.Shutdown()
+	defer func() {
+		err := server.Shutdown()
+		errorChecker.LogError(err)
+	}()
 
 	authHandlers := authenticator.NewHandlers(auth)
 	authDataHandlers := authDataManager.NewHandlers(authData)
@@ -212,7 +215,10 @@ func main() {
 
 	// start serving API
 	go func() {
-		defer server.Shutdown()
+		defer func() {
+			err := server.Shutdown()
+			errorChecker.LogError(err)
+		}()
 
 		errCh := make(chan error)
 		go func() {

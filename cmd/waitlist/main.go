@@ -18,6 +18,7 @@ import (
 	"github.com/iryonetwork/wwm/gen/waitlist/restapi"
 	"github.com/iryonetwork/wwm/gen/waitlist/restapi/operations"
 	logMW "github.com/iryonetwork/wwm/log"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	APIMetrics "github.com/iryonetwork/wwm/metrics/api"
 	metricsServer "github.com/iryonetwork/wwm/metrics/server"
 	"github.com/iryonetwork/wwm/service/authorizer"
@@ -79,7 +80,10 @@ func main() {
 	server.TLSCertificate = flags.Filename(cfg.CertPath)
 	server.TLSCertificateKey = flags.Filename(cfg.KeyPath)
 	server.EnabledListeners = []string{"http", "https"}
-	defer server.Shutdown()
+	defer func() {
+		err := server.Shutdown()
+		errorChecker.LogError(err)
+	}()
 
 	// initialize the service
 	service := waitlist.New(storage, logger)
@@ -127,7 +131,10 @@ func main() {
 	}()
 	// start serving API
 	go func() {
-		defer server.Shutdown()
+		defer func() {
+			err := server.Shutdown()
+			errorChecker.LogError(err)
+		}()
 
 		errCh := make(chan error)
 		go func() {
@@ -171,7 +178,7 @@ func main() {
 	for i := 0; i < 3; i++ {
 		err := <-exitCh
 		if err != nil {
-			logger.Debug().Err(err).Msg("gouroutine exit message")
+			logger.Debug().Err(err).Msg(fmt.Sprintf("goroutine exit message: %v", err))
 		}
 	}
 }

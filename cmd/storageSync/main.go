@@ -18,6 +18,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/client"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	metricsServer "github.com/iryonetwork/wwm/metrics/server"
 	"github.com/iryonetwork/wwm/service/serviceAuthenticator"
 	statusServer "github.com/iryonetwork/wwm/status/server"
@@ -107,9 +108,9 @@ func main() {
 	}
 
 	// Start subscriptions
-	c.StartSubscription(storageSync.FileNew)
-	c.StartSubscription(storageSync.FileUpdate)
-	c.StartSubscription(storageSync.FileDelete)
+	errorChecker.LogError(c.StartSubscription(storageSync.FileNew))
+	errorChecker.LogError(c.StartSubscription(storageSync.FileUpdate))
+	errorChecker.LogError(c.StartSubscription(storageSync.FileDelete))
 
 	// Start servers
 	// create exit channel that is used to wait for all servers goroutines to exit orderly and carry the errors
@@ -149,7 +150,7 @@ func main() {
 	for i := 0; i < 2; i++ {
 		err := <-exitCh
 		if err != nil {
-			logger.Debug().Err(err).Msg("gouroutine exit message")
+			logger.Debug().Err(err).Msg(fmt.Sprintf("goroutine exit message: %v", err))
 		}
 	}
 }

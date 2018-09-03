@@ -32,8 +32,6 @@ type Config struct {
 	PrometheusPushGatewayAddress string `env:"PROMETHEUS_PUSH_GATEWAY_ADDRESS" envDefault:"http://localPrometheusPushGateway:9091"`
 }
 
-const assetsRe = "^assets/.+$"
-
 // ReportSpecs is a wrapper struct for slice with ReportSpecs
 // to make env parser to execute custom parser without "type not supported" error
 type ReportSpecs struct {
