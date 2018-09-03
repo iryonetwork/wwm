@@ -19,6 +19,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
 	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/service/authenticator"
 	"github.com/rs/zerolog"
 )
@@ -55,13 +56,14 @@ func New(domainType, domainID, validateURL string, logger zerolog.Logger) Servic
 func (a *authorizer) GetPrincipalFromToken(tokenString string) (*string, error) {
 	principal := ""
 
-	jwt.ParseWithClaims(tokenString, &authenticator.Claims{}, func(token *jwt.Token) (interface{}, error) {
+	_, err := jwt.ParseWithClaims(tokenString, &authenticator.Claims{}, func(token *jwt.Token) (interface{}, error) {
 		claims, ok := token.Claims.(*authenticator.Claims)
 		if ok {
 			principal = claims.Subject
 		}
 		return "", nil
 	})
+	errorChecker.LogError(err)
 
 	if principal == "" {
 		a.logger.Error().Str("cmd", "GetPrincipalFromToken").Msg("Token is invalid")
@@ -84,11 +86,6 @@ const (
 	ErrInvalidToken = "Token is invalid"
 	ErrUnauthorized = "Unauthorized"
 )
-
-type responseAndError struct {
-	r   *http.Response
-	err error
-}
 
 // Authorizer checks if logged in user has permission to do a request
 func (a *authorizer) Authorizer() runtime.Authorizer {
@@ -126,36 +123,21 @@ func (a *authorizer) Authorizer() runtime.Authorizer {
 			Timeout:   time.Second * 10,
 		}
 
-		c := make(chan responseAndError)
-		go func() {
-			response, err := netClient.Do(r)
-			c <- responseAndError{response, err}
-		}()
+		response, err := netClient.Do(r)
 
-		var response responseAndError
-
-		select {
-		case <-request.Context().Done():
-			transport.CancelRequest(r)
-			<-c // wait for canceld request
-			logger.Error().Err(request.Context().Err()).Msg("Context was done")
-			return fmt.Errorf("Context was done")
-		case response = <-c:
+		if err != nil {
+			logger.Error().Err(err).Msg("Making request failed")
+			return err
 		}
+		defer response.Body.Close()
 
-		if response.err != nil {
-			logger.Error().Err(response.err).Msg("Making request failed")
-			return response.err
-		}
-		defer response.r.Body.Close()
-
-		responseBody, err := ioutil.ReadAll(response.r.Body)
+		responseBody, err := ioutil.ReadAll(response.Body)
 		if err != nil {
 			logger.Error().Err(err).Msg("Reading response failed")
 			return err
 		}
 
-		if response.r.StatusCode == http.StatusOK {
+		if response.StatusCode == http.StatusOK {
 			validationResponse := []*models.ValidationResult{}
 			err := swag.ReadJSON(responseBody, &validationResponse)
 			if err != nil {

@@ -10,6 +10,7 @@ import (
 	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/iryonetwork/wwm/gen/auth/restapi/operations"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/utils"
 )
 
@@ -783,7 +784,7 @@ func (h *handlers) GetDatabase() operations.GetDatabaseHandler {
 
 		go func() {
 			_, err := h.service.WriteDBTo(writer)
-			writer.CloseWithError(err)
+			errorChecker.LogError(writer.CloseWithError(err))
 		}()
 
 		return utils.UseProducer(

@@ -13,6 +13,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/storage/models"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/storage/s3/object"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
@@ -220,11 +221,11 @@ func (s *service) FileNew(ctx context.Context, bucketID string, r io.Reader, con
 	s.logger.Info().Str("method", "FileNew").Msgf("s3 write time %s", time.Since(start))
 
 	if err == nil {
-		s.publisher.PublishAsyncWithRetries(
+		errorChecker.LogError(s.publisher.PublishAsyncWithRetries(
 			context.TODO(),
 			storageSync.FileNew,
 			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version, Created: fd.Created},
-		)
+		))
 
 		for _, label := range labels {
 			err := s.updateFilesCollection(ctx, s3.Write, bucketID, label, fd)
@@ -274,11 +275,11 @@ func (s *service) FileUpdate(ctx context.Context, bucketID, fileID string, r io.
 	s.logger.Info().Str("method", "FileUpdate").Msgf("s3 write time %s", time.Since(start))
 
 	if err == nil {
-		s.publisher.PublishAsyncWithRetries(
+		errorChecker.LogError(s.publisher.PublishAsyncWithRetries(
 			context.TODO(),
 			storageSync.FileUpdate,
 			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version, Created: fd.Created},
-		)
+		))
 
 		for _, label := range labels {
 			err := s.updateFilesCollection(ctx, s3.Write, bucketID, label, fd)
@@ -326,11 +327,11 @@ func (s *service) FileDelete(ctx context.Context, bucketID, fileID string) error
 	s.logger.Info().Str("method", "FileDelete").Msgf("s3 write time %s", time.Since(start))
 
 	if err == nil {
-		s.publisher.PublishAsyncWithRetries(
+		errorChecker.LogError(s.publisher.PublishAsyncWithRetries(
 			context.TODO(),
 			storageSync.FileDelete,
 			&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: version, Created: fd.Created},
-		)
+		))
 		for _, label := range fd.Labels {
 			err := s.updateFilesCollection(ctx, s3.Delete, bucketID, label, fd)
 			if err != nil {
@@ -561,11 +562,11 @@ func (s *service) updateFilesCollection(ctx context.Context, operation s3.Operat
 		return err
 	}
 
-	s.publisher.PublishAsyncWithRetries(
+	errorChecker.LogError(s.publisher.PublishAsyncWithRetries(
 		context.TODO(),
 		storageSync.FileUpdate,
 		&storageSync.FileInfo{BucketID: bucketID, FileID: fileID, Version: fd.Version, Created: fd.Created},
-	)
+	))
 
 	return nil
 }

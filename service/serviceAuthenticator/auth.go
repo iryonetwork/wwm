@@ -15,12 +15,12 @@ import (
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/acme"
 
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/service/authenticator"
 )
 
 type storageRequestAuthenticator struct {
 	pk     *rsa.PrivateKey
-	url    string
 	logger zerolog.Logger
 }
 
@@ -36,7 +36,7 @@ func (a *storageRequestAuthenticator) AuthenticateRequest(r runtime.ClientReques
 		return err
 	}
 
-	r.SetHeaderParam("Authorization", token)
+	errorChecker.LogError(r.SetHeaderParam("Authorization", token))
 	return nil
 }
 

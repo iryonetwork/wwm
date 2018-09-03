@@ -39,7 +39,7 @@ func (h *handlers) Query() operations.QueryHandler {
 			err error
 		)
 
-		if params.OnCloud != nil && *params.OnCloud == true {
+		if params.OnCloud != nil && *params.OnCloud {
 			res, err = h.service.ProxyQuery(q, params.HTTPRequest.Header.Get("Authorization"))
 		} else {
 			res, err = h.service.Query(q)

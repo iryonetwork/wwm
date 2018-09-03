@@ -98,7 +98,7 @@ func (a *service) Validate(_ context.Context, userID *string, queries []*models.
 
 	if strings.HasPrefix(*userID, servicePrincipal) {
 		keyID := (*userID)[len(servicePrincipal):]
-		s, _ := a.syncServices[keyID]
+		s := a.syncServices[keyID]
 		results := make([]*models.ValidationResult, len(queries))
 		for i, query := range queries {
 			results[i] = &models.ValidationResult{

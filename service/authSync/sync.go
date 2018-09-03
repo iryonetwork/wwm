@@ -12,6 +12,7 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/service/authenticator"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/acme"
@@ -52,6 +53,7 @@ func (a *authSync) Sync() error {
 	}
 
 	request, err := http.NewRequest(http.MethodGet, a.url, nil)
+	errorChecker.LogError(err)
 	request.Header.Add("Etag", `"`+currentEtag+`"`)
 	request.Header.Add("Authorization", token)
 

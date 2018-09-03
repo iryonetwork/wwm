@@ -26,8 +26,6 @@ func (c *filesCollection) Update(fd *models.FileDescriptor) {
 	if old.Created.String() < fd.Created.String() {
 		(*c)[fd.Name] = *fd
 	}
-
-	return
 }
 
 func (c *filesCollection) Remove(fd *models.FileDescriptor) {

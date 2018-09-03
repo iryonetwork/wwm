@@ -97,7 +97,6 @@ func (c *URLPollingComponent) Status() *status.Response {
 		resp = responsesMap[status.Warning][0]
 	}
 	if len(responsesMap[status.Error]) > count {
-		count = len(responsesMap[status.Error])
 		resp = responsesMap[status.Error][0]
 	}
 

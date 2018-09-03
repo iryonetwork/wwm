@@ -1,13 +1,13 @@
 package statusReporter
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/rs/zerolog"
 
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/status"
 )
 
@@ -30,7 +30,6 @@ type Response struct {
 }
 
 type StatusReporter struct {
-	ctx      context.Context
 	cloud    map[string]status.Component
 	local    map[string]status.Component
 	external map[string]status.Component
@@ -143,7 +142,7 @@ func handlerFunc(f func() interface{}) http.HandlerFunc {
 
 		rw.WriteHeader(http.StatusOK)
 		rw.Header().Set("Content-Type", "application/json; charset=utf-8")
-		json.NewEncoder(rw).Encode(f())
+		errorChecker.LogError(json.NewEncoder(rw).Encode(f()))
 	}
 }
 
