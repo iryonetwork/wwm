@@ -388,7 +388,7 @@ func (s *Storage) AddGlobalSuperadminUserRole(userID string) (*models.UserRole, 
 	defer s.dbSync.RUnlock()
 
 	// normalize UUIDs
-	userID, err := utils.NormalizeUUIDString(userID)
+	_, err := utils.NormalizeUUIDString(userID)
 	if err != nil {
 		return nil, utils.NewError(utils.ErrBadRequest, "Invalid userID")
 	}

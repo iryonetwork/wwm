@@ -10,15 +10,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/metrics"
 )
 
 const (
 	operationSeconds metrics.ID = "operationSeconds"
 	operationAdd     string     = "add"
-	operationUpdate  string     = "update"
 	operationGet     string     = "get"
-	operationDelete  string     = "delete"
 )
 
 // Storage interface
@@ -118,7 +117,7 @@ func (s *boltKeyValue) Get(bucket string, key string) []byte {
 
 	var val []byte
 
-	s.db.View(func(tx *bolt.Tx) error {
+	errorChecker.LogError(s.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucket))
 		if b == nil {
 			return nil
@@ -126,7 +125,7 @@ func (s *boltKeyValue) Get(bucket string, key string) []byte {
 
 		val = b.Get([]byte(key))
 		return nil
-	})
+	}))
 
 	success = true
 	return val

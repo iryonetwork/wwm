@@ -15,6 +15,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/gen/discovery/models"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/storage/discovery/db"
 	"github.com/iryonetwork/wwm/utils"
 )
@@ -76,20 +77,6 @@ type (
 	location struct {
 		PatientID  string `gorm:"primary_key"`
 		LocationID string `gorm:"primary_key"`
-	}
-
-	code struct {
-		CategoryID string `gorm:"primary_key"`
-		CodeID     string `gorm:"primary_key"`
-		ParentID   string
-		Titles     []codeTitle `gorm:"foreignkey:CategoryID,CodeID;association_foreignkey:CategoryID,CodeID"`
-	}
-
-	codeTitle struct {
-		CategoryID string `gorm:"primary_key"`
-		CodeID     string `gorm:"primary_key"`
-		Locale     string
-		Title      string
 	}
 )
 
@@ -260,7 +247,7 @@ func (s *storage) Find(q string) (models.Cards, error) {
 	results := models.Cards{}
 	for rows.Next() {
 		var patientID string
-		rows.Scan(&patientID)
+		errorChecker.LogError(rows.Scan(&patientID))
 		c, err := getCard(s.db, strfmt.UUID(patientID))
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to fetch card for search results")
@@ -389,7 +376,7 @@ func (s *storage) CodesGet(category, query, parentID, locale string) (models.Cod
 	res := models.Codes{}
 	for rows.Next() {
 		var categoryID, codeID, title, locale, parentID string
-		rows.Scan(&categoryID, &codeID, &title, &locale, &parentID)
+		errorChecker.LogError(rows.Scan(&categoryID, &codeID, &title, &locale, &parentID))
 
 		res = append(res, &models.Code{
 			Category: &categoryID,
@@ -423,7 +410,7 @@ func (s *storage) CodeGet(category, id, locale string) (*models.Code, error) {
 
 	if rows.Next() {
 		var categoryID, codeID, title, locale, parentID string
-		rows.Scan(&categoryID, &codeID, &title, &locale, &parentID)
+		errorChecker.LogError(rows.Scan(&categoryID, &codeID, &title, &locale, &parentID))
 
 		return &models.Code{
 			Category: &categoryID,

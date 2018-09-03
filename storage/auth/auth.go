@@ -5,6 +5,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/iryonetwork/wwm/log/errorChecker"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 	uuid "github.com/satori/go.uuid"
@@ -153,9 +155,9 @@ func New(path string, key []byte, readOnly, refreshRules bool, logger zerolog.Lo
 
 	storage.enforcer = e
 	if readOnly {
-		e.LoadPolicy()
+		errorChecker.LogError(e.LoadPolicy())
 	} else {
-		storage.initializeRoles()
+		errorChecker.LogError(storage.initializeRoles())
 	}
 
 	return storage, nil
@@ -163,7 +165,7 @@ func New(path string, key []byte, readOnly, refreshRules bool, logger zerolog.Lo
 
 func (s *Storage) loadPolicy() {
 	s.loadPolicyLock.Lock()
-	s.enforcer.LoadPolicy()
+	errorChecker.LogError(s.enforcer.LoadPolicy())
 	s.loadPolicyLock.Unlock()
 }
 

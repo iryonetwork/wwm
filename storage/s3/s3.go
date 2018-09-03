@@ -37,7 +37,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"regexp"
 	"sort"
 	"strings"
 
@@ -50,11 +49,6 @@ import (
 	"github.com/iryonetwork/wwm/storage/s3/object"
 	"github.com/minio/minio-go"
 )
-
-const metaArchetype = "x-archetype"
-const metaCreated = "x-created"
-const metaChecksum = "x-checksum"
-const metaLabels = "x-labels"
 
 // Storage provides an interface for s3 public functions
 type Storage interface {
@@ -86,8 +80,6 @@ type Minio interface {
 	PutEncryptedObject(bucketName, objectName string, reader io.Reader, encryptMaterials encrypt.Materials) (n int64, err error)
 	RemoveObjects(bucketName string, objectsCh <-chan string) <-chan minio.RemoveObjectError
 }
-
-var nameVersionRE = regexp.MustCompile("^(.*)\\.(\\d+)$")
 
 // Config holds all details required to connect to an S3 storage
 type Config struct {

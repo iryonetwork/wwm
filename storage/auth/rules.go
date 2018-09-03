@@ -130,11 +130,10 @@ func (s *Storage) addRule(rule *models.Rule) (*models.Rule, error) {
 		return nil, utils.NewError(utils.ErrBadRequest, "Rule with that parameters already exist")
 	}
 
-	var addedRule *models.Rule
 	err = s.db.Update(func(tx *bolt.Tx) error {
 		var err error
 		// insert rule
-		addedRule, err = s.insertRuleWithTx(tx, rule)
+		_, err = s.insertRuleWithTx(tx, rule)
 		return err
 	})
 
@@ -151,7 +150,6 @@ func (s *Storage) UpdateRule(rule *models.Rule) (*models.Rule, error) {
 	s.dbSync.RLock()
 	defer s.dbSync.RUnlock()
 
-	var updatedRule *models.Rule
 	err := s.db.Update(func(tx *bolt.Tx) error {
 		var err error
 		// check if rule exists
@@ -165,7 +163,7 @@ func (s *Storage) UpdateRule(rule *models.Rule) (*models.Rule, error) {
 			return err
 		}
 
-		updatedRule, err = s.insertRuleWithTx(tx, rule)
+		_, err = s.insertRuleWithTx(tx, rule)
 		return err
 	})
 

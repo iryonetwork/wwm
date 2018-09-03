@@ -316,7 +316,7 @@ func (e *enforcer) GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Co
 
 // FindACL loads all the matching rules
 func (s *Storage) FindACL(subject string, actions []*models.ValidationPair) []*models.ValidationResult {
-	results := make([]*models.ValidationResult, len(actions), len(actions))
+	results := make([]*models.ValidationResult, len(actions))
 
 	for i, validation := range actions {
 		var domain string

@@ -9,6 +9,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/iryonetwork/wwm/gen/waitlist/models"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 	"github.com/iryonetwork/wwm/utils"
 )
@@ -137,7 +138,7 @@ func (s *storage) UpdateItem(waitlistID []byte, item *models.Item) (*models.Item
 			return utils.NewError(utils.ErrNotFound, "item not found")
 		}
 		var currentItem models.Item
-		currentItem.UnmarshalBinary(currentItemData)
+		errorChecker.LogError(currentItem.UnmarshalBinary(currentItemData))
 
 		item.PriorityQueue = currentItem.PriorityQueue
 
@@ -237,7 +238,7 @@ func (s *storage) MoveItemToTop(waitlistID, itemID []byte) (*models.Item, error)
 			return utils.NewError(utils.ErrNotFound, "item not found")
 		}
 
-		item.UnmarshalBinary(itemData)
+		errorChecker.LogError(item.UnmarshalBinary(itemData))
 		if item.PriorityQueue == 0 {
 			item.PriorityQueue = *item.Priority
 		}
@@ -272,7 +273,7 @@ func (s *storage) DeleteItem(waitlistID, itemID []byte, reason string) error {
 		return utils.NewError(utils.ErrBadRequest, "delete reason must be '%s' or '%s'", models.ItemStatusCanceled, models.ItemStatusFinished)
 	}
 
-	s.db.Update(func(tx *bolt.Tx) error {
+	errorChecker.LogError(s.db.Update(func(tx *bolt.Tx) error {
 		bCurrent := tx.Bucket(bucketCurrent).Bucket(waitlistID)
 		if bCurrent == nil {
 			return utils.NewError(utils.ErrNotFound, "waitlist not found")
@@ -300,7 +301,7 @@ func (s *storage) DeleteItem(waitlistID, itemID []byte, reason string) error {
 		}
 
 		return s.removeFromQueue(bCurrent, byte(item.PriorityQueue), itemID)
-	})
+	}))
 
 	return nil
 }
@@ -430,7 +431,7 @@ func (s *storage) UpdateHistoryItem(waitlistID []byte, item *models.Item) (*mode
 		}
 
 		var currentItem models.Item
-		currentItem.UnmarshalBinary(currentItemData)
+		errorChecker.LogError(currentItem.UnmarshalBinary(currentItemData))
 
 		data, err := item.MarshalBinary()
 		if err != nil {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	bolt "github.com/iryonetwork/wwm/storage/encrypted_bolt"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
@@ -101,7 +102,7 @@ func (s *encryptedBoltKeyValue) Get(bucket string, key string) []byte {
 
 	var val []byte
 
-	s.db.View(func(tx *bolt.Tx) error {
+	errorChecker.LogError(s.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucket))
 		if b == nil {
 			return nil
@@ -109,7 +110,7 @@ func (s *encryptedBoltKeyValue) Get(bucket string, key string) []byte {
 
 		val = b.Get([]byte(key))
 		return nil
-	})
+	}))
 
 	success = true
 	return val

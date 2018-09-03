@@ -137,7 +137,7 @@ func (s *Storage) addUser(user *models.User) (*models.User, error) {
 		// insert username
 		err = tx.Bucket(bucketUsernames).Put([]byte(*addedUser.Username), id.Bytes())
 
-		return nil
+		return err
 	})
 
 	if err != nil {

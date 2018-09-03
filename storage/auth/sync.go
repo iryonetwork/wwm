@@ -11,6 +11,7 @@ import (
 	blake2b "github.com/minio/blake2b-simd"
 	"github.com/rs/zerolog"
 
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 )
 
@@ -25,12 +26,14 @@ func (s *Storage) GetChecksum() ([]byte, error) {
 			_, err := tx.WriteTo(writer)
 			return err
 		})
-		writer.CloseWithError(err)
+		errorChecker.LogError(writer.CloseWithError(err))
 	}()
 
 	// ignore metadata
-	io.CopyN(ioutil.Discard, reader, int64(info.PageSize*2))
-	io.Copy(hash, reader)
+	_, err := io.CopyN(ioutil.Discard, reader, int64(info.PageSize*2))
+	errorChecker.LogError(err)
+	_, err = io.Copy(hash, reader)
+	errorChecker.LogError(err)
 
 	return hash.Sum([]byte{}), nil
 }
@@ -75,7 +78,7 @@ func (s *Storage) ReplaceDB(src io.ReadCloser, checksum []byte) error {
 	}
 	testStorage.Close()
 
-	if bytes.Compare(testChecksum, checksum) != 0 {
+	if !bytes.Equal(testChecksum, checksum) {
 		os.Remove(tmpFileName)
 		return fmt.Errorf("Checksums don't match")
 	}
@@ -103,7 +106,7 @@ func (s *Storage) ReplaceDB(src io.ReadCloser, checksum []byte) error {
 	}
 	s.db = d
 	s.dbSync.Unlock()
-	s.enforcer.LoadPolicy()
+	errorChecker.LogError(s.enforcer.LoadPolicy())
 
 	return nil
 }
