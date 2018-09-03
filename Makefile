@@ -5,6 +5,7 @@ DOCKER_TAG ?= $(shell git rev-parse --short HEAD)
 DOCKER_REGISTRY ?= localhost:5000/
 COMMANDS ?= $(filter-out README.md,$(patsubst cmd/%,%,$(wildcard cmd/*)))
 TRAVIS_TAG ?= vNotSet
+GOLANGCI_LINT_VERSION ?= v1.10.2
 
 .PHONY: up run stop build
 .PRECIOUS: .bin/%
@@ -114,8 +115,14 @@ test/unit: ## run all unit tests
 test/unit/%: ## run unit tests for a specific project
 	go test ./$*
 
-test/golint:
-	golangci-lint run
+test/golint: .bin/lint_$(GOLANGCI_LINT_VERSION)/golangci-lint
+	.bin/lint_$(GOLANGCI_LINT_VERSION)/golangci-lint run
+
+.bin/lint_$(GOLANGCI_LINT_VERSION)/golangci-lint:
+	wget https://install.goreleaser.com/github.com/golangci/golangci-lint.sh
+	chmod +x golangci-lint.sh 
+	./golangci-lint.sh -b .bin/lint_$(GOLANGCI_LINT_VERSION) $(GOLANGCI_LINT_VERSION)
+	rm -f golangci-lint.sh
 
 vendorSync: vendor/vendor.json ## syncs the vendor folder to match vendor.json
 	govendor sync
