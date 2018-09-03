@@ -56,7 +56,6 @@ func (p *nullPublisher) PublishAsyncWithRetries(_ context.Context, _ storageSync
 
 // Close of nullPublisher does nothing.
 func (p *nullPublisher) Close() {
-	return
 }
 
 // GetPrometheusMetricsCollection of nullPublisher returns empty map

@@ -8,6 +8,7 @@ import (
 
 	"github.com/rs/zerolog"
 
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/metrics/api"
 	"github.com/iryonetwork/wwm/status"
 )
@@ -51,7 +52,7 @@ func (s *statusServer) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	rw.WriteHeader(http.StatusOK)
 	rw.Header().Set("Content-Type", "application/json; charset=utf-8")
-	json.NewEncoder(rw).Encode(s.Status())
+	errorChecker.LogError(json.NewEncoder(rw).Encode(s.Status()))
 }
 
 // ListenAndServeHTTP starts serving status endpoint

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-openapi/errors"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 )
 
 func errorAsJSON(err errors.Error) []byte {
@@ -57,22 +58,26 @@ func ServeError(rw http.ResponseWriter, r *http.Request, err error) {
 		rw.Header().Add("Allow", strings.Join(err.(*errors.MethodNotAllowedError).Allowed, ","))
 		rw.WriteHeader(asHTTPCode(int(e.Code())))
 		if r == nil || r.Method != "HEAD" {
-			rw.Write(errorAsJSON(e))
+			_, err = rw.Write(errorAsJSON(e))
+			errorChecker.LogError(err)
 		}
 	case errors.Error:
 		if e == nil {
 			rw.WriteHeader(http.StatusInternalServerError)
-			rw.Write(errorAsJSON(errors.New(http.StatusInternalServerError, "Unknown error")))
+			_, err = rw.Write(errorAsJSON(errors.New(http.StatusInternalServerError, "Unknown error")))
+			errorChecker.LogError(err)
 			return
 		}
 		rw.WriteHeader(asHTTPCode(int(e.Code())))
 		if r == nil || r.Method != "HEAD" {
-			rw.Write(errorAsJSON(e))
+			_, err = rw.Write(errorAsJSON(e))
+			errorChecker.LogError(err)
 		}
 	default:
 		rw.WriteHeader(http.StatusInternalServerError)
 		if r == nil || r.Method != "HEAD" {
-			rw.Write(errorAsJSON(errors.New(http.StatusInternalServerError, err.Error())))
+			_, err = rw.Write(errorAsJSON(errors.New(http.StatusInternalServerError, err.Error())))
+			errorChecker.LogError(err)
 		}
 	}
 }

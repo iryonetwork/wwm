@@ -10,6 +10,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/metrics"
 	storageSync "github.com/iryonetwork/wwm/sync/storage"
 	"github.com/iryonetwork/wwm/utils"
@@ -147,7 +148,7 @@ func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventT
 				if result == storageSync.ResultConflict {
 					// nothing can be done about this error, ack the message
 					ack = true
-					msg.Ack()
+					errorChecker.LogError(msg.Ack())
 				}
 
 				return
@@ -158,7 +159,7 @@ func (c *stanConsumer) getMsgHandler(ctx context.Context, typ storageSync.EventT
 		ack = true
 
 		// Acknowledge the message
-		msg.Ack()
+		errorChecker.LogError(msg.Ack())
 		c.logger.Debug().
 			Str("subscription", fmt.Sprintf("%s:%d", typ, ID)).
 			Str("cmd", "MsgHandler").

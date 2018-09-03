@@ -7,8 +7,8 @@ type Value string
 // Status values
 const (
 	OK      Value = "ok"
-	Warning       = "warning"
-	Error         = "error"
+	Warning Value = "warning"
+	Error   Value = "error"
 )
 
 type Response struct {

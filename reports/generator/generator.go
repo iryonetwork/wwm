@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -20,7 +19,6 @@ import (
 type (
 	generator struct {
 		storage    reports.Storage
-		writer     ReportWriter
 		logger     zerolog.Logger
 		codeRegexp *regexp.Regexp
 	}
@@ -202,7 +200,7 @@ func (g *generator) getComplexValueFromData(spec ValueSpec, data []*map[string]i
 				found = true
 			}
 
-			if elementFound == false || (spec.IncludeItems.End != -1 && i == spec.IncludeItems.End) {
+			if !elementFound || (spec.IncludeItems.End != -1 && i == spec.IncludeItems.End) {
 				break
 			}
 		}
@@ -229,8 +227,6 @@ func (g *generator) getComplexValueFromData(spec ValueSpec, data []*map[string]i
 	default:
 		return g.getSimpleValueFromData(data, fmt.Sprintf("%s%s", prefix, spec.EhrPath))
 	}
-
-	return found, ""
 }
 
 func (g *generator) getSimpleValueFromData(data []*map[string]interface{}, fullEhrPath string) (found bool, value string) {
@@ -250,14 +246,8 @@ func (g *generator) getSimpleValueFromData(data []*map[string]interface{}, fullE
 			case int:
 				s = strconv.Itoa(val.(int))
 			case float32:
-				if float64(val.(float32)) == math.Trunc(float64(val.(float32))) {
-					s = strconv.Itoa(int(val.(float32)))
-				}
 				s = strconv.FormatFloat(float64(val.(float32)), 'G', -1, 64)
 			case float64:
-				if val == math.Trunc(val.(float64)) {
-					s = strconv.Itoa(int(val.(float64)))
-				}
 				s = strconv.FormatFloat(val.(float64), 'G', -1, 64)
 			case bool:
 				if val == true {

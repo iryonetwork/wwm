@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"github.com/rs/zerolog"
 
+	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/metrics/api"
 )
 
@@ -24,7 +26,7 @@ func ServePrometheusMetrics(ctx context.Context, addr string, namespace string, 
 	}
 
 	mux := http.NewServeMux()
-	mux.Handle(path, prometheus.Handler())
+	mux.Handle(path, promhttp.Handler())
 	s := &http.Server{
 		Addr:    addr,
 		Handler: m.Middleware(mux),
@@ -32,7 +34,7 @@ func ServePrometheusMetrics(ctx context.Context, addr string, namespace string, 
 
 	go func() {
 		<-ctx.Done()
-		s.Shutdown(ctx)
+		errorChecker.LogError(s.Shutdown(ctx))
 	}()
 
 	logger.Info().Msgf("Starting metrics server at %s%s", addr, path)

@@ -65,7 +65,7 @@ func (s *sanitizer) sanitize(ctx context.Context, fieldsToSanitize []FieldToSani
 				if err != nil {
 					return fieldFound, err
 				}
-				if ff == false {
+				if !ff {
 					break
 				} else {
 					fieldFound = true
