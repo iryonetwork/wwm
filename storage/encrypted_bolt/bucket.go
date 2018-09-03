@@ -23,7 +23,7 @@ func (eb *Bucket) Bucket(name []byte) *Bucket {
 	if bb == nil {
 		return nil
 	}
-	return &Bucket{&b{bb}, eb.encryptionKey}
+	return &Bucket{b: &b{bb}, encryptionKey: eb.encryptionKey}
 }
 
 func (eb *Bucket) CreateBucket(name []byte) (*Bucket, error) {
@@ -31,7 +31,7 @@ func (eb *Bucket) CreateBucket(name []byte) (*Bucket, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Bucket{&b{nb}, eb.encryptionKey}, nil
+	return &Bucket{b: &b{nb}, encryptionKey: eb.encryptionKey}, nil
 }
 
 func (eb *Bucket) CreateBucketIfNotExists(name []byte) (*Bucket, error) {
@@ -39,11 +39,11 @@ func (eb *Bucket) CreateBucketIfNotExists(name []byte) (*Bucket, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Bucket{&b{nb}, eb.encryptionKey}, nil
+	return &Bucket{b: &b{nb}, encryptionKey: eb.encryptionKey}, nil
 }
 
 func (eb *Bucket) Cursor() *Cursor {
-	return &Cursor{eb.b.Bucket.Cursor(), eb.encryptionKey}
+	return &Cursor{Cursor: eb.b.Bucket.Cursor(), encryptionKey: eb.encryptionKey}
 }
 
 const nonceLength = 12

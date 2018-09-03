@@ -8,7 +8,7 @@ type Cursor struct {
 }
 
 func (c *Cursor) Bucket() *Bucket {
-	return &Bucket{&b{c.Cursor.Bucket()}, c.encryptionKey}
+	return &Bucket{b: &b{Bucket: c.Cursor.Bucket()}, encryptionKey: c.encryptionKey}
 }
 
 func (c *Cursor) First() (key, value []byte) {

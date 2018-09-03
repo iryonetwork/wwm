@@ -95,5 +95,5 @@ func NewExternalURL(url string, timeout time.Duration) URLStatusEndpoint {
 }
 
 func NewInternalURL(url string, timeout time.Duration) URLStatusEndpoint {
-	return &InternalURL{ExternalURL{url: url, timeout: timeout}}
+	return &InternalURL{ExternalURL: ExternalURL{url: url, timeout: timeout}}
 }

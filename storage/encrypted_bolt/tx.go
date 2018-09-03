@@ -10,7 +10,7 @@ type Tx struct {
 }
 
 func (tx *Tx) DB() *DB {
-	return &DB{tx.Tx.DB(), tx.encryptionKey}
+	return &DB{DB: tx.Tx.DB(), encryptionKey: tx.encryptionKey}
 }
 
 func (tx *Tx) Bucket(name []byte) *Bucket {
@@ -18,7 +18,7 @@ func (tx *Tx) Bucket(name []byte) *Bucket {
 	if bb == nil {
 		return nil
 	}
-	return &Bucket{&b{bb}, tx.encryptionKey}
+	return &Bucket{b: &b{Bucket: bb}, encryptionKey: tx.encryptionKey}
 }
 
 func (tx *Tx) CreateBucket(name []byte) (*Bucket, error) {
@@ -26,7 +26,7 @@ func (tx *Tx) CreateBucket(name []byte) (*Bucket, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Bucket{&b{bb}, tx.encryptionKey}, nil
+	return &Bucket{b: &b{Bucket: bb}, encryptionKey: tx.encryptionKey}, nil
 }
 
 func (tx *Tx) CreateBucketIfNotExists(name []byte) (*Bucket, error) {
@@ -34,15 +34,15 @@ func (tx *Tx) CreateBucketIfNotExists(name []byte) (*Bucket, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Bucket{&b{bb}, tx.encryptionKey}, nil
+	return &Bucket{b: &b{Bucket: bb}, encryptionKey: tx.encryptionKey}, nil
 }
 
 func (tx *Tx) ForEach(fn func(name []byte, b *Bucket) error) error {
 	return tx.Tx.ForEach(func(name []byte, bb *bolt.Bucket) error {
-		return fn(name, &Bucket{&b{bb}, tx.encryptionKey})
+		return fn(name, &Bucket{b: &b{Bucket: bb}, encryptionKey: tx.encryptionKey})
 	})
 }
 
 func (tx *Tx) Cursor() *Cursor {
-	return &Cursor{tx.Tx.Cursor(), tx.encryptionKey}
+	return &Cursor{Cursor: tx.Tx.Cursor(), encryptionKey: tx.encryptionKey}
 }
