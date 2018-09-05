@@ -6,6 +6,7 @@ import { bindActionCreators } from "redux"
 import { DEFAULT_WAITLIST_ID } from "shared/modules/config"
 import { close } from "shared/modules/alert"
 import Logo from "shared/containers/logo"
+import Version from "shared/containers/version"
 import Spinner from "shared/containers/spinner"
 import Status from "shared/containers/status"
 import Alert from "shared/containers/alert"
@@ -57,6 +58,7 @@ class App extends React.Component {
                     <div className="logo">
                         <Logo style={{ width: "100px" }} />
                         <Status />
+                        <Version />
                     </div>
 
                     <NavLink className="navigation" to="/patients">

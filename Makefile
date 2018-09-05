@@ -4,6 +4,7 @@ BIN_CMD ?=
 DOCKER_TAG ?= $(shell git rev-parse --short HEAD)
 DOCKER_REGISTRY ?= localhost:5000/
 COMMANDS ?= $(filter-out README.md,$(patsubst cmd/%,%,$(wildcard cmd/*)))
+TRAVIS_TAG ?= vNotSet
 
 .PHONY: up run stop build
 .PRECIOUS: .bin/%
@@ -61,7 +62,7 @@ logs: ## shows docker compose logs
 
 buildFrontend/%:
 	yarn --cwd frontend/$* install
-	yarn --cwd frontend/$* build
+	REACT_APP_VERSION=$(TRAVIS_TAG) yarn --cwd frontend/$* build
 	rm -fr .bin/$*Frontend
 	cp -r frontend/$*/build .bin/$*Frontend
 

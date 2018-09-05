@@ -18,6 +18,7 @@ import Clinics from "../clinics"
 import { SUPERADMIN_RIGHTS_RESOURCE, ADMIN_RIGHTS_RESOURCE, loadUserRights } from "../../modules/validations"
 import { close } from "shared/modules/alert"
 import Logo from "shared/containers/logo"
+import Version from "shared/containers/version"
 import Reports from "../reports"
 import Spinner from "shared/containers/spinner"
 import Status from "shared/containers/status"
@@ -71,6 +72,7 @@ class App extends React.Component {
                             <Logo style={{ width: "100px" }} />
                         </Link>
                         <Status />
+                        <Version />
                     </div>
 
                     {this.props.isAdmin ? (
