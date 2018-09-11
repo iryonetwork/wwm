@@ -15,7 +15,6 @@ import { ReactComponent as RemoveIcon } from "shared/icons/negative.svg"
 import { ReactComponent as SearchIcon } from "shared/icons/search.svg"
 import { ReactComponent as SearchActiveIcon } from "shared/icons/search-active.svg"
 import { ReactComponent as SpinnerIcon } from "shared/icons/spinner.svg"
-import { ReactComponent as DeleteIcon } from "shared/icons/delete.svg"
 
 const Step2 = props => {
     const { handleSubmit, reset, previousPage } = props
@@ -134,8 +133,16 @@ class familyMembers extends React.Component {
                                     <Select.Async
                                         value={editDisabled ? fields.get(index) : undefined}
                                         onChange={this.onChange(index)}
-                                        onFocus={() => this.setState({ searchFocused: true })}
-                                        onBlur={() => this.setState({ searchFocused: false })}
+                                        onFocus={() =>
+                                            this.setState({
+                                                searchFocused: true
+                                            })
+                                        }
+                                        onBlur={() =>
+                                            this.setState({
+                                                searchFocused: false
+                                            })
+                                        }
                                         optionRenderer={this.renderSearchLine}
                                         valueRenderer={this.renderSearchValue}
                                         filterOptions={options => options}
