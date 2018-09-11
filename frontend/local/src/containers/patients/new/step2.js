@@ -94,8 +94,18 @@ class familyMembers extends React.Component {
             return Promise.resolve({ options: [] })
         }
 
-        return this.props.search(input).then(data => {
-            return { options: data }
+        return new Promise(resolve => {
+            this.state.searchTimeout && clearTimeout(this.state.searchTimeout)
+
+            this.setState({
+                searchTimeout: setTimeout(() => {
+                    resolve(
+                        this.props.search(input).then(data => {
+                            return { options: data }
+                        })
+                    )
+                }, 800)
+            })
         })
     }
 
