@@ -76,6 +76,15 @@ class PatientList extends React.Component {
         })
     }
 
+    searchBoxKeyPress = e => {
+        if (e.key === "Enter") {
+            this.state.searchTimeout && clearTimeout(this.state.searchTimeout)
+            this.setState({
+                searchTimeout: window.setTimeout(this.search(this.state.searchQuery), 0)
+            })
+        }
+    }
+
     clearSearchQuery = e => {
         this.state.searchTimeout && window.clearTimeout(this.state.searchTimeout)
         this.setState({
@@ -110,9 +119,12 @@ class PatientList extends React.Component {
                             <input
                                 name="search"
                                 placeholder="Search"
-                                className={classnames("form-control", { searching: this.state.searching })}
+                                className={classnames("form-control", {
+                                    searching: this.state.searching
+                                })}
                                 value={this.state.searchQuery}
                                 onChange={this.updateSearchQuery}
+                                onKeyPress={this.searchBoxKeyPress}
                                 onFocus={() => this.setState({ searchFocused: true })}
                                 onBlur={() => this.setState({ searchFocused: false })}
                             />
