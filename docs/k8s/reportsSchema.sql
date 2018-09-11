@@ -8,7 +8,7 @@ CREATE TABLE files (
     PRIMARY KEY (file_id)
 );
 
-ALTER TABLE files OWNER TO dataexportservice;
+ALTER TABLE files OWNER TO reportsservice;
 
 CREATE INDEX created_idx ON files (created_at ASC);
 CREATE INDEX patient_idx ON files (patient_id);

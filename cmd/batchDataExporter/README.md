@@ -24,7 +24,7 @@ Command for scheduled export of data from files in storage to DB to allow for re
 | `DB_PASSWORD`                     | _none_, **_required_**                   | _PostgreSQL DB password._                                                                                                                                                       |
 | `POSTGRES_HOST`                   | `postgres`                               | _Hostname on which postgres is exposed on._                                                                                                                                     |
 | `POSTGRES_DATABASE`               | `reports`                                | _Postgres database to connect to._                                                                                                                                              |
-| `POSTGRES_ROLE`                   | `dataexportservice`                      | _Postgres role to assume once connected._                                                                                                                                       |
+| `POSTGRES_ROLE`                   | `reportsservice`                         | _Postgres role to assume once connected._                                                                                                                                       |
 | `DB_DETAILED_LOG`                 | `false`                                  | _Allows to enable detailed DB statements log, otherwise only errors are printed._                                                                                               |
 
 ## Sanitizer configuration

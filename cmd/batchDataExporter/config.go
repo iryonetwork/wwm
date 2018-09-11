@@ -28,7 +28,7 @@ type Config struct {
 	DbPassword    string `env:"DB_PASSWORD,required"`
 	PGHost        string `env:"POSTGRES_HOST" envDefault:"postgres"`
 	PGDatabase    string `env:"POSTGRES_DATABASE" envDefault:"reports"`
-	PGRole        string `env:"POSTGRES_ROLE" envDefault:"dataexportservice"`
+	PGRole        string `env:"POSTGRES_ROLE" envDefault:"reportsservice"`
 	DbDetailedLog bool   `env:"DB_DETAILED_LOG" envDefault:"false"`
 
 	BoltDBFilepath string `env:"BOLT_DB_FILEPATH" envDefault:"/data/batchDataExporter.db"`
