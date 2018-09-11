@@ -69,6 +69,8 @@
         margin-bottom: 30px;
 
         .Select-menu-outer {
+            margin-top: 0;
+            border-top: 0;
             z-index: 1000;
         }
 
@@ -86,6 +88,53 @@
 
             border-radius: 3px;
             border-color: $gray-300;
+            box-shadow: none!important;
+        }
+
+        .Select {
+            .Select-arrow-zone {
+                width: 0px;
+                padding-right: 0px;
+            }
+
+            &.has-value {
+                .Select-arrow-zone {
+                    width: 0px!important;
+                    padding-right: 0px!important;
+                    background: none!important;
+                }
+            }
+
+            &.is-open {
+                .Select-arrow-zone {
+                    background: url("~shared/icons/delete.svg") 2px 9px no-repeat !important;
+                    width: 25px;
+                    padding-right: -5px;
+                }
+            }
+
+            .Select-arrow {
+                border: 0;
+            }
+
+            .Select-clear-zone {
+                background: url("~shared/icons/delete.svg") 2px 9px no-repeat !important;
+                width:25px;
+            }
+
+            .Select-clear {
+                font-size: 0px;
+            }
+
+            &.is-focused {
+                & > .Select-control {
+                    border-bottom: 2px solid $primary !important;
+                }
+            }
+        }
+
+        .Select-loading {
+            border: 0;
         }
 
         .Select-placeholder,
