@@ -1,5 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30">
-    <g fill="none" fill-rule="evenodd">
-        <path stroke="#2B333E" stroke-linecap="round" stroke-width="2" d="M9 15h2.5l1-3 1 6 2-8 2 9 1-4H21"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="30px" height="30px" viewBox="0 0 30 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: sketchtool 50.2 (55047) - http://www.bohemiancoding.com/sketch -->
+    <title>3F2207C8-0655-4F3B-A378-E9C0E915F48F</title>
+    <desc>Created with sketchtool.</desc>
+    <defs></defs>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="navigation/Icon/medicalDataActive">
+            <g id="navigationIconWaitingList"></g>
+            <path d="M9,16 C8.44771525,16 8,15.5522847 8,15 C8,14.4477153 8.44771525,14 9,14 L10.7792408,14 L12.8244983,7.86422738 L13.6959657,13.0930316 L15.5572549,5.6478748 L17.5572549,14.6478748 L17.7192236,14 L21,14 C21.5522847,14 22,14.4477153 22,15 C22,15.5522847 21.5522847,16 21,16 L19.2807764,16 L17.4427451,23.3521252 L15.4427451,14.3521252 L13.3040343,22.9069684 L12.1528729,16 L9,16 Z" id="Line" fill="#2B333E" fill-rule="nonzero"></path>
+        </g>
     </g>
 </svg>
