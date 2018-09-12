@@ -19,7 +19,7 @@ import {
 import MedicalData from "./detail/add-data"
 import EditComplaint from "./detail/edit-complaint"
 import RemoveFromWaitlist from "./detail/remove"
-import Patient from "shared/containers/patient"
+import { PatientImage, PatientCard } from "shared/containers/patient"
 import Spinner from "shared/containers/spinner"
 
 import "./style.css"
@@ -93,7 +93,7 @@ class Waitlist extends React.Component {
                 <Section
                     type={TYPE_WAITLIST}
                     list={list}
-                    title="Waiting list"
+                    title="Waiting List"
                     waitlistID={match.params.waitlistID}
                     canAddExamination={this.props.canAddExamination}
                     canRemoveFromWaitlist={this.props.canRemoveFromWaitlist}
@@ -137,47 +137,50 @@ const Section = ({
 
             <table className="table patients">
                 <tbody>
-                    {(list || []).map(el => (
-                        <tr key={el.id}>
-                            <th scope="row">
-                                <Link className="patientLink" to={`/patients/${el.patientID}`}>
-                                    <Patient
-                                        data={
-                                            el.patient &&
-                                            cardToObject({
-                                                connections: el.patient
-                                            })
-                                        }
+                    {(list || []).map(el => {
+                        let patientObject =
+                            el.patient &&
+                            cardToObject({
+                                connections: el.patient
+                            })
+                        return (
+                            <tr key={el.id}>
+                                <th scope="row">
+                                    <PatientImage data={patientObject} />
+                                </th>
+                                <td className="w-30">
+                                    <Link className="patientLink" to={`/patients/${patientObject.patientID}`}>
+                                        <PatientCard data={patientObject} withoutImage={true} />
+                                    </Link>
+                                </td>
+                                <td>
+                                    {canSeeMainComplaint && (
+                                        <div>
+                                            {el.mainComplaint.complaint}
+                                            {el.priority === 1 && (
+                                                <div>
+                                                    <span className="badge badge-pill badge-danger">Urgent</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </td>
+                                {canSeeVitalSigns && <VitalSigns waitlistID={waitlistID} itemID={el.id} signs={el.vitalSigns || {}} />}
+                                {(canEditMainComplaint || canAddVitalSigns || canRemoveFromWaitlist) && (
+                                    <Tools
+                                        listType={type}
+                                        waitlistID={waitlistID}
+                                        itemID={el.id}
+                                        canAddExamination={canAddExamination}
+                                        canEditMainComplaint={canEditMainComplaint}
+                                        canSeeVitalSigns={canSeeVitalSigns}
+                                        canAddVitalSigns={canAddVitalSigns}
+                                        canRemoveFromWaitlist={canRemoveFromWaitlist}
                                     />
-                                </Link>
-                            </th>
-                            <td>
-                                {canSeeMainComplaint && (
-                                    <div>
-                                        {el.complaint}
-                                        {el.priority === 1 && (
-                                            <div>
-                                                <span className="badge badge-pill badge-danger">Urgent</span>
-                                            </div>
-                                        )}
-                                    </div>
                                 )}
-                            </td>
-                            {canSeeVitalSigns && <VitalSigns waitlistID={waitlistID} itemID={el.id} signs={el.vitalSigns || {}} />}
-                            {(canEditMainComplaint || canAddVitalSigns || canRemoveFromWaitlist) && (
-                                <Tools
-                                    listType={type}
-                                    waitlistID={waitlistID}
-                                    itemID={el.id}
-                                    canAddExamination={canAddExamination}
-                                    canEditMainComplaint={canEditMainComplaint}
-                                    canSeeVitalSigns={canSeeVitalSigns}
-                                    canAddVitalSigns={canAddVitalSigns}
-                                    canRemoveFromWaitlist={canRemoveFromWaitlist}
-                                />
-                            )}
-                        </tr>
-                    ))}
+                            </tr>
+                        )
+                    })}
                 </tbody>
             </table>
         </div>
