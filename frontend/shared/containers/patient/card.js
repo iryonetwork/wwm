@@ -14,7 +14,9 @@ const PatientCard = ({ data, big, withoutImage }) => {
     const gender = data.gender === "CODED-at0310" ? "M" : data.gender === "CODED-at0311" ? "F" : "?"
     const dob = moment(data.dateOfBirth)
     const dobString = dob.format("Do MMM Y")
-    const age = moment().diff(dob, "years")
+    const ageYears = moment().diff(dob, "years")
+    const ageMonths = moment().diff(dob, "months")
+    const ageWeeks = moment().diff(dob, "weeks")
 
     return (
         <div className={classnames("patientCard", { big })}>
@@ -25,7 +27,7 @@ const PatientCard = ({ data, big, withoutImage }) => {
                 </div>
                 <div className="dob">
                     {dobString}
-                    <span className="age">{age} y</span>
+                    <span className="age">{ageYears < 2 ? (ageMonths < 3 ? `${ageWeeks} w` : `${ageMonths} m`) : `${ageYears} y`}</span>
                     {gender}
                 </div>
             </div>
