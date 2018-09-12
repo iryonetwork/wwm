@@ -6,7 +6,19 @@ import PersonPlaceholder from "../../public/person.svg"
 
 import "./style.css"
 
-export default ({ data, style, big }) => {
+const PatientImage = ({ data, style, big }) => {
+    if (!data) {
+        return null
+    }
+
+    return (
+        <div className={classnames("patientImage", { big })}>
+            <img src={PersonPlaceholder} alt="" />
+        </div>
+    )
+}
+
+const PatientCard = ({ data, style, big, withoutImage }) => {
     if (!data) {
         return null
     }
@@ -18,7 +30,11 @@ export default ({ data, style, big }) => {
 
     return (
         <div className={classnames("patientCard", { big })}>
-            <img src={PersonPlaceholder} alt="" />
+            {withoutImage ? null : (
+                <div className={classnames("patientImage", { big })}>
+                    <img src={PersonPlaceholder} alt="" />
+                </div>
+            )}
             <div>
                 <div className="name">
                     {data.lastName}, {data.firstName}
@@ -32,3 +48,6 @@ export default ({ data, style, big }) => {
         </div>
     )
 }
+
+export { PatientImage, PatientCard }
+export default PatientCard

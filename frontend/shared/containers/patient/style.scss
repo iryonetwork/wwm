@@ -1,12 +1,24 @@
-.patientCard {
+.patientImage {
+    float: left;
     img {
         width: 40px;
         height: 40px;
         border-radius: 20px;
-        float: left;
-        margin-right: 10px;
     }
 
+    &.big {
+        float: none;
+        img {
+            width: 80px;
+            height: 80px;
+            border-radius: 30px;
+            float: none;
+            margin-bottom: 10px;
+        }
+    }
+}
+
+.patientCard {
     .dob {
         font-weight: normal;
 
@@ -23,19 +35,18 @@
         }
     }
 
+    .name {
+        font-weight: bold;
+    }
+
     &.big {
         font-weight: bold;
-
-        img {
-            width: 80px;
-            height: 80px;
-            border-radius: 30px;
-            float: none;
-            margin-bottom: 10px;
-        }
-
         .name {
             font-size: 24px;
         }
+    }
+
+    .patientImage {
+        margin-right: 10px;
     }
 }

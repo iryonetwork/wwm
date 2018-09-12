@@ -7,8 +7,10 @@ import classnames from "classnames"
 import { read, DEFAULT_WAITLIST_ID } from "shared/modules/config"
 import { RESOURCE_PATIENT_IDENTIFICATION, READ, WRITE } from "../../modules/validations"
 import { search, cardToObject } from "../../modules/discovery"
-import Patient from "shared/containers/patient"
+import { PatientImage, PatientCard } from "shared/containers/patient"
 import Spinner from "shared/containers/spinner"
+import { CodeTitle } from "shared/containers/codes"
+
 import { ReactComponent as SearchIcon } from "shared/icons/search.svg"
 import { ReactComponent as SearchActiveIcon } from "shared/icons/search-active.svg"
 import { ReactComponent as SpinnerIcon } from "shared/icons/spinner.svg"
@@ -23,13 +25,18 @@ const ListRow = ({ patient, canAddToWaitlist, waitlistID }) => {
     return (
         <tr>
             <th scope="row">
-                <Link className="patientLink" to={`/patients/${patient.patientID}`}>
-                    <Patient data={p} />
-                </Link>
+                <PatientImage data={p} />
             </th>
-            <td>{p.nationality}</td>
-            <td>{id}</td>
-            <td>{p.region}</td>
+            <td className="w-30">
+                <Link className="patientLink" to={`/patients/${patient.patientID}`}>
+                    <PatientCard data={p} withoutImage={true} />
+                </Link>
+            </td>
+            <td className="w-15">
+                <CodeTitle categoryId="countries" codeId={p.nationality} />
+            </td>
+            <td className="w-25">{id}</td>
+            <td className="w-15">{p.region}</td>
             <td>
                 {canAddToWaitlist && (
                     <Link className="btn btn-link" to={`/to-waitlist/${waitlistID}/${patient.patientID}`}>
@@ -70,6 +77,7 @@ class PatientList extends React.Component {
         if (e.target.value === "") {
             timeout = 0
         }
+
         this.setState({
             searchQuery: e.target.value,
             searchTimeout: window.setTimeout(this.search(e.target.value), timeout)
