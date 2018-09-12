@@ -109,7 +109,7 @@ class PatientDetail extends React.Component {
                                 patient.weightAtBirth && (
                                     <div className="col-sm-4">
                                         <h5>Weight</h5>
-                                        {patient.weightAtBirth} grams
+                                        {patient.weightAtBirth} g
                                     </div>
                                 )
                             )}
