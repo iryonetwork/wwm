@@ -32,7 +32,7 @@ import AddDiagnosis from "./add-diagnosis"
 import Remove from "./remove"
 import Spinner from "shared/containers/spinner"
 import VitalSignCard from "shared/containers/vitalSign"
-import { CodeTitle } from "shared/containers/codes"
+import CodeTitle from "shared/containers/codes/title"
 import { open, COLOR_SUCCESS } from "shared/modules/alert"
 
 class InConsultation extends React.Component {

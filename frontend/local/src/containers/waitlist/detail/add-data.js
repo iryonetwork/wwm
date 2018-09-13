@@ -7,7 +7,7 @@ import { goBack, push } from "react-router-redux"
 import moment from "moment"
 
 import Modal from "shared/containers/modal"
-import Patient from "shared/containers/patient"
+import Patient from "shared/containers/patient/card"
 import Spinner from "shared/containers/spinner"
 import { round } from "shared/utils"
 import { open, COLOR_DANGER } from "shared/modules/alert"

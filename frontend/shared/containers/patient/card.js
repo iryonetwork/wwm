@@ -2,23 +2,11 @@ import React from "react"
 import classnames from "classnames"
 import moment from "moment"
 
-import PersonPlaceholder from "../../public/person.svg"
+import PatientImage from "./image"
 
 import "./style.css"
 
-const PatientImage = ({ data, style, big }) => {
-    if (!data) {
-        return null
-    }
-
-    return (
-        <div className={classnames("patientImage", { big })}>
-            <img src={PersonPlaceholder} alt="" />
-        </div>
-    )
-}
-
-const PatientCard = ({ data, style, big, withoutImage }) => {
+const PatientCard = ({ data, big, withoutImage }) => {
     if (!data) {
         return null
     }
@@ -30,11 +18,7 @@ const PatientCard = ({ data, style, big, withoutImage }) => {
 
     return (
         <div className={classnames("patientCard", { big })}>
-            {withoutImage ? null : (
-                <div className={classnames("patientImage", { big })}>
-                    <img src={PersonPlaceholder} alt="" />
-                </div>
-            )}
+            {withoutImage ? null : <PatientImage data={data} big={big} />}
             <div>
                 <div className="name">
                     {data.lastName}, {data.firstName}
@@ -49,5 +33,4 @@ const PatientCard = ({ data, style, big, withoutImage }) => {
     )
 }
 
-export { PatientImage, PatientCard }
 export default PatientCard

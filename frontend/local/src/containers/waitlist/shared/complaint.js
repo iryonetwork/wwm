@@ -2,7 +2,7 @@ import React, { Component } from "react"
 import { connect } from "react-redux"
 import { Field, reduxForm } from "redux-form"
 
-import Patient from "shared/containers/patient"
+import Patient from "shared/containers/patient/card"
 import { renderInput, renderNumericalValuesRadio, renderTextarea, validateRequired } from "shared/forms/renderField"
 
 import { ReactComponent as ComplaintIcon } from "shared/icons/complaint.svg"

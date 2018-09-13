@@ -2,7 +2,7 @@ import React from "react"
 import { Field, reduxForm } from "redux-form"
 
 import Modal from "shared/containers/modal"
-import Patient from "shared/containers/patient"
+import Patient from "shared/containers/patient/card"
 import { renderRadio } from "shared/forms/renderField"
 
 import { ReactComponent as LaboratoryIcon } from "shared/icons/laboratory.svg"

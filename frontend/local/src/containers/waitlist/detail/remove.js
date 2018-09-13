@@ -3,7 +3,7 @@ import { connect } from "react-redux"
 import { goBack } from "react-router-redux"
 
 import Modal from "shared/containers/modal"
-import Patient from "shared/containers/patient"
+import Patient from "shared/containers/patient/card"
 import { open, COLOR_DANGER, COLOR_SUCCESS } from "shared/modules/alert"
 import { listAll, remove } from "../../../modules/waitlist"
 import { cardToObject } from "../../../modules/discovery"

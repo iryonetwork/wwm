@@ -19,7 +19,8 @@ import {
 import MedicalData from "./detail/add-data"
 import EditComplaint from "./detail/edit-complaint"
 import RemoveFromWaitlist from "./detail/remove"
-import { PatientImage, PatientCard } from "shared/containers/patient"
+import PatientImage from "shared/containers/patient/image"
+import PatientCard from "shared/containers/patient/card"
 import Spinner from "shared/containers/spinner"
 
 import "./style.css"

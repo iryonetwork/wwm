@@ -51,4 +51,4 @@ class CodeTitle extends React.Component {
 
 CodeTitle = connect(state => ({}), { fetchCode })(CodeTitle)
 
-export { CodeTitle }
+export default CodeTitle

@@ -9,7 +9,7 @@ import History from "./history"
 import Personal from "./personal"
 import HealthRecord from "./record"
 
-import Patient from "shared/containers/patient"
+import Patient from "shared/containers/patient/card"
 import Spinner from "shared/containers/spinner"
 
 import {
