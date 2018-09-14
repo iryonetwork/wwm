@@ -17,7 +17,7 @@ type (
 		Write(row []string) error
 		// Flush flushes to report any data that has been buffered
 		Flush()
-		// Error returns any that has occured during previoud WriteHeader, Write or Flush
+		// Error returns any that has occured during previous Write or Flush
 		Error() error
 	}
 

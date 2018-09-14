@@ -5,7 +5,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"encoding/csv"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -25,6 +24,7 @@ import (
 	"github.com/iryonetwork/wwm/service/serviceAuthenticator"
 	"github.com/iryonetwork/wwm/storage/keyvalue"
 	reportsStorage "github.com/iryonetwork/wwm/storage/reports"
+	"github.com/iryonetwork/wwm/utils/xlsxWriter"
 )
 
 const (
@@ -106,14 +106,12 @@ func main() {
 	}
 
 	for _, spec := range cfg.ReportSpecs.Slice {
-		// initialize csv writer
-		file, err := ioutil.TempFile("", spec.Type)
+		// initialize xlsx writer
+		writer, err := xlsxWriter.New(spec.Type)
 		if err != nil {
-			logger.Fatal().Err(err).Msg("failed to open temporary report file")
+			logger.Fatal().Err(err).Msg("failed to initialize xlsx file writer")
 		}
-		defer os.Remove(file.Name())
-		writer := csv.NewWriter(file)
-		writer.Comma = ','
+		defer os.Remove(writer.Filename())
 
 		// run generator
 		generated, err := g.Generate(ctx, writer, spec, nil, nil)
@@ -124,9 +122,12 @@ func main() {
 		if generated {
 			// flush writer
 			writer.Flush()
+			if writer.Error() != nil {
+				logger.Fatal().Err(err).Msgf("failed to flush xlsx report writer")
+			}
 
 			// read file and turn content into buffer
-			b, err := ioutil.ReadFile(file.Name())
+			b, err := ioutil.ReadFile(writer.Filename())
 			if err != nil {
 				logger.Fatal().Err(err).Msgf("failed to read temp file")
 			}
@@ -141,7 +142,7 @@ func main() {
 				fileUpdateParams := operations.NewFileUpdateParams().
 					WithBucket(strfmt.UUID(cfg.ReportsBucketUUID)).
 					WithFileID(fileUUID).
-					WithContentType("text/csv").
+					WithContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet").
 					WithLabels([]string{spec.Type}).
 					WithFile(runtime.NamedReader("reader", buf))
 
@@ -154,7 +155,7 @@ func main() {
 				// upload file to storage
 				fileNewParams := operations.NewFileNewParams().
 					WithBucket(strfmt.UUID(cfg.ReportsBucketUUID)).
-					WithContentType("text/csv").
+					WithContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet").
 					WithLabels([]string{spec.Type}).
 					WithFile(runtime.NamedReader("reader", buf))
 

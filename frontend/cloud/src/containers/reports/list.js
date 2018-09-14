@@ -38,7 +38,7 @@ class Reports extends React.Component {
         return e => {
             e.preventDefault()
             this.props.readFile(this.props.reportType, this.props.reports[index].name).then(data => {
-                let name = this.props.reportType + " (" + moment(this.props.reports[index].created).format("LLL") + ").csv"
+                let name = this.props.reportType + " (" + moment(this.props.reports[index].created).format("LLL") + ").xlsx"
                 fileDownload(data, name)
             })
         }
