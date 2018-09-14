@@ -189,8 +189,10 @@ export const get = patientID => dispatch => {
 }
 
 export const cardToObject = card => {
-    return card.connections.reduce((acc, conn) => {
+    let obj = card.connections.reduce((acc, conn) => {
         acc[conn.key] = conn.value
         return acc
     }, {})
+    obj.patientID = card.patientID
+    return obj
 }

@@ -3,6 +3,7 @@ import { connect } from "react-redux"
 import { Link } from "react-router-dom"
 import { push } from "react-router-redux"
 import classnames from "classnames"
+import _ from "lodash"
 
 import { read, DEFAULT_WAITLIST_ID } from "shared/modules/config"
 import { RESOURCE_PATIENT_IDENTIFICATION, READ, WRITE } from "../../modules/validations"
@@ -20,24 +21,23 @@ import { ReactComponent as DeleteIcon } from "shared/icons/delete.svg"
 import "./style.css"
 
 const ListRow = ({ patient, canAddToWaitlist, waitlistID }) => {
-    const p = cardToObject(patient)
-    const id = p["syrian-id"] ? `Syrian ID: ${p["syrian-id"]}` : p["un-id"] ? `UN ID: ${p["un-id"]}` : ""
+    const id = patient["syrian-id"] ? `Syrian ID: ${patient["syrian-id"]}` : patient["un-id"] ? `UN ID: ${patient["un-id"]}` : ""
 
     return (
         <tr>
             <th scope="row">
-                <PatientImage data={p} />
+                <PatientImage data={patient} />
             </th>
             <td className="w-30">
                 <Link className="patientLink" to={`/patients/${patient.patientID}`}>
-                    <PatientCard data={p} withoutImage={true} />
+                    <PatientCard data={patient} withoutImage={true} />
                 </Link>
             </td>
             <td className="w-15">
-                <CodeTitle categoryId="countries" codeId={p.nationality} />
+                <CodeTitle categoryId="countries" codeId={patient.nationality} />
             </td>
             <td className="w-25">{id}</td>
-            <td className="w-15">{p.region}</td>
+            <td className="w-15">{patient.region}</td>
             <td>
                 {canAddToWaitlist && (
                     <Link className="btn btn-link" to={`/to-waitlist/${waitlistID}/${patient.patientID}`}>
@@ -108,6 +108,7 @@ class PatientList extends React.Component {
 
     render() {
         const { push } = this.props
+
         return (
             <div className="patients">
                 <header>
@@ -147,19 +148,53 @@ class PatientList extends React.Component {
                         </div>
                         {this.state.searching ? (
                             <Spinner />
+                        ) : this.props.numberOfPatients === 0 ? (
+                            <div className="noResults">
+                                <h3>No patients found</h3>
+                                {this.state.searchQuery && (
+                                    <button onClick={this.clearSearchQuery} className="btn btn-primary btn-wide">
+                                        Clear Search
+                                    </button>
+                                )}
+                            </div>
+                        ) : this.state.searchQuery ? (
+                            <div className="section">
+                                <h3>
+                                    Showing {this.props.numberOfPatients} result{this.props.numberOfPatients > 1 && "s"}
+                                </h3>
+                                <table className="table patients">
+                                    <tbody>
+                                        {_.map(this.props.patientsByInitial, (patients, initial) =>
+                                            patients.map(patient => (
+                                                <ListRow
+                                                    patient={patient}
+                                                    key={patient.patientID}
+                                                    canAddToWaitlist={this.props.canAddToWaitlist}
+                                                    waitlistID={this.state.waitlistID}
+                                                />
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         ) : (
-                            <table className="table patients">
-                                <tbody>
-                                    {this.props.patients.map(patient => (
-                                        <ListRow
-                                            patient={patient}
-                                            key={patient.patientID}
-                                            canAddToWaitlist={this.props.canAddToWaitlist}
-                                            waitlistID={this.state.waitlistID}
-                                        />
-                                    ))}
-                                </tbody>
-                            </table>
+                            _.map(this.props.patientsByInitial, (patients, initial) => (
+                                <div key={`initial-${initial}`} className="section">
+                                    <h3>{initial}</h3>
+                                    <table className="table patients">
+                                        <tbody>
+                                            {patients.map(patient => (
+                                                <ListRow
+                                                    patient={patient}
+                                                    key={patient.patientID}
+                                                    canAddToWaitlist={this.props.canAddToWaitlist}
+                                                    waitlistID={this.state.waitlistID}
+                                                />
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ))
                         )}
                     </div>
                 ) : null}
@@ -170,14 +205,31 @@ class PatientList extends React.Component {
 
 PatientList = connect(
     state => ({
-        searching: state.discovery.searching || false,
-        patients: state.discovery.patients || [],
+        searching: state.discovery.searching || state.codes.isFetching || state.codes.loading || false,
+        numberOfPatients: state.discovery.patients ? state.discovery.patients.length : 0,
+        patientsByInitial: state.discovery.patients ? sortPatientsByLastNameInitial(state.discovery.patients) : {},
         canAddPatient: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[WRITE],
         canSeePatients: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[READ],
         canAddToWaitlist: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[WRITE]
     }),
     { search, push, read }
 )(PatientList)
+
+const sortPatientsByLastNameInitial = patients => {
+    return _.groupBy(
+        _.orderBy(
+            _.flatMap(patients, cardToObject),
+            [
+                p => {
+                    let name = "" + p.lastName + p.firstName
+                    return name.toLowerCase()
+                }
+            ],
+            ["asc"]
+        ),
+        p => (p.lastName ? p.lastName.charAt(0) : " ")
+    )
+}
 
 export default PatientList
 

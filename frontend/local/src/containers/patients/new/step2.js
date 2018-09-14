@@ -113,7 +113,7 @@ class familyMembers extends React.Component {
         return (
             <table className="table patients">
                 <tbody>
-                    <ListRow patient={patient} key={patient.patientID} />
+                    <ListRow patient={cardToObject(patient)} key={patient.patientID} />
                 </tbody>
             </table>
         )
