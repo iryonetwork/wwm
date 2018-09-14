@@ -113,7 +113,7 @@ func main() {
 		}
 		defer os.Remove(file.Name())
 		writer := csv.NewWriter(file)
-		writer.Comma = ';'
+		writer.Comma = ','
 
 		// run generator
 		generated, err := g.Generate(ctx, writer, spec, nil, nil)
