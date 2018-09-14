@@ -242,6 +242,11 @@ func (g *generator) getSimpleValueFromData(data []*map[string]interface{}, fullE
 			switch val.(type) {
 			case string:
 				s = val.(string)
+				if s == "true" {
+					s = "Yes"
+				} else if s == "false" {
+					s = "No"
+				}
 			case int:
 				s = strconv.Itoa(val.(int))
 			case float32:
@@ -255,7 +260,11 @@ func (g *generator) getSimpleValueFromData(data []*map[string]interface{}, fullE
 				}
 				s = strconv.FormatFloat(val.(float64), 'G', -1, 64)
 			case bool:
-				s = strconv.FormatBool(val.(bool))
+				if val == true {
+					s = "Yes"
+				} else {
+					s = "No"
+				}
 			}
 
 			if s != "" && !utils.SliceContains(values, s) {
