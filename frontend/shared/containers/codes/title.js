@@ -7,12 +7,19 @@ class CodeTitle extends React.Component {
     constructor(props) {
         super(props)
         this.loadCode = this.loadCode.bind(this)
-        if (props.codeId) {
+
+        if (props.codeId && !props.fetching) {
             this.loadCode(props.categoryId, props.codeId)
         }
 
         this.componentWillUnmount = this.componentWillUnmount.bind(this)
         this.state = { loading: true, title: "" }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.codeId && !nextProps.fetching) {
+            this.loadCode(nextProps.categoryId, nextProps.codeId)
+        }
     }
 
     loadCode(categoryId, codeId) {
@@ -38,7 +45,7 @@ class CodeTitle extends React.Component {
 
     render() {
         if (this.state.loading) {
-            return <span>...</span>
+            return <span />
         }
 
         if (this.state.failed) {
@@ -49,6 +56,11 @@ class CodeTitle extends React.Component {
     }
 }
 
-CodeTitle = connect(state => ({}), { fetchCode })(CodeTitle)
+CodeTitle = connect(
+    (state, ownProps) => {
+        return { fetching: state.codes.fetching[ownProps.categoryId] || (state.codes.codeFetching[ownProps.categoryId] || {})[ownProps.codeId] }
+    },
+    { fetchCode }
+)(CodeTitle)
 
 export default CodeTitle

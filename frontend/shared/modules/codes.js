@@ -1,4 +1,6 @@
 import produce from "immer"
+import _ from "lodash"
+
 import { read, LOCALE, API_URL } from "./config"
 import { open, COLOR_DANGER } from "./alert"
 import { getToken } from "./authentication"
@@ -16,6 +18,7 @@ const initialState = {
     loading: false,
     cache: {},
     fetching: [],
+    codeFetching: {},
     failed: []
 }
 
@@ -52,10 +55,13 @@ export default (state = initialState, action) => {
                 break
 
             case FETCH:
+                draft.codeFetching[action.category] = _.assign(draft.codeFetching[action.category] || {}, _.fromPairs([[action.id, true]]))
                 draft.isFetching = true
                 break
 
             case FETCHED:
+                draft.cache[action.category] = _.assign(draft.cache[action.category] || {}, _.fromPairs([[action.id, action.data]]))
+                draft.codeFetching[action.category] = _.assign(draft.codeFetching[action.category] || {}, _.fromPairs([[action.id, false]]))
                 draft.isFetching = false
                 draft.fetchResults = action.data
                 break
@@ -147,10 +153,17 @@ export const loadCategories = (...categories) => {
     }
 }
 
-export const fetchCode = (category, id) => dispatch => {
+export const fetchCode = (category, id) => (dispatch, getState) => {
     const locale = dispatch(read(LOCALE))
     const url = `${dispatch(read(API_URL))}/discovery/codes/${category}/${id}?locale=${locale}`
-    dispatch({ type: FETCH })
+    dispatch({ type: FETCH, category, id })
+
+    let cachedCode = getState().codes.cache[category] ? getState().codes.cache[category][id] : undefined
+    if (cachedCode) {
+        dispatch({ type: FETCHED, data: cachedCode, category, id })
+
+        return Promise.resolve(cachedCode)
+    }
 
     return fetch(url, {
         method: "GET",
@@ -164,12 +177,12 @@ export const fetchCode = (category, id) => dispatch => {
             if (!ok) {
                 throw new Error("Failed to fetch code")
             }
-            dispatch({ type: FETCHED, data })
+            dispatch({ type: FETCHED, category, id, data })
             return data
         })
         .catch(ex => {
             dispatch(open("Failed to fetch codes :: " + ex.message, COLOR_DANGER))
-            dispatch({ type: FAILED, category })
+            dispatch({ type: FAILED, category, id })
         })
 }
 
