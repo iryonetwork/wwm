@@ -51,31 +51,32 @@ func New(serviceName, hostPort string) io.Closer {
 	return closer
 }
 
+type spanContext struct{} // empty spanContext is used to extract opentracing.spanContext from context
+
 func Middleware(h http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if tracerIsSet {
 			var sp opentracing.Span
 			spanName := fmt.Sprintf("Handler %s %s", r.Method, r.URL.Path)
+
 			wireContext, err := opentracing.GlobalTracer().Extract(
 				opentracing.HTTPHeaders,
 				opentracing.HTTPHeadersCarrier(r.Header))
 
 			if err != nil {
-				// If for whatever reason we can't join, go ahead an start a new root span.
-				sp = opentracing.StartSpan(spanName)
+				// If for whatever reason we can't join  go ahead an start a new root span.
 				log.Printf("TRACE NOT FOUND, %v", err)
+				sp = opentracing.StartSpan(spanName)
+
 			} else {
-				sp = opentracing.StartSpan(spanName, opentracing.ChildOf(wireContext))
 				log.Printf("TRACE FOUND")
+				sp = opentracing.StartSpan(spanName, opentracing.ChildOf(wireContext))
 			}
+
 			defer sp.Finish()
 
-			sp.Tracer().Inject(
-				sp.Context(),
-				opentracing.HTTPHeaders,
-				opentracing.HTTPHeadersCarrier(r.Header))
+			r = r.WithContext(context.WithValue(r.Context(), spanContext{}, sp.Context()))
 
-			r = r.WithContext(context.WithValue(r.Context(), "header", r.Header))
 		} else {
 			log.Printf("Tracer is not set")
 		}
@@ -83,17 +84,31 @@ func Middleware(h http.Handler) http.HandlerFunc {
 	}
 }
 
+// InjectTracerInRequest injects span in request, if span is present in ctx value
+func InjectTracerInRequest(ctx context.Context, r *http.Request) {
+	if tracerIsSet {
+		spContext := ctx.Value(spanContext{})
+		if spContext == nil {
+			return
+		}
+
+		opentracing.GlobalTracer().Inject(
+			spContext.(opentracing.SpanContext),
+			opentracing.HTTPHeaders,
+			opentracing.HTTPHeadersCarrier(r.Header))
+	}
+}
+
 // TraceFunctionSpan creates new span and then executes provided function.
 // If opentracing.GlobalTracer() is not set, then no span is reported nor created
 // If possible tracer is extracted from request.
 // If you have no request handy, pass in nil
-func TraceFunctionSpan(name string, header http.Header, f func() error) error {
+func TraceFunctionSpan(name string, ctx context.Context, f func() error) error {
 
 	// Create new span if tracer is set
 	var sp opentracing.Span
 	if tracerIsSet {
-		sp = getSpan(name, header)
-
+		sp = getSpan(name, ctx)
 		defer sp.Finish()
 	} else {
 		log.Printf("Tracer is not set")
@@ -108,37 +123,23 @@ func TraceFunctionSpan(name string, header http.Header, f func() error) error {
 	return err
 }
 
-func getSpan(name string, header http.Header) opentracing.Span {
+func getSpan(name string, ctx context.Context) opentracing.Span {
 	var out opentracing.Span
 	log.Printf("Creating new span for %s", name)
 
 	// if header is present try to extract traceID and use it
 	// if there is no header create new span
-	if header != nil {
+	wireContext := ctx.Value(spanContext{})
 
-		wireContext, err := opentracing.GlobalTracer().Extract(
-			opentracing.HTTPHeaders,
-			opentracing.HTTPHeadersCarrier(header))
-
-		if err != nil {
-			// If for whatever reason we can't join, go ahead an start a new root span.
-			out = opentracing.StartSpan(name)
-			log.Printf("Trace not found, creating new span, %v", err)
-
-		} else {
-			out = opentracing.StartSpan(name, opentracing.ChildOf(wireContext))
-			log.Printf("Trace found, attaching to it")
-		}
-		out.Context().ForeachBaggageItem(func(k, v string) bool {
-			log.Print("k:" + k)
-			log.Print("v:" + v)
-			return true
-		})
-
-	} else {
+	if wireContext == nil {
+		// If for whatever reason we can't join, go ahead an start a new root span.
 		out = opentracing.StartSpan(name)
 		log.Printf("Trace not found, creating new span")
 
+	} else {
+		wireContext := wireContext.(opentracing.SpanContext)
+		out = opentracing.StartSpan(name, opentracing.ChildOf(wireContext))
+		log.Printf("Trace found, attaching to it")
 	}
 
 	return out

@@ -96,7 +96,7 @@ type responseAndError struct {
 func (a *authorizer) Authorizer() runtime.Authorizer {
 	logger := a.logger.With().Str("cmd", "Authorizer").Logger()
 	return runtime.AuthorizerFunc(func(request *http.Request, principal interface{}) error {
-		return tracing.TraceFunctionSpan("Authorizer", request.Header, func() error {
+		return tracing.TraceFunctionSpan("Authorizer", request.Context(), func() error {
 			action := methodToAction(request.Method)
 			resource := "/api" + request.URL.EscapedPath()
 			pairs := []*models.ValidationPair{
@@ -122,9 +122,8 @@ func (a *authorizer) Authorizer() runtime.Authorizer {
 			}
 			r.Header.Add("Authorization", request.Header.Get("Authorization"))
 			r.Header.Add("Content-Type", "application/json")
-			if traceID := request.Header.Get("Uber-Trace-Id"); traceID != "" {
-				r.Header.Add("Uber-Trace-Id", traceID)
-			}
+
+			tracing.InjectTracerInRequest(request.Context(), r)
 
 			transport := &http.Transport{}
 			netClient := &http.Client{

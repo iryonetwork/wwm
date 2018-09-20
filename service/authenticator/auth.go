@@ -160,7 +160,7 @@ func (a *service) GetPrincipalFromToken(tokenString string) (*string, error) {
 
 func (a *service) Authorizer() runtime.Authorizer {
 	return runtime.AuthorizerFunc(func(request *http.Request, principal interface{}) error {
-		return tracing.TraceFunctionSpan("Authorizer", request.Header, func() error {
+		return tracing.TraceFunctionSpan("Authorizer", request.Context(), func() error {
 			userID, ok := principal.(*string)
 			if !ok {
 				return fmt.Errorf("Principal type was '%T', expected '*string'", principal)
