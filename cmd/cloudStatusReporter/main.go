@@ -20,6 +20,9 @@ import (
 )
 
 func main() {
+	traceCloser := tracing.New("cloudStatusReporter", "jaeger:5775")
+	defer traceCloser.Close()
+
 	// initialize logger
 	logger := zerolog.New(os.Stdout).With().
 		Timestamp().
@@ -87,8 +90,6 @@ func main() {
 	}).Handler(m.Middleware(log.APILogMiddleware(r.Handler("status"), logger)))
 
 	// add tracer middleware
-	traceCloser := tracing.New("cloudStatusReporter", "jaeger:5775")
-	defer traceCloser.Close()
 	handler = tracing.Middleware(handler)
 
 	httpServer := &http.Server{

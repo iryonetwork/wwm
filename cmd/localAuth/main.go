@@ -33,6 +33,9 @@ import (
 )
 
 func main() {
+	traceCloser := tracing.New("localAuth", "jaeger:5775")
+	defer traceCloser.Close()
+
 	logger := zerolog.New(os.Stdout).With().
 		Timestamp().
 		Str("service", "localAuth").
@@ -194,8 +197,6 @@ func main() {
 	handler = logMW.APILogMiddleware(handler, logger)
 	handler = apiMetrics.Middleware(handler)
 	// add tracer middleware
-	traceCloser := tracing.New("localAuth", "jaeger:5775")
-	defer traceCloser.Close()
 	handler = tracing.Middleware(handler)
 
 	server.SetHandler(handler)

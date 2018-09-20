@@ -29,6 +29,9 @@ import (
 )
 
 func main() {
+	traceCloser := tracing.New("cloudDiscovery", "jaeger:5775")
+	defer traceCloser.Close()
+
 	// initialize logger
 	logger := zerolog.New(os.Stdout).With().
 		Timestamp().
@@ -117,8 +120,6 @@ func main() {
 	}).Handler(api.Serve(nil))
 	handler = m.Middleware(handler)
 	// add tracer middleware
-	traceCloser := tracing.New("cloudDiscovery", "jaeger:5775")
-	defer traceCloser.Close()
 	handler = tracing.Middleware(handler)
 
 	server.SetHandler(handler)

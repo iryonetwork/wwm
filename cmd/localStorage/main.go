@@ -39,6 +39,9 @@ import (
 )
 
 func main() {
+	traceCloser := tracing.New("localStorage", "jaeger:5775")
+	defer traceCloser.Close()
+
 	// initialize logger
 	logger := zerolog.New(os.Stdout).With().
 		Timestamp().
@@ -181,8 +184,6 @@ func main() {
 	handler = logMW.APILogMiddleware(handler, logger)
 	handler = m.Middleware(handler)
 	// add tracer middleware
-	traceCloser := tracing.New("localStorage", "jaeger:5775")
-	defer traceCloser.Close()
 	handler = tracing.Middleware(handler)
 
 	server.SetHandler(handler)
