@@ -8,6 +8,8 @@ import (
 	"io"
 	"time"
 
+	"github.com/iryonetwork/wwm/service/tracing"
+
 	"github.com/agext/uuid"
 	"github.com/go-openapi/strfmt"
 	"github.com/rs/zerolog"
@@ -109,7 +111,11 @@ func (s *service) FileList(ctx context.Context, bucketID string) ([]*models.File
 	list := []*models.FileDescriptor{}
 
 	// check if bucket exists
-	exists, err := s.s3.BucketExists(ctx, bucketID)
+	var exists bool
+	err := tracing.TraceFunctionSpan("s3 BucketExists", ctx, func() (err error) {
+		exists, err = s.s3.BucketExists(ctx, bucketID)
+		return err
+	})
 	if err != nil {
 		s.logger.Info().Err(err).Str("bucket", bucketID).Msg("Failed to check if bucket exists")
 		return nil, err
@@ -119,7 +125,11 @@ func (s *service) FileList(ctx context.Context, bucketID string) ([]*models.File
 	}
 
 	// collect the list
-	l, err := s.s3.List(ctx, bucketID, "")
+	var l []*models.FileDescriptor
+	err = tracing.TraceFunctionSpan("s3 List", ctx, func() (err error) {
+		l, err = s.s3.List(ctx, bucketID, "")
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -139,17 +149,23 @@ func (s *service) FileList(ctx context.Context, bucketID string) ([]*models.File
 	return list, nil
 }
 
-func (s *service) FileGet(ctx context.Context, bucketID, fileID string) (io.ReadCloser, *models.FileDescriptor, error) {
-	start := time.Now()
-	rc, fd, err := s.s3.Read(ctx, bucketID, fileID, "")
-	s.logger.Info().Str("method", "FileGet").Msgf("s3 read time %s", time.Since(start))
+func (s *service) FileGet(ctx context.Context, bucketID, fileID string) (rc io.ReadCloser, fd *models.FileDescriptor, err error) {
+	err = tracing.TraceFunctionSpan("s3 Read", ctx, func() (err error) {
+		start := time.Now()
+		rc, fd, err = s.s3.Read(ctx, bucketID, fileID, "")
+		s.logger.Info().Str("method", "FileGet").Msgf("s3 read time %s", time.Since(start))
+		return err
+	})
 
 	return rc, fd, err
 }
 
-func (s *service) FileGetVersion(ctx context.Context, bucketID, fileID, version string) (io.ReadCloser, *models.FileDescriptor, error) {
+func (s *service) FileGetVersion(ctx context.Context, bucketID, fileID, version string) (rc io.ReadCloser, fd *models.FileDescriptor, err error) {
 	start := time.Now()
-	rc, fd, err := s.s3.Read(ctx, bucketID, fileID, version)
+	err = tracing.TraceFunctionSpan("s3 Read", ctx, func() (err error) {
+		rc, fd, err = s.s3.Read(ctx, bucketID, fileID, version)
+		return err
+	})
 	s.logger.Info().Str("method", "FileGetVersion").Msgf("s3 read time %s", time.Since(start))
 
 	return rc, fd, err
@@ -160,7 +176,11 @@ func (s *service) FileListVersions(ctx context.Context, bucketID, fileID string,
 	list := []*models.FileDescriptor{}
 
 	// check if bucket exists
-	exists, err := s.s3.BucketExists(ctx, bucketID)
+	var exists bool
+	err := tracing.TraceFunctionSpan("s3 BucketExists", ctx, func() (err error) {
+		exists, err = s.s3.BucketExists(ctx, bucketID)
+		return
+	})
 	if err != nil {
 		s.logger.Info().Err(err).Str("bucket", bucketID).Msg("Failed to check if bucket exists")
 		return nil, err
@@ -169,7 +189,11 @@ func (s *service) FileListVersions(ctx context.Context, bucketID, fileID string,
 		return list, nil
 	}
 
-	l, err := s.s3.List(ctx, bucketID, fileID)
+	var l []*models.FileDescriptor
+	err = tracing.TraceFunctionSpan("s3 List", ctx, func() (err error) {
+		l, err = s.s3.List(ctx, bucketID, fileID)
+		return
+	})
 	if (createdAtSince == nil && createdAtUntil == nil) || err != nil {
 		return l, err
 	}
@@ -215,10 +239,13 @@ func (s *service) FileNew(ctx context.Context, bucketID string, r io.Reader, con
 		Labels:      labels,
 	}
 
-	start := time.Now()
-	fd, err := s.s3.Write(ctx, bucketID, no, &buf)
-	s.logger.Info().Str("method", "FileNew").Msgf("s3 write time %s", time.Since(start))
-
+	var fd *models.FileDescriptor
+	err = tracing.TraceFunctionSpan("s3 Write", ctx, func() (err error) {
+		start := time.Now()
+		fd, err = s.s3.Write(ctx, bucketID, no, &buf)
+		s.logger.Info().Str("method", "FileNew").Msgf("s3 write time %s", time.Since(start))
+		return
+	})
 	if err == nil {
 		s.publisher.PublishAsyncWithRetries(
 			context.TODO(),
@@ -237,11 +264,15 @@ func (s *service) FileNew(ctx context.Context, bucketID string, r io.Reader, con
 	return fd, err
 }
 
-func (s *service) FileUpdate(ctx context.Context, bucketID, fileID string, r io.Reader, contentType string, archetype string, labels []string) (*models.FileDescriptor, error) {
+func (s *service) FileUpdate(ctx context.Context, bucketID, fileID string, r io.Reader, contentType string, archetype string, labels []string) (fd *models.FileDescriptor, err error) {
 	// get the previous file
-	start := time.Now()
-	_, old, err := s.s3.Read(ctx, bucketID, fileID, "")
-	s.logger.Info().Str("method", "FileUpdate").Msgf("s3 read time %s", time.Since(start))
+	var old *models.FileDescriptor
+	err = tracing.TraceFunctionSpan("s3 Read", ctx, func() (err error) {
+		start := time.Now()
+		_, old, err = s.s3.Read(ctx, bucketID, fileID, "")
+		s.logger.Info().Str("method", "FileUpdate").Msgf("s3 read time %s", time.Since(start))
+		return
+	})
 
 	if err != nil {
 		return nil, err
@@ -269,9 +300,12 @@ func (s *service) FileUpdate(ctx context.Context, bucketID, fileID string, r io.
 		Labels:      labels,
 	}
 
-	start = time.Now()
-	fd, err := s.s3.Write(ctx, bucketID, no, &buf)
-	s.logger.Info().Str("method", "FileUpdate").Msgf("s3 write time %s", time.Since(start))
+	err = tracing.TraceFunctionSpan("s3 Write", ctx, func() (err error) {
+		start := time.Now()
+		fd, err = s.s3.Write(ctx, bucketID, no, &buf)
+		s.logger.Info().Str("method", "FileUpdate").Msgf("s3 write time %s", time.Since(start))
+		return
+	})
 
 	if err == nil {
 		s.publisher.PublishAsyncWithRetries(
@@ -300,9 +334,13 @@ func (s *service) FileUpdate(ctx context.Context, bucketID, fileID string, r io.
 
 func (s *service) FileDelete(ctx context.Context, bucketID, fileID string) error {
 	// get the previous file
-	start := time.Now()
-	_, fd, err := s.s3.Read(ctx, bucketID, fileID, "")
-	s.logger.Info().Str("method", "FileDelete").Msgf("s3 read time %s", time.Since(start))
+	var fd *models.FileDescriptor
+	err := tracing.TraceFunctionSpan("s3 Read", ctx, func() (err error) {
+		start := time.Now()
+		_, fd, err = s.s3.Read(ctx, bucketID, fileID, "")
+		s.logger.Info().Str("method", "FileDelete").Msgf("s3 read time %s", time.Since(start))
+		return err
+	})
 
 	if err != nil {
 		return err
@@ -320,10 +358,12 @@ func (s *service) FileDelete(ctx context.Context, bucketID, fileID string) error
 		Operation:   string(s3.Delete),
 		Labels:      fd.Labels,
 	}
-
-	start = time.Now()
-	fd, err = s.s3.Write(ctx, bucketID, no, &bytes.Buffer{})
-	s.logger.Info().Str("method", "FileDelete").Msgf("s3 write time %s", time.Since(start))
+	err = tracing.TraceFunctionSpan("s3 Write", ctx, func() (err error) {
+		start := time.Now()
+		fd, err = s.s3.Write(ctx, bucketID, no, &bytes.Buffer{})
+		s.logger.Info().Str("method", "FileDelete").Msgf("s3 write time %s", time.Since(start))
+		return err
+	})
 
 	if err == nil {
 		s.publisher.PublishAsyncWithRetries(
@@ -346,7 +386,11 @@ func (s *service) SyncFileList(ctx context.Context, bucketID string, createdAtSi
 	list := []*models.FileDescriptor{}
 
 	// check if bucket exists
-	exists, err := s.s3.BucketExists(ctx, bucketID)
+	var exists bool
+	err := tracing.TraceFunctionSpan("s3 BucketExists", ctx, func() (err error) {
+		exists, err = s.s3.BucketExists(ctx, bucketID)
+		return err
+	})
 	if err != nil {
 		s.logger.Info().Err(err).Str("method", "SyncFileList").Str("bucket", bucketID).Msg("Failed to check if bucket exists")
 		return nil, err
@@ -356,7 +400,11 @@ func (s *service) SyncFileList(ctx context.Context, bucketID string, createdAtSi
 	}
 
 	// collect the list
-	l, err := s.s3.List(ctx, bucketID, "")
+	var l []*models.FileDescriptor
+	err = tracing.TraceFunctionSpan("s3 List", ctx, func() (err error) {
+		l, err = s.s3.List(ctx, bucketID, "")
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -395,9 +443,13 @@ func (s *service) SyncFile(ctx context.Context, bucketID, fileID, version string
 	}
 
 	// try to fetch
-	start := time.Now()
-	_, fd, err := s.s3.Read(ctx, bucketID, fileID, version)
-	s.logger.Info().Str("method", "SyncFile").Msgf("s3 read time %s", time.Since(start))
+	var fd *models.FileDescriptor
+	err = tracing.TraceFunctionSpan("s3 Read", ctx, func() (err error) {
+		start := time.Now()
+		_, fd, err = s.s3.Read(ctx, bucketID, fileID, version)
+		s.logger.Info().Str("method", "SyncFile").Msgf("s3 read time %s", time.Since(start))
+		return err
+	})
 
 	switch {
 	// Already exists and does not conflict
@@ -410,9 +462,12 @@ func (s *service) SyncFile(ctx context.Context, bucketID, fileID, version string
 		s.logger.Info().Str("method", "SyncFile").
 			Msg("File already exists and has conflicting checksum. Local file will be removed and replaced with sync file.")
 
-		start = time.Now()
-		err = s.s3.Delete(ctx, bucketID, fileID, version)
-		s.logger.Info().Str("method", "SyncFile").Msgf("s3 delete time %s", time.Since(start))
+		err = tracing.TraceFunctionSpan("s3 Delete", ctx, func() (err error) {
+			start := time.Now()
+			err = s.s3.Delete(ctx, bucketID, fileID, version)
+			s.logger.Info().Str("method", "SyncFile").Msgf("s3 delete time %s", time.Since(start))
+			return err
+		})
 
 		if err != nil {
 			s.logger.Error().Err(err).Str("method", "SyncFile").
@@ -438,18 +493,25 @@ func (s *service) SyncFile(ctx context.Context, bucketID, fileID, version string
 		Labels:      labels,
 	}
 
-	start = time.Now()
-	fd, err = s.s3.Write(ctx, bucketID, no, &buf)
-	s.logger.Info().Str("method", "SyncFile").Msgf("s3 write time %s", time.Since(start))
+	err = tracing.TraceFunctionSpan("s3 Write", ctx, func() (err error) {
+		start := time.Now()
+		fd, err = s.s3.Write(ctx, bucketID, no, &buf)
+		s.logger.Info().Str("method", "SyncFile").Msgf("s3 write time %s", time.Since(start))
+		return err
+	})
 
 	return fd, err
 }
 
 func (s *service) SyncFileDelete(ctx context.Context, bucketID, fileID, version string, created strfmt.DateTime) error {
 	// get the previous file
-	start := time.Now()
-	_, fd, err := s.s3.Read(ctx, bucketID, fileID, "")
-	s.logger.Info().Str("method", "SyncFileDelete").Msgf("s3 read time %s", time.Since(start))
+	var fd *models.FileDescriptor
+	err := tracing.TraceFunctionSpan("s3 Read", ctx, func() (err error) {
+		start := time.Now()
+		_, fd, err = s.s3.Read(ctx, bucketID, fileID, "")
+		s.logger.Info().Str("method", "SyncFileDelete").Msgf("s3 read time %s", time.Since(start))
+		return
+	})
 
 	if err != nil {
 		return err
@@ -480,16 +542,23 @@ func (s *service) SyncFileDelete(ctx context.Context, bucketID, fileID, version 
 		Labels:      fd.Labels,
 	}
 
-	start = time.Now()
-	_, err = s.s3.Write(ctx, bucketID, no, &bytes.Buffer{})
-	s.logger.Info().Str("method", "SyncFileDelete").Msgf("s3 write time %s", time.Since(start))
+	err = tracing.TraceFunctionSpan("s3 Write", ctx, func() (err error) {
+		start := time.Now()
+		_, err = s.s3.Write(ctx, bucketID, no, &bytes.Buffer{})
+		s.logger.Info().Str("method", "SyncFileDelete").Msgf("s3 write time %s", time.Since(start))
+		return
+	})
 
 	return err
 }
 
 func (s *service) EnsureBucket(ctx context.Context, bucketID string) error {
 	// make sure bucket exists
-	if err := s.s3.MakeBucket(ctx, bucketID); err != nil && err != s3.ErrAlreadyExists {
+	err := tracing.TraceFunctionSpan("s3 MakeBucket", ctx, func() (err error) {
+		return s.s3.MakeBucket(ctx, bucketID)
+	})
+
+	if err != nil && err != s3.ErrAlreadyExists {
 		s.logger.Error().Err(err).Str("bucket", bucketID).Msg("Failed to ensure bucket")
 		return err
 	}
@@ -499,10 +568,13 @@ func (s *service) EnsureBucket(ctx context.Context, bucketID string) error {
 
 func (s *service) updateFilesCollection(ctx context.Context, operation s3.Operation, bucketID, label string, fd *models.FileDescriptor) error {
 	var c *filesCollection
-
-	start := time.Now()
-	r, _, err := s.s3.Read(ctx, bucketID, label, "")
-	s.logger.Info().Str("method", "updateFilesCollection").Msgf("s3 read time %s", time.Since(start))
+	var r io.ReadCloser
+	err := tracing.TraceFunctionSpan("s3 Read", ctx, func() (err error) {
+		start := time.Now()
+		r, _, err = s.s3.Read(ctx, bucketID, label, "")
+		s.logger.Info().Str("method", "updateFilesCollection").Msgf("s3 read time %s", time.Since(start))
+		return err
+	})
 
 	if err != nil {
 		if err != s3.ErrNotFound {
@@ -552,9 +624,12 @@ func (s *service) updateFilesCollection(ctx context.Context, operation s3.Operat
 		Labels:      []string{labelFilesCollection},
 	}
 
-	start = time.Now()
-	fd, err = s.s3.Write(ctx, bucketID, no, &buf)
-	s.logger.Info().Str("method", "updateFilesCollection").Msgf("s3 write time %s", time.Since(start))
+	err = tracing.TraceFunctionSpan("s3 Read", ctx, func() (err error) {
+		start := time.Now()
+		fd, err = s.s3.Write(ctx, bucketID, no, &buf)
+		s.logger.Info().Str("method", "updateFilesCollection").Msgf("s3 write time %s", time.Since(start))
+		return
+	})
 
 	if err != nil {
 		s.logger.Error().Err(err).Msg("failed to write file collection file")
