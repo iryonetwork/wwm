@@ -119,6 +119,7 @@ func (a *authorizer) Authorizer() runtime.Authorizer {
 		}
 		r.Header.Add("Authorization", request.Header.Get("Authorization"))
 		r.Header.Add("Content-Type", "application/json")
+		r.Header.Add("Uber-Trace-Id", request.Header.Get("Uber-Trace-Id"))
 
 		transport := &http.Transport{}
 		netClient := &http.Client{

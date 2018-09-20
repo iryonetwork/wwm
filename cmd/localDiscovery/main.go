@@ -23,6 +23,7 @@ import (
 	metricsServer "github.com/iryonetwork/wwm/metrics/server"
 	"github.com/iryonetwork/wwm/service/authorizer"
 	discoveryService "github.com/iryonetwork/wwm/service/discovery"
+	"github.com/iryonetwork/wwm/service/tracing"
 	statusServer "github.com/iryonetwork/wwm/status/server"
 	discoveryStorage "github.com/iryonetwork/wwm/storage/discovery"
 	"github.com/iryonetwork/wwm/utils"
@@ -121,6 +122,10 @@ func main() {
 		AllowedHeaders: []string{"Authorization", "Content-Type"},
 	}).Handler(api.Serve(nil))
 	handler = m.Middleware(handler)
+	// add tracer middleware
+	traceCloser := tracing.New("localDiscovery", "jaeger:5775")
+	defer traceCloser.Close()
+	handler = tracing.Middleware(handler)
 
 	server.SetHandler(handler)
 

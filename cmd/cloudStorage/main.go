@@ -25,6 +25,7 @@ import (
 	metricsServer "github.com/iryonetwork/wwm/metrics/server"
 	"github.com/iryonetwork/wwm/service/authorizer"
 	storage "github.com/iryonetwork/wwm/service/storage"
+	"github.com/iryonetwork/wwm/service/tracing"
 	statusServer "github.com/iryonetwork/wwm/status/server"
 	"github.com/iryonetwork/wwm/storage/s3"
 	"github.com/iryonetwork/wwm/sync/storage/publisher"
@@ -124,6 +125,10 @@ func main() {
 	}).Handler(api.Serve(nil))
 	handler = logMW.APILogMiddleware(handler, logger)
 	handler = m.Middleware(handler)
+	// add tracer middleware
+	traceCloser := tracing.New("cloudStorage", "jaeger:5775")
+	defer traceCloser.Close()
+	handler = tracing.Middleware(handler)
 
 	server.SetHandler(handler)
 

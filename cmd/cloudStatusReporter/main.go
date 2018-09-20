@@ -16,6 +16,7 @@ import (
 	metricsServer "github.com/iryonetwork/wwm/metrics/server"
 	"github.com/iryonetwork/wwm/service/statusReporter"
 	"github.com/iryonetwork/wwm/service/statusReporter/polling"
+	"github.com/iryonetwork/wwm/service/tracing"
 )
 
 func main() {
@@ -84,6 +85,11 @@ func main() {
 		AllowedMethods: []string{"GET"},
 		AllowedHeaders: []string{"Authorization", "Content-Type"},
 	}).Handler(m.Middleware(log.APILogMiddleware(r.Handler("status"), logger)))
+
+	// add tracer middleware
+	traceCloser := tracing.New("cloudStatusReporter", "jaeger:5775")
+	defer traceCloser.Close()
+	handler = tracing.Middleware(handler)
 
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", cfg.ServerHost, cfg.ServerPortHTTP),
