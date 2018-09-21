@@ -41,6 +41,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/iryonetwork/wwm/service/tracing"
+
 	"github.com/go-openapi/strfmt"
 	"github.com/minio/minio-go/pkg/encrypt"
 	"github.com/pkg/errors"
@@ -146,245 +148,275 @@ func New(cfg *Config, keys KeyProvider, logger zerolog.Logger) (Storage, error) 
 }
 
 // Check if bucket already exists
-func (s *s3storage) BucketExists(_ context.Context, bucketID string) (bool, error) {
-	s.logger.Debug().Str("cmd", "s3::BucketExists").Msgf("('%s')", bucketID)
+func (s *s3storage) BucketExists(ctx context.Context, bucketID string) (bool, error) {
+	exists := false
+	err := tracing.TraceFunctionSpan("s3::BucketExists", ctx, func() (err error) {
 
-	exists, err := s.client.BucketExists(bucketID)
-	if err != nil {
-		s.logger.Info().Err(err).Str("cmd", "s3::BucketExists").Msg("Failed to check if bucket exists")
-		return false, errors.Wrap(err, "Failed to check if bucket exists")
-	}
+		s.logger.Debug().Str("cmd", "s3::BucketExists").Msgf("('%s')", bucketID)
 
-	return exists, nil
+		exists, err = s.client.BucketExists(bucketID)
+		if err != nil {
+			s.logger.Info().Err(err).Str("cmd", "s3::BucketExists").Msg("Failed to check if bucket exists")
+			return errors.Wrap(err, "Failed to check if bucket exists")
+		}
+
+		return nil
+
+	})
+	return exists, err
 }
 
 // MakeBucket creates a bucket, return ErrAlreadyExists if bucket already exists
-func (s *s3storage) MakeBucket(_ context.Context, bucketID string) error {
-	s.logger.Debug().Str("cmd", "s3::MakeBucket").Msgf("('%s')", bucketID)
+func (s *s3storage) MakeBucket(ctx context.Context, bucketID string) error {
+	return tracing.TraceFunctionSpan("s3::MakeBucket", ctx, func() (err error) {
 
-	exists, err := s.client.BucketExists(bucketID)
-	if err != nil {
-		return errors.Wrap(err, "Failed to check if bucket exists")
-	}
-	if exists {
-		return ErrAlreadyExists
-	}
+		s.logger.Debug().Str("cmd", "s3::MakeBucket").Msgf("('%s')", bucketID)
 
-	if !exists {
-		if err := s.client.MakeBucket(bucketID, s.cfg.Region); err != nil && strings.Contains(err.Error(), bucketExistsErrMsg) {
-			s.logger.Debug().Err(err).Msg("Looks like bucket actually existed when MakeBucket was called")
-			return ErrAlreadyExists
-		} else if err != nil {
-			s.logger.Info().Err(err).Str("cmd", "s3::MakeBucket").Msg("Failed to create a new bucket")
-			return errors.Wrap(err, "Failed to create a new bucket")
+		exists, err := s.client.BucketExists(bucketID)
+		if err != nil {
+			return errors.Wrap(err, "Failed to check if bucket exists")
 		}
-	}
+		if exists {
+			return ErrAlreadyExists
+		}
 
-	return nil
-
+		if !exists {
+			if err := s.client.MakeBucket(bucketID, s.cfg.Region); err != nil && strings.Contains(err.Error(), bucketExistsErrMsg) {
+				s.logger.Debug().Err(err).Msg("Looks like bucket actually existed when MakeBucket was called")
+				return ErrAlreadyExists
+			} else if err != nil {
+				s.logger.Info().Err(err).Str("cmd", "s3::MakeBucket").Msg("Failed to create a new bucket")
+				return errors.Wrap(err, "Failed to create a new bucket")
+			}
+		}
+		return nil
+	})
 }
 
 // ListBuckets returns a list of buckets
-func (s *s3storage) ListBuckets(_ context.Context) ([]*models.BucketDescriptor, error) {
-	s.logger.Debug().Str("cmd", "s3::ListBuckets")
+func (s *s3storage) ListBuckets(ctx context.Context) ([]*models.BucketDescriptor, error) {
+	var buckets []*models.BucketDescriptor
+	err := tracing.TraceFunctionSpan("s3::ListBuckets", ctx, func() (err error) {
 
-	b, err := s.client.ListBuckets()
+		s.logger.Debug().Str("cmd", "s3::ListBuckets")
 
-	if err != nil {
-		s.logger.Info().Err(err).Str("cmd", "s3::ListBuckets").Msg("Failed to list buckets")
-		return nil, errors.Wrap(err, "Failed to list buckets")
-	}
+		b, err := s.client.ListBuckets()
 
-	buckets := []*models.BucketDescriptor{}
-	for _, info := range b {
-		bd, err := bucketInfoToBucketDescriptor(info)
 		if err != nil {
-			s.logger.Info().Err(err).Str("cmd", "s3::ListBuckets").Msg("Failed to convert bucketInfo to bucketDescriptor")
-			return nil, errors.Wrap(err, "Failed to convert bucketInfo to bucketDescriptor")
+			s.logger.Info().Err(err).Str("cmd", "s3::ListBuckets").Msg("Failed to list buckets")
+			return errors.Wrap(err, "Failed to list buckets")
 		}
-		buckets = append(buckets, bd)
-	}
 
-	return buckets, nil
+		for _, info := range b {
+			bd, err := bucketInfoToBucketDescriptor(info)
+			if err != nil {
+				s.logger.Info().Err(err).Str("cmd", "s3::ListBuckets").Msg("Failed to convert bucketInfo to bucketDescriptor")
+				return errors.Wrap(err, "Failed to convert bucketInfo to bucketDescriptor")
+			}
+			buckets = append(buckets, bd)
+		}
+
+		return nil
+
+	})
+	return buckets, err
 }
 
 // List returns a list of files stored inside a bucket
-func (s *s3storage) List(_ context.Context, bucketID, prefix string) ([]*models.FileDescriptor, error) {
-	s.logger.Debug().Str("cmd", "s3::List").Msgf("('%s', '%s')", bucketID, prefix)
+func (s *s3storage) List(ctx context.Context, bucketID, prefix string) ([]*models.FileDescriptor, error) {
+	var files []*models.FileDescriptor
+	err := tracing.TraceFunctionSpan("s3::List", ctx, func() (err error) {
 
-	// Check if bucket exists first
-	exists, err := s.client.BucketExists(bucketID)
-	if err != nil {
-		s.logger.Info().Err(err).Str("cmd", "s3::List").Msg("Failed to check if bucket exists")
-		return nil, errors.Wrap(err, "Failed to check if bucket exists")
-	}
-	if !exists {
-		// Nothing to list
-		return []*models.FileDescriptor{}, nil
-	}
+		s.logger.Debug().Str("cmd", "s3::List").Msgf("('%s', '%s')", bucketID, prefix)
 
-	ch := make(chan struct{})
-	defer close(ch)
-	infos := s.client.ListObjectsV2(bucketID, prefix, false, ch)
-
-	files := []*models.FileDescriptor{}
-	for info := range infos {
-		if info.Err != nil {
-			s.logger.Info().Err(info.Err).Str("cmd", "s3::List").Msg("Failed to read object from a list")
-			return nil, errors.Wrap(info.Err, "Failed to read object from a list")
-		}
-
-		fd, err := objectInfoToFileDescriptor(info, bucketID)
+		// Check if bucket exists first
+		exists, err := s.client.BucketExists(bucketID)
 		if err != nil {
-			s.logger.Info().Err(err).Str("cmd", "s3::List").Msg("Failed to convert object to fileDescriptor")
-			return nil, errors.Wrap(err, "Failed to convert object to fileDescriptor")
+			s.logger.Info().Err(err).Str("cmd", "s3::List").Msg("Failed to check if bucket exists")
+			return errors.Wrap(err, "Failed to check if bucket exists")
+		}
+		if !exists {
+			// Nothing to list
+			return nil
 		}
 
-		files = append(files, fd)
-	}
+		ch := make(chan struct{})
+		defer close(ch)
+		infos := s.client.ListObjectsV2(bucketID, prefix, false, ch)
 
-	sort.Sort(byCreated(files))
-	return files, nil
+		for info := range infos {
+			if info.Err != nil {
+				s.logger.Info().Err(info.Err).Str("cmd", "s3::List").Msg("Failed to read object from a list")
+				return errors.Wrap(info.Err, "Failed to read object from a list")
+			}
+
+			fd, err := objectInfoToFileDescriptor(info, bucketID)
+			if err != nil {
+				s.logger.Info().Err(err).Str("cmd", "s3::List").Msg("Failed to convert object to fileDescriptor")
+				return errors.Wrap(err, "Failed to convert object to fileDescriptor")
+			}
+
+			files = append(files, fd)
+		}
+
+		sort.Sort(byCreated(files))
+		return nil
+	})
+	return files, err
 }
 
 // Read fetches contents from the storage
 func (s *s3storage) Read(ctx context.Context, bucketID, fileID, version string) (io.ReadCloser, *models.FileDescriptor, error) {
-	s.logger.Debug().Str("cmd", "s3::Read").Msgf("('%s', '%s', '%s')", bucketID, fileID, version)
+	var fd *models.FileDescriptor
+	var reader io.ReadCloser
+	err := tracing.TraceFunctionSpan("s3::Read", ctx, func() (err error) {
 
-	// find the file
-	prefix := fmt.Sprintf("%s.", fileID)
-	if version != "" {
-		prefix += fmt.Sprintf("%s.", version)
-	}
-	list, err := s.List(ctx, bucketID, prefix)
-	if err != nil {
-		s.logger.Info().Err(err).Str("cmd", "s3::Read").Msg("Failed to list files")
-		return nil, nil, errors.Wrap(err, "Failed to list files")
-	}
-	if len(list) == 0 {
-		return nil, nil, ErrNotFound
-	}
-	md, err := metadataFromFileDescriptor(list[0])
-	if err != nil {
-		s.logger.Info().Err(err).Str("cmd", "s3::Read").Msg("Failed to parse metadata from fileDescriptor")
-		return nil, nil, errors.Wrap(err, "Failed to parse metadata from fileDescriptor")
-	}
+		s.logger.Debug().Str("cmd", "s3::Read").Msgf("('%s', '%s', '%s')", bucketID, fileID, version)
 
-	// read the key
-	em, err := getCBCKey(bucketID, s.keys)
-	if err != nil {
-		s.logger.Info().Err(err).Str("cmd", "s3::Read").Msg("Failed to set CBC key")
-		return nil, nil, errors.Wrap(err, "Failed to set CBC key")
-	}
+		// find the file
+		prefix := fmt.Sprintf("%s.", fileID)
+		if version != "" {
+			prefix += fmt.Sprintf("%s.", version)
+		}
+		list, err := s.List(ctx, bucketID, prefix)
+		if err != nil {
+			s.logger.Info().Err(err).Str("cmd", "s3::Read").Msg("Failed to list files")
+			return errors.Wrap(err, "Failed to list files")
+		}
+		if len(list) == 0 {
+			return ErrNotFound
+		}
+		md, err := metadataFromFileDescriptor(list[0])
+		if err != nil {
+			s.logger.Info().Err(err).Str("cmd", "s3::Read").Msg("Failed to parse metadata from fileDescriptor")
+			return errors.Wrap(err, "Failed to parse metadata from fileDescriptor")
+		}
 
-	// fetch the file
-	reader, err := s.client.GetObjectWithContext(ctx, bucketID, md.String(), minio.GetObjectOptions{Materials: em})
+		// read the key
+		em, err := getCBCKey(bucketID, s.keys)
+		if err != nil {
+			s.logger.Info().Err(err).Str("cmd", "s3::Read").Msg("Failed to set CBC key")
+			return errors.Wrap(err, "Failed to set CBC key")
+		}
 
-	if err != nil {
-		s.logger.Info().Err(err).Str("cmd", "s3::Read").Msg("Failed to fetch enc. object")
-		return nil, nil, errors.Wrap(err, "Failed to fetch enc. object")
-	}
+		// fetch the file
+		reader, err = s.client.GetObjectWithContext(ctx, bucketID, md.String(), minio.GetObjectOptions{Materials: em})
 
-	return reader, list[0], nil
+		if err != nil {
+			s.logger.Info().Err(err).Str("cmd", "s3::Read").Msg("Failed to fetch enc. object")
+			return errors.Wrap(err, "Failed to fetch enc. object")
+		}
+
+		fd = list[0]
+		return nil
+	})
+	return reader, fd, err
 }
 
 // Write creates a new file in the storage
-func (s *s3storage) Write(ctx context.Context, bucketID string, newFile *object.NewObjectInfo, r io.Reader) (*models.FileDescriptor, error) {
-	s.logger.Debug().Str("cmd", "s3::Write").Msgf("('%s', '%+v', reader)", bucketID, newFile)
+func (s *s3storage) Write(ctx context.Context, bucketID string, newFile *object.NewObjectInfo, r io.Reader) (fd *models.FileDescriptor, err error) {
+	err = tracing.TraceFunctionSpan("s3::Write", ctx, func() (err error) {
 
-	// validate operation
-	op := Operation(newFile.Operation)
-	if op != Write && op != Delete {
-		s.logger.Info().Str("cmd", "s3::Write").Msgf("Received an invalid operation '%s'", op)
-		return nil, fmt.Errorf("Received an invalid operation '%s'", op)
-	}
+		s.logger.Debug().Str("cmd", "s3::Write").Msgf("('%s', '%+v', reader)", bucketID, newFile)
 
-	// get the key
-	em, err := getCBCKey(bucketID, s.keys)
-	if err != nil {
-		s.logger.Info().Err(err).Str("cmd", "s3::Write").Msg("Failed to set the CBC key")
-		return nil, errors.Wrap(err, "Failed to set the CBC key")
-	}
+		// validate operation
+		op := Operation(newFile.Operation)
+		if op != Write && op != Delete {
+			s.logger.Info().Str("cmd", "s3::Write").Msgf("Received an invalid operation '%s'", op)
+			return fmt.Errorf("Received an invalid operation '%s'", op)
+		}
 
-	// collect meta data
-	meta, err := metadataFromNewFile(newFile)
-	if err != nil {
-		s.logger.Info().Err(err).Str("cmd", "s3::Write").Msg("Failed to collect metadata from new file")
-		return nil, errors.Wrap(err, "Failed to collect metadata from new file")
-	}
+		// get the key
+		em, err := getCBCKey(bucketID, s.keys)
+		if err != nil {
+			s.logger.Info().Err(err).Str("cmd", "s3::Write").Msg("Failed to set the CBC key")
+			return errors.Wrap(err, "Failed to set the CBC key")
+		}
 
-	// upload the file
-	_, err = s.client.PutObjectWithContext(ctx, bucketID, meta.String(), r, -1, minio.PutObjectOptions{EncryptMaterials: em})
-	if err != nil {
-		s.logger.Info().Err(err).Str("cmd", "s3::Write").Msg("Failed to call PutObject")
-		return nil, errors.Wrap(err, "Failed to call PutObjectWithContext")
-	}
+		// collect meta data
+		meta, err := metadataFromNewFile(newFile)
+		if err != nil {
+			s.logger.Info().Err(err).Str("cmd", "s3::Write").Msg("Failed to collect metadata from new file")
+			return errors.Wrap(err, "Failed to collect metadata from new file")
+		}
 
-	// generate the file descriptor
-	fd := &models.FileDescriptor{
-		Name:        newFile.Name,
-		Version:     newFile.Version,
-		Archetype:   newFile.Archetype,
-		ContentType: newFile.ContentType,
-		Checksum:    newFile.Checksum,
-		Created:     newFile.Created,
-		Labels:      newFile.Labels,
-		Path:        fmt.Sprintf("%s/%s/%s", bucketID, meta.filename, meta.version),
-		Size:        newFile.Size,
-		Operation:   string(op),
-	}
+		// upload the file
+		_, err = s.client.PutObjectWithContext(ctx, bucketID, meta.String(), r, -1, minio.PutObjectOptions{EncryptMaterials: em})
+		if err != nil {
+			s.logger.Info().Err(err).Str("cmd", "s3::Write").Msg("Failed to call PutObject")
+			return errors.Wrap(err, "Failed to call PutObjectWithContext")
+		}
 
-	return fd, nil
+		// generate the file descriptor
+		fd = &models.FileDescriptor{
+			Name:        newFile.Name,
+			Version:     newFile.Version,
+			Archetype:   newFile.Archetype,
+			ContentType: newFile.ContentType,
+			Checksum:    newFile.Checksum,
+			Created:     newFile.Created,
+			Labels:      newFile.Labels,
+			Path:        fmt.Sprintf("%s/%s/%s", bucketID, meta.filename, meta.version),
+			Size:        newFile.Size,
+			Operation:   string(op),
+		}
+
+		return nil
+	})
+	return fd, err
 }
 
 // Delete removes files completely from storage, used only in case of conflicting files with the same ID and version
-func (s *s3storage) Delete(_ context.Context, bucketID, fileID, version string) error {
-	s.logger.Debug().Str("cmd", "s3::Delete").Msgf("('%s', '%s', '%s')", bucketID, fileID, version)
+func (s *s3storage) Delete(ctx context.Context, bucketID, fileID, version string) error {
+	return tracing.TraceFunctionSpan("s3::Write", ctx, func() (err error) {
 
-	// Check if bucket exists first
-	exists, err := s.client.BucketExists(bucketID)
-	if err != nil {
-		s.logger.Info().Err(err).Str("cmd", "s3::Delete").Msg("Failed to check if bucket exists")
-		return errors.Wrap(err, "Failed to check if bucket exists")
-	}
-	if !exists {
-		// Nothing to delete
-		return nil
-	}
+		s.logger.Debug().Str("cmd", "s3::Delete").Msgf("('%s', '%s', '%s')", bucketID, fileID, version)
 
-	// Set object prefix
-	prefix := fmt.Sprintf("%s.", fileID)
-	if version != "" {
-		prefix += fmt.Sprintf("%s.", version)
-	}
-
-	// first objects keys will be saved to array to prevent deleting any if listing fails
-	objKeys := []string{}
-	for info := range s.client.ListObjectsV2(bucketID, prefix, false, nil) {
-		if info.Err != nil {
-			s.logger.Error().Err(info.Err).Str("cmd", "s3::Delete").Msg("Failed to list all objects")
-			return errors.Wrap(info.Err, "Failed to list all objects")
+		// Check if bucket exists first
+		exists, err := s.client.BucketExists(bucketID)
+		if err != nil {
+			s.logger.Info().Err(err).Str("cmd", "s3::Delete").Msg("Failed to check if bucket exists")
+			return errors.Wrap(err, "Failed to check if bucket exists")
 		}
-		objKeys = append(objKeys, info.Key)
-	}
+		if !exists {
+			// Nothing to delete
+			return nil
+		}
 
-	// make objects channel
-	ch := make(chan string, len(objKeys))
-	for _, objKey := range objKeys {
-		ch <- objKey
-	}
-	close(ch)
+		// Set object prefix
+		prefix := fmt.Sprintf("%s.", fileID)
+		if version != "" {
+			prefix += fmt.Sprintf("%s.", version)
+		}
 
-	for removeObjErr := range s.client.RemoveObjects(bucketID, ch) {
-		err = removeObjErr.Err
-		s.logger.Error().Err(err).Str("cmd", "s3::Delete").Msg("Failed to delete the object")
-	}
+		// first objects keys will be saved to array to prevent deleting any if listing fails
+		objKeys := []string{}
+		for info := range s.client.ListObjectsV2(bucketID, prefix, false, nil) {
+			if info.Err != nil {
+				s.logger.Error().Err(info.Err).Str("cmd", "s3::Delete").Msg("Failed to list all objects")
+				return errors.Wrap(info.Err, "Failed to list all objects")
+			}
+			objKeys = append(objKeys, info.Key)
+		}
 
-	if err != nil {
-		return errors.New("Failed to delete all matching objects")
-	}
+		// make objects channel
+		ch := make(chan string, len(objKeys))
+		for _, objKey := range objKeys {
+			ch <- objKey
+		}
+		close(ch)
 
-	return nil
+		for removeObjErr := range s.client.RemoveObjects(bucketID, ch) {
+			err = removeObjErr.Err
+			s.logger.Error().Err(err).Str("cmd", "s3::Delete").Msg("Failed to delete the object")
+		}
+
+		if err != nil {
+			return errors.New("Failed to delete all matching objects")
+		}
+
+		return nil
+	})
 }
 
 func objectInfoToFileDescriptor(info minio.ObjectInfo, bucketID string) (*models.FileDescriptor, error) {

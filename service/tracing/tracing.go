@@ -69,13 +69,13 @@ func Middleware(h http.Handler) http.HandlerFunc {
 			if err != nil {
 				// If for whatever reason we can't join  go ahead an start a new root span.
 				log.Printf("TRACE NOT FOUND, %v", err)
-				sp = opentracing.StartSpan(spanName)
 
+				sp = opentracing.StartSpan(spanName)
 			} else {
 				log.Printf("TRACE FOUND")
+
 				sp = opentracing.StartSpan(spanName, opentracing.ChildOf(wireContext))
 			}
-
 			defer sp.Finish()
 
 			r = r.WithContext(context.WithValue(r.Context(), spanContext{}, sp.Context()))
@@ -107,9 +107,9 @@ func InjectTracerInRequest(ctx context.Context, r *http.Request) {
 // If possible tracer is extracted from request.
 // If you have no request handy, pass in nil
 func TraceFunctionSpan(name string, ctx context.Context, f func() error) error {
+	var sp opentracing.Span
 
 	// Create new span if tracer is set
-	var sp opentracing.Span
 	if tracerIsSet {
 		sp = getSpan(name, ctx)
 		defer sp.Finish()
@@ -121,8 +121,8 @@ func TraceFunctionSpan(name string, ctx context.Context, f func() error) error {
 	err := f()
 	if err != nil && tracerIsSet {
 		ext.Error.Set(sp, true)
-		sp.LogEventWithPayload(fmt.Sprintf("Error"), err)
 	}
+
 	return err
 }
 
