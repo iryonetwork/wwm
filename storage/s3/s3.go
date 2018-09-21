@@ -237,6 +237,7 @@ func (s *s3storage) List(ctx context.Context, bucketID, prefix string) ([]*model
 		}
 		if !exists {
 			// Nothing to list
+			files = []*models.FileDescriptor{}
 			return nil
 		}
 
