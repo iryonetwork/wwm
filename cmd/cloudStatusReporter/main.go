@@ -20,9 +20,6 @@ import (
 )
 
 func main() {
-	traceCloser := tracing.New("cloudStatusReporter", "jaeger:5775")
-	defer traceCloser.Close()
-
 	// initialize logger
 	logger := zerolog.New(os.Stdout).With().
 		Timestamp().
@@ -39,6 +36,9 @@ func main() {
 		logger.Fatal().Err(err).Msg("failed to get config")
 	}
 	logger.Print(cfg)
+
+	traceCloser := tracing.New("cloudStatusReporter", cfg.TracerAddr)
+	defer traceCloser.Close()
 
 	// initialize status reporter
 	r := statusReporter.New(logger)

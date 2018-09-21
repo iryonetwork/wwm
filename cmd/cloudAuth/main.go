@@ -32,9 +32,6 @@ import (
 )
 
 func main() {
-	traceCloser := tracing.New("cloudAuth", "jaeger:5775")
-	defer traceCloser.Close()
-
 	logger := zerolog.New(os.Stdout).With().
 		Timestamp().
 		Str("service", "cloudAuth").
@@ -49,6 +46,9 @@ func main() {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to get config")
 	}
+
+	traceCloser := tracing.New("cloudAuth", cfg.TracerAddr)
+	defer traceCloser.Close()
 
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {

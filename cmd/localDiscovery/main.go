@@ -30,9 +30,6 @@ import (
 )
 
 func main() {
-	traceCloser := tracing.New("localDiscovery", "jaeger:5775")
-	defer traceCloser.Close()
-
 	// initialize logger
 	logger := zerolog.New(os.Stdout).With().
 		Timestamp().
@@ -48,6 +45,9 @@ func main() {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to get config")
 	}
+
+	traceCloser := tracing.New("localDiscovery", cfg.TracerAddr)
+	defer traceCloser.Close()
 
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {

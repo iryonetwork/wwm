@@ -18,6 +18,7 @@ var tracerIsSet = false
 
 // New sets opentracing.GlobalTracer() to tracer created from function options
 // returns Closer, which is used to close the tracker
+// If connection to agent cannot be established return MockCloser and do not set GlobalTracer
 func New(serviceName, hostPort string) io.Closer {
 	log.Printf("Creating new tracer %s on host %s", serviceName, hostPort)
 
@@ -53,6 +54,8 @@ func New(serviceName, hostPort string) io.Closer {
 
 type spanContext struct{} // empty spanContext is used to extract opentracing.spanContext from context
 
+// Middleware injects existing(if provided in request) or new span in request's context
+// Does nothing if GlobalTracer is not set
 func Middleware(h http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if tracerIsSet {
