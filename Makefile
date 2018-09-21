@@ -1,5 +1,5 @@
 lc = $(subst A,a,$(subst B,b,$(subst C,c,$(subst D,d,$(subst E,e,$(subst F,f,$(subst G,g,$(subst H,h,$(subst I,i,$(subst J,j,$(subst K,k,$(subst L,l,$(subst M,m,$(subst N,n,$(subst O,o,$(subst P,p,$(subst Q,q,$(subst R,r,$(subst S,s,$(subst T,t,$(subst U,u,$(subst V,v,$(subst W,w,$(subst X,x,$(subst Y,y,$(subst Z,z,$1))))))))))))))))))))))))))
-BASIC_SERVICES = traefik postgres cloudSymmetric pgweb localMinio cloudMinio localNats natsStreamingExporter localPrometheusPushGateway localPrometheus cloudPrometheus cloudAuth localAuth localStorage cloudStorage localNats storageSync waitlist localStatusReporter cloudDiscovery localDiscovery localSymmetric
+BASIC_SERVICES = traefik postgres cloudSymmetric pgweb localMinio cloudMinio localNats natsStreamingExporter localPrometheusPushGateway localPrometheus cloudPrometheus cloudAuth localAuth localStorage cloudStorage localNats storageSync waitlist localStatusReporter cloudStatusReporter cloudDiscovery localDiscovery localSymmetric
 BIN_CMD ?=
 DOCKER_TAG ?= $(shell git rev-parse --short HEAD)
 DOCKER_REGISTRY ?= localhost:5000/
