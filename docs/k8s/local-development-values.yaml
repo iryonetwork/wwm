@@ -41,3 +41,11 @@ postgresql:
 
 localAuth:
     encryptionKey: 6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
+
+localSymmetric:
+    id: 2d04b22e-1cc3-46b4-96dd-2bee5bad9ffa
+    dbHost: local-postgresql.local.svc.cluster.local
+    dbUser: localsymmetric
+    dbPassword: symmetric
+    dbRole: localdiscoveryservice
+    cloudSymmetricHost: cloudsymmetric.cloud.svc.cluster.local

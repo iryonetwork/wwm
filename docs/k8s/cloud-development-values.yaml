@@ -35,6 +35,22 @@ postgresql:
 
 cloudAuth:
     encryptionKey: 6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
+    certsAndPaths:
+      - secretName: ca-batchdataexporter-cloud
+        paths:
+          - /api/storage/*
+      - secretName: ca-batchreportgenerator-cloud
+        paths:
+          - /api/storage/*
+      - secretName: ca-authsync-local
+        paths:
+          - /api/auth/database
+      - secretName: ca-storagesync-local
+        paths:
+          - /api/storage/*
+      - secretName: ca-batchstoragesync-local
+        paths:
+          - /api/storage/*
 
 batchDataExporter:
     encryptionKey: 6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
@@ -47,3 +63,15 @@ batchReportGenerator:
     db:
         host: cloud-postgresql.cloud.svc.cluster.local
         password: mo99c7f3plq6690298807931203675165588007e
+
+cloudSymmetric:
+  id: f7e41e48-ec79-4c78-9db6-37c0c4f78326
+  dbHost: cloud-postgresql.cloud.svc.cluster.local
+  dbUser: cloudsymmetric
+  dbPassword: symmetric
+  dbRole: clouddiscoveryservice
+  cloudSymmetricHost: cloudsymmetric.cloud.svc.cluster.local
+  nodePassword: jtpmff6bfm9lm51vykn3hz8dor053833
+  localNodes:
+    - id: 2d04b22e-1cc3-46b4-96dd-2bee5bad9ffa
+      nodePassword: jtpmff6bfm9lm51vykn3hz8dor053833
