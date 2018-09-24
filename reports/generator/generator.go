@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -246,7 +247,11 @@ func (g *generator) getSimpleValueFromData(data []*map[string]interface{}, fullE
 			case int:
 				s = strconv.Itoa(val.(int))
 			case float32:
-				s = strconv.FormatFloat(float64(val.(float32)), 'G', -1, 64)
+				if float64(val.(float32)) == math.Trunc(float64(val.(float32))) {
+					s = strconv.Itoa(int(val.(float32)))
+				} else {
+					s = strconv.FormatFloat(float64(val.(float32)), 'G', -1, 64)
+				}
 			case float64:
 				s = strconv.FormatFloat(val.(float64), 'G', -1, 64)
 			case bool:
