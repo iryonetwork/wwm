@@ -383,3 +383,10 @@ services:
     - DB_USERNAME=reportgenerator
     - DB_PASSWORD=reportgenerator
     - REPORT_SPECS_FILEPATHS=/patientsReportSpec.json,/encountersReportSpec.json
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.3.0
+    ports:
+    - 127.0.0.1:5775:5775/udp # accept zipkin.thrift over compact thrift protocol
+    - 127.0.0.1:16686:16686 # serve frontend
+    

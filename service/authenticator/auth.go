@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/iryonetwork/wwm/service/tracing"
+
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
@@ -158,45 +160,47 @@ func (a *service) GetPrincipalFromToken(tokenString string) (*string, error) {
 
 func (a *service) Authorizer() runtime.Authorizer {
 	return runtime.AuthorizerFunc(func(request *http.Request, principal interface{}) error {
-		userID, ok := principal.(*string)
-		if !ok {
-			return fmt.Errorf("Principal type was '%T', expected '*string'", principal)
-		}
-
-		// allow access for service operations without checking ACL
-		if strings.HasPrefix(*userID, servicePrincipal) {
-			keyID := (*userID)[len(servicePrincipal):]
-			s, ok := a.syncServices[keyID]
-			if ok && (request.URL.EscapedPath() == "/auth/validate" || s.glob.Match("/api"+request.URL.EscapedPath())) {
-				return nil
+		return tracing.TraceFunctionSpan("Authorizer", request.Context(), func() error {
+			userID, ok := principal.(*string)
+			if !ok {
+				return fmt.Errorf("Principal type was '%T', expected '*string'", principal)
 			}
-			return utils.NewError(utils.ErrForbidden, "You do not have permissions for this resource")
-		}
 
-		var action int64
-		switch request.Method {
-		case http.MethodPost:
-			action = auth.Write
-		case http.MethodPut:
-			action = auth.Update
-		case http.MethodDelete:
-			action = auth.Delete
-		default:
-			action = auth.Read
-		}
+			// allow access for service operations without checking ACL
+			if strings.HasPrefix(*userID, servicePrincipal) {
+				keyID := (*userID)[len(servicePrincipal):]
+				s, ok := a.syncServices[keyID]
+				if ok && (request.URL.EscapedPath() == "/auth/validate" || s.glob.Match("/api"+request.URL.EscapedPath())) {
+					return nil
+				}
+				return utils.NewError(utils.ErrForbidden, "You do not have permissions for this resource")
+			}
 
-		result := a.storage.FindACL(*userID, []*models.ValidationPair{{
-			DomainType: &a.domainType,
-			DomainID:   &a.domainID,
-			Actions:    &action,
-			Resource:   swag.String("/api" + request.URL.EscapedPath()),
-		}})
+			var action int64
+			switch request.Method {
+			case http.MethodPost:
+				action = auth.Write
+			case http.MethodPut:
+				action = auth.Update
+			case http.MethodDelete:
+				action = auth.Delete
+			default:
+				action = auth.Read
+			}
 
-		if !*result[0].Result {
-			return utils.NewError(utils.ErrForbidden, "You do not have permissions for this resource")
-		}
+			result := a.storage.FindACL(*userID, []*models.ValidationPair{{
+				DomainType: &a.domainType,
+				DomainID:   &a.domainID,
+				Actions:    &action,
+				Resource:   swag.String("/api" + request.URL.EscapedPath()),
+			}})
 
-		return nil
+			if !*result[0].Result {
+				return utils.NewError(utils.ErrForbidden, "You do not have permissions for this resource")
+			}
+
+			return nil
+		})
 	})
 }
 

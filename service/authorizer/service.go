@@ -15,6 +15,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/iryonetwork/wwm/service/tracing"
+
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
@@ -94,93 +96,97 @@ type responseAndError struct {
 func (a *authorizer) Authorizer() runtime.Authorizer {
 	logger := a.logger.With().Str("cmd", "Authorizer").Logger()
 	return runtime.AuthorizerFunc(func(request *http.Request, principal interface{}) error {
-		action := methodToAction(request.Method)
-		resource := "/api" + request.URL.EscapedPath()
-		pairs := []*models.ValidationPair{
-			{
-				DomainType: &a.domainType,
-				DomainID:   &a.domainID,
-				Actions:    &action,
-				Resource:   &resource,
-			},
-		}
-		logger.Debug().Str("resource", resource).Msg("Authorizing...")
+		return tracing.TraceFunctionSpan("Authorizer", request.Context(), func() error {
+			action := methodToAction(request.Method)
+			resource := "/api" + request.URL.EscapedPath()
+			pairs := []*models.ValidationPair{
+				{
+					DomainType: &a.domainType,
+					DomainID:   &a.domainID,
+					Actions:    &action,
+					Resource:   &resource,
+				},
+			}
+			logger.Debug().Str("resource", resource).Msg("Authorizing...")
 
-		body, err := swag.WriteJSON(pairs)
-		if err != nil {
-			logger.Error().Err(err).Msg("WriteJSON failed")
-			return err
-		}
-
-		r, err := http.NewRequest(http.MethodPost, a.validateURL, bytes.NewBuffer(body))
-		if err != nil {
-			logger.Error().Err(err).Msg("Initializing request failed")
-			return err
-		}
-		r.Header.Add("Authorization", request.Header.Get("Authorization"))
-		r.Header.Add("Content-Type", "application/json")
-
-		transport := &http.Transport{}
-		netClient := &http.Client{
-			Transport: transport,
-			Timeout:   time.Second * 10,
-		}
-
-		c := make(chan responseAndError)
-		go func() {
-			response, err := netClient.Do(r)
-			c <- responseAndError{response, err}
-		}()
-
-		var response responseAndError
-
-		select {
-		case <-request.Context().Done():
-			transport.CancelRequest(r)
-			<-c // wait for canceld request
-			logger.Error().Err(request.Context().Err()).Msg("Context was done")
-			return fmt.Errorf("Context was done")
-		case response = <-c:
-		}
-
-		if response.err != nil {
-			logger.Error().Err(response.err).Msg("Making request failed")
-			return response.err
-		}
-		defer response.r.Body.Close()
-
-		responseBody, err := ioutil.ReadAll(response.r.Body)
-		if err != nil {
-			logger.Error().Err(err).Msg("Reading response failed")
-			return err
-		}
-
-		if response.r.StatusCode == http.StatusOK {
-			validationResponse := []*models.ValidationResult{}
-			err := swag.ReadJSON(responseBody, &validationResponse)
+			body, err := swag.WriteJSON(pairs)
 			if err != nil {
-				logger.Error().Err(err).Msg("Parsing response failed")
+				logger.Error().Err(err).Msg("WriteJSON failed")
 				return err
 			}
 
-			if validationResponse[0].Result == nil || !*validationResponse[0].Result {
-				logger.Debug().Msg(ErrUnauthorized)
-				return fmt.Errorf(ErrUnauthorized)
+			r, err := http.NewRequest(http.MethodPost, a.validateURL, bytes.NewBuffer(body))
+			if err != nil {
+				logger.Error().Err(err).Msg("Initializing request failed")
+				return err
+			}
+			r.Header.Add("Authorization", request.Header.Get("Authorization"))
+			r.Header.Add("Content-Type", "application/json")
+
+			tracing.InjectTracerInRequest(request.Context(), r)
+
+			transport := &http.Transport{}
+			netClient := &http.Client{
+				Transport: transport,
+				Timeout:   time.Second * 10,
 			}
 
-			logger.Debug().Msg("Authorized successfully")
-			return nil
-		}
+			c := make(chan responseAndError)
+			go func() {
+				response, err := netClient.Do(r)
+				c <- responseAndError{response, err}
+			}()
 
-		jsonError := &models.Error{}
-		err = jsonError.UnmarshalBinary(responseBody)
-		if err != nil {
-			logger.Error().Err(err).Msg("Parsing error response failed")
-			return err
-		}
+			var response responseAndError
 
-		logger.Error().Str("code", jsonError.Code).Str("errorMessage", jsonError.Message).Msg("Error authorizing")
-		return fmt.Errorf(jsonError.Message)
+			select {
+			case <-request.Context().Done():
+				transport.CancelRequest(r)
+				<-c // wait for canceld request
+				logger.Error().Err(request.Context().Err()).Msg("Context was done")
+				return fmt.Errorf("Context was done")
+			case response = <-c:
+			}
+
+			if response.err != nil {
+				logger.Error().Err(response.err).Msg("Making request failed")
+				return response.err
+			}
+			defer response.r.Body.Close()
+
+			responseBody, err := ioutil.ReadAll(response.r.Body)
+			if err != nil {
+				logger.Error().Err(err).Msg("Reading response failed")
+				return err
+			}
+
+			if response.r.StatusCode == http.StatusOK {
+				validationResponse := []*models.ValidationResult{}
+				err := swag.ReadJSON(responseBody, &validationResponse)
+				if err != nil {
+					logger.Error().Err(err).Msg("Parsing response failed")
+					return err
+				}
+
+				if validationResponse[0].Result == nil || !*validationResponse[0].Result {
+					logger.Debug().Msg(ErrUnauthorized)
+					return fmt.Errorf(ErrUnauthorized)
+				}
+
+				logger.Debug().Msg("Authorized successfully")
+				return nil
+			}
+
+			jsonError := &models.Error{}
+			err = jsonError.UnmarshalBinary(responseBody)
+			if err != nil {
+				logger.Error().Err(err).Msg("Parsing error response failed")
+				return err
+			}
+
+			logger.Error().Str("code", jsonError.Code).Str("errorMessage", jsonError.Message).Msg("Error authorizing")
+			return fmt.Errorf(jsonError.Message)
+		})
 	})
 }
 

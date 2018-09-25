@@ -26,6 +26,7 @@ import (
 	"github.com/iryonetwork/wwm/service/authDataManager"
 	"github.com/iryonetwork/wwm/service/authSync"
 	"github.com/iryonetwork/wwm/service/authenticator"
+	"github.com/iryonetwork/wwm/service/tracing"
 	statusServer "github.com/iryonetwork/wwm/status/server"
 	"github.com/iryonetwork/wwm/storage/auth"
 	"github.com/iryonetwork/wwm/utils"
@@ -46,6 +47,9 @@ func main() {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to get config")
 	}
+
+	traceCloser := tracing.New("localAuth", cfg.TracerAddr)
+	defer traceCloser.Close()
 
 	swaggerSpec, err := loads.Analyzed(restapi.SwaggerJSON, "")
 	if err != nil {
@@ -192,6 +196,9 @@ func main() {
 	}).Handler(api.Serve(nil))
 	handler = logMW.APILogMiddleware(handler, logger)
 	handler = apiMetrics.Middleware(handler)
+	// add tracer middleware
+	handler = tracing.Middleware(handler)
+
 	server.SetHandler(handler)
 
 	gocron.Every(5).Minutes().Do(authSync.Sync)
