@@ -322,6 +322,12 @@ services:
     - ./services/symmetric/samples:/opt/symmetric/samples:ro
     - ./services/symmetric/bin:/root/bin:ro
     - ./services/symmetric/log4j.xml:/opt/symmetric/conf/log4j.xml:ro
+    environment:
+    - LOCATION_ID=2d04b22e-1cc3-46b4-96dd-2bee5bad9ffa
+    - DB_URL=jdbc:postgresql://postgres/localdiscovery
+    - DB_USER=localsymmetric
+    - DB_PASSWORD=symmetric
+    - REGISTRATION_URL=http://cloudSymmetric:31415/sync/cloud-f7e41e48-ec79-4c78-9db6-37c0c4f78326
     depends_on:
     - postgres
 
