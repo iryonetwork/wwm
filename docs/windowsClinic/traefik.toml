@@ -1,0 +1,143 @@
+defaultEntryPoints = ["http","https"]
+RootCAs = [ "/certs/ca.pem" ]
+
+[entryPoints]
+  [entryPoints.http]
+  address = ":80"
+    [entryPoints.http.redirect]
+      entryPoint = "https"
+  [entryPoints.https]
+  address = ":443"
+    [entryPoints.https.tls]
+      [[entryPoints.https.tls.certificates]]
+      CertFile = "/certs/traefik.pem"
+      KeyFile = "/certs/traefik-key.pem"
+
+[web]
+address = ":8080"
+
+[file]
+
+[backends]
+  [backends.localfrontend]
+    [backends.localfrontend.servers.server1]
+    url = "http://localFrontend"
+
+  [backends.localauth]
+    [backends.localauth.servers.server1]
+    url = "https://localAuth"
+
+  [backends.localauthMetrics]
+    [backends.localauthMetrics.servers.server1]
+    url = "http://localAuth:9090"
+
+  [backends.localauthStatus]
+    [backends.localauthStatus.servers.server1]
+    url = "http://localAuth:4433"
+
+  [backends.localstorage]
+    [backends.localstorage.servers.server1]
+    url = "https://localStorage"
+
+  [backends.localstorageMetrics]
+    [backends.localstorageMetrics.servers.server1]
+    url = "http://localStorage:9090"
+
+  [backends.localstorageStatus]
+    [backends.localstorageStatus.servers.server1]
+    url = "https://localStorage:4433"
+
+  [backends.waitlist]
+    [backends.waitlist.servers.server1]
+    url = "https://waitlist"
+
+  [backends.waitlistMetrics]
+    [backends.waitlistMetrics.servers.server1]
+    url = "https://waitlist:9090"
+
+  [backends.waitlistStatus]
+    [backends.waitlistStatus.servers.server1]
+    url = "https://waitlist:4433"
+
+  [backends.localMinio]
+    [backends.localMinio.servers.server1]
+    url = "https://localMinio:9000"
+
+  [backends.cloudstorage]
+    [backends.cloudstorage.servers.server1]
+    url = "https://cloudStorage"
+
+  [backends.localNats]
+    [backends.localNats.servers.server1]
+    url = "http://localNats:4242"
+
+  [backends.localNatsMonitor]
+    [backends.localNatsMonitor.servers.server1]
+    url = "http://localNats:8282"
+
+  [backends.localPrometheus]
+    [backends.localPrometheus.servers.server1]
+    url = "http://localPrometheus:9090"
+
+  [backends.natsStreamingMetricsExporter]
+    [backends.natsStreamingMetricsExporter.servers.server1]
+    url = "http://natsStreamingExporter:9275"
+
+  [backends.storagesyncMetrics]
+    [backends.storagesyncMetrics.servers.server1]
+    url = "http://storageSync:9090"
+
+  [backends.storagesyncStatus]
+    [backends.storagesyncStatus.servers.server1]
+    url = "http://storageSync:4433"
+
+  [backends.localPrometheusPushGateway]
+    [backends.localPrometheusPushGateway.servers.server1]
+    url = "http://localPrometheusPushGateway:9091"
+
+  [backends.localStatusReporter]
+    [backends.localStatusReporter.servers.server1]
+    url = "https://localStatusReporter"
+
+  [backends.localStatusReporterMetrics]
+    [backends.localStatusReporterMetrics.servers.server1]
+    url = "http://localStatusReporterMetrics:9090"
+
+  [backends.localdiscovery]
+    [backends.localdiscovery.servers.server1]
+    url = "https://localDiscovery"
+
+  [backends.localdiscoveryMetrics]
+    [backends.localdiscoveryMetrics.servers.server1]
+    url = "https://localDiscovery:9090"
+
+[frontends]
+  [frontends.localauth]
+  backend = "localauth"
+    [frontends.localauth.routes.route1]
+    rule = "Host:iryo.local;PathPrefixStrip:/api/v1/auth;AddPrefix:/auth"
+
+  [frontends.localstorage]
+  backend = "localstorage"
+    [frontends.localstorage.routes.route1]
+    rule = "Host:iryo.local;PathPrefixStrip:/api/v1/storage;AddPrefix:/storage"
+
+  [frontends.waitlist]
+  backend = "waitlist"
+    [frontends.waitlist.routes.route1]
+    rule = "Host:iryo.local;PathPrefixStrip:/api/v1/waitlist;AddPrefix:/waitlist"
+
+  [frontends.localStatus]
+  backend = "localStatusReporter"
+    [frontends.localStatus.routes.route1]
+    rule = "Host:iryo.local;PathPrefixStrip:/api/v1/status;AddPrefix:/status"
+
+  [frontends.localdiscovery]
+  backend = "localdiscovery"
+    [frontends.localdiscovery.routes.route1]
+    rule = "Host:iryo.local;PathPrefixStrip:/api/v1/discovery;AddPrefix:/discovery"
+
+  [frontends.localfrontend]
+  backend = "localfrontend"
+    [frontends.localfrontend.routes.route1]
+    rule = "Host:iryo.local"

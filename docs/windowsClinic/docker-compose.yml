@@ -1,0 +1,224 @@
+version: "3"
+services:
+  traefik:
+    build:
+      context: .
+      dockerfile: Dockerfile.traefik
+    image: traefik:1.4-alpine
+    command:
+    - --configfile=/etc/traefik.toml
+    - --debug
+    volumes:
+    - /iryo/docs/windowsClinic/traefik.toml:/etc/traefik.toml
+    - /iryo/bin/tls:/certs
+    - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+    - 80:80
+    - 443:443
+    - 8080:8080
+
+  localFrontend:
+    image: iryo/localfrontend:${IRYO_TAG}
+    volumes:
+    - /iryo/docs/windowsClinic/frontendConfig.json:/iryo/config.json:ro
+
+  localAuth:
+    image: iryo/localauth:${IRYO_TAG}
+    command:
+    - ./localAuth
+    volumes:
+    - /mnt/sda1/data/localAuth:/data
+    - /iryo/bin/tls:/certs:ro
+    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - /iryo/cmd/localAuth/serviceCertsAndPaths.yml:/serviceCertsAndPaths.yml:ro
+    environment:
+    - DOMAIN_TYPE=clinic
+    - DOMAIN_ID=${CLINIC_ID}
+    - KEY_PATH=/certs/localAuth-key.pem
+    - CERT_PATH=/certs/localAuth.pem
+    - AUTH_SYNC_KEY_PATH=/certs/localAuthSync-key.pem
+    - AUTH_SYNC_CERT_PATH=/certs/localAuthSync.pem
+    - STORAGE_ENCRYPTION_KEY=${AUTH_STORAGE_ENCRYPTION_KEY}
+    - CLOUD_AUTH_HOST=${CLOUD_AUTH_HOST}
+    - BOLT_DB_FILEPATH=/data/auth.db
+
+  localStorage:
+    image: iryo/localstorage:${IRYO_TAG}
+    command:
+    - ./localStorage
+    volumes:
+    - /iryo/bin/tls:/certs:ro
+    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    environment:
+    - DOMAIN_TYPE=clinic
+    - DOMAIN_ID=${CLINIC_ID}
+    - KEY_PATH=/certs/localStorage-key.pem
+    - CERT_PATH=/certs/localStorage.pem
+    - S3_SECRET=localminio
+    - STORAGE_ENCRYPTION_KEY=6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
+    - NATS_SECRET=secret
+
+  localMinio:
+    image: minio/minio
+    command:
+    - server
+    - /data
+    environment:
+    - MINIO_ACCESS_KEY=local
+    - MINIO_SECRET_KEY=localminio
+    ports:
+    - 9000:9000
+    volumes:
+    - /iryo/bin/tls/localMinio-key.pem:/root/.minio/certs/private.key
+    - /iryo/bin/tls/localMinio.pem:/root/.minio/certs/public.crt
+    - /mnt/sda1/data/localMinio:/data
+
+  localNats:
+    image: nats-streaming
+    ports:
+    - 4242:4242
+    - 8282:8282
+    command:
+    - --stan_config=/etc/nats/config.conf
+    volumes:
+    - /iryo/services/localNats/config.conf:/etc/nats/config.conf:ro
+    - /iryo/bin/tls:/certs:ro
+    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - /mnt/sda1/data/localNats:/data
+
+  storageSync:
+    image: iryo/storagesync:${IRYO_TAG}
+    command:
+    - ./storageSync
+    volumes:
+    - /iryo/bin/tls:/certs:ro
+    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    environment:
+    - KEY_PATH=/certs/storageSync-key.pem
+    - CERT_PATH=/certs/storageSync.pem
+    - NATS_SECRET=secret
+    - CLOUD_STORAGE_HOST=${CLOUD_STORAGE_HOST}
+
+  localPrometheus:
+    image: prom/prometheus
+    command:
+    - --config.file=/etc/prometheus/config.yml
+    - --storage.tsdb.path=/data
+    user: root:root
+    volumes:
+    - /iryo/services/localPrometheus/config.yml:/etc/prometheus/config.yml:ro
+    - /iryo/services/localPrometheus/rules.yml:/etc/prometheus/rules.yml:ro
+    - /iryo/bin/tls:/certs:ro
+    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - /mnt/sda1/data/localPrometheus:/data:rw
+
+  natsStreamingExporter:
+    image: registry.gitlab.com/civist/nats-streaming-exporter
+    command:
+    - /nats-streaming-exporter
+    - -nats-uri=http://localNats:8282/
+    ports:
+    - 9275:9275
+
+  batchStorageSync:
+    image: iryo/batchstoragesync:${IRYO_TAG}
+    command:
+    - ./batchStorageSync
+    volumes:
+    - /iryo/bin/tls:/certs:ro
+    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - /mnt/sda1/data/batchStorageSync:/data
+    environment:
+    - KEY_PATH=/certs/batchStorageSync-key.pem
+    - CERT_PATH=/certs/batchStorageSync.pem
+    - BOLT_DB_FILEPATH=/batchStorageSync.db
+    - CLOUD_STORAGE_HOST=${CLOUD_STORAGE_HOST}
+
+  localPrometheusPushGateway:
+    image: prom/pushgateway
+
+  waitlist:
+    image: iryo/waitlist:${IRYO_TAG}
+    command:
+    - ./waitlist
+    volumes:
+    - /iryo/bin/tls:/certs:ro
+    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - /mnt/sda1/data/waitlist:/data
+    environment:
+    - DOMAIN_TYPE=clinic
+    - DOMAIN_ID=${CLINIC_ID}
+    - KEY_PATH=/certs/waitlist-key.pem
+    - CERT_PATH=/certs/waitlist.pem
+    - STORAGE_ENCRYPTION_KEY=6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
+    - BOLT_DB_FILEPATH=/data/waitlist.db
+
+  localStatusReporter:
+    image: iryo/localstatusreporter:${IRYO_TAG}
+    command:
+    - ./localStatusReporter
+    volumes:
+    - /iryo/bin/tls:/certs:ro
+    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - /iryo/docs/windowsClinic/statusReporterComponents.yml:/components.yml:ro
+    environment:
+    - DOMAIN_TYPE=clinic
+    - DOMAIN_ID=$CLINIC_ID}
+    - KEY_PATH=/certs/localStatusReporter-key.pem
+    - CERT_PATH=/certs/localStatusReporter.pem
+
+  postgres:
+    build:
+      context: ../../
+      dockerfile: services/postgres/Dockerfile
+    volumes:
+    - /iryo/services/postgres:/docker-entrypoint-initdb.d
+    - /iryo/bin/tls:/certs:ro
+    ports:
+    - 5432:5432
+    environment:
+    - POSTGRES_USER=root
+    - POSTGRES_PASSWORD=root
+
+  localDiscovery:
+    image: iryo/localdiscovery:${IRYO_TAG}
+    command:
+    - ./localDiscovery
+    volumes:
+    - /mnt/sda1/data/localDiscovery:/var/data
+    - /iryo/bin/tls:/certs:ro
+    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    environment:
+    - DOMAIN_TYPE=clinic
+    - DOMAIN_ID=${CLINIC_ID}
+    - KEY_PATH=/certs/localDiscovery-key.pem
+    - CERT_PATH=/certs/localDiscovery.pem
+    - DB_USERNAME=localdiscovery
+    - DB_PASSWORD=localdiscovery
+    depends_on:
+    - postgres
+
+  localSymmetric:
+    image: iryo/symmetric
+    command:
+    - bash
+    - /opt/symmetric/local/local.sh
+    volumes:
+    - /iryo/services/symmetric/engines:/opt/symmetric/enginesTemplates:ro
+    - /iryo/services/symmetric/samples:/opt/symmetric/samples:ro
+    - /iryo/services/symmetric/bin:/opt/symmetric/local:ro
+    environment:
+    - LOCATION_ID=${LOCATION_ID}
+    - DB_URL=jdbc:postgresql://postgres/localdiscovery
+    - DB_USER=localsymmetric
+    - DB_PASSWORD=symmetric
+    - REGISTRATION_URL=${SYMMETRIC_REGISTRATION_URL}
+    depends_on:
+    - postgres
+
+  avahi:
+    image: iryo/avahi
+    network_mode: host
+    environment:
+    - AVAHI_HOST=iryo
+    - AVAHI_DOMAIN=local
