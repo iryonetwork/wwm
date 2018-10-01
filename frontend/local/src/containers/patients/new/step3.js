@@ -16,7 +16,7 @@ import {
     renderComplexHorizontalRadio
 } from "shared/forms/renderField"
 import { yesNoOptions, positiveNegativeOptions } from "shared/forms/options"
-import { BABY_MAX_AGE, CHILD_MAX_AGE } from "shared/modules/config"
+import { BABY_MAX_AGE, CHILD_MAX_AGE } from "../../../modules/config"
 import { getCodesAsOptions, loadCategories as loadCategoriesImport } from "shared/modules/codes"
 
 import { ReactComponent as RemoveIcon } from "shared/icons/negative.svg"

@@ -5,7 +5,7 @@ import { Link, withRouter } from "react-router-dom"
 import _ from "lodash"
 import classnames from "classnames"
 
-import { ADVANCED_ROLE_IDS } from "shared/modules/config"
+import { ADVANCED_ROLE_IDS } from  "../../modules/config"
 import { loadRoles } from "../../modules/roles"
 import { makeGetOrganizationUserUserRoles } from "../../selectors/userRolesSelectors"
 import { deleteUserFromOrganization } from "../../modules/organizations"

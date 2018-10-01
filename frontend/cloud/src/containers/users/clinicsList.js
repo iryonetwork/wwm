@@ -7,7 +7,7 @@ import classnames from "classnames"
 import { push } from "react-router-redux"
 
 import { joinPaths } from "shared/utils"
-import { ADVANCED_ROLE_IDS } from "shared/modules/config"
+import { ADVANCED_ROLE_IDS } from  "../../modules/config"
 import { loadUser } from "../../modules/users"
 import { loadRoles } from "../../modules/roles"
 import { loadOrganizations } from "../../modules/organizations"

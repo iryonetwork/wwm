@@ -1,5 +1,6 @@
 import { composePatientData } from "./ehr"
-import { read, API_URL } from "shared/modules/config"
+import { read } from "shared/modules/config"
+import { API_URL } from "./config"
 import { getToken } from "shared/modules/authentication"
 
 export const createPatient = (patientId, formData) => dispatch => {

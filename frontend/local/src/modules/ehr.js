@@ -1,7 +1,8 @@
 import { get, has, set } from "lodash"
 
 import { escapeRegex } from "shared/utils"
-import { read, CLINIC_ID, LOCATION_ID } from "shared/modules/config"
+import { read } from "shared/modules/config"
+import { CLINIC_ID, LOCATION_ID } from "./config"
 import { load as loadClinic } from "./clinics"
 import { load as loadLocation } from "./locations"
 import { load as loadUser } from "./users"

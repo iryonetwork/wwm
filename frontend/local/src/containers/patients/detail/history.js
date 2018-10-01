@@ -10,7 +10,7 @@ import { joinPaths } from "shared/utils"
 import { RESOURCE_HEALTH_HISTORY, READ, WRITE } from "../../../modules/validations"
 import { getCodesAsOptions, getCodes, loadCategories as loadCategoriesImport } from "shared/modules/codes"
 import { updatePatient } from "../../../modules/patient"
-import { BABY_MAX_AGE, CHILD_MAX_AGE } from "shared/modules/config"
+import { BABY_MAX_AGE, CHILD_MAX_AGE } from "../../../modules/config"
 import Column from "shared/containers/valueColumn"
 
 let History = ({ match, patient, maxBabyAge, maxChildAge, canSee, canEdit }) => {

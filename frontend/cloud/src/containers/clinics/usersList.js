@@ -5,7 +5,7 @@ import { connect } from "react-redux"
 import _ from "lodash"
 import { push } from "react-router-redux"
 
-import { ADVANCED_ROLE_IDS } from "shared/modules/config"
+import { ADVANCED_ROLE_IDS } from "../../modules/config"
 import { loadUsers } from "../../modules/users"
 import { loadRoles } from "../../modules/roles"
 import { deleteUserFromClinic } from "../../modules/clinics"

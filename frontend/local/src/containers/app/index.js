@@ -3,7 +3,7 @@ import { Switch, Route, NavLink, Redirect } from "react-router-dom"
 import { connect } from "react-redux"
 import { bindActionCreators } from "redux"
 
-import { DEFAULT_WAITLIST_ID } from "shared/modules/config"
+import { DEFAULT_WAITLIST_ID } from  "../../modules/config"
 import { close } from "shared/modules/alert"
 import Logo from "shared/containers/logo"
 import Version from "shared/containers/version"

@@ -6,7 +6,7 @@ import { push } from "react-router-redux"
 import _ from "lodash"
 import classnames from "classnames"
 
-import { ADVANCED_ROLE_IDS } from "shared/modules/config"
+import { ADVANCED_ROLE_IDS } from  "../../modules/config"
 import { loadUser } from "../../modules/users"
 import { loadRoles } from "../../modules/roles"
 import { loadOrganizations, clearOrganizations, deleteUserFromOrganization } from "../../modules/organizations"

@@ -1,5 +1,7 @@
 import produce from "immer"
-import { read, API_URL } from "shared/modules/config"
+
+import { read } from "shared/modules/config"
+import { API_URL } from "./config"
 import { open, COLOR_DANGER } from "shared/modules/alert"
 import { getToken } from "shared/modules/authentication"
 

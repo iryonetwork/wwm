@@ -1,5 +1,6 @@
 import api from "shared/modules/api"
-import { read, API_URL, REPORTS_STORAGE_BUCKET } from "shared/modules/config"
+import { read } from "shared/modules/config"
+import { API_URL, REPORTS_STORAGE_BUCKET } from "./config"
 import { open, COLOR_DANGER } from "shared/modules/alert"
 import { getToken } from "shared/modules/authentication"
 

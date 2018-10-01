@@ -5,7 +5,8 @@ import classnames from "classnames"
 import { push } from "react-router-redux"
 import { reset } from "redux-form"
 
-import { read, DEFAULT_WAITLIST_ID } from "shared/modules/config"
+import { read } from "shared/modules/config"
+import { DEFAULT_WAITLIST_ID } from "../../../modules/config"
 import { createPatient } from "../../../modules/patient"
 
 import Step1 from "./step1"

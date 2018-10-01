@@ -1,0 +1,7 @@
+export const READ_ONLY_KEYS = "readOnlyKeys"
+export const LOCALE = "locale"
+export const BASE_URL = "baseUrl"
+export const API_URL = "apiUrl"
+export const LOCATION_ID = "locationId"
+export const ADVANCED_ROLE_IDS = "advancedRoleIDs"
+export const REPORTS_STORAGE_BUCKET = "reportsStorageBucket"

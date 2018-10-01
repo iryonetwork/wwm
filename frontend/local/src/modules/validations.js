@@ -2,7 +2,8 @@ import _ from "lodash"
 
 import api from "shared/modules/api"
 import { open, COLOR_DANGER } from "shared/modules/alert"
-import { read, CLINIC_ID } from "shared/modules/config"
+import { read } from "shared/modules/config"
+import { CLINIC_ID } from "./config"
 
 const LOAD_USER_RIGHTS = "user/LOAD_USER_RIGHTS"
 const LOAD_USER_RIGHTS_SUCCESS = "user/LOAD_USER_RIGHTS_SUCCESS"

@@ -1,6 +1,7 @@
 import produce from "immer"
 import { open, COLOR_DANGER } from "shared/modules/alert"
-import { read, API_URL, LOCATION_ID } from "shared/modules/config"
+import { read } from "shared/modules/config"
+import { API_URL, LOCATION_ID } from "./config"
 import { getToken } from "shared/modules/authentication"
 import { updatePatient as updateWaitlistPatient } from "./waitlist"
 
