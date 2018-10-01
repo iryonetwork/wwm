@@ -142,6 +142,7 @@ const Section = ({
                         let patientObject =
                             el.patient &&
                             cardToObject({
+                                patientID: el.patientID,
                                 connections: el.patient
                             })
                         return (
