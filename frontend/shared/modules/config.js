@@ -1,6 +1,7 @@
 import produce from "immer"
 import { defaultsDeep, get, findIndex } from "lodash"
 import { open, COLOR_DANGER } from "./alert"
+import { getUserId } from "./authentication"
 
 export const LOAD = "config/LOAD"
 export const LOADED = "config/LOADED"
@@ -54,9 +55,10 @@ export const save = (key, value) => (dispatch, getState) => {
         return
     }
 
-    let data = JSON.parse(localStorage.getItem("config"))
+    let userID = dispatch(getUserId())
+    let data = JSON.parse(localStorage.getItem("config-" + userID))
     data[key] = value
-    localStorage.setItem("config", JSON.stringify(data))
+    localStorage.setItem("config-" + userID, JSON.stringify(data))
 
     dispatch({
         type: SAVED,
@@ -69,7 +71,7 @@ export const read = (key, defaultValue) => (dispatch, getState) => {
     return get(getState().config, key, defaultValue)
 }
 
-export const load = dispatch => {
+export const load = userID => dispatch => {
     dispatch({ type: LOAD })
 
     fetch("/config.json", {
@@ -83,8 +85,14 @@ export const load = dispatch => {
             if (!ok) {
                 throw new Error("Failed to load config")
             }
-            data = defaultsDeep(JSON.parse(localStorage.getItem("config")) || {}, data)
-            localStorage.setItem("config", JSON.stringify(data))
+
+            if (userID) {
+                data = defaultsDeep(JSON.parse(localStorage.getItem("config-" + userID)) || JSON.parse(localStorage.getItem("config")) || {}, data)
+                localStorage.setItem("config-" + userID, JSON.stringify(data))
+            } else {
+                data = defaultsDeep(JSON.parse(localStorage.getItem("config-defaults")) || {}, data)
+                localStorage.setItem("config-defaults", JSON.stringify(data))
+            }
 
             dispatch({ type: LOADED, result: data })
             return data

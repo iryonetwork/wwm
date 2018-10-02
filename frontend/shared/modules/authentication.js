@@ -4,6 +4,7 @@ import jwtDecode from "jwt-decode"
 import { read, API_URL } from "./config"
 
 import { open, close, COLOR_DANGER } from "./alert"
+import { load as loadConfig } from "./config"
 
 export const LOGIN = "authentication/LOGIN"
 export const ERROR = "authentication/ERROR"
@@ -137,6 +138,8 @@ export const login = () => {
 
                         localStorage.setItem("token", token)
 
+                        dispatch(loadConfig(dispatch(getUserId())))
+
                         return setTimeout(() => {
                             dispatch(renewToken())
                         }, renewInterval)
@@ -182,6 +185,12 @@ export const setPassword = password => {
 export const getToken = () => {
     return (dispatch, getState) => {
         return getState().authentication.tokenString
+    }
+}
+
+export const getUserId = () => {
+    return (dispatch, getState) => {
+        return getState().authentication.token.sub
     }
 }
 

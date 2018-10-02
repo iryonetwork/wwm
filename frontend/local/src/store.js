@@ -35,6 +35,10 @@ const composedEnhancers = compose(applyMiddleware(...middleware), ...enhancers)
 store = createStore(rootReducer, initialState, composedEnhancers)
 
 // preload config
-loadConfig(dispatch)
+if (initialState.authentication.token) {
+    loadConfig(initialState.authentication.token.sub)(dispatch)
+} else {
+    loadConfig()(dispatch)
+}
 
 export default store
