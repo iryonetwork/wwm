@@ -2,8 +2,9 @@ import _ from "lodash"
 import React from "react"
 import { bindActionCreators } from "redux"
 import { connect } from "react-redux"
-import { loadStatus } from "../../modules/status"
 import { Popover, PopoverBody } from "reactstrap"
+
+import { loadStatus } from "../../modules/status"
 
 import "./style.css"
 
