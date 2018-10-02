@@ -1,0 +1,78 @@
+@import "shared/styles/variables.scss";
+
+.settings {
+  .section {
+    margin-top: 30px;
+  }
+
+  .sectionBody {
+    border-top: 1px solid $grey2;
+
+    .form-group {
+      margin-top: 20px;
+    }
+
+    .form-row {
+      &:first-child {
+        .form-group {
+          margin-top: 35px;
+        }
+      }
+    }
+    .form-row {
+      &:last-child {
+        .form-group {
+          margin-bottom: 0px;
+        }
+      }
+    }
+  }
+}
+
+.settingsPopover {
+  top: -50px!important;
+  width: 500px;
+  z-index: 1000;
+
+  .popover-inner {
+    border-radius: 4px;
+    background-color: $white;
+    border: solid 1px $grey3;
+    box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.12);
+  }
+
+  .settings {
+    padding: 40px;
+  }
+
+  .arrow {
+      position: absolute;
+      bottom:calc(100% - 1px);
+      background: #ffffff;
+      left: 1px !important;
+      top: 424px !important;
+  }
+  .arrow:after, .arrow:before {
+      right: 100%;
+      border: solid transparent;
+      content: " ";
+      height: 0;
+      width: 0;
+      position: absolute;
+      pointer-events: none;
+  }
+
+  .arrow:after {
+      border-color: rgba(255, 255, 255, 0);
+      border-right-color: #ffffff;
+      border-width: 8px;
+      margin-left: -8px;
+  }
+
+  .arrow:before {
+      border-color: rgba(228, 228, 237, 0);
+      border-right-color: $grey3;
+      border-width: 9px;
+      margin-left: -9px;
+  }
+}

@@ -53,4 +53,8 @@ const confirmationDialog = (msg, confirmedCallback, rejectedCallback) => {
     }
 }
 
-export { PropRoute, joinPaths, round, escapeRegex, confirmationDialog }
+const toggleBodyScroll = () => {
+    document.body.style.overflow = document.body.style.overflow === "hidden" ? "scroll" : "hidden"
+}
+
+export { PropRoute, joinPaths, round, escapeRegex, confirmationDialog, toggleBodyScroll }

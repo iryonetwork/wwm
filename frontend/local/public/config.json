@@ -7,5 +7,9 @@
     "locationId": "2d04b22e-1cc3-46b4-96dd-2bee5bad9ffa",
     "babyMaxAge": 1,
     "childMaxAge": 7,
-    "waitlistId": "22afd921-0630-49f4-89a8-d1ad7639ee83"
+    "waitlistId": "22afd921-0630-49f4-89a8-d1ad7639ee83",
+    "lengthUnit": "cm",
+    "weightUnit": "kg",
+    "temperatureUnit": "°C",
+    "bloodPressureUnit": "mm[Hg]"
 }

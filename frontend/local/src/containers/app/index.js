@@ -3,7 +3,7 @@ import { Switch, Route, NavLink, Redirect } from "react-router-dom"
 import { connect } from "react-redux"
 import { bindActionCreators } from "redux"
 
-import { DEFAULT_WAITLIST_ID } from  "../../modules/config"
+import { DEFAULT_WAITLIST_ID } from "../../modules/config"
 import { close } from "shared/modules/alert"
 import Logo from "shared/containers/logo"
 import Version from "shared/containers/version"
@@ -17,6 +17,7 @@ import NewPatient from "../patients/new"
 import Waitlist from "../waitlist"
 import AddToWaitlist from "../waitlist/add"
 import WaitlistDetail from "../patients/detail"
+import SettingsPopover from "../settings/popover"
 
 import { ReactComponent as PatientsIcon } from "shared/icons/patients.svg"
 import { ReactComponent as WaitlistIcon } from "shared/icons/waiting-list.svg"
@@ -72,6 +73,7 @@ class App extends React.Component {
                     </NavLink>
 
                     <div className="bottom">
+                        <SettingsPopover />
                         <a className="navigation" href="/" onClick={this.logout}>
                             <LogoutIcon />
                             Logout

@@ -11,3 +11,9 @@ export const LENGTH_UNIT = "lengthUnit"
 export const WEIGHT_UNIT = "weightUnit"
 export const TEMPERATURE_UNIT = "temperatureUnit"
 export const BLOOD_PRESSURE_UNIT = "bloodPressureUnit"
+
+export const localeOptions = [{ value: "en", label: "English" }]
+export const lengthUnitOptions = [{ value: "cm", label: "Centimetres" }, { value: "ft/inch", label: "Feet and inches" }]
+export const weightUnitOptions = [{ value: "kg/g", label: "Kilograms and grams" }, { value: "lb/oz", label: "Pounds and ounces" }]
+export const temperatureUnitOptions = [{ value: "°C", label: "Celsius" }, { value: "°F", label: "Fahrenheit" }]
+export const bloodPressureUnitOptions = [{ value: "mm[Hg]", label: "mm[Hg]" }, { value: "cm[Hg]", label: "cm[Hg]" }]
