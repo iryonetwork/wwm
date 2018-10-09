@@ -29,9 +29,23 @@
             margin: 0;
         }
 
-        .big {
-            font-size: 24px;
+        .valueWithUnit {
             margin-right: 5px;
+            &:last-child {
+                margin-right: 0px;
+            }
+            .value {
+                font-size: 24px;
+                &.withMargin {
+                    margin-right: 5px;
+                }
+            }
+            .unit {
+                font-size: 14px;
+                &.big  {
+                    font-size: 24px;
+                }
+            }
         }
     }
 

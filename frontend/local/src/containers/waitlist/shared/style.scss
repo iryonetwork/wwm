@@ -60,23 +60,25 @@
             visibility: hidden;
         }
 
-        .form-inline-container {
-            width: 100%;
+        .form-group {
+            .form-inline-container {
+                width: 100%;
 
-            .label {
-                width: 33.33%;
-                display: inline-block;
-                position: relative;
-                text-transform:none;
-                font-size: 14px;
-                font-weight: bold;
-                text-align: left;
-                color: $black
-            }
+                .label {
+                    width: 33.33%;
+                    display: inline-block;
+                    position: relative;
+                    text-transform:none;
+                    font-size: 14px;
+                    font-weight: bold;
+                    text-align: left;
+                    color: $black
+                }
 
-            .form-check-inline {
-                margin: 0;
-                width: 25%;
+                .form-check-inline {
+                    margin: 0;
+                    width: 25%;
+                }
             }
         }
     }
@@ -84,5 +86,26 @@
     .modal-footer {
         width: 66.66%;
         float: right;
+    }
+}
+
+@media (min-width: 1350px) {
+    .cardContainer {
+        flex: 0 0 25%;
+        max-width: 25%;
+    }
+}
+
+@media (min-width: 1150px) and (max-width: 1349px) {
+    .cardContainer {
+        flex: 0 0 33.33333%;
+        max-width: 33.33333%;
+    }
+}
+
+@media (max-width: 1149px) {
+    .cardContainer {
+        flex: 0 0 50%;
+        max-width: 50%;
     }
 }

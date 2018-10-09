@@ -15,8 +15,11 @@ import {
     renderHorizontalSelect,
     renderComplexHorizontalRadio
 } from "shared/forms/renderField"
+import { SimpleUnitInput, UnitInputWithConversion } from "shared/forms/measurementFields"
+import { POUNDS_OUNCES, GRAMS, FEET_INCHES, CM } from "shared/unitConversion/units"
+import { weightValueToObject, weightObjectToValue, lengthValueToObject, lengthObjectToValue } from "shared/unitConversion"
 import { yesNoOptions, positiveNegativeOptions } from "shared/forms/options"
-import { BABY_MAX_AGE, CHILD_MAX_AGE } from "../../../modules/config"
+import { BABY_MAX_AGE, CHILD_MAX_AGE, WEIGHT_UNIT, LENGTH_UNIT } from "../../../modules/config"
 import { getCodesAsOptions, loadCategories as loadCategoriesImport } from "shared/modules/codes"
 
 import { ReactComponent as RemoveIcon } from "shared/icons/negative.svg"
@@ -53,7 +56,7 @@ class Step3 extends Component {
     }
 }
 
-let RenderForm = ({ dateOfBirth, babyFoods, communicationTypes, deliveryTypes, codesLoading, maxBabyAge, maxChildAge }) => {
+let RenderForm = ({ dateOfBirth, babyFoods, communicationTypes, deliveryTypes, codesLoading, maxBabyAge, maxChildAge, weightUnit, lengthUnit }) => {
     if (codesLoading) {
         return null
     }
@@ -61,7 +64,7 @@ let RenderForm = ({ dateOfBirth, babyFoods, communicationTypes, deliveryTypes, c
     const age = moment().diff(moment(dateOfBirth), "years")
 
     if (age <= maxBabyAge) {
-        return renderBabyForm({ babyFoods, deliveryTypes, communicationTypes })
+        return renderBabyForm({ babyFoods, deliveryTypes, communicationTypes, weightUnit, lengthUnit })
     } else if (age <= maxChildAge) {
         return renderChildForm()
     } else {
@@ -72,7 +75,9 @@ let RenderForm = ({ dateOfBirth, babyFoods, communicationTypes, deliveryTypes, c
 RenderForm = connect(
     state => ({
         maxBabyAge: state.config[BABY_MAX_AGE],
-        maxChildAge: state.config[CHILD_MAX_AGE]
+        maxChildAge: state.config[CHILD_MAX_AGE],
+        weightUnit: state.config[WEIGHT_UNIT],
+        lengthUnit: state.config[LENGTH_UNIT]
     }),
     {}
 )(RenderForm)
@@ -84,7 +89,7 @@ const renderAdultForm = props => (
     </div>
 )
 
-const renderBabyForm = ({ babyFoods, deliveryTypes, communicationTypes }) => (
+const renderBabyForm = ({ babyFoods, deliveryTypes, communicationTypes, weightUnit, lengthUnit }) => (
     <div>
         <h3>Birth data</h3>
         <div className="section">
@@ -100,24 +105,59 @@ const renderBabyForm = ({ babyFoods, deliveryTypes, communicationTypes }) => (
             </div>
 
             <div className="birth">
-                <div className="form-row">
-                    <div className="col-sm-4 text-left">
-                        <div className="form-group valueWithUnit">
-                            <Field name="weeksAtBirth" type="number" component={renderInput} label="Weeks at birth" />
-                        </div>
-                        <div className="unit">weeks</div>
+                <div className="form-row birthMeasurements">
+                    <div className="weeksAtBirth">
+                        <Field name="weeksAtBirth" type="number" component={SimpleUnitInput} unit="weeks" min={0} label="Weeks at birth" placeholder="Weeks" />
                     </div>
-                    <div className="col-sm-4 text-center">
-                        <div className="form-group valueWithUnit">
-                            <Field name="weightAtBirth" type="number" component={renderInput} label="Weight at birth" />
-                        </div>
-                        <div className="unit">grams</div>
+                    <div className="weightAtBirth">
+                        {weightUnit === POUNDS_OUNCES ? (
+                            <Field
+                                name="weightAtBirth"
+                                label="Weight at birth"
+                                placeholder="Weight"
+                                component={UnitInputWithConversion}
+                                inputUnit={POUNDS_OUNCES}
+                                valueUnit={GRAMS}
+                                valuePrecision={0}
+                                valueToObject={weightValueToObject}
+                                objectToValue={weightObjectToValue}
+                            />
+                        ) : (
+                            <Field
+                                name="weightAtBirth"
+                                label="Weight at birth"
+                                placeholder="Weight"
+                                component={SimpleUnitInput}
+                                unit={GRAMS}
+                                precision={0}
+                                min={0}
+                            />
+                        )}
                     </div>
-                    <div className="col-sm-4 text-right">
-                        <div className="form-group valueWithUnit">
-                            <Field name="heightAtBirth" type="number" component={renderInput} label="Height at birth" />
-                        </div>
-                        <div className="unit">cm</div>
+                    <div className="heightAtBirth">
+                        {lengthUnit === FEET_INCHES ? (
+                            <Field
+                                name="heightAtBirth"
+                                label="Height at birth"
+                                placeholder="Height"
+                                component={UnitInputWithConversion}
+                                inputUnit={FEET_INCHES}
+                                valueUnit={CM}
+                                valuePrecision={0}
+                                valueToObject={lengthValueToObject}
+                                objectToValue={lengthObjectToValue}
+                            />
+                        ) : (
+                            <Field
+                                name="heightAtBirth"
+                                label="Height at birth"
+                                placeholder="Height"
+                                component={SimpleUnitInput}
+                                unit={CM}
+                                precision={0}
+                                min={0}
+                            />
+                        )}
                     </div>
                 </div>
             </div>

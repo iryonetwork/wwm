@@ -13,7 +13,20 @@ import { round } from "shared/utils"
 import { open, COLOR_DANGER } from "shared/modules/alert"
 import { listAll, update } from "../../../modules/waitlist"
 import { cardToObject } from "../../../modules/discovery"
-
+import { SimpleUnitInput, UnitInputWithConversion } from "shared/forms/measurementFields"
+import { POUNDS_OUNCES, POUNDS, KG, MM_HG, CM_HG, CM, FEET_INCHES, CELSIUS, FAHRENHEIT } from "shared/unitConversion/units"
+import {
+    weightValueToObject,
+    weightObjectToValue,
+    lengthValueToObject,
+    lengthObjectToValue,
+    pressureValueToObject,
+    pressureObjectToValue,
+    temperatureValueToObject,
+    temperatureObjectToValue
+} from "shared/unitConversion"
+import { read } from "shared/modules/config"
+import { WEIGHT_UNIT, LENGTH_UNIT, TEMPERATURE_UNIT, BLOOD_PRESSURE_UNIT } from "../../../modules/config"
 import { ReactComponent as MedicalDataIcon } from "shared/icons/vitalsigns.svg"
 import { ReactComponent as NegativeIcon } from "shared/icons/negative.svg"
 
@@ -112,21 +125,9 @@ class MedicalData extends React.Component {
                             <div className="modal-body">
                                 <h3>Body Measurements</h3>
                                 <div>
-                                    <Fields
-                                        label="Height"
-                                        names={["has_height", "height", "focus"]}
-                                        unit="cm"
-                                        component={renderFieldWithUnit}
-                                        change={change}
-                                    />
+                                    <Fields label="Height" names={["has_height", "height", "focus"]} unit="cm" component={renderHeight} change={change} />
 
-                                    <Fields
-                                        label="Weight"
-                                        names={["has_weight", "weight", "focus"]}
-                                        unit="kg"
-                                        component={renderFieldWithUnit}
-                                        change={change}
-                                    />
+                                    <Fields label="Weight" names={["has_weight", "weight", "focus"]} component={renderWeight} change={change} />
                                 </div>
 
                                 <h3>Vital Signs</h3>
@@ -136,7 +137,7 @@ class MedicalData extends React.Component {
                                         label="Body temperature"
                                         names={["has_temperature", "temperature", "focus"]}
                                         unit="°C"
-                                        component={renderFieldWithUnit}
+                                        component={renderTemperature}
                                         change={change}
                                     />
 
@@ -244,267 +245,341 @@ class MedicalData extends React.Component {
     }
 }
 
-// const renderFieldWithUnits = fields => (
-//     <div className={classnames("section", { open: fields[fields.names[0]].input.value })}>
-//         {fields[fields.names[0]].input.value && (
-//             <div className="form-row">
-//                 <div className="col-sm-4">
-//                     <label>
-//                         <input {...fields[fields.names[1]].input} type="number" className="form-control" placeholder={fields.label} />
+const submitOnEnter = dispatch => e => {
+    if (e.key === "Enter") {
+        e.preventDefault()
+        dispatch(submit("medical-data"))
+    }
+}
 
-//                         <span>{fields.label}</span>
-//                     </label>
-//                 </div>
-
-//                 <div className="col-sm-2">
-//                     <select {...fields[fields.names[2]].input} className="form-control" validate={required}>
-//                         {fields.units.map(unit => (
-//                             <option key={unit.value} value={unit.value}>
-//                                 {unit.label}
-//                             </option>
-//                         ))}
-//                     </select>
-//                 </div>
-
-//                 <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
-//                     <NegativeIcon />
-//                     Remove
-//                 </button>
-//             </div>
-//         )}
-//         {!fields[fields.names[0]].input.value && (
-//             <button className="btn btn-link" onClick={() => fields.change(fields.names[0], true)}>
-//                 Add {fields.label}
-//             </button>
-//         )}
-//     </div>
-// )
-
-const SimpleInput = connect()(({ input, dispatch }) => (
-    <input
-        {...input}
-        onKeyPress={ev => {
-            if (ev.key === "Enter") {
-                ev.preventDefault()
-                dispatch(submit("medical-data"))
-            }
-        }}
-    />
-))
-
-const renderFieldWithUnit = connect()(fields => (
-    <div
-        className={classnames("section", {
-            open: fields[fields.names[0]].input.value
-        })}
-    >
-        {fields[fields.names[0]].input.value && (
-            <div className="form-row">
-                <div className="col-sm-4">
-                    <label>
-                        <SimpleInput
+const renderFieldWithUnit = connect()(fields => {
+    return (
+        <div
+            className={classnames("section", {
+                open: fields[fields.names[0]].input.value
+            })}
+        >
+            {fields[fields.names[0]].input.value && (
+                <div className="form-row">
+                    <div className="col-sm">
+                        <SimpleUnitInput
                             input={{
                                 ...fields[fields.names[1]].input,
-                                type: "number",
-                                className: classnames("form-control", {
-                                    "is-invalid": fields[fields.names[1]].meta.touched && fields[fields.names[1]].meta.error
-                                }),
-                                placeholder: fields.label,
+                                onKeyPress: fields.dispatch(submitOnEnter),
                                 autoFocus: fields.focus.input.value === fields.names[1] && true
                             }}
+                            meta={fields[fields.names[1]].meta}
+                            label={fields.label}
+                            placeholder={fields.label}
+                            unit={fields.unit}
+                            precision={fields.precision ? fields.precision : 0}
                         />
-                        <span>{fields.label}</span>
-                        {fields[fields.names[1]].meta.touched &&
-                            fields[fields.names[1]].meta.error && <div className="invalid-feedback">{fields[fields.names[1]].meta.error}</div>}
-                    </label>
-                </div>
-
-                <div className="col-sm-2 unit">{fields.unit}</div>
-
-                <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
-                    <NegativeIcon />
-                    Remove
-                </button>
-            </div>
-        )}
-        {!fields[fields.names[0]].input.value && (
-            <button
-                className="btn btn-link"
-                onClick={() => {
-                    fields.change(fields.names[0], true)
-                    fields.change("focus", fields.names[1])
-                }}
-            >
-                Add {fields.label}
-            </button>
-        )}
-    </div>
-))
-
-const renderBloodPressure = fields => (
-    <div
-        className={classnames("section", {
-            open: fields[fields.names[0]].input.value
-        })}
-    >
-        {fields[fields.names[0]].input.value && (
-            <div>
-                <div className="form-row title">
-                    <h4>{fields.label}</h4>
-                    <div className="col-sm-4">
-                        <label>
-                            <SimpleInput
-                                input={{
-                                    ...fields.pressure.systolic.input,
-                                    type: "number",
-                                    className: classnames("form-control", {
-                                        "is-invalid": fields.pressure.systolic.meta.touched && fields.pressure.systolic.meta.error
-                                    }),
-                                    placeholder: "Systolic",
-                                    autoFocus: fields.focus.input.value === "pressure" && true
-                                }}
-                            />
-                            <span>Systolic</span>
-                            {fields.pressure.systolic.meta.touched &&
-                                fields.pressure.systolic.meta.error && <div className="invalid-feedback">{fields.pressure.systolic.meta.error}</div>}
-                        </label>
                     </div>
-
-                    <div className="col-sm-2 unit">mmHg</div>
-
-                    <div className="col-sm-4">
-                        <label>
-                            <SimpleInput
-                                input={{
-                                    ...fields.pressure.diastolic.input,
-                                    type: "number",
-                                    className: classnames("form-control", {
-                                        "is-invalid": fields.pressure.diastolic.meta.touched && fields.pressure.diastolic.meta.error
-                                    }),
-                                    placeholder: "Diastolic"
-                                }}
-                            />
-                            <span>Diastolic</span>
-                            {fields.pressure.diastolic.meta.touched &&
-                                fields.pressure.diastolic.meta.error && <div className="invalid-feedback">{fields.pressure.diastolic.meta.error}</div>}
-                        </label>
-                    </div>
-
-                    <div className="col-sm-2 unit">mmHg</div>
-
                     <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
                         <NegativeIcon />
                         Remove
                     </button>
                 </div>
-            </div>
-        )}
-        {!fields[fields.names[0]].input.value && (
-            <button
-                className="btn btn-link"
-                onClick={() => {
-                    fields.change(fields.names[0], true)
-                    fields.change("focus", "pressure")
-                }}
-            >
-                Add {fields.label}
-            </button>
-        )}
-    </div>
-)
+            )}
+            {!fields[fields.names[0]].input.value && (
+                <button
+                    className="btn btn-link"
+                    onClick={() => {
+                        fields.change(fields.names[0], true)
+                        fields.change("focus", fields.names[1])
+                    }}
+                >
+                    Add {fields.label}
+                </button>
+            )}
+        </div>
+    )
+})
 
-// const renderHearingScreening = fields => {
-//     let frequencies = [500, 1000, 2000, 3000, 4000, 6000, 8000]
-//     return (
-//         <div className={classnames("section", { open: fields[fields.names[0]].input.value })}>
-//             {fields[fields.names[0]].input.value && (
-//                 <div>
-//                     <h4>{fields.label}</h4>
-//                     <div className="hearing-row">
-//                         <div className="label">Left ear</div>
-//                         {frequencies.map(f => (
-//                             <div className="col-sm-1" key={`left-${f}`}>
-//                                 <label>
-//                                     <input {...fields.hearing.left[f].input} type="number" className="form-control" placeholder={f} />
-//                                     <span>{`${f} Hz`}</span>
-//                                 </label>
-//                             </div>
-//                         ))}
-//                         <div className="col-sm-1 unit">dB</div>
+const renderHeight = connect()(fields => {
+    return (
+        <div
+            className={classnames("section", {
+                open: fields[fields.names[0]].input.value
+            })}
+        >
+            {fields[fields.names[0]].input.value && (
+                <div className="form-row">
+                    <div className="col-sm">
+                        {fields.dispatch(read(LENGTH_UNIT)) === FEET_INCHES ? (
+                            <UnitInputWithConversion
+                                input={{
+                                    ...fields[fields.names[1]].input,
+                                    onKeyPress: submitOnEnter(fields.dispatch),
+                                    autoFocus: fields.focus.input.value === fields.names[1] && true
+                                }}
+                                meta={fields[fields.names[1]].meta}
+                                label={fields.label}
+                                placeholder={fields.label}
+                                inputUnit={FEET_INCHES}
+                                valueUnit={CM}
+                                valuePrecision={0}
+                                valueToObject={lengthValueToObject}
+                                objectToValue={lengthObjectToValue}
+                            />
+                        ) : (
+                            <SimpleUnitInput
+                                input={{
+                                    ...fields[fields.names[1]].input,
+                                    onKeyPress: submitOnEnter(fields.dispatch),
+                                    autoFocus: fields.focus.input.value === fields.names[1] && true
+                                }}
+                                meta={fields[fields.names[1]].meta}
+                                label={fields.label}
+                                placeholder={fields.label}
+                                unit={CM}
+                                precision={1}
+                            />
+                        )}
+                    </div>
+                    <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
+                        <NegativeIcon />
+                        Remove
+                    </button>
+                </div>
+            )}
+            {!fields[fields.names[0]].input.value && (
+                <button
+                    className="btn btn-link"
+                    onClick={() => {
+                        fields.change(fields.names[0], true)
+                        fields.change("focus", fields.names[1])
+                    }}
+                >
+                    Add {fields.label}
+                </button>
+            )}
+        </div>
+    )
+})
 
-//                         <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
-//                             <NegativeIcon />
-//                             Remove
-//                         </button>
-//                     </div>
+const renderWeight = connect()(fields => {
+    return (
+        <div
+            className={classnames("section", {
+                open: fields[fields.names[0]].input.value
+            })}
+        >
+            {fields[fields.names[0]].input.value && (
+                <div className="form-row">
+                    <div className="col-sm">
+                        {fields.dispatch(read(WEIGHT_UNIT)) === POUNDS_OUNCES ? (
+                            <UnitInputWithConversion
+                                input={{
+                                    ...fields[fields.names[1]].input,
+                                    onKeyPress: submitOnEnter(fields.dispatch),
+                                    autoFocus: fields.focus.input.value === fields.names[1] && true
+                                }}
+                                meta={fields[fields.names[1]].meta}
+                                label={fields.label}
+                                placeholder={fields.label}
+                                inputUnit={POUNDS}
+                                valueUnit={KG}
+                                valuePrecision={8}
+                                inputPrecision={1}
+                                valueToObject={weightValueToObject}
+                                objectToValue={weightObjectToValue}
+                            />
+                        ) : (
+                            <SimpleUnitInput
+                                input={{
+                                    ...fields[fields.names[1]].input,
+                                    onKeyPress: submitOnEnter(fields.dispatch),
+                                    autoFocus: fields.focus.input.value === fields.names[1] && true
+                                }}
+                                meta={fields[fields.names[1]].meta}
+                                label={fields.label}
+                                placeholder={fields.label}
+                                unit={KG}
+                                precision={1}
+                            />
+                        )}
+                    </div>
+                    <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
+                        <NegativeIcon />
+                        Remove
+                    </button>
+                </div>
+            )}
+            {!fields[fields.names[0]].input.value && (
+                <button
+                    className="btn btn-link"
+                    onClick={() => {
+                        fields.change(fields.names[0], true)
+                        fields.change("focus", fields.names[1])
+                    }}
+                >
+                    Add {fields.label}
+                </button>
+            )}
+        </div>
+    )
+})
 
-//                     <div className="hearing-row">
-//                         <div className="label">Right ear</div>
-//                         {frequencies.map(f => (
-//                             <div className="col-sm-1" key={`right-${f}`}>
-//                                 <label>
-//                                     <input {...fields.hearing.right[f].input} type="number" className="form-control" placeholder={f} />
-//                                     <span>{`${f} Hz`}</span>
-//                                 </label>
-//                             </div>
-//                         ))}
-//                         <div className="col-sm-1 unit">dB</div>
-//                     </div>
-//                 </div>
-//             )}
-//             {!fields[fields.names[0]].input.value && (
-//                 <button className="btn btn-link" onClick={() => fields.change(fields.names[0], true)}>
-//                     Add {fields.label}
-//                 </button>
-//             )}
-//         </div>
-//     )
-// }
+const renderTemperature = connect()(fields => {
+    return (
+        <div
+            className={classnames("section", {
+                open: fields[fields.names[0]].input.value
+            })}
+        >
+            {fields[fields.names[0]].input.value && (
+                <div className="form-row">
+                    <div className="col-sm">
+                        {fields.dispatch(read(TEMPERATURE_UNIT)) === FAHRENHEIT ? (
+                            <UnitInputWithConversion
+                                input={{
+                                    ...fields[fields.names[1]].input,
+                                    onKeyPress: submitOnEnter(fields.dispatch),
+                                    autoFocus: fields.focus.input.value === fields.names[1] && true
+                                }}
+                                meta={fields[fields.names[1]].meta}
+                                label={fields.label}
+                                placeholder={fields.label}
+                                inputUnit={FAHRENHEIT}
+                                valueUnit={CELSIUS}
+                                valuePrecision={8}
+                                inputPrecision={1}
+                                valueToObject={temperatureValueToObject}
+                                objectToValue={temperatureObjectToValue}
+                            />
+                        ) : (
+                            <SimpleUnitInput
+                                input={{
+                                    ...fields[fields.names[1]].input,
+                                    onKeyPress: submitOnEnter(fields.dispatch),
+                                    autoFocus: fields.focus.input.value === fields.names[1] && true
+                                }}
+                                meta={fields[fields.names[1]].meta}
+                                label={fields.label}
+                                placeholder={fields.label}
+                                unit={CELSIUS}
+                                precision={1}
+                            />
+                        )}
+                    </div>
+                    <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
+                        <NegativeIcon />
+                        Remove
+                    </button>
+                </div>
+            )}
+            {!fields[fields.names[0]].input.value && (
+                <button
+                    className="btn btn-link"
+                    onClick={() => {
+                        fields.change(fields.names[0], true)
+                        fields.change("focus", fields.names[1])
+                    }}
+                >
+                    Add {fields.label}
+                </button>
+            )}
+        </div>
+    )
+})
 
-// const renderVisualScreening = fields => (
-//     <div className={classnames("section", { open: fields[fields.names[0]].input.value })}>
-//         {fields[fields.names[0]].input.value && (
-//             <div className="form-row title">
-//                 <h4>{fields.label}</h4>
-//                 <div className="col-sm-2 visual">
-//                     <label>
-//                         <input {...fields.visual_screening.left.distance} type="number" className="form-control" placeholder="Left eye" />
-//                         <span>OS - left eye</span>
-//                     </label>
-//                 </div>
-//                 <div className="col-sm-2">
-//                     <label>
-//                         <input {...fields.visual_screening.left.value} type="number" className="form-control" />
-//                     </label>
-//                 </div>
-
-//                 <div className="col-sm-1" />
-
-//                 <div className="col-sm-2 visual">
-//                     <label>
-//                         <input {...fields.visual_screening.right.distance} type="number" className="form-control" placeholder="Right eye" />
-//                         <span>OS - right eye</span>
-//                     </label>
-//                 </div>
-//                 <div className="col-sm-2">
-//                     <label>
-//                         <input {...fields.visual_screening.right.value} type="number" className="form-control" />
-//                     </label>
-//                 </div>
-
-//                 <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
-//                     <NegativeIcon />
-//                     Remove
-//                 </button>
-//             </div>
-//         )}
-//         {!fields[fields.names[0]].input.value && (
-//             <button className="btn btn-link" onClick={() => fields.change(fields.names[0], true)}>
-//                 Add {fields.label}
-//             </button>
-//         )}
-//     </div>
-// )
+const renderBloodPressure = connect()(fields => {
+    return (
+        <div
+            className={classnames("section", {
+                open: fields[fields.names[0]].input.value
+            })}
+        >
+            {fields[fields.names[0]].input.value && (
+                <div>
+                    <div className="form-row title">
+                        <h4>{fields.label}</h4>
+                        <div className="col-sm">
+                            {fields.dispatch(read(BLOOD_PRESSURE_UNIT)) === CM_HG ? (
+                                <UnitInputWithConversion
+                                    input={{
+                                        ...fields.pressure.systolic.input,
+                                        onKeyPress: fields.dispatch(submitOnEnter),
+                                        autoFocus: fields.focus.input.value === "pressure" && true
+                                    }}
+                                    meta={fields.pressure.systolic.meta}
+                                    label="Systolic"
+                                    placeholder="Systolic"
+                                    inputUnit={CM_HG}
+                                    valueUnit={MM_HG}
+                                    valuePrecision={0}
+                                    inputPrecision={1}
+                                    valueToObject={pressureValueToObject}
+                                    objectToValue={pressureObjectToValue}
+                                />
+                            ) : (
+                                <SimpleUnitInput
+                                    input={{
+                                        ...fields.pressure.systolic.input,
+                                        onKeyPress: fields.dispatch(submitOnEnter),
+                                        autoFocus: fields.focus.input.value === "pressure" && true
+                                    }}
+                                    meta={fields.pressure.systolic.meta}
+                                    label="Systolic"
+                                    placeholder="Systolic"
+                                    unit={MM_HG}
+                                    precision={0}
+                                />
+                            )}
+                        </div>
+                        <div className="col-sm">
+                            {fields.dispatch(read(BLOOD_PRESSURE_UNIT)) === CM_HG ? (
+                                <UnitInputWithConversion
+                                    input={{
+                                        ...fields.pressure.diastolic.input,
+                                        onKeyPress: fields.dispatch(submitOnEnter)
+                                    }}
+                                    meta={fields.pressure.diastolic.meta}
+                                    label="Diastolic"
+                                    placeholder="Diastolic"
+                                    inputUnit={CM_HG}
+                                    valueUnit={MM_HG}
+                                    valuePrecision={0}
+                                    inputPrecision={1}
+                                    valueToObject={pressureValueToObject}
+                                    objectToValue={pressureObjectToValue}
+                                />
+                            ) : (
+                                <SimpleUnitInput
+                                    input={{
+                                        ...fields.pressure.diastolic.input,
+                                        onKeyPress: fields.dispatch(submitOnEnter)
+                                    }}
+                                    meta={fields.pressure.diastolic.meta}
+                                    label="Diastolic"
+                                    placeholder="Diastolic"
+                                    unit={MM_HG}
+                                    precision={0}
+                                />
+                            )}
+                        </div>
+                        <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
+                            <NegativeIcon />
+                            Remove
+                        </button>
+                    </div>
+                </div>
+            )}
+            {!fields[fields.names[0]].input.value && (
+                <button
+                    className="btn btn-link"
+                    onClick={() => {
+                        fields.change(fields.names[0], true)
+                        fields.change("focus", "pressure")
+                    }}
+                >
+                    Add {fields.label}
+                </button>
+            )}
+        </div>
+    )
+})
 
 MedicalData = reduxForm({
     form: "medical-data",

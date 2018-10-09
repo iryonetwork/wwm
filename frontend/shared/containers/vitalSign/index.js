@@ -4,9 +4,10 @@ import moment from "moment"
 import { UncontrolledTooltip } from "reactstrap"
 import { ReactComponent as WarningIcon } from "shared/icons/warning.svg"
 
+import { ValueWithUnit, SHORT } from "../measurement"
 import "./style.css"
 
-export default ({ id, name, value, unit, timestamp, timestampWarning, consultationTooltipOn, onClick, isActive }) => {
+export default ({ id, name, value, valueUnit, displayUnit, precision, timestamp, timestampWarning, consultationTooltipOn, onClick, isActive }) => {
     return (
         <div
             key={id}
@@ -20,8 +21,7 @@ export default ({ id, name, value, unit, timestamp, timestampWarning, consultati
             <div className="card-body">
                 <div className="card-text">
                     <p>
-                        <span className="big">{value}</span>
-                        {unit}
+                        <ValueWithUnit valueUnit={valueUnit} displayUnit={displayUnit} precision={precision ? precision : 0} value={value} formatting={SHORT} />
                     </p>
                 </div>
             </div>
