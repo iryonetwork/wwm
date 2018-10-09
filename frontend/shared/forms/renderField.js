@@ -5,20 +5,22 @@ import _ from "lodash"
 
 const validateRequired = value => (!_.isEmpty(value) ? undefined : "Required")
 
-const renderInput = ({ input, optional, disabled, label, placeholder, type, meta: { touched, error } }) => (
-    <label>
-        <input
-            {...input}
-            disabled={disabled}
-            className={classnames("form-control", { "is-invalid": touched && error })}
-            placeholder={classnames(placeholder ? placeholder : label, { "(optional)": optional })}
-            type={type || "text"}
-        />
+const renderInput = ({ input, optional, disabled, label, placeholder, type, meta: { touched, error } }) => {
+    return (
+        <label>
+            <input
+                {...input}
+                disabled={disabled}
+                className={classnames("form-control", { "is-invalid": touched && error })}
+                placeholder={classnames(placeholder ? placeholder : label, { "(optional)": optional })}
+                type={type || "text"}
+            />
 
-        <span>{label}</span>
-        {touched && error && <div className="invalid-feedback">{error}</div>}
-    </label>
-)
+            <span>{label}</span>
+            {touched && error && <div className="invalid-feedback">{error}</div>}
+        </label>
+    )
+}
 
 const renderHorizontalInput = ({ input, optional, label, placeholder, unit, small, hideLabel, type, meta: { touched, error } }) => (
     <div className="form-row">

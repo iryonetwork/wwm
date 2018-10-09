@@ -34,11 +34,36 @@ const joinPaths = (...paths) => {
 }
 
 const round = (number, precision) => {
+    if (precision === undefined) {
+        return number
+    }
+
     var shift = function(number, precision) {
         var numArray = ("" + number).split("e")
         return +(numArray[0] + "e" + (numArray[1] ? +numArray[1] + precision : precision))
     }
     return shift(Math.round(shift(number, +precision)), -precision)
+}
+
+const isStringNumber = s => {
+    s = s.replace(",", ".")
+    return !isNaN(parseFloat(s)) && isFinite(s)
+}
+
+const getNumberFromString = s => {
+    s = s.replace(",", ".")
+    return parseFloat(s)
+}
+
+const getPrecision = value => {
+    if (!isFinite(value)) return 0
+    var e = 1,
+        p = 0
+    while (Math.round(value * e) / e !== value) {
+        e *= 10
+        p++
+    }
+    return p
 }
 
 const escapeRegex = text => {
@@ -57,4 +82,4 @@ const toggleBodyScroll = () => {
     document.body.style.overflow = document.body.style.overflow === "hidden" ? "scroll" : "hidden"
 }
 
-export { PropRoute, joinPaths, round, escapeRegex, confirmationDialog, toggleBodyScroll }
+export { PropRoute, joinPaths, round, isStringNumber, getNumberFromString, getPrecision, escapeRegex, confirmationDialog, toggleBodyScroll }
