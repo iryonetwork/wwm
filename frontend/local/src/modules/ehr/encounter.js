@@ -92,6 +92,7 @@ export default dispatch =>
             ehrPath:
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_weight.v2]/data[at0002]/events[at0003]:0/data[at0001]/items[at0004]",
             unit: "kg",
+            precision: 1,
             formPath: "vitalSigns.weight.value"
         },
         {
@@ -107,6 +108,7 @@ export default dispatch =>
             ehrPath:
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.height.v2]/data[at0001]/events[at0002]:0/data[at0003]/items[at0004]",
             unit: "cm",
+            precision: 0,
             formPath: "vitalSigns.height.value"
         },
         {
@@ -122,6 +124,7 @@ export default dispatch =>
             ehrPath:
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_mass_index.v2]/data[at0001]/events[at0002]:0/data[at0003]/items[at0004]",
             unit: "kg/m2",
+            precision: 2,
             formPath: "vitalSigns.bmi.value"
         },
         {
@@ -137,6 +140,7 @@ export default dispatch =>
             ehrPath:
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.body_temperature.v2]/data[at0002]/events[at0003]:0/data[at0001]/items[at0004]",
             unit: "Cel",
+            precision: 1,
             formPath: "vitalSigns.temperature.value"
         },
         {
@@ -153,6 +157,7 @@ export default dispatch =>
             ehrPath:
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.blood_pressure.v1]/data[at0001]/events[at0006]:0/data[at0003]/items[at0004]",
             unit: "mm[Hg]",
+            precision: 0,
             formPath: "vitalSigns.pressure.value.systolic"
         },
         // diastolic
@@ -161,6 +166,7 @@ export default dispatch =>
             ehrPath:
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.blood_pressure.v1]/data[at0001]/events[at0006]:0/data[at0003]/items[at0005]",
             unit: "mm[Hg]",
+            precision: 0,
             formPath: "vitalSigns.pressure.value.diastolic"
         },
         {
@@ -182,6 +188,7 @@ export default dispatch =>
             ehrPath:
                 "/content[openEHR-EHR-COMPOSITION.encounter.v1]/context/other_context/items[openEHR-EHR-OBSERVATION.pulse.v1]/data[at0002]/events[at0003]:0/data[at0001]/items[at0004]",
             unit: "/min",
+            precision: 0,
             formPath: "vitalSigns.heart_rate.value"
         },
         {

@@ -2,6 +2,7 @@ import { get, has, set } from "lodash"
 
 import { escapeRegex } from "shared/utils"
 import { read } from "shared/modules/config"
+import { round } from "shared/utils"
 import { CLINIC_ID, LOCATION_ID } from "./config"
 import { load as loadClinic } from "./clinics"
 import { load as loadLocation } from "./locations"
@@ -168,7 +169,7 @@ const specToDocument = (specs, data, formData, ehrPrefix) => {
                 break
 
             case "quantity":
-                acc.push(assignQuantity(ehrPrefix + spec.ehrPath, spec.formPath, spec.unit))
+                acc.push(assignQuantity(ehrPrefix + spec.ehrPath, spec.formPath, spec.unit, spec.precision))
                 break
 
             case "code":
@@ -226,7 +227,6 @@ const specToObject = (specs, data, doc, ehrPrefix) => {
                     // noop
                     return
                 }
-
                 newValue = value.replace(re, "")
                 break
 
@@ -296,11 +296,16 @@ const assignInteger = (ehrPath, formPath) => (data, formData) => {
     return Object.assign(data, { [ehrPath]: parseInt(get(formData, formPath), 10) })
 }
 
-const assignQuantity = (ehrPath, formPath, unit) => (data, formData) => {
+const assignQuantity = (ehrPath, formPath, unit, precision) => (data, formData) => {
     if (!has(formData, formPath)) {
         return data
     }
-    return Object.assign(data, { [ehrPath]: `${get(formData, formPath)},${unit}` })
+    let q = get(formData, formPath)
+    if (precision !== undefined) {
+        q = round(parseFloat(q), precision).toString()
+    }
+
+    return Object.assign(data, { [ehrPath]: `${q},${unit}` })
 }
 
 const assignBoolean = (ehrPath, formPath) => (data, formData) => {
