@@ -19,6 +19,7 @@ const initialState = {
     cache: {},
     fetching: [],
     codeFetching: {},
+    fetchedCache: {},
     failed: []
 }
 
@@ -35,7 +36,14 @@ export default (state = initialState, action) => {
 
             case LOADED:
                 if (action.category) {
-                    draft.cache[action.category] = action.data
+                    draft.cache[action.category] = _.reduce(
+                        action.data,
+                        (result, data) => {
+                            result[data.id] = data
+                            return result
+                        },
+                        {}
+                    )
                     draft.fetching = draft.fetching.filter(cat => cat !== action.category)
                 }
 
@@ -60,8 +68,8 @@ export default (state = initialState, action) => {
                 break
 
             case FETCHED:
-                draft.cache[action.category] = _.assign(draft.cache[action.category] || {}, _.fromPairs([[action.id, action.data]]))
                 draft.codeFetching[action.category] = _.assign(draft.codeFetching[action.category] || {}, _.fromPairs([[action.id, false]]))
+                draft.fetchedCache[action.category] = _.assign(draft.fetchedCache[action.category] || {}, _.fromPairs([[action.id, action.data]]))
                 draft.isFetching = false
                 draft.fetchResults = action.data
                 break
@@ -84,12 +92,12 @@ export default (state = initialState, action) => {
 }
 
 export const getCodes = category => (dispatch, getState) => {
-    return getState().codes.cache[category] || []
+    return getState().codes.cache[category] || {}
 }
 
 export const getCodesAsOptions = category => {
     return (dispatch, getState) => {
-        return (getState().codes.cache[category] || []).map(code => ({ label: code.title, value: code.id }))
+        return _.map(getState().codes.cache[category] || {}, code => ({ label: code.title, value: code.id }))
     }
 }
 
@@ -158,7 +166,16 @@ export const fetchCode = (category, id) => (dispatch, getState) => {
     const url = `${dispatch(read(API_URL))}/discovery/codes/${category}/${id}?locale=${locale}`
     dispatch({ type: FETCH, category, id })
 
-    let cachedCode = getState().codes.cache[category] ? getState().codes.cache[category][id] : undefined
+    // check in cache of whole categories
+    let cachedCode = _.get(getState().codes.cache, `${category}.${id}`)
+    if (cachedCode) {
+        dispatch({ type: FETCHED, data: cachedCode, category, id })
+
+        return Promise.resolve(cachedCode)
+    }
+
+    // check in cache of individually fetched codes
+    cachedCode = _.get(getState().codes.fetchedCache, `${category}.${id}`)
     if (cachedCode) {
         dispatch({ type: FETCHED, data: cachedCode, category, id })
 
