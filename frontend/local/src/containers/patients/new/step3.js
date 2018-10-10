@@ -15,6 +15,7 @@ import {
     renderHorizontalSelect,
     renderComplexHorizontalRadio
 } from "shared/forms/renderField"
+import { babyHeightExpectedRange, babyWeightExpectedRange } from "shared/forms/validation"
 import { SimpleUnitInput, UnitInputWithConversion } from "shared/forms/measurementFields"
 import { POUNDS_OUNCES, GRAMS, FEET_INCHES, CM } from "shared/unitConversion/units"
 import { weightValueToObject, weightObjectToValue, lengthValueToObject, lengthObjectToValue } from "shared/unitConversion"
@@ -121,6 +122,7 @@ const renderBabyForm = ({ babyFoods, deliveryTypes, communicationTypes, weightUn
                                 valuePrecision={0}
                                 valueToObject={weightValueToObject}
                                 objectToValue={weightObjectToValue}
+                                warn={babyWeightExpectedRange}
                             />
                         ) : (
                             <Field
@@ -131,6 +133,7 @@ const renderBabyForm = ({ babyFoods, deliveryTypes, communicationTypes, weightUn
                                 unit={GRAMS}
                                 precision={0}
                                 min={0}
+                                warn={babyHeightExpectedRange}
                             />
                         )}
                     </div>

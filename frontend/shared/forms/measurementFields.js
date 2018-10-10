@@ -56,10 +56,12 @@ class SimpleUnitInput extends Component {
     }
 
     render() {
-        const { input, meta, label, placeholder, optional, disabled, unit } = this.props
-
+        const { input, meta, label, placeholder, optional, disabled, unit, autoFocus, onKeyPress } = this.props
+        if (label === "Weight") {
+            console.log(meta)
+        }
         return (
-            <div className="form-group">
+            <div className={classnames("form-group", { "is-invalid": meta.touched && meta.error, "is-warning": !meta.error && meta.warning })}>
                 {!this.state.noInput && <span className="label">{label}</span>}
                 <div className="inputWithUnit-1">
                     <input
@@ -68,13 +70,19 @@ class SimpleUnitInput extends Component {
                         disabled={disabled}
                         onBlur={event => input.onBlur(this.parseInputChange(input.value)(event))}
                         onChange={event => input.onChange(this.parseInputChange(input.value)(event))}
-                        className={classnames("form-control", { "is-invalid": meta.touched && meta.error })}
+                        autoFocus={autoFocus}
+                        onKeyPress={onKeyPress && (event => onKeyPress(event))}
+                        className={classnames("form-control", {
+                            "is-invalid": meta.touched && meta.error,
+                            "is-warning": !meta.error && meta.warning
+                        })}
                         placeholder={classnames(placeholder ? placeholder : label, { "(optional)": optional })}
                         type="text"
                     />
                     <span className="unit">{unit}</span>
                 </div>
                 {meta.touched && meta.error && <div className="invalid-feedback">{meta.error}</div>}
+                {!meta.error && meta.warning && <div className="warning-feedback">{meta.warning}</div>}
             </div>
         )
     }
@@ -207,11 +215,10 @@ class UnitInputWithConversion extends Component {
     }
 
     render() {
-        const { input, meta, label, placeholder, optional, disabled } = this.props
-
+        const { input, meta, label, placeholder, optional, disabled, autoFocus, onKeyPress } = this.props
         let i = 0
         return (
-            <div className="form-group">
+            <div className={classnames("form-group", { "is-invalid": meta.touched && meta.error, "is-warning": meta.touched && !meta.error && meta.warning })}>
                 {!this.state.noInput && <span className="label">{label}</span>}
                 {_.map(this.state.inputValues, (value, unit) => {
                     return (
@@ -219,11 +226,15 @@ class UnitInputWithConversion extends Component {
                             <input
                                 {...input}
                                 value={value}
-                                autoFocus={input.autoFocus && 0 === i++}
+                                autoFocus={autoFocus && 0 === i++}
                                 disabled={disabled}
                                 onBlur={event => input.onBlur(this.parseInputChange(unit)(event))}
                                 onChange={event => input.onChange(this.parseInputChange(unit)(event))}
-                                className={classnames("form-control", { "is-invalid": meta.touched && meta.error })}
+                                onKeyPress={onKeyPress && (event => onKeyPress(event))}
+                                className={classnames("form-control", {
+                                    "is-invalid": meta.touched && meta.error,
+                                    "is-warning": meta.touched && !meta.error && meta.warning
+                                })}
                                 placeholder={classnames(placeholder ? placeholder : label, { "(optional)": optional })}
                                 type="text"
                             />
@@ -232,6 +243,7 @@ class UnitInputWithConversion extends Component {
                     )
                 })}
                 {meta.touched && meta.error && <div className="invalid-feedback">{meta.error}</div>}
+                {!meta.error && meta.warning && <div className="warning-feedback">{meta.warning}</div>}
             </div>
         )
     }

@@ -1,7 +1,7 @@
 import React from "react"
 import _ from "lodash"
 import { connect } from "react-redux"
-import { Fields, reduxForm, submit } from "redux-form"
+import { Field, reduxForm, submit, formValueSelector } from "redux-form"
 import classnames from "classnames"
 import { goBack, push } from "react-router-redux"
 import moment from "moment"
@@ -14,6 +14,16 @@ import { open, COLOR_DANGER } from "shared/modules/alert"
 import { listAll, update } from "../../../modules/waitlist"
 import { cardToObject } from "../../../modules/discovery"
 import { SimpleUnitInput, UnitInputWithConversion } from "shared/forms/measurementFields"
+import {
+    required,
+    heightExpectedRange,
+    weightExpectedRange,
+    temperatureExpectedRange,
+    systolicBloodPressureExpectedRange,
+    diastolicBloodPressureExpectedRange,
+    heartRateExpectedRange,
+    oxygenSaturationxpectedRange
+} from "shared/forms/validation"
 import { POUNDS_OUNCES, POUNDS, KG, MM_HG, CM_HG, CM, FEET_INCHES, CELSIUS, FAHRENHEIT } from "shared/unitConversion/units"
 import {
     weightValueToObject,
@@ -25,34 +35,12 @@ import {
     temperatureValueToObject,
     temperatureObjectToValue
 } from "shared/unitConversion"
-import { read } from "shared/modules/config"
 import { WEIGHT_UNIT, LENGTH_UNIT, TEMPERATURE_UNIT, BLOOD_PRESSURE_UNIT } from "../../../modules/config"
 import { ReactComponent as MedicalDataIcon } from "shared/icons/vitalsigns.svg"
 import { ReactComponent as NegativeIcon } from "shared/icons/negative.svg"
 
 const supportedSigns = ["height", "weight", "temperature", "pressure", "heart_rate", "oxygen_saturation"]
 const complexSigns = { pressure: ["systolic", "diastolic"] }
-
-const validate = form => {
-    const errors = {}
-
-    _.forEach(form, (value, key) => {
-        if (key.indexOf("has_") === 0 && value) {
-            let sign = key.slice(4)
-            if (_.isObject(form[sign])) {
-                errors[sign] = {}
-                _.forEach(form[sign], (value, key) => {
-                    if (!value) {
-                        errors[sign][key] = "Required"
-                    }
-                })
-            } else if (!form[sign]) {
-                errors[sign] = "Required"
-            }
-        }
-    })
-    return errors
-}
 
 const onMedicalDataFormSubmit = (form, dispatch, props) => {
     let vitalSigns = {}
@@ -108,7 +96,8 @@ class MedicalData extends React.Component {
     }
 
     render() {
-        let { handleSubmit, item, change, history } = this.props
+        let { handleSubmit, item, change, dispatch, history } = this.props
+
         return (
             <Modal>
                 <div className="medical-data">
@@ -125,89 +114,35 @@ class MedicalData extends React.Component {
                             <div className="modal-body">
                                 <h3>Body Measurements</h3>
                                 <div>
-                                    <Fields label="Height" names={["has_height", "height", "focus"]} unit="cm" component={renderHeight} change={change} />
-
-                                    <Fields label="Weight" names={["has_weight", "weight", "focus"]} component={renderWeight} change={change} />
+                                    <Height change={change} dispatch={dispatch} />
+                                    <Weight change={change} dispatch={dispatch} />
                                 </div>
 
                                 <h3>Vital Signs</h3>
 
                                 <div>
-                                    <Fields
-                                        label="Body temperature"
-                                        names={["has_temperature", "temperature", "focus"]}
-                                        unit="°C"
-                                        component={renderTemperature}
-                                        change={change}
-                                    />
-
-                                    <Fields
-                                        label="Blood pressure"
-                                        names={["has_pressure", "pressure.systolic", "pressure.diastolic", "focus"]}
-                                        component={renderBloodPressure}
-                                        change={change}
-                                    />
-
-                                    <Fields
+                                    <Temperature change={change} dispatch={dispatch} />
+                                    <BloodPressure change={change} dispatch={dispatch} />
+                                    <FieldWithUnit
                                         label="Heart rate"
-                                        names={["has_heart_rate", "heart_rate", "focus"]}
+                                        name="heart_rate"
                                         unit="bpm"
-                                        component={renderFieldWithUnit}
                                         change={change}
+                                        dispatch={dispatch}
+                                        validate={required}
+                                        warn={heartRateExpectedRange}
                                     />
-
-                                    {/*<Fields
-                                        label="Hearing screaning"
-                                        names={[
-                                            "has_hearing",
-                                            "hearing.left.500",
-                                            "hearing.left.1000",
-                                            "hearing.left.2000",
-                                            "hearing.left.3000",
-                                            "hearing.left.4000",
-                                            "hearing.left.6000",
-                                            "hearing.left.8000",
-                                            "hearing.right.500",
-                                            "hearing.right.1000",
-                                            "hearing.right.2000",
-                                            "hearing.right.3000",
-                                            "hearing.right.4000",
-                                            "hearing.right.6000",
-                                            "hearing.right.8000"
-                                        ]}
-                                        component={renderHearingScreening}
-                                        change={change}
-                                    />*/}
-
-                                    {/*<Fields
-                                        label="Visual screening"
-                                        names={[
-                                            "has_visual_screening",
-                                            "visual_screening.left.distance",
-                                            "visual_screening.left.value",
-                                            "visual_screening.right.distance",
-                                            "visual_screening.right.value"
-                                        ]}
-                                        unit="%"
-                                        component={renderVisualScreening}
-                                        change={change}
-                                    />*/}
-
-                                    <Fields
+                                    <FieldWithUnit
                                         label="Oxygen saturation"
-                                        names={["has_oxygen_saturation", "oxygen_saturation", "focus"]}
+                                        name="oxygen_saturation"
                                         unit="%"
-                                        component={renderFieldWithUnit}
+                                        min={0}
+                                        max={100}
                                         change={change}
+                                        dispatch={dispatch}
+                                        validate={required}
+                                        warn={oxygenSaturationxpectedRange}
                                     />
-                                    {/*<Fields
-                                        label="Lung function test"
-                                        names={["has_lung_function_test", "heart_lung_function_test"]}
-                                        unit="%"
-                                        component={renderFieldWithUnit}
-                                        change={change}
-                                    />
-                                    */}
                                 </div>
                             </div>
 
@@ -245,345 +180,8 @@ class MedicalData extends React.Component {
     }
 }
 
-const submitOnEnter = dispatch => e => {
-    if (e.key === "Enter") {
-        e.preventDefault()
-        dispatch(submit("medical-data"))
-    }
-}
-
-const renderFieldWithUnit = connect()(fields => {
-    return (
-        <div
-            className={classnames("section", {
-                open: fields[fields.names[0]].input.value
-            })}
-        >
-            {fields[fields.names[0]].input.value && (
-                <div className="form-row">
-                    <div className="col-sm">
-                        <SimpleUnitInput
-                            input={{
-                                ...fields[fields.names[1]].input,
-                                onKeyPress: fields.dispatch(submitOnEnter),
-                                autoFocus: fields.focus.input.value === fields.names[1] && true
-                            }}
-                            meta={fields[fields.names[1]].meta}
-                            label={fields.label}
-                            placeholder={fields.label}
-                            unit={fields.unit}
-                            precision={fields.precision ? fields.precision : 0}
-                        />
-                    </div>
-                    <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
-                        <NegativeIcon />
-                        Remove
-                    </button>
-                </div>
-            )}
-            {!fields[fields.names[0]].input.value && (
-                <button
-                    className="btn btn-link"
-                    onClick={() => {
-                        fields.change(fields.names[0], true)
-                        fields.change("focus", fields.names[1])
-                    }}
-                >
-                    Add {fields.label}
-                </button>
-            )}
-        </div>
-    )
-})
-
-const renderHeight = connect()(fields => {
-    return (
-        <div
-            className={classnames("section", {
-                open: fields[fields.names[0]].input.value
-            })}
-        >
-            {fields[fields.names[0]].input.value && (
-                <div className="form-row">
-                    <div className="col-sm">
-                        {fields.dispatch(read(LENGTH_UNIT)) === FEET_INCHES ? (
-                            <UnitInputWithConversion
-                                input={{
-                                    ...fields[fields.names[1]].input,
-                                    onKeyPress: submitOnEnter(fields.dispatch),
-                                    autoFocus: fields.focus.input.value === fields.names[1] && true
-                                }}
-                                meta={fields[fields.names[1]].meta}
-                                label={fields.label}
-                                placeholder={fields.label}
-                                inputUnit={FEET_INCHES}
-                                valueUnit={CM}
-                                valuePrecision={0}
-                                valueToObject={lengthValueToObject}
-                                objectToValue={lengthObjectToValue}
-                            />
-                        ) : (
-                            <SimpleUnitInput
-                                input={{
-                                    ...fields[fields.names[1]].input,
-                                    onKeyPress: submitOnEnter(fields.dispatch),
-                                    autoFocus: fields.focus.input.value === fields.names[1] && true
-                                }}
-                                meta={fields[fields.names[1]].meta}
-                                label={fields.label}
-                                placeholder={fields.label}
-                                unit={CM}
-                                precision={1}
-                            />
-                        )}
-                    </div>
-                    <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
-                        <NegativeIcon />
-                        Remove
-                    </button>
-                </div>
-            )}
-            {!fields[fields.names[0]].input.value && (
-                <button
-                    className="btn btn-link"
-                    onClick={() => {
-                        fields.change(fields.names[0], true)
-                        fields.change("focus", fields.names[1])
-                    }}
-                >
-                    Add {fields.label}
-                </button>
-            )}
-        </div>
-    )
-})
-
-const renderWeight = connect()(fields => {
-    return (
-        <div
-            className={classnames("section", {
-                open: fields[fields.names[0]].input.value
-            })}
-        >
-            {fields[fields.names[0]].input.value && (
-                <div className="form-row">
-                    <div className="col-sm">
-                        {fields.dispatch(read(WEIGHT_UNIT)) === POUNDS_OUNCES ? (
-                            <UnitInputWithConversion
-                                input={{
-                                    ...fields[fields.names[1]].input,
-                                    onKeyPress: submitOnEnter(fields.dispatch),
-                                    autoFocus: fields.focus.input.value === fields.names[1] && true
-                                }}
-                                meta={fields[fields.names[1]].meta}
-                                label={fields.label}
-                                placeholder={fields.label}
-                                inputUnit={POUNDS}
-                                valueUnit={KG}
-                                valuePrecision={8}
-                                inputPrecision={1}
-                                valueToObject={weightValueToObject}
-                                objectToValue={weightObjectToValue}
-                            />
-                        ) : (
-                            <SimpleUnitInput
-                                input={{
-                                    ...fields[fields.names[1]].input,
-                                    onKeyPress: submitOnEnter(fields.dispatch),
-                                    autoFocus: fields.focus.input.value === fields.names[1] && true
-                                }}
-                                meta={fields[fields.names[1]].meta}
-                                label={fields.label}
-                                placeholder={fields.label}
-                                unit={KG}
-                                precision={1}
-                            />
-                        )}
-                    </div>
-                    <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
-                        <NegativeIcon />
-                        Remove
-                    </button>
-                </div>
-            )}
-            {!fields[fields.names[0]].input.value && (
-                <button
-                    className="btn btn-link"
-                    onClick={() => {
-                        fields.change(fields.names[0], true)
-                        fields.change("focus", fields.names[1])
-                    }}
-                >
-                    Add {fields.label}
-                </button>
-            )}
-        </div>
-    )
-})
-
-const renderTemperature = connect()(fields => {
-    return (
-        <div
-            className={classnames("section", {
-                open: fields[fields.names[0]].input.value
-            })}
-        >
-            {fields[fields.names[0]].input.value && (
-                <div className="form-row">
-                    <div className="col-sm">
-                        {fields.dispatch(read(TEMPERATURE_UNIT)) === FAHRENHEIT ? (
-                            <UnitInputWithConversion
-                                input={{
-                                    ...fields[fields.names[1]].input,
-                                    onKeyPress: submitOnEnter(fields.dispatch),
-                                    autoFocus: fields.focus.input.value === fields.names[1] && true
-                                }}
-                                meta={fields[fields.names[1]].meta}
-                                label={fields.label}
-                                placeholder={fields.label}
-                                inputUnit={FAHRENHEIT}
-                                valueUnit={CELSIUS}
-                                valuePrecision={8}
-                                inputPrecision={1}
-                                valueToObject={temperatureValueToObject}
-                                objectToValue={temperatureObjectToValue}
-                            />
-                        ) : (
-                            <SimpleUnitInput
-                                input={{
-                                    ...fields[fields.names[1]].input,
-                                    onKeyPress: submitOnEnter(fields.dispatch),
-                                    autoFocus: fields.focus.input.value === fields.names[1] && true
-                                }}
-                                meta={fields[fields.names[1]].meta}
-                                label={fields.label}
-                                placeholder={fields.label}
-                                unit={CELSIUS}
-                                precision={1}
-                            />
-                        )}
-                    </div>
-                    <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
-                        <NegativeIcon />
-                        Remove
-                    </button>
-                </div>
-            )}
-            {!fields[fields.names[0]].input.value && (
-                <button
-                    className="btn btn-link"
-                    onClick={() => {
-                        fields.change(fields.names[0], true)
-                        fields.change("focus", fields.names[1])
-                    }}
-                >
-                    Add {fields.label}
-                </button>
-            )}
-        </div>
-    )
-})
-
-const renderBloodPressure = connect()(fields => {
-    return (
-        <div
-            className={classnames("section", {
-                open: fields[fields.names[0]].input.value
-            })}
-        >
-            {fields[fields.names[0]].input.value && (
-                <div>
-                    <div className="form-row title">
-                        <h4>{fields.label}</h4>
-                        <div className="col-sm">
-                            {fields.dispatch(read(BLOOD_PRESSURE_UNIT)) === CM_HG ? (
-                                <UnitInputWithConversion
-                                    input={{
-                                        ...fields.pressure.systolic.input,
-                                        onKeyPress: fields.dispatch(submitOnEnter),
-                                        autoFocus: fields.focus.input.value === "pressure" && true
-                                    }}
-                                    meta={fields.pressure.systolic.meta}
-                                    label="Systolic"
-                                    placeholder="Systolic"
-                                    inputUnit={CM_HG}
-                                    valueUnit={MM_HG}
-                                    valuePrecision={0}
-                                    inputPrecision={1}
-                                    valueToObject={pressureValueToObject}
-                                    objectToValue={pressureObjectToValue}
-                                />
-                            ) : (
-                                <SimpleUnitInput
-                                    input={{
-                                        ...fields.pressure.systolic.input,
-                                        onKeyPress: fields.dispatch(submitOnEnter),
-                                        autoFocus: fields.focus.input.value === "pressure" && true
-                                    }}
-                                    meta={fields.pressure.systolic.meta}
-                                    label="Systolic"
-                                    placeholder="Systolic"
-                                    unit={MM_HG}
-                                    precision={0}
-                                />
-                            )}
-                        </div>
-                        <div className="col-sm">
-                            {fields.dispatch(read(BLOOD_PRESSURE_UNIT)) === CM_HG ? (
-                                <UnitInputWithConversion
-                                    input={{
-                                        ...fields.pressure.diastolic.input,
-                                        onKeyPress: fields.dispatch(submitOnEnter)
-                                    }}
-                                    meta={fields.pressure.diastolic.meta}
-                                    label="Diastolic"
-                                    placeholder="Diastolic"
-                                    inputUnit={CM_HG}
-                                    valueUnit={MM_HG}
-                                    valuePrecision={0}
-                                    inputPrecision={1}
-                                    valueToObject={pressureValueToObject}
-                                    objectToValue={pressureObjectToValue}
-                                />
-                            ) : (
-                                <SimpleUnitInput
-                                    input={{
-                                        ...fields.pressure.diastolic.input,
-                                        onKeyPress: fields.dispatch(submitOnEnter)
-                                    }}
-                                    meta={fields.pressure.diastolic.meta}
-                                    label="Diastolic"
-                                    placeholder="Diastolic"
-                                    unit={MM_HG}
-                                    precision={0}
-                                />
-                            )}
-                        </div>
-                        <button className="btn btn-link remove" onClick={() => fields.change(fields.names[0], false)}>
-                            <NegativeIcon />
-                            Remove
-                        </button>
-                    </div>
-                </div>
-            )}
-            {!fields[fields.names[0]].input.value && (
-                <button
-                    className="btn btn-link"
-                    onClick={() => {
-                        fields.change(fields.names[0], true)
-                        fields.change("focus", "pressure")
-                    }}
-                >
-                    Add {fields.label}
-                </button>
-            )}
-        </div>
-    )
-})
-
 MedicalData = reduxForm({
     form: "medical-data",
-    validate,
     onSubmit: onMedicalDataFormSubmit
 })(MedicalData)
 
@@ -629,5 +227,398 @@ MedicalData = connect(
         push
     }
 )(MedicalData)
+
+const selector = formValueSelector("medical-data")
+
+const submitOnEnter = dispatch => e => {
+    if (e.key === "Enter") {
+        e.preventDefault()
+        dispatch(submit("medical-data"))
+    }
+}
+
+class FieldWithUnit extends React.Component {
+    render() {
+        return (
+            <div
+                className={classnames("section", {
+                    open: this.props.opened
+                })}
+            >
+                {this.props.opened && (
+                    <div className="form-row">
+                        <div className="col-sm">
+                            <Field
+                                name={this.props.name}
+                                label={this.props.label}
+                                placeholder={this.props.label}
+                                component={SimpleUnitInput}
+                                unit={this.props.unit}
+                                precision={this.props.precision ? this.props.precision : 0}
+                                min={this.props.min}
+                                max={this.props.max}
+                                validate={this.props.validate}
+                                warn={this.props.warn}
+                                onKeyPress={this.props.dispatch(submitOnEnter)}
+                                autoFocus={this.props.focused}
+                            />
+                        </div>
+                        <button className="btn btn-link remove" onClick={() => this.props.change(`has_${this.props.name}`, false)}>
+                            <NegativeIcon />
+                            Remove
+                        </button>
+                    </div>
+                )}
+                {!this.props.opened && (
+                    <button
+                        className="btn btn-link"
+                        onClick={() => {
+                            this.props.change(`has_${this.props.name}`, true)
+                            this.props.change("focus", this.props.name)
+                        }}
+                    >
+                        Add {this.props.label}
+                    </button>
+                )}
+            </div>
+        )
+    }
+}
+
+FieldWithUnit = connect((state, props) => {
+    return {
+        opened: selector(state, `has_${props.name}`),
+        focused: selector(state, "focus") === props.name
+    }
+}, {})(FieldWithUnit)
+
+class Height extends React.Component {
+    render() {
+        return (
+            <div
+                className={classnames("section", {
+                    open: this.props.opened
+                })}
+            >
+                {this.props.opened && (
+                    <div className="form-row">
+                        <div className="col-sm">
+                            {this.props.unit === FEET_INCHES ? (
+                                <Field
+                                    name="height"
+                                    label="Height"
+                                    placeholder="Height"
+                                    component={UnitInputWithConversion}
+                                    inputUnit={FEET_INCHES}
+                                    valueUnit={CM}
+                                    valuePrecision={0}
+                                    valueToObject={lengthValueToObject}
+                                    objectToValue={lengthObjectToValue}
+                                    onKeyPress={this.props.dispatch(submitOnEnter)}
+                                    autoFocus={this.props.focused}
+                                    validate={required}
+                                    warn={heightExpectedRange}
+                                />
+                            ) : (
+                                <Field
+                                    name="height"
+                                    label="Height"
+                                    placeholder="Height"
+                                    component={SimpleUnitInput}
+                                    unit={CM}
+                                    precision={0}
+                                    min={0}
+                                    onKeyPress={this.props.dispatch(submitOnEnter)}
+                                    autoFocus={this.props.focused}
+                                    validate={required}
+                                    warn={heightExpectedRange}
+                                />
+                            )}
+                        </div>
+                        <button className="btn btn-link remove" onClick={() => this.props.change("has_height", false)}>
+                            <NegativeIcon />
+                            Remove
+                        </button>
+                    </div>
+                )}
+                {!this.props.opened && (
+                    <button
+                        className="btn btn-link"
+                        onClick={() => {
+                            this.props.change("has_height", true)
+                            this.props.change("focus", "height")
+                        }}
+                    >
+                        Add Height
+                    </button>
+                )}
+            </div>
+        )
+    }
+}
+
+Height = connect((state, props) => {
+    return {
+        opened: selector(state, "has_height"),
+        focused: selector(state, "focus") === "height",
+        unit: state.config[LENGTH_UNIT]
+    }
+}, {})(Height)
+
+class Weight extends React.Component {
+    render() {
+        return (
+            <div
+                className={classnames("section", {
+                    open: this.props.opened
+                })}
+            >
+                {this.props.opened && (
+                    <div className="form-row">
+                        <div className="col-sm">
+                            {this.props.unit === POUNDS_OUNCES ? (
+                                <Field
+                                    name="weight"
+                                    label="Weight"
+                                    placeholder="Weight"
+                                    component={UnitInputWithConversion}
+                                    inputUnit={POUNDS}
+                                    valueUnit={KG}
+                                    valuePrecision={8}
+                                    inputPrecision={1}
+                                    valueToObject={weightValueToObject}
+                                    objectToValue={weightObjectToValue}
+                                    onKeyPress={this.props.dispatch(submitOnEnter)}
+                                    autoFocus={this.props.focused}
+                                    validate={required}
+                                    warn={weightExpectedRange}
+                                />
+                            ) : (
+                                <Field
+                                    name="weight"
+                                    label="Weight"
+                                    placeholder="Weight"
+                                    component={SimpleUnitInput}
+                                    unit={KG}
+                                    precision={1}
+                                    min={0}
+                                    onKeyPress={this.props.dispatch(submitOnEnter)}
+                                    autoFocus={this.props.focused}
+                                    validate={required}
+                                    warn={weightExpectedRange}
+                                />
+                            )}
+                        </div>
+                        <button className="btn btn-link remove" onClick={() => this.props.change("has_weight", false)}>
+                            <NegativeIcon />
+                            Remove
+                        </button>
+                    </div>
+                )}
+                {!this.props.opened && (
+                    <button
+                        className="btn btn-link"
+                        onClick={() => {
+                            this.props.change("has_weight", true)
+                            this.props.change("focus", "weight")
+                        }}
+                    >
+                        Add Weight
+                    </button>
+                )}
+            </div>
+        )
+    }
+}
+
+Weight = connect((state, props) => {
+    return {
+        opened: selector(state, "has_weight"),
+        focused: selector(state, "focus") === "weight",
+        unit: state.config[WEIGHT_UNIT]
+    }
+}, {})(Weight)
+
+class Temperature extends React.Component {
+    render() {
+        return (
+            <div
+                className={classnames("section", {
+                    open: this.props.opened
+                })}
+            >
+                {this.props.opened && (
+                    <div className="form-row">
+                        <div className="col-sm">
+                            {this.props.unit === POUNDS_OUNCES ? (
+                                <Field
+                                    name="temperature"
+                                    label="Body temperature"
+                                    placeholder="Body temperature"
+                                    component={UnitInputWithConversion}
+                                    inputUnit={FAHRENHEIT}
+                                    valueUnit={CELSIUS}
+                                    valuePrecision={8}
+                                    inputPrecision={1}
+                                    valueToObject={temperatureValueToObject}
+                                    objectToValue={temperatureObjectToValue}
+                                    onKeyPress={this.props.dispatch(submitOnEnter)}
+                                    autoFocus={this.props.focused}
+                                    validate={required}
+                                    warn={temperatureExpectedRange}
+                                />
+                            ) : (
+                                <Field
+                                    name="temperature"
+                                    label="Body temperature"
+                                    placeholder="Body temperature"
+                                    component={SimpleUnitInput}
+                                    unit={CELSIUS}
+                                    precision={1}
+                                    onKeyPress={this.props.dispatch(submitOnEnter)}
+                                    autoFocus={this.props.focused}
+                                    validate={required}
+                                    warn={temperatureExpectedRange}
+                                />
+                            )}
+                        </div>
+                        <button className="btn btn-link remove" onClick={() => this.props.change("has_temperature", false)}>
+                            <NegativeIcon />
+                            Remove
+                        </button>
+                    </div>
+                )}
+                {!this.props.opened && (
+                    <button
+                        className="btn btn-link"
+                        onClick={() => {
+                            this.props.change("has_temperature", true)
+                            this.props.change("focus", "temperature")
+                        }}
+                    >
+                        Add Body temperature
+                    </button>
+                )}
+            </div>
+        )
+    }
+}
+
+Temperature = connect((state, props) => {
+    return {
+        opened: selector(state, "has_temperature"),
+        focused: selector(state, "focus") === "temperature",
+        unit: state.config[TEMPERATURE_UNIT]
+    }
+}, {})(Temperature)
+
+class BloodPressure extends React.Component {
+    render() {
+        return (
+            <div
+                className={classnames("section", {
+                    open: this.props.opened
+                })}
+            >
+                {this.props.opened && (
+                    <div>
+                        <div className="form-row title">
+                            <h4>Blood pressure</h4>
+                            <div className="col-sm">
+                                {this.props.unit === CM_HG ? (
+                                    <Field
+                                        name="pressure.systolic"
+                                        label="Systolic"
+                                        placeholder="Systolic"
+                                        component={UnitInputWithConversion}
+                                        inputUnit={CM_HG}
+                                        valueUnit={MM_HG}
+                                        valuePrecision={0}
+                                        inputPrecision={1}
+                                        valueToObject={pressureValueToObject}
+                                        objectToValue={pressureObjectToValue}
+                                        onKeyPress={this.props.dispatch(submitOnEnter)}
+                                        autoFocus={this.props.focused}
+                                        validate={required}
+                                        warn={systolicBloodPressureExpectedRange}
+                                    />
+                                ) : (
+                                    <Field
+                                        name="pressure.systolic"
+                                        label="Systolic"
+                                        placeholder="Systolic"
+                                        component={SimpleUnitInput}
+                                        unit={MM_HG}
+                                        precision={0}
+                                        onKeyPress={this.props.dispatch(submitOnEnter)}
+                                        autoFocus={this.props.focused}
+                                        validate={required}
+                                        warn={systolicBloodPressureExpectedRange}
+                                    />
+                                )}
+                            </div>
+                            <div className="col-sm">
+                                {this.props.unit === CM_HG ? (
+                                    <Field
+                                        name="pressure.diatolic"
+                                        label="Diastolic"
+                                        placeholder="Diastolic"
+                                        component={UnitInputWithConversion}
+                                        inputUnit={CM_HG}
+                                        valueUnit={MM_HG}
+                                        valuePrecision={0}
+                                        inputPrecision={1}
+                                        valueToObject={pressureValueToObject}
+                                        objectToValue={pressureObjectToValue}
+                                        onKeyPress={this.props.dispatch(submitOnEnter)}
+                                        autoFocus={this.props.focused}
+                                        validate={required}
+                                        warn={diastolicBloodPressureExpectedRange}
+                                    />
+                                ) : (
+                                    <Field
+                                        name="pressure.diastolic"
+                                        label="Diastolic"
+                                        placeholder="Diastolic"
+                                        component={SimpleUnitInput}
+                                        unit={MM_HG}
+                                        precision={0}
+                                        onKeyPress={this.props.dispatch(submitOnEnter)}
+                                        autoFocus={this.props.focused}
+                                        validate={required}
+                                        warn={diastolicBloodPressureExpectedRange}
+                                    />
+                                )}
+                            </div>
+                            <button className="btn btn-link remove" onClick={() => this.props.change("has_pressure", false)}>
+                                <NegativeIcon />
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                )}
+                {!this.props.opened && (
+                    <button
+                        className="btn btn-link"
+                        onClick={() => {
+                            this.props.change("has_pressure", true)
+                            this.props.change("focus", "pressure")
+                        }}
+                    >
+                        Add Blood pressure
+                    </button>
+                )}
+            </div>
+        )
+    }
+}
+
+BloodPressure = connect((state, props) => {
+    return {
+        opened: selector(state, "has_pressure"),
+        focused: selector(state, "focus") === "pressure",
+        unit: state.config[BLOOD_PRESSURE_UNIT]
+    }
+}, {})(BloodPressure)
 
 export default MedicalData

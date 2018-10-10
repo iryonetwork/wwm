@@ -446,9 +446,33 @@ label {
     display: flex;
     padding-right: 5px;
     padding-left: 5px;
+
+    &.is-invalid {
+        .invalid-feedback {
+            display: block;
+            position: absolute;
+            top: 41px;
+            padding-left: 2px;
+        }
+    }
+
+    &.is-warning {
+        .warning-feedback {
+            display: block;
+            position: absolute;
+            top: 41px;
+            padding-left: 2px;
+            color: $warningOrange
+        }
+    }
+
+
     .form-control {
         position: relative;
         z-index: 1;
+        &.is-warning {
+            border-color: $warningOrange
+        }
     }
 
     .label {
