@@ -2,7 +2,7 @@ export const required = (value, values, props) => {
     return value && value !== "" ? undefined : "Required"
 }
 export const expectedRange = (min, max) => value => {
-    return value < min || value > max ? "Entered value is out of expected range" : undefined
+    return value !== "" && (value < min || value > max) ? "Entered value is out of expected range" : undefined
 }
 
 export const babyHeightExpectedRange = expectedRange(25, 80)

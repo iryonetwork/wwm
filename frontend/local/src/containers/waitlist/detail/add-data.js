@@ -450,7 +450,7 @@ class Temperature extends React.Component {
                 {this.props.opened && (
                     <div className="form-row">
                         <div className="col-sm">
-                            {this.props.unit === POUNDS_OUNCES ? (
+                            {this.props.unit === FAHRENHEIT ? (
                                 <Field
                                     name="temperature"
                                     label="Body temperature"
