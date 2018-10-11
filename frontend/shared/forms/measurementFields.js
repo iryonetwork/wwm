@@ -14,8 +14,8 @@ class SimpleUnitInput extends Component {
         this.state = {
             inputValue: inputValue,
             noInput: inputValue === "",
-            changed: false,
-            warning: this.props.meta.warning
+            changed: props.meta.touched,
+            warning: props.meta.warning
         }
     }
 
@@ -47,8 +47,12 @@ class SimpleUnitInput extends Component {
         }
     }
 
-    setWarning = warning => {
+    setWarning(warning) {
         return () => this.setState({ warning: warning })
+    }
+
+    setCurrentWarning() {
+        this.setState({ warning: this.props.meta.warning })
     }
 
     parseInputChange() {
@@ -80,19 +84,22 @@ class SimpleUnitInput extends Component {
         const { input, meta, label, placeholder, optional, disabled, unit, autoFocus, onKeyPress } = this.props
 
         return (
-            <div className={classnames("form-group", { "is-invalid": meta.touched && meta.error, "is-warning": !meta.error && this.state.warning })}>
+            <div className={classnames("form-group", { "is-invalid": this.state.changed && meta.error, "is-warning": !meta.error && this.state.warning })}>
                 {!this.state.noInput && <span className="label">{label}</span>}
                 <div className="inputWithUnit-1">
                     <input
                         {...input}
                         value={this.state.inputValue}
                         disabled={disabled}
-                        onBlur={event => input.onBlur(this.parseInputChange(input.value)(event))}
-                        onChange={event => input.onChange(this.parseInputChange(input.value)(event))}
+                        onBlur={event => {
+                            this.setCurrentWarning()
+                            input.onBlur(this.parseInputChange()(event))
+                        }}
+                        onChange={event => input.onChange(this.parseInputChange()(event))}
                         autoFocus={autoFocus}
                         onKeyPress={onKeyPress && (event => onKeyPress(event))}
                         className={classnames("form-control", {
-                            "is-invalid": meta.touched && meta.error,
+                            "is-invalid": this.state.changed && meta.error,
                             "is-warning": !meta.error && this.state.warning
                         })}
                         placeholder={classnames(placeholder ? placeholder : label, { "(optional)": optional })}
@@ -100,7 +107,7 @@ class SimpleUnitInput extends Component {
                     />
                     <span className="unit">{unit}</span>
                 </div>
-                {meta.touched && meta.error && <div className="invalid-feedback">{meta.error}</div>}
+                {this.state.changed && meta.error && <div className="invalid-feedback">{meta.error}</div>}
                 {!meta.error && this.state.warning && <div className="warning-feedback">{this.state.warning}</div>}
             </div>
         )
@@ -141,8 +148,8 @@ class UnitInputWithConversion extends Component {
         this.state = {
             inputValues: inputValues,
             noInput: noInput,
-            changed: false,
-            warning: this.props.meta.warning
+            changed: props.meta.touched,
+            warning: props.meta.warning
         }
     }
 
@@ -196,8 +203,12 @@ class UnitInputWithConversion extends Component {
         return valueToObject(valueUnit, inputUnit, inputPrecision)(getNumberFromString(value))
     }
 
-    setWarning = warning => {
+    setWarning(warning) {
         return () => this.setState({ warning: warning })
+    }
+
+    setCurrentWarning() {
+        this.setState({ warning: this.props.meta.warning })
     }
 
     parseInputChange(inputChangeUnit) {
@@ -260,7 +271,7 @@ class UnitInputWithConversion extends Component {
         return (
             <div
                 className={classnames("form-group", {
-                    "is-invalid": meta.touched && meta.error,
+                    "is-invalid": this.state.changed && meta.error,
                     "is-warning": !meta.error && this.state.warning
                 })}
             >
@@ -273,11 +284,14 @@ class UnitInputWithConversion extends Component {
                                 value={value}
                                 autoFocus={autoFocus && 0 === i++}
                                 disabled={disabled}
-                                onBlur={event => input.onBlur(this.parseInputChange(unit)(event))}
+                                onBlur={event => {
+                                    this.setCurrentWarning()
+                                    input.onBlur(this.parseInputChange(unit)(event))
+                                }}
                                 onChange={event => input.onChange(this.parseInputChange(unit)(event))}
                                 onKeyPress={onKeyPress && (event => onKeyPress(event))}
                                 className={classnames("form-control", {
-                                    "is-invalid": meta.touched && meta.error,
+                                    "is-invalid": this.state.changed && meta.error,
                                     "is-warning": !meta.error && this.state.warning
                                 })}
                                 placeholder={classnames(placeholder ? placeholder : label, { "(optional)": optional })}
@@ -287,7 +301,7 @@ class UnitInputWithConversion extends Component {
                         </div>
                     )
                 })}
-                {meta.touched && meta.error && <div className="invalid-feedback">{meta.error}</div>}
+                {this.state.changed && meta.error && <div className="invalid-feedback">{meta.error}</div>}
                 {!meta.error && this.state.warning && <div className="warning-feedback">{this.state.warning}</div>}
             </div>
         )
