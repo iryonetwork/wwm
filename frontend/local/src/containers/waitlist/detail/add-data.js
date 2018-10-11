@@ -21,8 +21,9 @@ import {
     temperatureExpectedRange,
     systolicBloodPressureExpectedRange,
     diastolicBloodPressureExpectedRange,
+    heartRateValidRange,
     heartRateExpectedRange,
-    oxygenSaturationxpectedRange
+    oxygenSaturationExpectedRange
 } from "shared/forms/validation"
 import { POUNDS_OUNCES, POUNDS, KG, MM_HG, CM_HG, CM, FEET_INCHES, CELSIUS, FAHRENHEIT } from "shared/unitConversion/units"
 import {
@@ -129,7 +130,7 @@ class MedicalData extends React.Component {
                                         unit="bpm"
                                         change={change}
                                         dispatch={dispatch}
-                                        validate={required}
+                                        validate={[required, heartRateValidRange]}
                                         warn={heartRateExpectedRange}
                                     />
                                     <FieldWithUnit
@@ -141,7 +142,7 @@ class MedicalData extends React.Component {
                                         change={change}
                                         dispatch={dispatch}
                                         validate={required}
-                                        warn={oxygenSaturationxpectedRange}
+                                        warn={oxygenSaturationExpectedRange}
                                     />
                                 </div>
                             </div>
