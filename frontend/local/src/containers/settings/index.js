@@ -45,9 +45,7 @@ class SettingsContent extends React.Component {
 
     render() {
         return (
-            <div className="settings">
-                <h2>Settings</h2>
-
+            <div className="settingsBody">
                 <div className="section">
                     <h3>General</h3>
                     <div className="sectionBody">

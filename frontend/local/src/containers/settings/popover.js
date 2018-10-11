@@ -1,6 +1,4 @@
 import React from "react"
-import { bindActionCreators } from "redux"
-import { connect } from "react-redux"
 import classnames from "classnames"
 import { Popover, PopoverBody } from "reactstrap"
 
@@ -50,7 +48,10 @@ class SettingsPopover extends React.Component {
                     toggle={this.toggleSettingsPopover}
                 >
                     <PopoverBody>
-                        <SettingsContent wideInput={true} />
+                        <div className="settings">
+                            <h2>Settings</h2>
+                            <SettingsContent wideInput={true} />
+                        </div>
                     </PopoverBody>
                 </Popover>
             </React.Fragment>
@@ -58,12 +59,4 @@ class SettingsPopover extends React.Component {
     }
 }
 
-const mapStateToProps = (state, ownProps) => {
-    return {
-        status: state.status.status
-    }
-}
-
-const mapDispatchToProps = dispatch => bindActionCreators({}, dispatch)
-
-export default connect(mapStateToProps, mapDispatchToProps)(SettingsPopover)
+export default SettingsPopover

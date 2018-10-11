@@ -17,6 +17,7 @@ import NewPatient from "../patients/new"
 import Waitlist from "../waitlist"
 import AddToWaitlist from "../waitlist/add"
 import WaitlistDetail from "../patients/detail"
+import Wizard from "../wizard"
 import SettingsPopover from "../settings/popover"
 
 import { ReactComponent as PatientsIcon } from "shared/icons/patients.svg"
@@ -103,6 +104,7 @@ class App extends React.Component {
                             </div>
                         )}
                     </div>
+                    {this.props.showWizard && <Wizard />}
                 </main>
             </React.Fragment>
         )
@@ -111,6 +113,7 @@ class App extends React.Component {
 
 const mapStateToProps = state => ({
     configLoading: state.config.loading,
+    showWizard: state.config.wizardWasShown ? false : true,
     defaultWaitlist: state.config[DEFAULT_WAITLIST_ID],
     userRights: state.validations.userRights ? state.validations.userRights : undefined,
     userRightsLoading: state.validations.loading,
