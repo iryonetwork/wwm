@@ -5,7 +5,8 @@
         "Encounter ID",
         "Patient ID",
         "Clinic ID",
-        "Encounter time",
+        "Encounter date (UTC)",
+        "Encounter time (UTC)",
         "Author ID",
         "Author name",
         "Main complaint",
@@ -37,9 +38,16 @@
             "description": "Clinic identifier",
             "ehrPath": "/context/health_care_facility|identifier"
         },
-        "Encounter time": {
-            "type": "value",
+        "Encounter date (UTC)": {
+            "type": "datetime",
+            "description": "Date of encounter",
+            "timestampFormat": "date",
+            "ehrPath": "/context/end_time"
+        },
+        "Encounter time (UTC)": {
+            "type": "datetime",
             "description": "Time of encounter",
+            "timestampFormat": "time",
             "ehrPath": "/context/end_time"
         },
         "Author ID": {

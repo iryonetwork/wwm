@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-openapi/strfmt"
 	"github.com/pkg/errors"
@@ -45,11 +46,6 @@ func (g *generator) Generate(ctx context.Context, writer ReportWriter, reportSpe
 		return false, nil
 	}
 
-	err = writer.Write(reportSpec.Columns)
-	if err != nil {
-		return false, errors.Wrapf(err, "failed to write report header")
-	}
-
 	for _, file := range *files {
 		var dataMap map[string]interface{}
 		if err := json.Unmarshal([]byte(file.Data), &dataMap); err != nil {
@@ -72,9 +68,17 @@ func (g *generator) Generate(ctx context.Context, writer ReportWriter, reportSpe
 				case META_FIELD_PATIENT_ID:
 					row = append(row, file.PatientID)
 				case META_FIELD_CREATED_AT:
-					row = append(row, file.CreatedAt.String())
+					value, err := formatTimestamp(file.CreatedAt.String(), spec.TimestampFormat)
+					if err != nil {
+						return false, err
+					}
+					row = append(row, value)
 				case META_FIELD_UPDATED_AT:
-					row = append(row, file.UpdatedAt.String())
+					value, err := formatTimestamp(file.UpdatedAt.String(), spec.TimestampFormat)
+					if err != nil {
+						return false, err
+					}
+					row = append(row, value)
 				}
 			default:
 				_, value := g.getComplexValueFromData(spec, []*map[string]interface{}{&dataMap}, "")
@@ -100,11 +104,6 @@ func (g *generator) generateGroupedByPatientID(ctx context.Context, writer Repor
 	if len(*files) == 0 {
 		g.logger.Info().Msg("there are no new files, exit with generating new report")
 		return false, nil
-	}
-
-	err = writer.Write(reportSpec.Columns)
-	if err != nil {
-		return false, errors.Wrapf(err, "failed to write report header")
 	}
 
 	patientIdFileIndexMap := make(map[string][]int)
@@ -162,9 +161,23 @@ func (g *generator) generateGroupedByPatientID(ctx context.Context, writer Repor
 				case META_FIELD_PATIENT_ID:
 					row = append(row, patientID)
 				case META_FIELD_CREATED_AT:
-					row = append(row, strings.Join(createdAts, ", "))
+					var formattedCreatedAts []string
+					for _, createdAt := range createdAts {
+						value, err := formatTimestamp(createdAt, spec.TimestampFormat)
+						if err == nil {
+							formattedCreatedAts = append(formattedCreatedAts, value)
+						}
+					}
+					row = append(row, strings.Join(formattedCreatedAts, ", "))
 				case META_FIELD_UPDATED_AT:
-					row = append(row, strings.Join(updatedAts, ", "))
+					var formattedUpdatedAts []string
+					for _, createdAt := range updatedAts {
+						value, err := formatTimestamp(createdAt, spec.TimestampFormat)
+						if err == nil {
+							formattedUpdatedAts = append(formattedUpdatedAts, value)
+						}
+					}
+					row = append(row, strings.Join(formattedUpdatedAts, ", "))
 				}
 			default:
 				_, value := g.getComplexValueFromData(spec, dataMaps, "")
@@ -221,6 +234,16 @@ func (g *generator) getComplexValueFromData(spec ValueSpec, data []*map[string]i
 		if found {
 			v := strings.Split(value, ",")
 			return true, fmt.Sprintf("%s %s", v[0], spec.Unit)
+		}
+		return found, value
+	case TYPE_DATETIME:
+		found, value = g.getSimpleValueFromData(data, fmt.Sprintf("%s%s", prefix, spec.EhrPath))
+		if found {
+			value, err := formatTimestamp(value, spec.TimestampFormat)
+			if err != nil {
+				return false, ""
+			}
+			return true, value
 		}
 		return found, value
 	case TYPE_CODE:
@@ -319,4 +342,17 @@ func New(storage reports.Storage, logger zerolog.Logger) (*generator, error) {
 	}
 
 	return s, nil
+}
+
+func formatTimestamp(timestamp string, format string) (string, error) {
+	if _, ok := TIMESTAMP_FORMAT_LAYOUTS[format]; !ok {
+		format = TIMESTAMP_FORMAT_DATETIME
+	}
+
+	t, err := time.Parse(TIMESTAMP_FORMAT_LAYOUTS[TIMESTAMP_FORMAT_DATETIME], timestamp)
+	if err != nil {
+		return "", err
+	}
+
+	return t.Format(TIMESTAMP_FORMAT_LAYOUTS[format]), nil
 }

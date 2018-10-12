@@ -22,10 +22,10 @@ import (
 	"github.com/iryonetwork/wwm/gen/storage/client/operations"
 	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/wwm/reports/generator"
+	"github.com/iryonetwork/wwm/reports/generator/xlsxWriter"
 	"github.com/iryonetwork/wwm/service/serviceAuthenticator"
 	"github.com/iryonetwork/wwm/storage/keyvalue"
 	reportsStorage "github.com/iryonetwork/wwm/storage/reports"
-	"github.com/iryonetwork/wwm/utils/xlsxWriter"
 )
 
 const (
@@ -108,7 +108,7 @@ func main() {
 
 	for _, spec := range cfg.ReportSpecs.Slice {
 		// initialize xlsx writer
-		writer, err := xlsxWriter.New(spec.Type)
+		writer, err := xlsxWriter.New(spec, logger)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("failed to initialize xlsx file writer")
 		}

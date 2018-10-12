@@ -23,7 +23,7 @@ var (
 	testSpec1 = ReportSpec{
 		Type:         "testReport",
 		FileCategory: "openehr::111|test|",
-		Columns:      []string{"file ID", "version", "patient ID", "createdAt", "updatedAt", "quantity", "code", "twice nested array first item", "twice nested array"},
+		Columns:      []string{"file ID", "version", "patient ID", "createdAt", "updatedAt", "quantity", "code", "someDate", "someTime", "twice nested array first item", "twice nested array"},
 		ColumnsSpecs: map[string]ValueSpec{
 			"file ID": ValueSpec{
 				Type:      "fileMeta",
@@ -38,12 +38,14 @@ var (
 				MetaField: "patientID",
 			},
 			"createdAt": ValueSpec{
-				Type:      "fileMeta",
-				MetaField: "createdAt",
+				Type:            "fileMeta",
+				MetaField:       "createdAt",
+				TimestampFormat: "date",
 			},
 			"updatedAt": ValueSpec{
-				Type:      "fileMeta",
-				MetaField: "updatedAt",
+				Type:            "fileMeta",
+				MetaField:       "updatedAt",
+				TimestampFormat: "time",
 			},
 			"quantity": ValueSpec{
 				Type:    "quantity",
@@ -53,6 +55,16 @@ var (
 			"code": ValueSpec{
 				Type:    "code",
 				EhrPath: "/codeValue",
+			},
+			"someDate": ValueSpec{
+				Type:            "datetime",
+				EhrPath:         "/someTimestamp",
+				TimestampFormat: "date",
+			},
+			"someTime": ValueSpec{
+				Type:            "datetime",
+				EhrPath:         "/someTimestamp",
+				TimestampFormat: "time",
 			},
 			"twice nested array first item": ValueSpec{
 				Type:    "array",
@@ -136,12 +148,14 @@ var (
 				MetaField: "patientID",
 			},
 			"createdAt": ValueSpec{
-				Type:      "fileMeta",
-				MetaField: "createdAt",
+				Type:            "fileMeta",
+				MetaField:       "createdAt",
+				TimestampFormat: "date",
 			},
 			"updatedAt": ValueSpec{
-				Type:      "fileMeta",
-				MetaField: "updatedAt",
+				Type:            "fileMeta",
+				MetaField:       "updatedAt",
+				TimestampFormat: "time",
 			},
 			"valueFromFile1": ValueSpec{
 				Type:    "value",
@@ -173,7 +187,7 @@ var (
 		UpdatedAt: time2,
 		Data:      "{}",
 	}
-	fileNoDataReportRow = []string{"file_id_1", "version_1", "patient_1", "2018-07-27T13:55:59.123Z", "2018-07-29T13:55:59.123Z", "", "", "", ""}
+	fileNoDataReportRow = []string{"file_id_1", "version_1", "patient_1", "2018-07-27", "13:55:59", "", "", "", "", "", ""}
 
 	fileAllData = reports.File{
 		FileID:    "file_id_1",
@@ -181,9 +195,9 @@ var (
 		PatientID: "patient_1",
 		CreatedAt: time1,
 		UpdatedAt: time2,
-		Data:      "{\"/quantityValue\": \"value,unit\", \"/codeValue\": \"category::code|codeTitle|\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemID\": \"ID0:0\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemName\": \"Name0:0\", \"/arrayLevel1:0/arrayLevel2:1/nestedArrayItemID\": \"ID0:1\", \"/arrayLevel1:0/arrayLevel2:1/nestedArrayItemName\": \"Name0:1\", \"/arrayLevel1:0/additionalData\": \"Data0\", \"/arrayLevel1:1/arrayLevel2:0/nestedArrayItemID\": \"ID1:0\", \"/arrayLevel1:1/arrayLevel2:0/nestedArrayItemName\": \"Name1:0\", \"/arrayLevel1:1/arrayLevel2:1/nestedArrayItemID\": \"ID1:1\", \"/arrayLevel1:1/arrayLevel2:1/nestedArrayItemName\": \"Name1:1\", \"/arrayLevel1:1/additionalData\": \"Data1\", \"/arrayLevel1:2/arrayLevel2:0/nestedArrayItemID\": \"ID2:0\", \"/arrayLevel1:2/arrayLevel2:0/nestedArrayItemName\": \"Name2:0\", \"/arrayLevel1:2/arrayLevel2:1/nestedArrayItemID\": \"ID2:1\", \"/arrayLevel1:2/arrayLevel2:1/nestedArrayItemName\": \"Name2:1\", \"/arrayLevel1:2/additionalData\": \"Data2\"}",
+		Data:      "{\"/someTimestamp\": \"2018-10-12T10:47:34.221Z\", \"/quantityValue\": \"value,unit\", \"/codeValue\": \"category::code|codeTitle|\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemID\": \"ID0:0\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemName\": \"Name0:0\", \"/arrayLevel1:0/arrayLevel2:1/nestedArrayItemID\": \"ID0:1\", \"/arrayLevel1:0/arrayLevel2:1/nestedArrayItemName\": \"Name0:1\", \"/arrayLevel1:0/additionalData\": \"Data0\", \"/arrayLevel1:1/arrayLevel2:0/nestedArrayItemID\": \"ID1:0\", \"/arrayLevel1:1/arrayLevel2:0/nestedArrayItemName\": \"Name1:0\", \"/arrayLevel1:1/arrayLevel2:1/nestedArrayItemID\": \"ID1:1\", \"/arrayLevel1:1/arrayLevel2:1/nestedArrayItemName\": \"Name1:1\", \"/arrayLevel1:1/additionalData\": \"Data1\", \"/arrayLevel1:2/arrayLevel2:0/nestedArrayItemID\": \"ID2:0\", \"/arrayLevel1:2/arrayLevel2:0/nestedArrayItemName\": \"Name2:0\", \"/arrayLevel1:2/arrayLevel2:1/nestedArrayItemID\": \"ID2:1\", \"/arrayLevel1:2/arrayLevel2:1/nestedArrayItemName\": \"Name2:1\", \"/arrayLevel1:2/additionalData\": \"Data2\"}",
 	}
-	fileAllDataReportRow = []string{"file_id_1", "version_1", "patient_1", "2018-07-27T13:55:59.123Z", "2018-07-29T13:55:59.123Z", "value unit", "codeTitle", "ID0:0/Name0:0, ID0:1/Name0:1 - Data0", "ID1:0/Name1:0, ID1:1/Name1:1 - Data1, ID2:0/Name2:0, ID2:1/Name2:1 - Data2"}
+	fileAllDataReportRow = []string{"file_id_1", "version_1", "patient_1", "2018-07-27", "13:55:59", "value unit", "codeTitle", "2018-10-12", "10:47:34", "ID0:0/Name0:0, ID0:1/Name0:1 - Data0", "ID1:0/Name1:0, ID1:1/Name1:1 - Data1, ID2:0/Name2:0, ID2:1/Name2:1 - Data2"}
 
 	fileMissingData = reports.File{
 		FileID:    "file_id_1",
@@ -193,7 +207,7 @@ var (
 		UpdatedAt: time2,
 		Data:      "{\"/codeValue\": \"invalidCodeValue\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemID\": \"ID0:0\", \"/arrayLevel1:0/arrayLevel2:0/nestedArrayItemName\": \"Name0:0\", \"/arrayLevel1:0/arrayLevel2:1/nestedArrayItemID\": \"ID0:1\", \"/arrayLevel1:0/additionalData\": \"Data0\"}",
 	}
-	fileMissingDataReportRow = []string{"file_id_1", "version_1", "patient_1", "2018-07-27T13:55:59.123Z", "2018-07-29T13:55:59.123Z", "", "invalidCodeValue", "ID0:0/Name0:0, ID0:1/ - Data0", ""}
+	fileMissingDataReportRow = []string{"file_id_1", "version_1", "patient_1", "2018-07-27", "13:55:59", "", "invalidCodeValue", "", "", "ID0:0/Name0:0, ID0:1/ - Data0", ""}
 
 	invalidJSONDataFile = reports.File{
 		FileID:    "file_id_1",
@@ -220,7 +234,7 @@ var (
 		UpdatedAt: time2,
 		Data:      "{\"/valueFromFile2\": \"2\", \"/valueInBothFiles1\": \"2\", \"/valueInBothFiles2\": \"1\"}",
 	}
-	groupedByPatientIDReportRow = []string{"patient_1", "2018-07-27T13:55:59.123Z, 2018-07-29T13:55:59.123Z", "2018-07-29T13:55:59.123Z", "1", "2", "1, 2", "1"}
+	groupedByPatientIDReportRow = []string{"patient_1", "2018-07-27, 2018-07-29", "13:55:59", "1", "2", "1, 2", "1"}
 )
 
 func TestGenerate(t *testing.T) {
@@ -244,7 +258,6 @@ func TestGenerate(t *testing.T) {
 					storage.EXPECT().Find("", map[string]string{"/category": "openehr::111|test|"}, nil, nil).Return(
 						&[]reports.File{fileNoData}, nil,
 					),
-					reportWriter.EXPECT().Write(testSpec1.Columns).Return(nil).Times(1),
 					reportWriter.EXPECT().Write(fileNoDataReportRow).Return(nil).Times(1),
 				)
 			},
@@ -262,7 +275,6 @@ func TestGenerate(t *testing.T) {
 					storage.EXPECT().Find("", map[string]string{"/category": "openehr::111|test|"}, &time1, &time2).Return(
 						&[]reports.File{fileAllData, fileMissingData}, nil,
 					),
-					reportWriter.EXPECT().Write(testSpec1.Columns).Return(nil).Times(1),
 					reportWriter.EXPECT().Write(fileAllDataReportRow).Return(nil).Times(1),
 					reportWriter.EXPECT().Write(fileMissingDataReportRow).Return(nil).Times(1),
 				)
@@ -281,7 +293,6 @@ func TestGenerate(t *testing.T) {
 					storage.EXPECT().Find("", map[string]string{"/category": "openehr::111|test|"}, &time1, &time2).Return(
 						&[]reports.File{invalidJSONDataFile}, nil,
 					),
-					reportWriter.EXPECT().Write(testSpec1.Columns).Return(nil).Times(1),
 				)
 			},
 			false,
@@ -298,7 +309,6 @@ func TestGenerate(t *testing.T) {
 					storage.EXPECT().Find("", map[string]string{"/category": "openehr::111|test|"}, &time1, &time2).Return(
 						&[]reports.File{fileAllData, fileMissingData}, nil,
 					),
-					reportWriter.EXPECT().Write(testSpec1.Columns).Return(nil).Times(1),
 					reportWriter.EXPECT().Write(fileAllDataReportRow).Return(fmt.Errorf("error")).Times(1),
 				)
 			},
@@ -316,7 +326,6 @@ func TestGenerate(t *testing.T) {
 					storage.EXPECT().Find("", map[string]string{"/category": "openehr::111|test|"}, nil, nil).Return(
 						&[]reports.File{file1_groupByPatientID, file2_groupByPatientID}, nil,
 					),
-					reportWriter.EXPECT().Write(testSpec2.Columns).Return(nil).Times(1),
 					reportWriter.EXPECT().Write(groupedByPatientIDReportRow).Return(nil).Times(1),
 				)
 			},

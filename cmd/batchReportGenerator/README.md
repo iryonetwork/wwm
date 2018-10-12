@@ -42,7 +42,8 @@ Column value specs specify what value should be put under specific column. Colum
     *   _boolean_;
     *   _quantity_;
     *   _integer_;
-    *   _fixedValue_;
+    *   _dateTime_;
+    *   _code_;
     *   _array_.
 *   **metaField** is used only for values of type _fileMeta_. Possible values of the _metaField_ property are:
     *   _patientID_;
@@ -51,6 +52,7 @@ Column value specs specify what value should be put under specific column. Colum
     *   _updatedAt_.
 *   **ehrPath** specifies path to value of the field in EHR file. It's used for all values except those of type _fileMeta_.
 *   **unit** value specific for _quantity_ type values, specifies as a string unit in which the quantity was measured.
+*   **timestampFormat** value specific for _datetime_ type values, specifies format in which the timetstamp should be printed out in the report. There are three possible values: _date (YYYY-MM-DD)_, _time (HH:MM:SS)_ and _datetime_.
 *   **properties** is an array of properties of items of an _array_ type field (_each array item has at least one property_). As such _properties_ property is valid only for _array_ type fields. Objects inside _properties_ are using the same schema as root-level fields and they themselves can contain _array_ type fields.
 *   **format** specifies how multiple values that consitiute single item _array_ type field should be combined into single string (strings representing consecutive items of array are always seperated with `,`) _Format_ property follows _printf format string_ convention but only strings (`%s`) are in usage. It should contain the same number of `%s` parameters as number of fields listed in _properties_. The values of properties are inserted into final string in the same order as they are listed in _properties_.
 *   **includeItems** is _array_ type specific object specifying which items of array should be included in the column value:
