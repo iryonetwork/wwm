@@ -19,6 +19,8 @@ Setup was tested on Windows 10 Home & Pro Editions.
     git config --global core.autocrlf false
     ```
 
+*   Go to Docker for Windows settings. In tab `Shared Drives` add the drive on which you checked out IRYO WWM repo to list of drives that can be available to Docker containers.
+
 ### Windows 10 Home
 
 *   Download Docker Toolbox for Windows.
@@ -34,13 +36,7 @@ Setup was tested on Windows 10 Home & Pro Editions.
     ```
 
 *   Add IRYO WWM dir to shared folders for docker machine VM.
-    Run following commands in powershell (as admin) while being in IRYO WWM dir:
-
-    ```
-    docker-machine stop
-    vboxmanage sharedfolder add default --name "iryo" --hostpath "${PWD}" --automount
-    docker-machine start
-    ```
+    The easiest way to do it currently is to open Virtual Box GUI and add path to WWM dir to visible there docker machine VM. You should mount WWM dir under `/iryo` in the VM not to have to change any docker-compose values.
 
 ## 2. Generate certificates and import root certificate to Windows root truststore.
 
