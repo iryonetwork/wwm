@@ -9,8 +9,8 @@ services:
     - --configfile=/etc/traefik.toml
     - --debug
     volumes:
-    - /iryo/docs/windowsClinic/traefik.toml:/etc/traefik.toml
-    - /iryo/bin/tls:/certs
+    - ${IRYO_WWM_DIR}/docs/windowsClinic/traefik.toml:/etc/traefik.toml
+    - ${IRYO_WWM_DIR}/bin/tls:/certs
     - /var/run/docker.sock:/var/run/docker.sock
     ports:
     - 80:80
@@ -20,7 +20,7 @@ services:
   localFrontend:
     image: iryo/localfrontend:${IRYO_TAG}
     volumes:
-    - /iryo/docs/windowsClinic/frontendConfig.json:/iryo/config.json:ro
+    - ${IRYO_WWM_DIR}/docs/windowsClinic/frontendConfig.json:${IRYO_WWM_DIR}/config.json:ro
 
   localAuth:
     image: iryo/localauth:${IRYO_TAG}
@@ -28,9 +28,9 @@ services:
     - ./localAuth
     volumes:
     - /mnt/sda1/data/localAuth:/data
-    - /iryo/bin/tls:/certs:ro
-    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
-    - /iryo/cmd/localAuth/serviceCertsAndPaths.yml:/serviceCertsAndPaths.yml:ro
+    - ${IRYO_WWM_DIR}/bin/tls:/certs:ro
+    - ${IRYO_WWM_DIR}/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - ${IRYO_WWM_DIR}/cmd/localAuth/serviceCertsAndPaths.yml:/serviceCertsAndPaths.yml:ro
     environment:
     - DOMAIN_TYPE=clinic
     - DOMAIN_ID=${CLINIC_ID}
@@ -47,16 +47,16 @@ services:
     command:
     - ./localStorage
     volumes:
-    - /iryo/bin/tls:/certs:ro
-    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - ${IRYO_WWM_DIR}/bin/tls:/certs:ro
+    - ${IRYO_WWM_DIR}/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
     environment:
     - DOMAIN_TYPE=clinic
     - DOMAIN_ID=${CLINIC_ID}
     - KEY_PATH=/certs/localStorage-key.pem
     - CERT_PATH=/certs/localStorage.pem
-    - S3_SECRET=localminio
-    - STORAGE_ENCRYPTION_KEY=6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
-    - NATS_SECRET=secret
+    - S3_SECRET=${LOCAL_STORAGE_S3_SECRET}
+    - STORAGE_ENCRYPTION_KEY=${STORAGE_ENCRYPTION_KEY}
+    - NATS_SECRET=${LOCAL_NATS_SECRET}
 
   localMinio:
     image: minio/minio
@@ -64,13 +64,13 @@ services:
     - server
     - /data
     environment:
-    - MINIO_ACCESS_KEY=local
-    - MINIO_SECRET_KEY=localminio
+    - MINIO_ACCESS_KEY=${LOCAL_MINIO_ACCESS_KEY}
+    - MINIO_SECRET_KEY=${LOCAL_MINIO_SECRET_KEY}
     ports:
     - 9000:9000
     volumes:
-    - /iryo/bin/tls/localMinio-key.pem:/root/.minio/certs/private.key
-    - /iryo/bin/tls/localMinio.pem:/root/.minio/certs/public.crt
+    - ${IRYO_WWM_DIR}/bin/tls/localMinio-key.pem:/root/.minio/certs/private.key
+    - ${IRYO_WWM_DIR}/bin/tls/localMinio.pem:/root/.minio/certs/public.crt
     - /mnt/sda1/data/localMinio:/data
 
   localNats:
@@ -81,9 +81,9 @@ services:
     command:
     - --stan_config=/etc/nats/config.conf
     volumes:
-    - /iryo/services/localNats/config.conf:/etc/nats/config.conf:ro
-    - /iryo/bin/tls:/certs:ro
-    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - ${IRYO_WWM_DIR}/services/localNats/config.conf:/etc/nats/config.conf:ro
+    - ${IRYO_WWM_DIR}/bin/tls:/certs:ro
+    - ${IRYO_WWM_DIR}/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
     - /mnt/sda1/data/localNats:/data
 
   storageSync:
@@ -91,12 +91,12 @@ services:
     command:
     - ./storageSync
     volumes:
-    - /iryo/bin/tls:/certs:ro
-    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - ${IRYO_WWM_DIR}/bin/tls:/certs:ro
+    - ${IRYO_WWM_DIR}/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
     environment:
     - KEY_PATH=/certs/storageSync-key.pem
     - CERT_PATH=/certs/storageSync.pem
-    - NATS_SECRET=secret
+    - NATS_SECRET=${LOCAL_NATS_SECRET}
     - CLOUD_STORAGE_HOST=${CLOUD_STORAGE_HOST}
 
   localPrometheus:
@@ -106,10 +106,10 @@ services:
     - --storage.tsdb.path=/data
     user: root:root
     volumes:
-    - /iryo/services/localPrometheus/config.yml:/etc/prometheus/config.yml:ro
-    - /iryo/services/localPrometheus/rules.yml:/etc/prometheus/rules.yml:ro
-    - /iryo/bin/tls:/certs:ro
-    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - ${IRYO_WWM_DIR}/services/localPrometheus/config.yml:/etc/prometheus/config.yml:ro
+    - ${IRYO_WWM_DIR}/services/localPrometheus/rules.yml:/etc/prometheus/rules.yml:ro
+    - ${IRYO_WWM_DIR}/bin/tls:/certs:ro
+    - ${IRYO_WWM_DIR}/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
     - /mnt/sda1/data/localPrometheus:/data:rw
 
   natsStreamingExporter:
@@ -125,8 +125,8 @@ services:
     command:
     - ./batchStorageSync
     volumes:
-    - /iryo/bin/tls:/certs:ro
-    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - ${IRYO_WWM_DIR}/bin/tls:/certs:ro
+    - ${IRYO_WWM_DIR}/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
     - /mnt/sda1/data/batchStorageSync:/data
     environment:
     - KEY_PATH=/certs/batchStorageSync-key.pem
@@ -142,15 +142,15 @@ services:
     command:
     - ./waitlist
     volumes:
-    - /iryo/bin/tls:/certs:ro
-    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - ${IRYO_WWM_DIR}/bin/tls:/certs:ro
+    - ${IRYO_WWM_DIR}/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
     - /mnt/sda1/data/waitlist:/data
     environment:
     - DOMAIN_TYPE=clinic
     - DOMAIN_ID=${CLINIC_ID}
     - KEY_PATH=/certs/waitlist-key.pem
     - CERT_PATH=/certs/waitlist.pem
-    - STORAGE_ENCRYPTION_KEY=6fgt+cQUwUHbhzEalXkFv3ESMNMti1mdJxP6hFVjZGQ=
+    - STORAGE_ENCRYPTION_KEY=${WAITLIST_ENCRYPTION_KEY}
     - BOLT_DB_FILEPATH=/data/waitlist.db
 
   localStatusReporter:
@@ -158,12 +158,12 @@ services:
     command:
     - ./localStatusReporter
     volumes:
-    - /iryo/bin/tls:/certs:ro
-    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
-    - /iryo/docs/windowsClinic/statusReporterComponents.yml:/components.yml:ro
+    - ${IRYO_WWM_DIR}/bin/tls:/certs:ro
+    - ${IRYO_WWM_DIR}/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - ${IRYO_WWM_DIR}/docs/windowsClinic/statusReporterComponents.yml:/components.yml:ro
     environment:
     - DOMAIN_TYPE=clinic
-    - DOMAIN_ID=$CLINIC_ID}
+    - DOMAIN_ID=${CLINIC_ID}
     - KEY_PATH=/certs/localStatusReporter-key.pem
     - CERT_PATH=/certs/localStatusReporter.pem
 
@@ -172,13 +172,13 @@ services:
       context: ../../
       dockerfile: services/postgres/Dockerfile
     volumes:
-    - /iryo/services/postgres:/docker-entrypoint-initdb.d
-    - /iryo/bin/tls:/certs:ro
+    - ${IRYO_WWM_DIR}/services/postgres:/docker-entrypoint-initdb.d
+    - ${IRYO_WWM_DIR}/bin/tls:/certs:ro
     ports:
     - 5432:5432
     environment:
-    - POSTGRES_USER=root
-    - POSTGRES_PASSWORD=root
+    - POSTGRES_USER=${LOCAL_POSTGRES_USER}
+    - POSTGRES_PASSWORD=${LOCAL_POSTGRES_PASSWORD}
 
   localDiscovery:
     image: iryo/localdiscovery:${IRYO_TAG}
@@ -186,15 +186,15 @@ services:
     - ./localDiscovery
     volumes:
     - /mnt/sda1/data/localDiscovery:/var/data
-    - /iryo/bin/tls:/certs:ro
-    - /iryo/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
+    - ${IRYO_WWM_DIR}/bin/tls:/certs:ro
+    - ${IRYO_WWM_DIR}/bin/tls/ca.pem:/etc/ssl/certs/ca-iryo.pem:ro
     environment:
     - DOMAIN_TYPE=clinic
     - DOMAIN_ID=${CLINIC_ID}
     - KEY_PATH=/certs/localDiscovery-key.pem
     - CERT_PATH=/certs/localDiscovery.pem
-    - DB_USERNAME=localdiscovery
-    - DB_PASSWORD=localdiscovery
+    - DB_USERNAME=${LOCAL_DISCOVERY_DB_USERNAME}
+    - DB_PASSWORD=${LOCAL_DISCOVERY_DB_PASSWORD}
     depends_on:
     - postgres
 
@@ -204,14 +204,14 @@ services:
     - bash
     - /opt/symmetric/local/local.sh
     volumes:
-    - /iryo/services/symmetric/engines:/opt/symmetric/enginesTemplates:ro
-    - /iryo/services/symmetric/samples:/opt/symmetric/samples:ro
-    - /iryo/services/symmetric/bin:/opt/symmetric/local:ro
+    - ${IRYO_WWM_DIR}/services/symmetric/engines:/opt/symmetric/enginesTemplates:ro
+    - ${IRYO_WWM_DIR}/services/symmetric/samples:/opt/symmetric/samples:ro
+    - ${IRYO_WWM_DIR}/services/symmetric/bin:/opt/symmetric/local:ro
     environment:
     - LOCATION_ID=${LOCATION_ID}
     - DB_URL=jdbc:postgresql://postgres/localdiscovery
-    - DB_USER=localsymmetric
-    - DB_PASSWORD=symmetric
+    - DB_USERNAME=${LOCAL_SYMMETRIC_DB_USERNAME}
+    - DB_PASSWORD=${LOCAL_SYMMETRIC_DB_PASSWORD}
     - REGISTRATION_URL=${SYMMETRIC_REGISTRATION_URL}
     depends_on:
     - postgres

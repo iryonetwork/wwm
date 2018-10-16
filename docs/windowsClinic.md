@@ -15,9 +15,11 @@ Setup was tested on Windows 10 Home & Pro Editions.
 *   Checkout IRYO WWM repo:
     Before checkout, while configuring git you should disable auto conversion to CRLF line endings.
 
-    ```
-    git config --global core.autocrlf false
-    ```
+        ```
+        git config --global core.autocrlf false
+        ```
+
+    You should checkout IRYO WWM to `C:\iryo\wwm` not to have to change default `IRYO_WWM_DIR` docker-compose file environment variable
 
 *   Go to Docker for Windows settings. In tab `Shared Drives` add the drive on which you checked out IRYO WWM repo to list of drives that can be available to Docker containers.
 
@@ -36,7 +38,7 @@ Setup was tested on Windows 10 Home & Pro Editions.
     ```
 
 *   Add IRYO WWM dir to shared folders for docker machine VM.
-    The easiest way to do it currently is to open Virtual Box GUI and add path to WWM dir to visible there docker machine VM. You should mount WWM dir under `/iryo` in the VM not to have to change any docker-compose values.
+    The easiest way to do it currently is to open Virtual Box GUI and add path to WWM dir to visible there docker machine VM. You should mount WWM dir under `/iryo` in the VM not to have to change default `IRYO_WWM_DIR` docker-compose file environment variable.
 
 ## 2. Generate certificates and import root certificate to Windows root truststore.
 
