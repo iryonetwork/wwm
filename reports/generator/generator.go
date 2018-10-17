@@ -81,7 +81,7 @@ func (g *generator) Generate(ctx context.Context, writer ReportWriter, reportSpe
 					row = append(row, value)
 				}
 			default:
-				_, value := g.getComplexValueFromData(spec, []*map[string]interface{}{&dataMap}, "")
+				value, _ := g.getComplexValueFromData(spec, []*map[string]interface{}{&dataMap}, "")
 				row = append(row, strings.TrimSpace(value))
 			}
 		}
@@ -180,7 +180,7 @@ func (g *generator) generateGroupedByPatientID(ctx context.Context, writer Repor
 					row = append(row, strings.Join(formattedUpdatedAts, ", "))
 				}
 			default:
-				_, value := g.getComplexValueFromData(spec, dataMaps, "")
+				value, _ := g.getComplexValueFromData(spec, dataMaps, "")
 				row = append(row, strings.TrimSpace(value))
 			}
 		}
@@ -193,8 +193,8 @@ func (g *generator) generateGroupedByPatientID(ctx context.Context, writer Repor
 	return true, nil
 }
 
-func (g *generator) getComplexValueFromData(spec ValueSpec, data []*map[string]interface{}, prefix string) (found bool, value string) {
-	found = false
+func (g *generator) getComplexValueFromData(spec ValueSpec, data []*map[string]interface{}, prefix string) (value string, ok bool) {
+	found := false
 	switch spec.Type {
 	case TYPE_ARRAY:
 		values := []interface{}{}
@@ -203,7 +203,7 @@ func (g *generator) getComplexValueFromData(spec ValueSpec, data []*map[string]i
 			elementValues := []interface{}{}
 
 			for _, fieldSpec := range spec.Properties {
-				valueFound, value := g.getComplexValueFromData(fieldSpec, data, fmt.Sprintf("%s%s:%d", prefix, spec.EhrPath, i))
+				value, valueFound := g.getComplexValueFromData(fieldSpec, data, fmt.Sprintf("%s%s:%d", prefix, spec.EhrPath, i))
 				if valueFound {
 					elementFound = true
 				}
@@ -228,24 +228,24 @@ func (g *generator) getComplexValueFromData(spec ValueSpec, data []*map[string]i
 			}
 		}
 
-		return found, value
+		return value, found
 	case TYPE_QUANTITY:
-		found, value = g.getSimpleValueFromData(data, fmt.Sprintf("%s%s", prefix, spec.EhrPath))
+		value, found = g.getSimpleValueFromData(data, fmt.Sprintf("%s%s", prefix, spec.EhrPath))
 		if found {
 			v := strings.Split(value, ",")
-			return true, fmt.Sprintf("%s %s", v[0], spec.Unit)
+			return fmt.Sprintf("%s %s", v[0], spec.Unit), true
 		}
-		return found, value
+		return value, false
 	case TYPE_DATETIME:
-		found, value = g.getSimpleValueFromData(data, fmt.Sprintf("%s%s", prefix, spec.EhrPath))
+		value, found = g.getSimpleValueFromData(data, fmt.Sprintf("%s%s", prefix, spec.EhrPath))
 		if found {
 			value, err := formatTimestamp(value, spec.TimestampFormat)
 			if err != nil {
-				return false, ""
+				return "", false
 			}
-			return true, value
+			return value, true
 		}
-		return found, value
+		return value, false
 	case TYPE_CODE:
 		return g.getCodeValueFromData(data, fmt.Sprintf("%s%s", prefix, spec.EhrPath))
 	default:
@@ -253,7 +253,7 @@ func (g *generator) getComplexValueFromData(spec ValueSpec, data []*map[string]i
 	}
 }
 
-func (g *generator) getSimpleValueFromData(data []*map[string]interface{}, fullEhrPath string) (found bool, value string) {
+func (g *generator) getSimpleValueFromData(data []*map[string]interface{}, fullEhrPath string) (value string, ok bool) {
 	// check all data maps for value and collect distinct ones
 	values := []string{}
 	for _, d := range data {
@@ -292,14 +292,14 @@ func (g *generator) getSimpleValueFromData(data []*map[string]interface{}, fullE
 	}
 
 	if len(values) == 0 {
-		return false, ""
+		return "", false
 	}
 
 	// if multiple distinct values present, combine them into one string
-	return true, strings.Join(values, ", ")
+	return strings.Join(values, ", "), true
 }
 
-func (g *generator) getCodeValueFromData(data []*map[string]interface{}, fullEhrPath string) (found bool, value string) {
+func (g *generator) getCodeValueFromData(data []*map[string]interface{}, fullEhrPath string) (value string, ok bool) {
 	// check all data maps for value and collect distinct ones
 	values := []string{}
 	for _, d := range data {
@@ -321,11 +321,11 @@ func (g *generator) getCodeValueFromData(data []*map[string]interface{}, fullEhr
 	}
 
 	if len(values) == 0 {
-		return false, ""
+		return "", false
 	}
 
 	// if multiple distinct values present, combine them into one string
-	return true, strings.Join(values, ", ")
+	return strings.Join(values, ", "), true
 }
 
 // New initializes a new instance of generator
