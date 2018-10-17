@@ -336,7 +336,7 @@ class BloodPressureField extends React.Component {
                             </div>
                             <div className="col-sm">
                                 <Field
-                                    name="pressure.diatolic"
+                                    name="pressure.diastolic"
                                     label="Diastolic"
                                     placeholder="Diastolic"
                                     component={BloodPressureUnitInput}
