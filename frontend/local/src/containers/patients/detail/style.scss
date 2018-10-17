@@ -336,9 +336,32 @@ dt {
                     border-bottom: 0px;
                     padding-bottom: 0px;
                 }
-                .form-row {
+                .birthMeasurements {
                     margin-top: 10px;
                     margin-bottom: 0px;
+                    display: flex;
+                    justify-content: space-between;
+                    .weeksAtBirth,
+                    .weightAtBirth,
+                    .heightAtBirth {
+                        position: relative;
+                        .form-group {
+                            .label {
+                                padding-left: 0px;
+                            }
+                        }
+                        .inputWithUnit-1,
+                        .inputWithUnit-2,
+                        .inputWithUnit-3 {
+                            .form-control {
+                                max-width: 90px;
+                            }
+                            margin-right: 8px;
+                            &:last-child {
+                                margin-right: 0;
+                            }
+                        }
+                    }
                 }
             }
 
