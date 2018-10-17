@@ -13,30 +13,20 @@ import { round } from "shared/utils"
 import { open, COLOR_DANGER } from "shared/modules/alert"
 import { listAll, update } from "../../../modules/waitlist"
 import { cardToObject } from "../../../modules/discovery"
-import { SimpleUnitInput, UnitInputWithConversion } from "shared/forms/measurementFields"
+import { SimpleUnitInput, HeightUnitInput, WeightUnitInput, TemperatureUnitInput, BloodPressureUnitInput } from "shared/forms/measurementFields"
 import {
     required,
-    heightExpectedRange,
-    weightExpectedRange,
-    temperatureExpectedRange,
+    bodyHeightExpectedRange,
+    bodyWeightExpectedRange,
+    bodyTemperatureExpectedRange,
     systolicBloodPressureExpectedRange,
     diastolicBloodPressureExpectedRange,
     heartRateValidRange,
     heartRateExpectedRange,
     oxygenSaturationExpectedRange
 } from "shared/forms/validation"
-import { POUNDS_OUNCES, POUNDS, KG, MM_HG, CM_HG, CM, FEET_INCHES, CELSIUS, FAHRENHEIT } from "shared/unitConversion/units"
-import {
-    weightValueToObject,
-    weightObjectToValue,
-    lengthValueToObject,
-    lengthObjectToValue,
-    pressureValueToObject,
-    pressureObjectToValue,
-    temperatureValueToObject,
-    temperatureObjectToValue
-} from "shared/unitConversion"
-import { WEIGHT_UNIT, LENGTH_UNIT, TEMPERATURE_UNIT, BLOOD_PRESSURE_UNIT } from "../../../modules/config"
+import { KG, MM_HG, CM, CELSIUS } from "shared/unitConversion/units"
+
 import { ReactComponent as MedicalDataIcon } from "shared/icons/vitalsigns.svg"
 import { ReactComponent as NegativeIcon } from "shared/icons/negative.svg"
 
@@ -115,16 +105,43 @@ class MedicalData extends React.Component {
                             <div className="modal-body">
                                 <h3>Body Measurements</h3>
                                 <div>
-                                    <Height change={change} dispatch={dispatch} />
-                                    <Weight change={change} dispatch={dispatch} />
+                                    <VitalSignField
+                                        label="Height"
+                                        name="height"
+                                        component={HeightUnitInput}
+                                        unit={CM}
+                                        change={change}
+                                        dispatch={dispatch}
+                                        validate={required}
+                                        warn={bodyHeightExpectedRange}
+                                    />
+                                    <VitalSignField
+                                        label="Weight"
+                                        name="weight"
+                                        component={WeightUnitInput}
+                                        unit={KG}
+                                        change={change}
+                                        dispatch={dispatch}
+                                        validate={required}
+                                        warn={bodyWeightExpectedRange}
+                                    />
                                 </div>
 
                                 <h3>Vital Signs</h3>
 
                                 <div>
-                                    <Temperature change={change} dispatch={dispatch} />
-                                    <BloodPressure change={change} dispatch={dispatch} />
-                                    <FieldWithUnit
+                                    <VitalSignField
+                                        label="Body temperature"
+                                        name="temperature"
+                                        component={TemperatureUnitInput}
+                                        unit={CELSIUS}
+                                        change={change}
+                                        dispatch={dispatch}
+                                        validate={required}
+                                        warn={bodyTemperatureExpectedRange}
+                                    />
+                                    <BloodPressureField change={change} dispatch={dispatch} />
+                                    <VitalSignField
                                         label="Heart rate"
                                         name="heart_rate"
                                         unit="bpm"
@@ -133,7 +150,7 @@ class MedicalData extends React.Component {
                                         validate={[required, heartRateValidRange]}
                                         warn={heartRateExpectedRange}
                                     />
-                                    <FieldWithUnit
+                                    <VitalSignField
                                         label="Oxygen saturation"
                                         name="oxygen_saturation"
                                         unit="%"
@@ -238,7 +255,7 @@ const submitOnEnter = dispatch => e => {
     }
 }
 
-class FieldWithUnit extends React.Component {
+class VitalSignField extends React.Component {
     render() {
         return (
             <div
@@ -253,7 +270,7 @@ class FieldWithUnit extends React.Component {
                                 name={this.props.name}
                                 label={this.props.label}
                                 placeholder={this.props.label}
-                                component={SimpleUnitInput}
+                                component={this.props.component || SimpleUnitInput}
                                 unit={this.props.unit}
                                 precision={this.props.precision ? this.props.precision : 0}
                                 min={this.props.min}
@@ -286,234 +303,14 @@ class FieldWithUnit extends React.Component {
     }
 }
 
-FieldWithUnit = connect((state, props) => {
+VitalSignField = connect((state, props) => {
     return {
         opened: selector(state, `has_${props.name}`),
         focused: selector(state, "focus") === props.name
     }
-}, {})(FieldWithUnit)
+}, {})(VitalSignField)
 
-class Height extends React.Component {
-    render() {
-        return (
-            <div
-                className={classnames("section", {
-                    open: this.props.opened
-                })}
-            >
-                {this.props.opened && (
-                    <div className="form-row">
-                        <div className="col-sm">
-                            {this.props.unit === FEET_INCHES ? (
-                                <Field
-                                    name="height"
-                                    label="Height"
-                                    placeholder="Height"
-                                    component={UnitInputWithConversion}
-                                    inputUnit={FEET_INCHES}
-                                    valueUnit={CM}
-                                    valuePrecision={0}
-                                    valueToObject={lengthValueToObject}
-                                    objectToValue={lengthObjectToValue}
-                                    onKeyPress={this.props.dispatch(submitOnEnter)}
-                                    autoFocus={this.props.focused}
-                                    validate={required}
-                                    warn={heightExpectedRange}
-                                />
-                            ) : (
-                                <Field
-                                    name="height"
-                                    label="Height"
-                                    placeholder="Height"
-                                    component={SimpleUnitInput}
-                                    unit={CM}
-                                    precision={0}
-                                    min={0}
-                                    onKeyPress={this.props.dispatch(submitOnEnter)}
-                                    autoFocus={this.props.focused}
-                                    validate={required}
-                                    warn={heightExpectedRange}
-                                />
-                            )}
-                        </div>
-                        <button className="btn btn-link remove" onClick={() => this.props.change("has_height", false)}>
-                            <NegativeIcon />
-                            Remove
-                        </button>
-                    </div>
-                )}
-                {!this.props.opened && (
-                    <button
-                        className="btn btn-link"
-                        onClick={() => {
-                            this.props.change("has_height", true)
-                            this.props.change("focus", "height")
-                        }}
-                    >
-                        Add Height
-                    </button>
-                )}
-            </div>
-        )
-    }
-}
-
-Height = connect((state, props) => {
-    return {
-        opened: selector(state, "has_height"),
-        focused: selector(state, "focus") === "height",
-        unit: state.config[LENGTH_UNIT]
-    }
-}, {})(Height)
-
-class Weight extends React.Component {
-    render() {
-        return (
-            <div
-                className={classnames("section", {
-                    open: this.props.opened
-                })}
-            >
-                {this.props.opened && (
-                    <div className="form-row">
-                        <div className="col-sm">
-                            {this.props.unit === POUNDS_OUNCES ? (
-                                <Field
-                                    name="weight"
-                                    label="Weight"
-                                    placeholder="Weight"
-                                    component={UnitInputWithConversion}
-                                    inputUnit={POUNDS}
-                                    valueUnit={KG}
-                                    valuePrecision={8}
-                                    inputPrecision={1}
-                                    valueToObject={weightValueToObject}
-                                    objectToValue={weightObjectToValue}
-                                    onKeyPress={this.props.dispatch(submitOnEnter)}
-                                    autoFocus={this.props.focused}
-                                    validate={required}
-                                    warn={weightExpectedRange}
-                                />
-                            ) : (
-                                <Field
-                                    name="weight"
-                                    label="Weight"
-                                    placeholder="Weight"
-                                    component={SimpleUnitInput}
-                                    unit={KG}
-                                    precision={1}
-                                    min={0}
-                                    onKeyPress={this.props.dispatch(submitOnEnter)}
-                                    autoFocus={this.props.focused}
-                                    validate={required}
-                                    warn={weightExpectedRange}
-                                />
-                            )}
-                        </div>
-                        <button className="btn btn-link remove" onClick={() => this.props.change("has_weight", false)}>
-                            <NegativeIcon />
-                            Remove
-                        </button>
-                    </div>
-                )}
-                {!this.props.opened && (
-                    <button
-                        className="btn btn-link"
-                        onClick={() => {
-                            this.props.change("has_weight", true)
-                            this.props.change("focus", "weight")
-                        }}
-                    >
-                        Add Weight
-                    </button>
-                )}
-            </div>
-        )
-    }
-}
-
-Weight = connect((state, props) => {
-    return {
-        opened: selector(state, "has_weight"),
-        focused: selector(state, "focus") === "weight",
-        unit: state.config[WEIGHT_UNIT]
-    }
-}, {})(Weight)
-
-class Temperature extends React.Component {
-    render() {
-        return (
-            <div
-                className={classnames("section", {
-                    open: this.props.opened
-                })}
-            >
-                {this.props.opened && (
-                    <div className="form-row">
-                        <div className="col-sm">
-                            {this.props.unit === FAHRENHEIT ? (
-                                <Field
-                                    name="temperature"
-                                    label="Body temperature"
-                                    placeholder="Body temperature"
-                                    component={UnitInputWithConversion}
-                                    inputUnit={FAHRENHEIT}
-                                    valueUnit={CELSIUS}
-                                    valuePrecision={8}
-                                    inputPrecision={1}
-                                    valueToObject={temperatureValueToObject}
-                                    objectToValue={temperatureObjectToValue}
-                                    onKeyPress={this.props.dispatch(submitOnEnter)}
-                                    autoFocus={this.props.focused}
-                                    validate={required}
-                                    warn={temperatureExpectedRange}
-                                />
-                            ) : (
-                                <Field
-                                    name="temperature"
-                                    label="Body temperature"
-                                    placeholder="Body temperature"
-                                    component={SimpleUnitInput}
-                                    unit={CELSIUS}
-                                    precision={1}
-                                    onKeyPress={this.props.dispatch(submitOnEnter)}
-                                    autoFocus={this.props.focused}
-                                    validate={required}
-                                    warn={temperatureExpectedRange}
-                                />
-                            )}
-                        </div>
-                        <button className="btn btn-link remove" onClick={() => this.props.change("has_temperature", false)}>
-                            <NegativeIcon />
-                            Remove
-                        </button>
-                    </div>
-                )}
-                {!this.props.opened && (
-                    <button
-                        className="btn btn-link"
-                        onClick={() => {
-                            this.props.change("has_temperature", true)
-                            this.props.change("focus", "temperature")
-                        }}
-                    >
-                        Add Body temperature
-                    </button>
-                )}
-            </div>
-        )
-    }
-}
-
-Temperature = connect((state, props) => {
-    return {
-        opened: selector(state, "has_temperature"),
-        focused: selector(state, "focus") === "temperature",
-        unit: state.config[TEMPERATURE_UNIT]
-    }
-}, {})(Temperature)
-
-class BloodPressure extends React.Component {
+class BloodPressureField extends React.Component {
     render() {
         return (
             <div
@@ -526,70 +323,32 @@ class BloodPressure extends React.Component {
                         <div className="form-row title">
                             <h4>Blood pressure</h4>
                             <div className="col-sm">
-                                {this.props.unit === CM_HG ? (
-                                    <Field
-                                        name="pressure.systolic"
-                                        label="Systolic"
-                                        placeholder="Systolic"
-                                        component={UnitInputWithConversion}
-                                        inputUnit={CM_HG}
-                                        valueUnit={MM_HG}
-                                        valuePrecision={0}
-                                        inputPrecision={1}
-                                        valueToObject={pressureValueToObject}
-                                        objectToValue={pressureObjectToValue}
-                                        onKeyPress={this.props.dispatch(submitOnEnter)}
-                                        autoFocus={this.props.focused}
-                                        validate={required}
-                                        warn={systolicBloodPressureExpectedRange}
-                                    />
-                                ) : (
-                                    <Field
-                                        name="pressure.systolic"
-                                        label="Systolic"
-                                        placeholder="Systolic"
-                                        component={SimpleUnitInput}
-                                        unit={MM_HG}
-                                        precision={0}
-                                        onKeyPress={this.props.dispatch(submitOnEnter)}
-                                        autoFocus={this.props.focused}
-                                        validate={required}
-                                        warn={systolicBloodPressureExpectedRange}
-                                    />
-                                )}
+                                <Field
+                                    name="pressure.systolic"
+                                    label="Systolic"
+                                    placeholder="Systolic"
+                                    component={BloodPressureUnitInput}
+                                    unit={MM_HG}
+                                    precision={0}
+                                    onKeyPress={this.props.dispatch(submitOnEnter)}
+                                    autoFocus={this.props.focused}
+                                    validate={required}
+                                    warn={systolicBloodPressureExpectedRange}
+                                />
                             </div>
                             <div className="col-sm">
-                                {this.props.unit === CM_HG ? (
-                                    <Field
-                                        name="pressure.diatolic"
-                                        label="Diastolic"
-                                        placeholder="Diastolic"
-                                        component={UnitInputWithConversion}
-                                        inputUnit={CM_HG}
-                                        valueUnit={MM_HG}
-                                        valuePrecision={0}
-                                        inputPrecision={1}
-                                        valueToObject={pressureValueToObject}
-                                        objectToValue={pressureObjectToValue}
-                                        onKeyPress={this.props.dispatch(submitOnEnter)}
-                                        autoFocus={this.props.focused}
-                                        validate={required}
-                                        warn={diastolicBloodPressureExpectedRange}
-                                    />
-                                ) : (
-                                    <Field
-                                        name="pressure.diastolic"
-                                        label="Diastolic"
-                                        placeholder="Diastolic"
-                                        component={SimpleUnitInput}
-                                        unit={MM_HG}
-                                        precision={0}
-                                        onKeyPress={this.props.dispatch(submitOnEnter)}
-                                        autoFocus={this.props.focused}
-                                        validate={required}
-                                        warn={diastolicBloodPressureExpectedRange}
-                                    />
-                                )}
+                                <Field
+                                    name="pressure.diatolic"
+                                    label="Diastolic"
+                                    placeholder="Diastolic"
+                                    component={BloodPressureUnitInput}
+                                    unit={MM_HG}
+                                    precision={0}
+                                    onKeyPress={this.props.dispatch(submitOnEnter)}
+                                    autoFocus={this.props.focused}
+                                    validate={required}
+                                    warn={diastolicBloodPressureExpectedRange}
+                                />
                             </div>
                             <button className="btn btn-link remove" onClick={() => this.props.change("has_pressure", false)}>
                                 <NegativeIcon />
@@ -614,12 +373,11 @@ class BloodPressure extends React.Component {
     }
 }
 
-BloodPressure = connect((state, props) => {
+BloodPressureField = connect((state, props) => {
     return {
         opened: selector(state, "has_pressure"),
-        focused: selector(state, "focus") === "pressure",
-        unit: state.config[BLOOD_PRESSURE_UNIT]
+        focused: selector(state, "focus") === "pressure"
     }
-}, {})(BloodPressure)
+}, {})(BloodPressureField)
 
 export default MedicalData

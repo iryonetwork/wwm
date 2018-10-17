@@ -23,9 +23,8 @@ import {
 } from "../../../modules/validations"
 import { fetchPatient, fetchHealthRecords } from "../../../modules/patient"
 import { get as getWaitlistItem } from "../../../modules/waitlist"
-import { WEIGHT_UNIT, LENGTH_UNIT, TEMPERATURE_UNIT, BLOOD_PRESSURE_UNIT } from "../../../modules/config"
 
-import { ValueWithUnitString, SHORT } from "shared/containers/measurement"
+import { WeightValueWithUnitString, HeightValueWithUnitString, SHORT } from "shared/containers/measurement"
 
 import { ReactComponent as InConsultationIcon } from "shared/icons/in-consultation-active.svg"
 import { ReactComponent as MedicalDataIcon } from "shared/icons/medical-data-active.svg"
@@ -93,50 +92,26 @@ class PatientDetail extends React.Component {
                             {bodyMeasurements && bodyMeasurements.height ? (
                                 <div className="col-sm-4">
                                     <h5>Height</h5>
-                                    <ValueWithUnitString
-                                        valueUnit="cm"
-                                        stringUnit={this.props.lengthUnit}
-                                        precision={0}
-                                        formatting={SHORT}
-                                        value={bodyMeasurements.height}
-                                    />
+                                    <HeightValueWithUnitString unit="cm" precision={0} formatting={SHORT} value={bodyMeasurements.height} />
                                 </div>
                             ) : (
                                 patient.heightAtBirth && (
                                     <div className="col-sm-4">
                                         <h5>Height</h5>
-                                        <ValueWithUnitString
-                                            valueUnit="cm"
-                                            stringUnit={this.props.lengthUnit}
-                                            precision={0}
-                                            formatting={SHORT}
-                                            value={patient.heightAtBirth}
-                                        />
+                                        <HeightValueWithUnitString unit="cm" precision={0} formatting={SHORT} value={patient.heightAtBirth} />
                                     </div>
                                 )
                             )}
                             {bodyMeasurements && bodyMeasurements.weight ? (
                                 <div className="col-sm-4">
                                     <h5>Weight</h5>
-                                    <ValueWithUnitString
-                                        valueUnit="kg"
-                                        stringUnit={this.props.weightUnit === "lb_oz" ? "lb" : "kg"}
-                                        precision={0}
-                                        formatting={SHORT}
-                                        value={bodyMeasurements.weight}
-                                    />
+                                    <WeightValueWithUnitString unit="kg" precision={0} formatting={SHORT} value={bodyMeasurements.weight} />
                                 </div>
                             ) : (
                                 patient.weightAtBirth && (
                                     <div className="col-sm-4">
                                         <h5>Weight</h5>
-                                        <ValueWithUnitString
-                                            valueUnit="g"
-                                            stringUnit={this.props.weightUnit === "lb_oz" ? "lb_oz" : "g"}
-                                            precision={0}
-                                            formatting={SHORT}
-                                            value={patient.weightAtBirth}
-                                        />
+                                        <WeightValueWithUnitString unit="g" precision={0} formatting={SHORT} value={patient.weightAtBirth} />
                                     </div>
                                 )
                             )}
@@ -346,11 +321,7 @@ PatientDetail = connect(
             canSeeVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[READ],
             canSeeHealthHistory: ((state.validations.userRights || {})[RESOURCE_HEALTH_HISTORY] || {})[READ],
             canAddExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[WRITE],
-            canSeeExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[READ],
-            weightUnit: state.config[WEIGHT_UNIT],
-            lengthUnit: state.config[LENGTH_UNIT],
-            temperatureUnit: state.config[TEMPERATURE_UNIT],
-            bloodPressureUnit: state.config[BLOOD_PRESSURE_UNIT]
+            canSeeExamination: ((state.validations.userRights || {})[RESOURCE_EXAMINATION] || {})[READ]
         }
     },
     {

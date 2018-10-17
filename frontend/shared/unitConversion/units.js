@@ -332,6 +332,13 @@ export const getPrecisionUnit = unit => {
     }
 }
 
+export const convertPrecision = (valueUnit, inputUnit, precision) => {
+    if (valueUnit === MM_HG && inputUnit === CM_HG) {
+        return precision + 1
+    }
+    return precision
+}
+
 export const getMinimum = unit => {
     return MININUM[unit] ? MININUM[unit] : {}
 }

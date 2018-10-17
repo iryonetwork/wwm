@@ -1,15 +1,44 @@
 import React, { Component } from "react"
 import _ from "lodash"
+import { connect } from "react-redux"
 import classnames from "classnames"
 import PropTypes from "prop-types"
-import { getPrecisionUnit, getMinimum, getMaximum } from "../unitConversion/units"
+
+import {
+    getPrecisionUnit,
+    convertPrecision,
+    getMinimum,
+    getMaximum,
+    KG_GRAMS,
+    KG,
+    GRAMS,
+    POUNDS,
+    POUNDS_OUNCES,
+    CM,
+    CELSIUS,
+    MM_HG,
+    WEIGHT_UNIT,
+    LENGTH_UNIT,
+    TEMPERATURE_UNIT,
+    BLOOD_PRESSURE_UNIT
+} from "../unitConversion/units"
 import { round, isStringNumber, getNumberFromString, getPrecision } from "../utils"
+import {
+    weightValueToObject,
+    weightObjectToValue,
+    lengthValueToObject,
+    lengthObjectToValue,
+    pressureValueToObject,
+    pressureObjectToValue,
+    temperatureValueToObject,
+    temperatureObjectToValue
+} from "../unitConversion"
 
 class SimpleUnitInput extends Component {
     constructor(props) {
         super(props)
         let precision = this.props.precision ? this.props.precision : 0
-        let inputValue = isStringNumber(props.input.value) ? round(getNumberFromString(props.input.value), precision).toString() : ""
+        let inputValue = isStringNumber(String(props.input.value)) ? round(getNumberFromString(String(props.input.value)), precision).toString() : ""
 
         this.state = {
             inputValue: inputValue,
@@ -70,7 +99,7 @@ class SimpleUnitInput extends Component {
                 (v !== false && getPrecision(v) <= precision && (min === undefined || v >= min) && (max === undefined || v <= max))
             ) {
                 this.setState({
-                    inputValue: event.target.value,
+                    inputValue: precision === 0 ? event.target.value.replace(",", "").replace(".", "") : event.target.value,
                     noInput: event.target.value === ""
                 })
                 inputValueAsNumber = v ? v : 0
@@ -119,6 +148,8 @@ SimpleUnitInput.propTypes = {
     meta: PropTypes.object.isRequired,
     unit: PropTypes.string.isRequired,
     label: PropTypes.string.isRequired,
+    onKeyPress: PropTypes.func,
+    autoFocus: PropTypes.bool,
     placeholder: PropTypes.string,
     optional: PropTypes.bool,
     disabled: PropTypes.bool,
@@ -127,13 +158,13 @@ SimpleUnitInput.propTypes = {
     max: PropTypes.number
 }
 
-export { SimpleUnitInput }
-
 class UnitInputWithConversion extends Component {
     constructor(props) {
         super(props)
+        let valuePrecision = props.valuePrecision ? props.valuePrecision : 0
 
-        let object = this.convertValueToObject(props.input.value)
+        let inputValue = isStringNumber(String(props.input.value)) ? round(getNumberFromString(String(props.input.value)), valuePrecision).toString() : ""
+        let object = this.convertValueToObject(inputValue)
         let noInput = true
         let inputValues = _.reduce(
             object,
@@ -316,6 +347,8 @@ UnitInputWithConversion.propTypes = {
     valueUnit: PropTypes.string.isRequired,
     objectToValue: PropTypes.func.isRequired,
     valueToObject: PropTypes.func.isRequired,
+    onKeyPress: PropTypes.func,
+    autoFocus: PropTypes.bool,
     inputPrecision: PropTypes.number,
     valuePrecision: PropTypes.number,
     placeholder: PropTypes.string,
@@ -323,4 +356,191 @@ UnitInputWithConversion.propTypes = {
     disabled: PropTypes.bool
 }
 
-export { UnitInputWithConversion }
+class HeightUnitInput extends Component {
+    render() {
+        if (this.props.inputUnit === this.props.valueUnit) {
+            return <SimpleUnitInput {...this.props} unit={this.props.valueUnit} min={0} />
+        }
+
+        return (
+            <UnitInputWithConversion
+                {...this.props}
+                valuePrecision={8}
+                inputPrecision={convertPrecision(this.props.valueUnit, this.props.inputUnit, this.props.precision)}
+                valueToObject={lengthValueToObject}
+                objectToValue={lengthObjectToValue}
+            />
+        )
+    }
+}
+
+HeightUnitInput.propTypes = {
+    input: PropTypes.object.isRequired,
+    meta: PropTypes.object.isRequired,
+    label: PropTypes.string.isRequired,
+    onKeyPress: PropTypes.func,
+    autoFocus: PropTypes.bool,
+    unit: PropTypes.string,
+    precision: PropTypes.number,
+    placeholder: PropTypes.string,
+    optional: PropTypes.bool,
+    disabled: PropTypes.bool
+}
+
+HeightUnitInput = connect((state, props) => {
+    let configuredInputUnit = _.get(state.config, LENGTH_UNIT, CM)
+    let valueUnit = props.unit ? props.unit : CM
+
+    return {
+        inputUnit: configuredInputUnit,
+        valueUnit: valueUnit
+    }
+}, {})(HeightUnitInput)
+
+class WeightUnitInput extends Component {
+    render() {
+        if (this.props.inputUnit === this.props.valueUnit) {
+            return <SimpleUnitInput {...this.props} unit={this.props.valueUnit} min={0} />
+        }
+
+        return (
+            <UnitInputWithConversion
+                {...this.props}
+                valuePrecision={8}
+                inputPrecision={convertPrecision(this.props.valueUnit, this.props.inputUnit, this.props.precision)}
+                valueToObject={weightValueToObject}
+                objectToValue={weightObjectToValue}
+            />
+        )
+    }
+}
+
+WeightUnitInput.propTypes = {
+    input: PropTypes.object.isRequired,
+    meta: PropTypes.object.isRequired,
+    label: PropTypes.string.isRequired,
+    onKeyPress: PropTypes.func,
+    autoFocus: PropTypes.bool,
+    unit: PropTypes.string,
+    precision: PropTypes.number,
+    placeholder: PropTypes.string,
+    optional: PropTypes.bool,
+    disabled: PropTypes.bool
+}
+
+WeightUnitInput = connect((state, props) => {
+    let configuredInputUnit = _.get(state.config, WEIGHT_UNIT, KG_GRAMS)
+    let valueUnit = props.unit ? props.unit : KG
+
+    let inputUnit
+    switch (valueUnit) {
+        case GRAMS:
+            switch (configuredInputUnit) {
+                case POUNDS_OUNCES:
+                    inputUnit = POUNDS_OUNCES
+                    break
+                default:
+                    inputUnit = GRAMS
+                    break
+            }
+            break
+        default:
+            switch (configuredInputUnit) {
+                case POUNDS_OUNCES:
+                    inputUnit = POUNDS
+                    break
+                default:
+                    inputUnit = KG
+                    break
+            }
+    }
+
+    return {
+        inputUnit: inputUnit,
+        valueUnit: valueUnit
+    }
+}, {})(WeightUnitInput)
+
+class TemperatureUnitInput extends Component {
+    render() {
+        if (this.props.inputUnit === this.props.valueUnit) {
+            return <SimpleUnitInput {...this.props} unit={this.props.valueUnit} min={0} />
+        }
+
+        return (
+            <UnitInputWithConversion
+                {...this.props}
+                valuePrecision={8}
+                inputPrecision={convertPrecision(this.props.valueUnit, this.props.inputUnit, this.props.precision)}
+                valueToObject={temperatureValueToObject}
+                objectToValue={temperatureObjectToValue}
+            />
+        )
+    }
+}
+
+TemperatureUnitInput.propTypes = {
+    input: PropTypes.object.isRequired,
+    meta: PropTypes.object.isRequired,
+    label: PropTypes.string.isRequired,
+    onKeyPress: PropTypes.func,
+    autoFocus: PropTypes.bool,
+    unit: PropTypes.string,
+    precision: PropTypes.number,
+    placeholder: PropTypes.string,
+    optional: PropTypes.bool,
+    disabled: PropTypes.bool
+}
+
+TemperatureUnitInput = connect((state, props) => {
+    let configuredInputUnit = _.get(state.config, TEMPERATURE_UNIT, CELSIUS)
+    let valueUnit = props.unit ? props.unit : CELSIUS
+
+    return {
+        inputUnit: configuredInputUnit,
+        valueUnit: valueUnit
+    }
+}, {})(TemperatureUnitInput)
+
+class BloodPressureUnitInput extends Component {
+    render() {
+        if (this.props.inputUnit === this.props.valueUnit) {
+            return <SimpleUnitInput {...this.props} unit={this.props.valueUnit} min={0} />
+        }
+
+        return (
+            <UnitInputWithConversion
+                {...this.props}
+                valuePrecision={8}
+                inputPrecision={convertPrecision(this.props.valueUnit, this.props.inputUnit, this.props.precision)}
+                valueToObject={pressureValueToObject}
+                objectToValue={pressureObjectToValue}
+            />
+        )
+    }
+}
+
+BloodPressureUnitInput.propTypes = {
+    input: PropTypes.object.isRequired,
+    meta: PropTypes.object.isRequired,
+    label: PropTypes.string.isRequired,
+    onKeyPress: PropTypes.func,
+    autoFocus: PropTypes.bool,
+    unit: PropTypes.string,
+    precision: PropTypes.number,
+    placeholder: PropTypes.string,
+    optional: PropTypes.bool,
+    disabled: PropTypes.bool
+}
+
+BloodPressureUnitInput = connect((state, props) => {
+    let configuredInputUnit = _.get(state.config, BLOOD_PRESSURE_UNIT, MM_HG)
+    let valueUnit = props.unit ? props.unit : MM_HG
+
+    return {
+        inputUnit: configuredInputUnit,
+        valueUnit: valueUnit
+    }
+}, {})(BloodPressureUnitInput)
+
+export { SimpleUnitInput, UnitInputWithConversion, HeightUnitInput, WeightUnitInput, TemperatureUnitInput, BloodPressureUnitInput }

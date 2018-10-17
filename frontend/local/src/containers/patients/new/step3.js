@@ -15,12 +15,11 @@ import {
     renderHorizontalSelect,
     renderComplexHorizontalRadio
 } from "shared/forms/renderField"
-import { babyHeightExpectedRange, babyWeightExpectedRange } from "shared/forms/validation"
-import { SimpleUnitInput, UnitInputWithConversion } from "shared/forms/measurementFields"
-import { POUNDS_OUNCES, GRAMS, FEET_INCHES, CM } from "shared/unitConversion/units"
-import { weightValueToObject, weightObjectToValue, lengthValueToObject, lengthObjectToValue } from "shared/unitConversion"
+import { babyBodyHeightExpectedRange, babyBodyWeightExpectedRange } from "shared/forms/validation"
+import { SimpleUnitInput, WeightUnitInput, HeightUnitInput } from "shared/forms/measurementFields"
+import { GRAMS, CM } from "shared/unitConversion/units"
 import { yesNoOptions, positiveNegativeOptions } from "shared/forms/options"
-import { BABY_MAX_AGE, CHILD_MAX_AGE, WEIGHT_UNIT, LENGTH_UNIT } from "../../../modules/config"
+import { BABY_MAX_AGE, CHILD_MAX_AGE } from "../../../modules/config"
 import { getCodesAsOptions, loadCategories as loadCategoriesImport } from "shared/modules/codes"
 
 import { ReactComponent as RemoveIcon } from "shared/icons/negative.svg"
@@ -76,9 +75,7 @@ let RenderForm = ({ dateOfBirth, babyFoods, communicationTypes, deliveryTypes, c
 RenderForm = connect(
     state => ({
         maxBabyAge: state.config[BABY_MAX_AGE],
-        maxChildAge: state.config[CHILD_MAX_AGE],
-        weightUnit: state.config[WEIGHT_UNIT],
-        lengthUnit: state.config[LENGTH_UNIT]
+        maxChildAge: state.config[CHILD_MAX_AGE]
     }),
     {}
 )(RenderForm)
@@ -108,59 +105,29 @@ const renderBabyForm = ({ babyFoods, deliveryTypes, communicationTypes, weightUn
             <div className="birth">
                 <div className="form-row birthMeasurements">
                     <div className="weeksAtBirth">
-                        <Field name="weeksAtBirth" type="number" component={SimpleUnitInput} unit="weeks" min={0} label="Weeks at birth" placeholder="Weeks" />
+                        <Field name="weeksAtBirth" component={SimpleUnitInput} unit="weeks" min={0} label="Weeks at birth" placeholder="Weeks" />
                     </div>
                     <div className="weightAtBirth">
-                        {weightUnit === POUNDS_OUNCES ? (
-                            <Field
-                                name="weightAtBirth"
-                                label="Weight at birth"
-                                placeholder="Weight"
-                                component={UnitInputWithConversion}
-                                inputUnit={POUNDS_OUNCES}
-                                valueUnit={GRAMS}
-                                valuePrecision={0}
-                                valueToObject={weightValueToObject}
-                                objectToValue={weightObjectToValue}
-                                warn={babyWeightExpectedRange}
-                            />
-                        ) : (
-                            <Field
-                                name="weightAtBirth"
-                                label="Weight at birth"
-                                placeholder="Weight"
-                                component={SimpleUnitInput}
-                                unit={GRAMS}
-                                precision={0}
-                                min={0}
-                                warn={babyHeightExpectedRange}
-                            />
-                        )}
+                        <Field
+                            name="weightAtBirth"
+                            label="Weight at birth"
+                            placeholder="Weight"
+                            component={WeightUnitInput}
+                            unit={GRAMS}
+                            precision={0}
+                            warn={babyBodyWeightExpectedRange}
+                        />
                     </div>
                     <div className="heightAtBirth">
-                        {lengthUnit === FEET_INCHES ? (
-                            <Field
-                                name="heightAtBirth"
-                                label="Height at birth"
-                                placeholder="Height"
-                                component={UnitInputWithConversion}
-                                inputUnit={FEET_INCHES}
-                                valueUnit={CM}
-                                valuePrecision={0}
-                                valueToObject={lengthValueToObject}
-                                objectToValue={lengthObjectToValue}
-                            />
-                        ) : (
-                            <Field
-                                name="heightAtBirth"
-                                label="Height at birth"
-                                placeholder="Height"
-                                component={SimpleUnitInput}
-                                unit={CM}
-                                precision={0}
-                                min={0}
-                            />
-                        )}
+                        <Field
+                            name="heightAtBirth"
+                            label="Height at birth"
+                            placeholder="Height"
+                            component={HeightUnitInput}
+                            unit={CM}
+                            precision={0}
+                            warn={babyBodyHeightExpectedRange}
+                        />
                     </div>
                 </div>
             </div>

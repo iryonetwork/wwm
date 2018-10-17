@@ -6,8 +6,7 @@ import { Route, Link } from "react-router-dom"
 
 import { joinPaths } from "shared/utils"
 import Spinner from "shared/containers/spinner"
-import VitalSignCard from "shared/containers/vitalSign"
-import { WEIGHT_UNIT, LENGTH_UNIT, TEMPERATURE_UNIT, BLOOD_PRESSURE_UNIT } from "../../../modules/config"
+import { VitalSignCard, HeightVitalSignCard, WeightVitalSignCard, TemperatureVitalSignCard, BloodPressureVitalSignCard } from "shared/containers/vitalSign"
 import { RESOURCE_VITAL_SIGNS, READ, WRITE } from "../../../modules/validations"
 import { fetchHealthRecords } from "../../../modules/patient"
 import AddMedicalData from "../../waitlist/detail/add-data"
@@ -73,13 +72,12 @@ class MedicalData extends React.Component {
                                         <div className="card-group">
                                             {medicalData.height && (
                                                 <div className="cardContainer">
-                                                    <VitalSignCard
+                                                    <HeightVitalSignCard
                                                         id="height0"
                                                         name="Height"
                                                         precision={0}
                                                         value={medicalData.height[0].value}
-                                                        valueUnit="cm"
-                                                        displayUnit={this.props.lengthUnit}
+                                                        unit="cm"
                                                         timestamp={medicalData.height[0].timestamp}
                                                         timestampWarning={medicalData.height[0].timestampWarning}
                                                         consultationTooltipOn={inConsultation}
@@ -91,13 +89,12 @@ class MedicalData extends React.Component {
 
                                             {medicalData.weight && (
                                                 <div className="cardContainer">
-                                                    <VitalSignCard
+                                                    <WeightVitalSignCard
                                                         id="weight0"
                                                         name="Body mass"
                                                         precision={1}
                                                         value={medicalData.weight[0].value}
-                                                        valueUnit="kg"
-                                                        displayUnit={this.props.weightUnit === "lb_oz" ? "lb" : "kg"}
+                                                        unit="kg"
                                                         timestamp={medicalData.weight[0].timestamp}
                                                         timestampWarning={medicalData.weight[0].timestampWarning}
                                                         consultationTooltipOn={inConsultation}
@@ -113,8 +110,7 @@ class MedicalData extends React.Component {
                                                         id="bmi0"
                                                         name="BMI"
                                                         value={medicalData.bmi[0].value}
-                                                        valueUnit=""
-                                                        displayUnit=""
+                                                        unit=""
                                                         precision={2}
                                                         timestamp={medicalData.bmi[0].timestamp}
                                                         timestampWarning={medicalData.bmi[0].timestampWarning}
@@ -137,13 +133,12 @@ class MedicalData extends React.Component {
                                                         return (
                                                             i !== 0 && (
                                                                 <div key={"height" + i} className="cardContainer">
-                                                                    <VitalSignCard
+                                                                    <HeightVitalSignCard
                                                                         id={"height" + i}
                                                                         name="Height"
                                                                         precision={0}
                                                                         value={reading.value}
-                                                                        valueUnit="cm"
-                                                                        displayUnit={this.props.lengthUnit}
+                                                                        unit="cm"
                                                                         timestamp={reading.timestamp}
                                                                         timestampWarning={reading.timestampWarning}
                                                                         consultationTooltipOn={inConsultation}
@@ -164,13 +159,12 @@ class MedicalData extends React.Component {
                                                         return (
                                                             i !== 0 && (
                                                                 <div key={"weight" + i} className="cardContainer">
-                                                                    <VitalSignCard
+                                                                    <WeightVitalSignCard
                                                                         id={"weight" + i}
                                                                         name="Body mass"
                                                                         precision={1}
                                                                         value={reading.value}
-                                                                        valueUnit="kg"
-                                                                        displayUnit={this.props.weightUnit === "lb_oz" ? "lb" : "kg"}
+                                                                        unit="kg"
                                                                         timestamp={reading.timestamp}
                                                                         timestampWarning={reading.timestampWarning}
                                                                         consultationTooltipOn={inConsultation}
@@ -195,8 +189,7 @@ class MedicalData extends React.Component {
                                                                         id={"bmi" + i}
                                                                         name="BMI"
                                                                         value={reading.value}
-                                                                        valueUnit=""
-                                                                        displayUnit=""
+                                                                        unit=""
                                                                         precision={2}
                                                                         timestamp={reading.timestamp}
                                                                         timestampWarning={reading.timestampWarning}
@@ -222,13 +215,12 @@ class MedicalData extends React.Component {
                                         <div className="card-group">
                                             {medicalData.temperature && (
                                                 <div className="cardContainer">
-                                                    <VitalSignCard
+                                                    <TemperatureVitalSignCard
                                                         id="temperature0"
                                                         name="Temperature"
                                                         precision={1}
                                                         value={medicalData.temperature[0].value}
-                                                        valueUnit="°C"
-                                                        displayUnit={this.props.temperatureUnit}
+                                                        unit="°C"
                                                         timestamp={medicalData.temperature[0].timestamp}
                                                         timestampWarning={medicalData.temperature[0].timestampWarning}
                                                         consultationTooltipOn={inConsultation}
@@ -243,8 +235,7 @@ class MedicalData extends React.Component {
                                                         id="heart_rate0"
                                                         name="Heart rate"
                                                         value={medicalData.heart_rate[0].value}
-                                                        valueUnit="bpm"
-                                                        displayUnit="bpm"
+                                                        unit="bpm"
                                                         timestamp={medicalData.heart_rate[0].timestamp}
                                                         timestampWarning={medicalData.heart_rate[0].timestampWarning}
                                                         consultationTooltipOn={inConsultation}
@@ -258,13 +249,12 @@ class MedicalData extends React.Component {
                                                 medicalData.pressure[0].value.systolic &&
                                                 medicalData.pressure[0].value.diastolic && (
                                                     <div className="cardContainer">
-                                                        <VitalSignCard
+                                                        <BloodPressureVitalSignCard
                                                             id="pressure0"
                                                             name="Blood pressure"
                                                             precision={this.props.bloodPressureUnit === "mm[Hg]" ? 0 : 1}
                                                             value={[medicalData.pressure[0].value.systolic, medicalData.pressure[0].value.diastolic]}
-                                                            valueUnit="mm[Hg]"
-                                                            displayUnit={this.props.bloodPressureUnit}
+                                                            unit="mm[Hg]"
                                                             timestamp={medicalData.pressure[0].timestamp}
                                                             timestampWarning={medicalData.pressure[0].timestampWarning}
                                                             consultationTooltipOn={inConsultation}
@@ -279,8 +269,7 @@ class MedicalData extends React.Component {
                                                         id="oxygen_saturation0"
                                                         name="Oxygen saturation"
                                                         value={medicalData.oxygen_saturation[0].value}
-                                                        valueUnit="%"
-                                                        displayUnit="%"
+                                                        unit="%"
                                                         timestamp={medicalData.oxygen_saturation[0].timestamp}
                                                         timestampWarning={medicalData.oxygen_saturation[0].timestampWarning}
                                                         consultationTooltipOn={inConsultation}
@@ -302,13 +291,12 @@ class MedicalData extends React.Component {
                                                         return (
                                                             i !== 0 && (
                                                                 <div key={"temperature" + i} className="cardContainer">
-                                                                    <VitalSignCard
+                                                                    <TemperatureVitalSignCard
                                                                         id={"temperature" + i}
                                                                         name="Temperature"
                                                                         precision={1}
                                                                         value={reading.value}
-                                                                        valueUnit="°C"
-                                                                        displayUnit={this.props.temperatureUnit}
+                                                                        unit="°C"
                                                                         timestamp={reading.timestamp}
                                                                         timestampWarning={reading.timestampWarning}
                                                                         consultationTooltipOn={inConsultation}
@@ -333,8 +321,7 @@ class MedicalData extends React.Component {
                                                                         id={"heart_rate" + i}
                                                                         name="Heart rate"
                                                                         value={reading.value}
-                                                                        valueUnit="bpm"
-                                                                        displayUnit="bpm"
+                                                                        unit="bpm"
                                                                         timestamp={reading.timestamp}
                                                                         timestampWarning={reading.timestampWarning}
                                                                         consultationTooltipOn={inConsultation}
@@ -355,13 +342,12 @@ class MedicalData extends React.Component {
                                                         return (
                                                             i !== 0 && (
                                                                 <div key={"reading" + i} className="cardContainer">
-                                                                    <VitalSignCard
+                                                                    <BloodPressureVitalSignCard
                                                                         id={"pressure" + i}
                                                                         name="Blood pressure"
                                                                         precision={this.props.bloodPressureUnit === "mm[Hg]" ? 0 : 1}
                                                                         value={[reading.value.systolic, reading.value.diastolic]}
-                                                                        valueUnit="mm[Hg]"
-                                                                        displayUnit={this.props.bloodPressureUnit}
+                                                                        unit="mm[Hg]"
                                                                         timestamp={reading.timestamp}
                                                                         timestampWarning={reading.timestampWarning}
                                                                         consultationTooltipOn={inConsultation}
@@ -386,8 +372,7 @@ class MedicalData extends React.Component {
                                                                         id={"oxygen_saturation" + i}
                                                                         name="Oxygen saturation"
                                                                         value={reading.value}
-                                                                        valueUnit="%"
-                                                                        displayUnit="%"
+                                                                        unit="%"
                                                                         timestamp={reading.timestamp}
                                                                         timestampWarning={reading.timestampWarning}
                                                                         consultationTooltipOn={inConsultation}
@@ -462,11 +447,7 @@ MedicalData = connect(
             medicalDataLoading: state.patient.patientRecords.loading,
             patientRecords: state.patient.patientRecords.data,
             canSeeVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[READ],
-            canAddVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[WRITE],
-            weightUnit: state.config[WEIGHT_UNIT],
-            lengthUnit: state.config[LENGTH_UNIT],
-            temperatureUnit: state.config[TEMPERATURE_UNIT],
-            bloodPressureUnit: state.config[BLOOD_PRESSURE_UNIT]
+            canAddVitalSigns: ((state.validations.userRights || {})[RESOURCE_VITAL_SIGNS] || {})[WRITE]
         }
     },
     { fetchHealthRecords }

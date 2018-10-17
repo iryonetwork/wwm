@@ -24,7 +24,6 @@ import {
     DELETE
 } from "../../../modules/validations"
 import { saveConsultation } from "../../../modules/patient"
-import { WEIGHT_UNIT, LENGTH_UNIT, TEMPERATURE_UNIT, BLOOD_PRESSURE_UNIT } from "../../../modules/config"
 
 import MedicalData from "./add-data"
 import LaboratoryTest from "./add-lab-test"
@@ -32,7 +31,7 @@ import EditComplaint from "./edit-complaint"
 import AddDiagnosis from "./add-diagnosis"
 import Remove from "./remove"
 import Spinner from "shared/containers/spinner"
-import VitalSignCard from "shared/containers/vitalSign"
+import { VitalSignCard, WeightVitalSignCard, HeightVitalSignCard, TemperatureVitalSignCard, BloodPressureVitalSignCard } from "shared/containers/vitalSign"
 import CodeTitle from "shared/containers/codes/title"
 import { open, COLOR_SUCCESS } from "shared/modules/alert"
 
@@ -225,13 +224,12 @@ class InConsultation extends React.Component {
                                 {waitlistItem.vitalSigns &&
                                     waitlistItem.vitalSigns.height && (
                                         <div className="cardContainer">
-                                            <VitalSignCard
+                                            <HeightVitalSignCard
                                                 id="height"
                                                 name="Height"
                                                 precision={0}
                                                 value={waitlistItem.vitalSigns.height.value}
-                                                valueUnit="cm"
-                                                displayUnit={this.props.lengthUnit}
+                                                unit="cm"
                                                 timestamp={waitlistItem.vitalSigns.height.timestamp}
                                             />
                                         </div>
@@ -240,13 +238,12 @@ class InConsultation extends React.Component {
                                 {waitlistItem.vitalSigns &&
                                     waitlistItem.vitalSigns.weight && (
                                         <div className="cardContainer">
-                                            <VitalSignCard
+                                            <WeightVitalSignCard
                                                 id="weight"
                                                 name="Body mass"
                                                 precision={1}
                                                 value={waitlistItem.vitalSigns.weight.value}
-                                                valueUnit="kg"
-                                                displayUnit={this.props.weightUnit === "lb_oz" ? "lb" : "kg"}
+                                                unit="kg"
                                                 timestamp={waitlistItem.vitalSigns.weight.timestamp}
                                             />
                                         </div>
@@ -259,8 +256,7 @@ class InConsultation extends React.Component {
                                                 id="bmi"
                                                 name="BMI"
                                                 value={waitlistItem.vitalSigns.bmi.value}
-                                                valueUnit=""
-                                                displayUnit=""
+                                                unit=""
                                                 precision={2}
                                                 timestamp={waitlistItem.vitalSigns.bmi.timestamp}
                                             />
@@ -270,12 +266,11 @@ class InConsultation extends React.Component {
                                 {waitlistItem.vitalSigns &&
                                     waitlistItem.vitalSigns.temperature && (
                                         <div className="cardContainer">
-                                            <VitalSignCard
+                                            <TemperatureVitalSignCard
                                                 id="temperature"
                                                 name="Body temperature"
                                                 value={waitlistItem.vitalSigns.temperature.value}
-                                                precision={1}
-                                                valueUnit="°C"
+                                                unit="°C"
                                                 displayUnit={this.props.temperatureUnit}
                                                 timestamp={waitlistItem.vitalSigns.temperature.timestamp}
                                             />
@@ -288,8 +283,7 @@ class InConsultation extends React.Component {
                                                 id="heart_rate"
                                                 name="Heart rate"
                                                 value={waitlistItem.vitalSigns.heart_rate.value}
-                                                valueUnit="bpm"
-                                                displayUnit="bpm"
+                                                unit="bpm"
                                                 timestamp={waitlistItem.vitalSigns.heart_rate.timestamp}
                                             />
                                         </div>
@@ -299,13 +293,12 @@ class InConsultation extends React.Component {
                                     waitlistItem.vitalSigns.pressure.value.systolic &&
                                     waitlistItem.vitalSigns.pressure.value.diastolic && (
                                         <div className="cardContainer">
-                                            <VitalSignCard
+                                            <BloodPressureVitalSignCard
                                                 id="pressure"
                                                 name="Blood pressure"
-                                                precision={this.props.bloodPressureUnit === "mm[Hg]" ? 0 : 1}
+                                                precision={0}
                                                 value={[waitlistItem.vitalSigns.pressure.value.systolic, waitlistItem.vitalSigns.pressure.value.diastolic]}
-                                                valueUnit="mm[Hg]"
-                                                displayUnit={this.props.bloodPressureUnit}
+                                                unit="mm[Hg]"
                                                 timestamp={waitlistItem.vitalSigns.pressure.timestamp}
                                             />
                                         </div>
@@ -317,8 +310,7 @@ class InConsultation extends React.Component {
                                                 id="oxygen_saturation"
                                                 name="Oxygen saturation"
                                                 value={waitlistItem.vitalSigns.oxygen_saturation.value}
-                                                valueUnit="%"
-                                                displayUnit="%"
+                                                unit="%"
                                                 timestamp={waitlistItem.vitalSigns.oxygen_saturation.timestamp}
                                             />
                                         </div>
@@ -390,11 +382,7 @@ InConsultation = connect(
             canAddLaboratoryTests: ((state.validations.userRights || {})[RESOURCE_LABORATORY_TEST] || {})[WRITE],
             canSeeMainComplaint: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[READ],
             canEditMainComplaint: ((state.validations.userRights || {})[RESOURCE_PATIENT_IDENTIFICATION] || {})[UPDATE],
-            canRemoveFromWaitlist: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[DELETE],
-            weightUnit: state.config[WEIGHT_UNIT],
-            lengthUnit: state.config[LENGTH_UNIT],
-            temperatureUnit: state.config[TEMPERATURE_UNIT],
-            bloodPressureUnit: state.config[BLOOD_PRESSURE_UNIT]
+            canRemoveFromWaitlist: ((state.validations.userRights || {})[RESOURCE_WAITLIST] || {})[DELETE]
         }
     },
     {

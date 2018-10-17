@@ -8,6 +8,7 @@ import classnames from "classnames"
 import { RenderForm } from "../new/step3"
 import { joinPaths } from "shared/utils"
 import { RESOURCE_HEALTH_HISTORY, READ, WRITE } from "../../../modules/validations"
+import { WeightValueWithUnitString, HeightValueWithUnitString, SHORT } from "shared/containers/measurement"
 import { getCodesAsOptions, getCodes, loadCategories as loadCategoriesImport } from "shared/modules/codes"
 import { updatePatient } from "../../../modules/patient"
 import { BABY_MAX_AGE, CHILD_MAX_AGE } from "../../../modules/config"
@@ -109,8 +110,18 @@ let BirthData = ({ patient, fetchCodes }) => {
 
                 <div className="row">
                     <Column width="4" label="Weeks at birth" value={patient.weeksAtBirth} unit="weeks" key="weeksAtBirth" />
-                    <Column width="4" label="Weight at birth" value={patient.weightAtBirth} unit="grams" key="weightAtBirth" />
-                    <Column width="4" label="Height at birth" value={patient.heightAtBirth} unit="cm" key="heightAtBirth" />
+                    <Column
+                        width="4"
+                        label="Weight at birth"
+                        value={<WeightValueWithUnitString unit="g" precision={0} formatting={SHORT} value={patient.weightAtBirth} />}
+                        key="weightAtBirth"
+                    />
+                    <Column
+                        width="4"
+                        label="Height at birth"
+                        value={<HeightValueWithUnitString unit="cm" precision={0} formatting={SHORT} value={patient.heightAtBirth} />}
+                        key="heightAtBirth"
+                    />
                 </div>
             </div>
         </div>

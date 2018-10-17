@@ -10,11 +10,11 @@ export const expectedRange = (min, max) => value => {
     return value !== "" && (value < min || value > max) ? "Entered value is out of expected range" : undefined
 }
 
-export const babyHeightExpectedRange = expectedRange(25, 80)
-export const heightExpectedRange = expectedRange(40, 220)
-export const babyWeightExpectedRange = expectedRange(1000, 6000)
-export const weightExpectedRange = expectedRange(20, 180)
-export const temperatureExpectedRange = expectedRange(31, 43)
+export const babyBodyHeightExpectedRange = expectedRange(25, 80)
+export const bodyHeightExpectedRange = expectedRange(40, 220)
+export const babyBodyWeightExpectedRange = expectedRange(1000, 6000)
+export const bodyWeightExpectedRange = expectedRange(20, 180)
+export const bodyTemperatureExpectedRange = expectedRange(31, 43)
 export const systolicBloodPressureExpectedRange = expectedRange(60, 170)
 export const diastolicBloodPressureExpectedRange = expectedRange(45, 105)
 export const heartRateValidRange = validRange(0, 300)
