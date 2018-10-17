@@ -10,7 +10,7 @@ const CONVERT_UNITS_SYMBOLS = {
     [units.POUNDS]: "lb",
     [units.OUNCES]: "oz",
     [units.CM]: "cm",
-    [units.METRES]: "m",
+    [units.METERS]: "m",
     [units.FEET]: "ft",
     [units.INCHES]: "in",
     [units.MM_HG]: "mm",
@@ -47,11 +47,11 @@ export const getObjectFromValue = (valueUnit, objectUnit, precision) => value =>
         case units.KG_GRAMS:
             return weightValueToObject(valueUnit, objectUnit, precision)(value)
         case units.CM:
-        case units.METRES:
+        case units.METERS:
         case units.FEET:
         case units.INCHES:
         case units.FEET_INCHES:
-        case units.METRES_CM:
+        case units.METERS_CM:
             return lengthValueToObject(valueUnit, objectUnit, precision)(value)
         case units.MM_HG:
         case units.CM_HG:
@@ -79,11 +79,11 @@ export const getValueFromObject = (valueUnit, objectUnit, precision) => object =
         case units.KG_GRAMS:
             return weightObjectToValue(valueUnit, precision)(object)
         case units.CM:
-        case units.METRES:
+        case units.METERS:
         case units.FEET:
         case units.INCHES:
         case units.FEET_INCHES:
-        case units.METRES_CM:
+        case units.METERS_CM:
             return lengthObjectToValue(valueUnit, precision)(object)
         case units.MM_HG:
         case units.CM_HG:

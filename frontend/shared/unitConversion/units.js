@@ -1,4 +1,9 @@
 // weight units
+export const LENGTH_UNIT = "lengthUnit"
+export const WEIGHT_UNIT = "weightUnit"
+export const TEMPERATURE_UNIT = "temperatureUnit"
+export const BLOOD_PRESSURE_UNIT = "bloodPressureUnit"
+
 export const KG = "kg"
 export const GRAMS = "g"
 export const POUNDS = "lb"
@@ -19,16 +24,16 @@ export const WEIGHT_COMPLEX_UNITS_LIMITS = {
 
 // length units
 export const CM = "cm"
-export const METRES = "m"
+export const METERS = "m"
 export const FEET = "ft"
 export const INCHES = "in"
-export const METRES_CM = "m_cm"
+export const METERS_CM = "m_cm"
 export const FEET_INCHES = "ft_in"
-export const LENGTH_VALUE_UNITS = [CM, METRES, FEET, INCHES]
-export const LENGTH_SIMPLE_UNITS = [CM, METRES, FEET, INCHES]
-export const LENGTH_COMPLEX_UNITS = [METRES_CM, FEET_INCHES]
+export const LENGTH_VALUE_UNITS = [CM, METERS, FEET, INCHES]
+export const LENGTH_SIMPLE_UNITS = [CM, METERS, FEET, INCHES]
+export const LENGTH_COMPLEX_UNITS = [METERS_CM, FEET_INCHES]
 export const LENGTH_COMPLEX_UNITS_LIMITS = {
-    [METRES_CM]: {
+    [METERS_CM]: {
         [CM]: 100
     },
     [FEET_INCHES]: {
@@ -101,20 +106,20 @@ export const FORMATTING = {
             LABEL: CM
         },
         LONG: {
-            SINGULAR_LABEL: "centimetre",
-            LABEL: "centimetres"
+            SINGULAR_LABEL: "centimeter",
+            LABEL: "centimeters"
         },
         LABEL: CM
     },
-    [METRES]: {
+    [METERS]: {
         SHORT: {
-            LABEL: METRES
+            LABEL: METERS
         },
         LONG: {
-            SINGULAR_LABEL: "metre",
-            LABEL: "metres"
+            SINGULAR_LABEL: "meters",
+            LABEL: "meters"
         },
-        LABEL: METRES
+        LABEL: METERS
     },
     [FEET]: {
         SHORT: {
@@ -203,11 +208,11 @@ export const MININUM = {
     [CM]: {
         [CM]: 0
     },
-    [METRES]: {
-        [METRES]: 0
+    [METERS]: {
+        [METERS]: 0
     },
-    [METRES_CM]: {
-        [METRES]: 0,
+    [METERS_CM]: {
+        [METERS]: 0,
         [CM]: 0
     },
     [FEET]: {
@@ -244,8 +249,8 @@ export const MAXIMUM = {
         [OUNCES]: 15.99999999
     },
     [CM]: {},
-    [METRES]: {},
-    [METRES_CM]: {
+    [METERS]: {},
+    [METERS_CM]: {
         [CM]: 99.99999999
     },
     [FEET]: {},
@@ -320,7 +325,7 @@ export const getPrecisionUnit = unit => {
             return GRAMS
         case FEET_INCHES:
             return INCHES
-        case METRES_CM:
+        case METERS_CM:
             return CM
         default:
             return unit
