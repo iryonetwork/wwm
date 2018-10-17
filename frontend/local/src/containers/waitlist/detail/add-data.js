@@ -93,7 +93,7 @@ class MedicalData extends React.Component {
             <Modal>
                 <div className="medical-data">
                     {item ? (
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleSubmit} onKeyPress={this.props.dispatch(submitOnEnter)}>
                             <div className="modal-header">
                                 <Patient data={item.patient && cardToObject({ connections: item.patient })} />
                                 <h1>
@@ -277,7 +277,6 @@ class VitalSignField extends React.Component {
                                 max={this.props.max}
                                 validate={this.props.validate}
                                 warn={this.props.warn}
-                                onKeyPress={this.props.dispatch(submitOnEnter)}
                                 autoFocus={this.props.focused}
                             />
                         </div>
@@ -330,7 +329,6 @@ class BloodPressureField extends React.Component {
                                     component={BloodPressureUnitInput}
                                     unit={MM_HG}
                                     precision={0}
-                                    onKeyPress={this.props.dispatch(submitOnEnter)}
                                     autoFocus={this.props.focused}
                                     validate={required}
                                     warn={systolicBloodPressureExpectedRange}
@@ -344,7 +342,6 @@ class BloodPressureField extends React.Component {
                                     component={BloodPressureUnitInput}
                                     unit={MM_HG}
                                     precision={0}
-                                    onKeyPress={this.props.dispatch(submitOnEnter)}
                                     autoFocus={this.props.focused}
                                     validate={required}
                                     warn={diastolicBloodPressureExpectedRange}
