@@ -58,8 +58,12 @@ powershell -ExecutionPolicy ByPass -File .\generateAndImportCerts.ps1
 
 1.  Edit `frontendConfig.json` to include correct `clinicId` and `locationId`.
 2.  Edit `.env` environment variables file for `docker-compose` it's included together with `docker-compose` in folders speciifc for Windows edition.
-    The .env files contain on default values for test Windows deployment connecting to staging environment.
-    The only value not set-up at all is `AUTH_STORAGE_ENCRYPTION_KEY` that needs to be the same as at your chosen cloud deployment's `cloudAuth`. Otherwise `locatAuth` won't be able to decrypt received auth DB file.
+    The .env files contain default values for test Windows clinic deployment that is connecting to stagingcloud deployment.
+    The values that are not filled in and has to be added before running the clinic are:
+    *   `CLOUDSYMMETRIC_BASIC_AUTH_USERNAME` and `CLOUDSYMMETRIC_BASIC_AUTH_PASSWORD`.
+        It needs to be set to correct username and password setup for `cloudSymmetric` server endpoints at the chosen cloud deployment.
+    *   `AUTH_STORAGE_ENCRYPTION_KEY`
+        It needs to be the same as at the chosen cloud deployment's `cloudAuth`. Otherwise `locatAuth` won't be able to decrypt received auth DB file.
 
 ## 6. Start clinic
 
@@ -75,7 +79,7 @@ Now you should be able to access clinic web interface at `https://iryo.local`.
 
 ### Windows 10 Pro
 
-1.  Clinic site is not accessible from Microsoft Edge browser.
+1.  Clinic site is not accessible from Microsoft Edge browser due to Microsoft Edge not being able to correctly resolve local domains.
 
 ### Windows 10 Home
 

@@ -10,6 +10,13 @@ sed -i -e "s#^db.url=<DB_URL>#db.url=${DB_URL}#" /opt/symmetric/engines/local.pr
 sed -i -e "s#^db.user=<DB_USER>#db.user=${DB_USER}#" /opt/symmetric/engines/local.properties
 sed -i -e "s#^db.password=<DB_PASSWORD>#db.password=${DB_PASSWORD}#" /opt/symmetric/engines/local.properties
 sed -i -e "s#^registration.url=<REGISTRATION_URL>#registration.url=${REGISTRATION_URL}#" /opt/symmetric/engines/local.properties
+if [ "$CLOUD_SYMMETRIC_BASIC_AUTH_ENABLED" = true ] ; then
+    sed -i -e "s#^http.basic.auth.username=<CLOUDSYMMETRIC_BASIC_AUTH_USERNAME>#http.basic.auth.username=${CLOUDSYMMETRIC_BASIC_AUTH_USERNAME}#" /opt/symmetric/engines/local.properties
+    sed -i -e "s#^http.basic.auth.password=<CLOUDSYMMETRIC_BASIC_AUTH_PASSWORD>#http.basic.auth.password=${CLOUDSYMMETRIC_BASIC_AUTH_PASSWORD}#" /opt/symmetric/engines/local.properties
+else
+    sed -i -e "s#^http.basic.auth.username=<CLOUDSYMMETRIC_BASIC_AUTH_USERNAME>##" /opt/symmetric/engines/local.properties
+    sed -i -e "s#^http.basic.auth.password=<CLOUDSYMMETRIC_BASIC_AUTH_PASSWORD>##" /opt/symmetric/engines/local.properties
+fi
 
 # Create symmetric tables
 # (We need to manually create them to be able to insert our own rules in
