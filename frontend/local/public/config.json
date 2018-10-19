@@ -9,7 +9,7 @@
     "childMaxAge": 7,
     "waitlistId": "22afd921-0630-49f4-89a8-d1ad7639ee83",
     "lengthUnit": "cm",
-    "weightUnit": "kg-g",
+    "weightUnit": "kg_g",
     "temperatureUnit": "°C",
     "bloodPressureUnit": "mm[Hg]"
 }
