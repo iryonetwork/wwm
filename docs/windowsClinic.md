@@ -42,6 +42,10 @@ Setup was tested on Windows 10 Home & Pro Editions.
 
 ## 2. Generate certificates and import root certificate to Windows root truststore.
 
+*   Set IRYO_WWM_DIR environment variable to the directory to which you checked out IRYO WWM repo. You can set it in Powershell following way
+    ```
+    $env:IRYO_WWM_DIR = "<PATH>"
+    ```
 *   Enter `docs/windowsClinic` directory in the admin-mode powershell.
 *   Run `generateAndImportCerts.ps1` script:
 
