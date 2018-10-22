@@ -90,19 +90,19 @@ func main() {
 	// initialize handlers
 	h := waitlist.NewHandlers(service, logger)
 
-	api.WaitlistDeleteListIDHandler = h.DeleteWaitlist()
-	api.WaitlistGetHandler = h.GetWaitlists()
-	api.WaitlistPostHandler = h.CreateWaitlist()
-	api.WaitlistPutListIDHandler = h.UpdateWaitlist()
+	api.DeleteListIDHandler = h.DeleteWaitlist()
+	api.GetHandler = h.GetWaitlists()
+	api.PostHandler = h.CreateWaitlist()
+	api.PutListIDHandler = h.UpdateWaitlist()
 
-	api.ItemDeleteListIDItemIDHandler = h.DeleteItem()
-	api.ItemGetListIDHandler = h.GetWaitlist()
-	api.ItemGetListIDHistoryHandler = h.GetWaitlistHistory()
-	api.ItemPostListIDHandler = h.CreateItem()
-	api.ItemPutListIDItemIDHandler = h.UpdateItem()
-	api.ItemPutListIDItemIDTopHandler = h.MoveItemToTop()
-	api.ItemPutListIDItemIDReopenHandler = h.ReopenHistoryItem()
-	api.ItemPutPatientPatientIDHandler = h.UpdatePatient()
+	api.DeleteListIDItemIDHandler = h.DeleteItem()
+	api.GetListIDHandler = h.GetWaitlist()
+	api.GetListIDHistoryHandler = h.GetWaitlistHistory()
+	api.PostListIDHandler = h.CreateItem()
+	api.PutListIDItemIDHandler = h.UpdateItem()
+	api.PutListIDItemIDTopHandler = h.MoveItemToTop()
+	api.PutListIDItemIDReopenHandler = h.ReopenHistoryItem()
+	api.PutPatientPatientIDHandler = h.UpdatePatient()
 
 	// initialize metrics middleware
 	apiMetrics := APIMetrics.NewMetrics("api", "").WithURLSanitize(utils.WhitelistURLSanitize([]string{}))

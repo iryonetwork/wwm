@@ -27,6 +27,7 @@ paths:
     get:
       tags:
         - waitlist
+        - list
 
       summary: Waitlists
       description: Lists all waiting lists
@@ -51,6 +52,7 @@ paths:
     post:
       tags:
         - waitlist
+        - list
 
       parameters:
         - in: body
@@ -84,7 +86,9 @@ paths:
   /{listID}:
     get:
       tags:
+        - waitlist
         - item
+        - list
 
       parameters:
         - in: path
@@ -118,7 +122,10 @@ paths:
 
     post:
       tags:
+        - waitlist
         - item
+        - list
+
       summary: Create waitlist item
       description: Add new patient to the waitlist
 
@@ -163,6 +170,7 @@ paths:
     put:
       tags:
         - waitlist
+        - item
 
       parameters:
         - in: path
@@ -202,6 +210,7 @@ paths:
     delete:
       tags:
         - waitlist
+        - list
 
       parameters:
         - in: path
@@ -231,7 +240,9 @@ paths:
   /{listID}/history:
     get:
       tags:
+        - waitlist
         - item
+        - list
 
       parameters:
         - in: path
@@ -273,7 +284,9 @@ paths:
     put:
       summary: Updates item on the waitlist
       tags:
+        - waitlist
         - item
+        - list
 
       parameters:
         - in: path
@@ -314,9 +327,11 @@ paths:
           $ref: '#/responses/500'
 
     delete:
-      summary: Remove item from list
+      summary: Remove item from the list
       tags:
+        - waitlist
         - item
+        - list
 
       parameters:
         - in: path
@@ -359,7 +374,9 @@ paths:
     put:
       summary: Puts item on the top of the waitlist
       tags:
+        - waitlist
         - item
+        - list
 
       parameters:
         - in: path
@@ -397,7 +414,8 @@ paths:
     put:
       summary: Reopens waitlist item that was closed or removed, ID of the list to which reopened item should be put can be specified.
       tags:
-        - item
+        - waitlist
+        - list
 
       parameters:
         - in: path
@@ -440,6 +458,7 @@ paths:
     put:
       summary: Updates patient data in all the items with this patient.
       tags:
+        - waitlist
         - item
 
       parameters:
