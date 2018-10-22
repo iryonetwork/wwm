@@ -1,7 +1,6 @@
 package bolt
 
 import (
-	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"io"
@@ -15,7 +14,7 @@ type b struct {
 
 type Bucket struct {
 	*b
-	encryptionKey *[]byte
+	aesgcm cipher.AEAD
 }
 
 func (eb *Bucket) Bucket(name []byte) *Bucket {
@@ -23,7 +22,7 @@ func (eb *Bucket) Bucket(name []byte) *Bucket {
 	if bb == nil {
 		return nil
 	}
-	return &Bucket{b: &b{bb}, encryptionKey: eb.encryptionKey}
+	return &Bucket{b: &b{bb}, aesgcm: eb.aesgcm}
 }
 
 func (eb *Bucket) CreateBucket(name []byte) (*Bucket, error) {
@@ -31,7 +30,7 @@ func (eb *Bucket) CreateBucket(name []byte) (*Bucket, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Bucket{b: &b{nb}, encryptionKey: eb.encryptionKey}, nil
+	return &Bucket{b: &b{nb}, aesgcm: eb.aesgcm}, nil
 }
 
 func (eb *Bucket) CreateBucketIfNotExists(name []byte) (*Bucket, error) {
@@ -39,11 +38,11 @@ func (eb *Bucket) CreateBucketIfNotExists(name []byte) (*Bucket, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Bucket{b: &b{nb}, encryptionKey: eb.encryptionKey}, nil
+	return &Bucket{b: &b{nb}, aesgcm: eb.aesgcm}, nil
 }
 
 func (eb *Bucket) Cursor() *Cursor {
-	return &Cursor{Cursor: eb.b.Bucket.Cursor(), encryptionKey: eb.encryptionKey}
+	return &Cursor{Cursor: eb.b.Bucket.Cursor(), aesgcm: eb.aesgcm}
 }
 
 const nonceLength = 12
@@ -51,7 +50,7 @@ const nonceLength = 12
 func (eb *Bucket) Get(key []byte) []byte {
 	data := eb.b.Bucket.Get(key)
 
-	decrypted, err := decrypt(data, *eb.encryptionKey)
+	decrypted, err := decrypt(data, eb.aesgcm)
 	if err != nil {
 		return nil
 	}
@@ -60,26 +59,12 @@ func (eb *Bucket) Get(key []byte) []byte {
 }
 
 func (eb *Bucket) Put(key, value []byte) error {
-	if eb.encryptionKey == nil {
-		return ErrTxClosed
-	}
-
-	block, err := aes.NewCipher(*eb.encryptionKey)
-	if err != nil {
-		return err
-	}
-
 	nonce := make([]byte, nonceLength)
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		return err
 	}
 
-	aesgcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return err
-	}
-
-	return eb.b.Bucket.Put(key, append(nonce, aesgcm.Seal(nil, nonce, value, nil)...))
+	return eb.b.Bucket.Put(key, append(nonce, eb.aesgcm.Seal(nil, nonce, value, nil)...))
 }
 
 func (eb *Bucket) ForEach(fn func(k, v []byte) error) error {
@@ -89,7 +74,7 @@ func (eb *Bucket) ForEach(fn func(k, v []byte) error) error {
 			return fn(k, v)
 		}
 
-		decrypted, err := decrypt(v, *eb.encryptionKey)
+		decrypted, err := decrypt(v, eb.aesgcm)
 		if err != nil {
 			return ErrDecrypt
 		}
@@ -97,19 +82,9 @@ func (eb *Bucket) ForEach(fn func(k, v []byte) error) error {
 	})
 }
 
-func decrypt(data, key []byte) ([]byte, error) {
+func decrypt(data []byte, aesgcm cipher.AEAD) ([]byte, error) {
 	if len(data) < nonceLength {
 		return nil, ErrDecrypt
-	}
-
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-
-	aesgcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
 	}
 
 	decrypted, err := aesgcm.Open(nil, data[:nonceLength], data[nonceLength:], nil)

@@ -1,6 +1,8 @@
 package bolt
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"errors"
 	"fmt"
 	"os"
@@ -10,7 +12,7 @@ import (
 
 type DB struct {
 	*bolt.DB
-	encryptionKey *[]byte
+	aesgcm cipher.AEAD
 }
 
 func Open(key []byte, path string, mode os.FileMode, options *Options) (*DB, error) {
@@ -23,7 +25,17 @@ func Open(key []byte, path string, mode os.FileMode, options *Options) (*DB, err
 		return nil, err
 	}
 
-	return &DB{DB: db, encryptionKey: &key}, nil
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	aesgcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DB{DB: db, aesgcm: aesgcm}, nil
 }
 
 func (db *DB) View(fn func(*Tx) error) error {
@@ -32,7 +44,7 @@ func (db *DB) View(fn func(*Tx) error) error {
 	}
 
 	return db.DB.View(func(tx *bolt.Tx) error {
-		return fn(&Tx{Tx: tx, encryptionKey: db.encryptionKey})
+		return fn(&Tx{Tx: tx, aesgcm: db.aesgcm})
 	})
 }
 
@@ -42,7 +54,7 @@ func (db *DB) Update(fn func(*Tx) error) error {
 	}
 
 	return db.DB.Update(func(tx *bolt.Tx) error {
-		return fn(&Tx{Tx: tx, encryptionKey: db.encryptionKey})
+		return fn(&Tx{Tx: tx, aesgcm: db.aesgcm})
 	})
 }
 
@@ -55,12 +67,12 @@ func (db *DB) Begin(writable bool) (*Tx, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Tx{Tx: tx, encryptionKey: db.encryptionKey}, nil
+	return &Tx{Tx: tx, aesgcm: db.aesgcm}, nil
 }
 
 func (db *DB) Batch(fn func(*Tx) error) error {
 	return db.DB.Batch(func(tx *bolt.Tx) error {
-		return fn(&Tx{Tx: tx, encryptionKey: db.encryptionKey})
+		return fn(&Tx{Tx: tx, aesgcm: db.aesgcm})
 	})
 }
 
