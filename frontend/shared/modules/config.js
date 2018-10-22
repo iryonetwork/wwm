@@ -30,6 +30,7 @@ export default (state = initialState, action) => {
                 break
 
             case FAILED:
+                draft.loading = false
                 draft.failed = true
                 break
 
