@@ -6,7 +6,7 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
+	"github.com/iryonetwork/encrypted-bolt"
 )
 
 type storage struct {

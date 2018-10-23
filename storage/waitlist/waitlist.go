@@ -9,7 +9,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/iryonetwork/wwm/gen/waitlist/models"
-	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
+	"github.com/iryonetwork/encrypted-bolt"
 	"github.com/iryonetwork/wwm/utils"
 )
 

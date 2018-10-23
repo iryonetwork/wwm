@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/iryonetwork/wwm/log/errorChecker"
-	bolt "github.com/iryonetwork/wwm/storage/encrypted_bolt"
+	bolt "github.com/iryonetwork/encrypted-bolt"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"

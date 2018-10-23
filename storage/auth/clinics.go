@@ -6,7 +6,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/iryonetwork/wwm/gen/auth/models"
-	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
+	"github.com/iryonetwork/encrypted-bolt"
 	"github.com/iryonetwork/wwm/utils"
 	authCommon "github.com/iryonetwork/wwm/auth"
 )

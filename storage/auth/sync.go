@@ -12,7 +12,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/iryonetwork/wwm/log/errorChecker"
-	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
+	"github.com/iryonetwork/encrypted-bolt"
 )
 
 // GetChecksum calculates and returns checksum of the whole database

@@ -5,7 +5,7 @@ import (
 
 	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
-	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
+	"github.com/iryonetwork/encrypted-bolt"
 	"github.com/iryonetwork/wwm/utils"
 )
 

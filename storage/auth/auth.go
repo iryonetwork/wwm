@@ -11,10 +11,10 @@ import (
 	"github.com/rs/zerolog"
 	uuid "github.com/satori/go.uuid"
 
+	"github.com/iryonetwork/encrypted-bolt"
 	authCommon "github.com/iryonetwork/wwm/auth"
 	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/iryonetwork/wwm/metrics"
-	"github.com/iryonetwork/wwm/storage/encrypted_bolt"
 )
 
 type Storage struct {
