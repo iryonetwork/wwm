@@ -124,12 +124,11 @@ test/golint: .bin/lint_$(GOLANGCI_LINT_VERSION)/golangci-lint
 	./golangci-lint.sh -b .bin/lint_$(GOLANGCI_LINT_VERSION) $(GOLANGCI_LINT_VERSION)
 	rm -f golangci-lint.sh
 
-vendorSync: vendor/vendor.json ## syncs the vendor folder to match vendor.json
-	govendor sync
+vendorSync: go.mod ## syncs the vendor folder to match vendor.json
+	go mod vendor
 
 vendorUpdate: ## updates the vendor folder
-	govendor fetch +missing +external
-	govendor remove +unused
+	go mod tidy
 
 help: ## displays this message
 	@grep -E '^[a-zA-Z_/%\-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
