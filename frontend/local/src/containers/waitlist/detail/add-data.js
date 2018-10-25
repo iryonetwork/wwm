@@ -138,6 +138,7 @@ class MedicalData extends React.Component {
                                         change={change}
                                         dispatch={dispatch}
                                         validate={required}
+                                        precision={1}
                                         warn={bodyTemperatureExpectedRange}
                                     />
                                     <BloodPressureField change={change} dispatch={dispatch} />
