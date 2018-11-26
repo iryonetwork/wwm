@@ -1,4 +1,5 @@
 import React from "react"
+import _ from "lodash"
 
 export default ({ value, unit, label, codes, width }) => {
     // don't render if empty
@@ -7,8 +8,8 @@ export default ({ value, unit, label, codes, width }) => {
     }
 
     // convert for a code
-    if (codes && codes.length > 0) {
-        value = codes.reduce((acc, code) => {
+    if (codes && _.size(codes) > 0) {
+        value = _.reduce(codes, (acc, code) => {
             if (code.id === value) {
                 return code.title
             }
