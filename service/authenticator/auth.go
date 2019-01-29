@@ -3,8 +3,10 @@ package authenticator
 //go:generate ../../bin/mockgen.sh service/authenticator Service,AuthDataService,Enforcer $GOFILE
 
 import (
+	"bytes"
 	"context"
 	"crypto"
+	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
@@ -12,6 +14,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-openapi/runtime"
@@ -62,13 +65,25 @@ type Enforcer interface {
 	GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector
 }
 
+type Claims struct {
+	KeyID string `json:"kid"`
+	jwt.StandardClaims
+}
+
+const servicePrincipal = "__service__"
+
+var tokenExpiersIn = time.Duration(15) * time.Minute
+
 type service struct {
-	domainType   string
-	domainID     string
-	authData     AuthDataService
-	enforcer     Enforcer
-	syncServices map[string]syncService
-	logger       zerolog.Logger
+	domainType         string
+	domainID           string
+	authData           AuthDataService
+	enforcer           Enforcer
+	syncServices       map[string]syncService
+	jwtKeyID           string
+	jwtPrivateKey      *rsa.PrivateKey
+	jwtPublicKeyString string
+	logger             zerolog.Logger
 }
 
 // Login authenticates the user
@@ -90,7 +105,7 @@ func (a *service) Login(ctx context.Context, username, password string) (string,
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) == nil {
-		token, err := createTokenForUserID(&user.ID)
+		token, err := a.CreateTokenForUserID(ctx, &user.ID)
 		if err != nil {
 			return "", err
 		}
@@ -126,13 +141,6 @@ func (a *service) Validate(ctx context.Context, userID *string, queries []*model
 	return a.validatePairs(*userID, queries), nil
 }
 
-// CreateTokenForUser creates a new token for user
-func (a *service) CreateTokenForUserID(_ context.Context, userID *string) (string, error) {
-	return createTokenForUserID(userID)
-}
-
-const servicePrincipal = "__service__"
-
 // GetPrincipalFromToken validates a token and returns the userID for user tokens
 // or returns "__service__<KeyID>" for tokens used in cloud sync
 func (a *service) GetPrincipalFromToken(tokenString string) (*string, error) {
@@ -146,13 +154,9 @@ func (a *service) GetPrincipalFromToken(tokenString string) (*string, error) {
 			return s.publicKey, nil
 		}
 
-		if claims.KeyID == keyID {
-			private, err := getPrivateKey()
-			if err != nil {
-				return nil, err
-			}
+		if claims.KeyID == a.jwtKeyID {
 			principal = claims.Subject
-			return private.Public(), nil
+			return a.jwtPrivateKey.Public(), nil
 		}
 
 		return nil, fmt.Errorf("Signing key not found")
@@ -238,11 +242,27 @@ func (a *service) validatePairs(subject string, actions []*models.ValidationPair
 
 // GetPublicKey returns public key matching the pubID
 func (a *service) GetPublicKey(_ context.Context, pubID string) (string, error) {
-	if pubID != keyID {
-		return "", fmt.Errorf("Failed to find key with ID %s", keyID)
+	if pubID != a.jwtKeyID {
+		return "", fmt.Errorf("Failed to find key with ID %s", a.jwtKeyID)
 	}
 
-	return publicKey, nil
+	return a.jwtPublicKeyString, nil
+}
+
+// CreateTokenForUserID creates a new token from user ID
+func (a *service) CreateTokenForUserID(_ context.Context, id *string) (string, error) {
+	// compose the claims
+	claims := &Claims{
+		KeyID: a.jwtKeyID,
+		StandardClaims: jwt.StandardClaims{
+			Subject:   *id,
+			IssuedAt:  time.Now().Unix(),
+			ExpiresAt: time.Now().Add(tokenExpiersIn).Unix(),
+		},
+	}
+
+	// create the token
+	return jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(a.jwtPrivateKey)
 }
 
 type syncService struct {
@@ -251,12 +271,17 @@ type syncService struct {
 }
 
 // New returns a new instance of authenticator service
-func New(domainType, domainID string, authData AuthDataService, enforcer Enforcer, allowedServiceCertsAndPaths map[string][]string, logger zerolog.Logger) (Service, error) {
+func New(domainType, domainID string, authData AuthDataService, enforcer Enforcer, jwtPrivateKeyPath string, allowedServiceCertsAndPaths map[string][]string, logger zerolog.Logger) (Service, error) {
 	logger = logger.With().Str("component", "service/authenticator").Logger()
 	logger.Debug().Msg("Initialize authenticator service")
 
-	syncServices := map[string]syncService{}
+	// read jwt signing keys
+	jwtPrivateKey, jwtPublicKeyString, jwtPublicKeyThumb, err := parseJwtKeys(jwtPrivateKeyPath)
+	if err != nil {
+		return nil, err
+	}
 
+	syncServices := map[string]syncService{}
 	for cert, paths := range allowedServiceCertsAndPaths {
 		content, err := ioutil.ReadFile(cert)
 		if err != nil {
@@ -292,11 +317,47 @@ func New(domainType, domainID string, authData AuthDataService, enforcer Enforce
 	}
 
 	return &service{
-		domainType:   domainType,
-		domainID:     domainID,
-		authData:     authData,
-		enforcer:     enforcer,
-		syncServices: syncServices,
-		logger:       logger,
+		domainType:         domainType,
+		domainID:           domainID,
+		authData:           authData,
+		enforcer:           enforcer,
+		syncServices:       syncServices,
+		jwtKeyID:           jwtPublicKeyThumb,
+		jwtPrivateKey:      jwtPrivateKey,
+		jwtPublicKeyString: jwtPublicKeyString,
+		logger:             logger,
 	}, nil
+}
+
+func parseJwtKeys(jwtPrivateKeyPath string) (*rsa.PrivateKey, string, string, error) {
+	// read jwt signing key
+	privateKeyRaw, err := ioutil.ReadFile(jwtPrivateKeyPath)
+	if err != nil {
+		return nil, "", "", err
+	}
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privateKeyRaw)
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	publicKey, ok := (privateKey.Public()).(*rsa.PublicKey)
+	if !ok {
+		return nil, "", "", fmt.Errorf("failed to get public key out of private key")
+	}
+	publicKeyThumb, err := acme.JWKThumbprint(publicKey)
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	var pemPublicKeyBlock = &pem.Block{
+		Type:  "RSA PUBLIC KEY",
+		Bytes: x509.MarshalPKCS1PublicKey(publicKey),
+	}
+	publicKeyBuf := new(bytes.Buffer)
+	err = pem.Encode(publicKeyBuf, pemPublicKeyBlock)
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	return privateKey, publicKeyBuf.String(), publicKeyThumb, nil
 }

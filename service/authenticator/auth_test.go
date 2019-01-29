@@ -46,7 +46,20 @@ func TestLogin(t *testing.T) {
 	)
 
 	// initialize service
-	svc := &service{domainType: authCommon.DomainTypeClinic, domainID: testClinicID, authData: authData, enforcer: enforcer}
+	// read test jwt signing keys
+	jwtPrivateKey, jwtPublicKeyString, jwtPublicKeyThumb, err := parseJwtKeys("testdata/testJwtPrivateKey.pem")
+	if err != nil {
+		t.Fatalf("failed to read test jwt signing keys %s", err)
+	}
+	svc := &service{
+		domainType:         authCommon.DomainTypeClinic,
+		domainID:           testClinicID,
+		authData:           authData,
+		enforcer:           enforcer,
+		jwtKeyID:           jwtPublicKeyThumb,
+		jwtPrivateKey:      jwtPrivateKey,
+		jwtPublicKeyString: jwtPublicKeyString,
+	}
 
 	// #1 call with a valid username and password
 	out, err := svc.Login(context.Background(), "username", "password")
@@ -99,7 +112,7 @@ func TestNew(t *testing.T) {
 		},
 	}
 
-	ss, err := New(authCommon.DomainTypeClinic, testClinicID, authData, enforcer, allowedServiceCertsAndPaths, zerolog.New(ioutil.Discard))
+	ss, err := New(authCommon.DomainTypeClinic, testClinicID, authData, enforcer, "testdata/testJwtPrivateKey.pem", allowedServiceCertsAndPaths, zerolog.New(ioutil.Discard))
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got %v", err)
 	}

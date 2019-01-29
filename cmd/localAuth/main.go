@@ -100,7 +100,7 @@ func main() {
 
 	// initialize the services
 	authData := authDataManager.New(storage, logger.With().Str("component", "service/authDataManager").Logger())
-	auth, err := authenticator.New(cfg.DomainType, cfg.DomainID, authData, enforcer, cfg.ServiceCertsAndPaths.Map, logger)
+	auth, err := authenticator.New(cfg.DomainType, cfg.DomainID, authData, enforcer, cfg.KeyPath, cfg.ServiceCertsAndPaths.Map, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to initialize authenticator service")
 	}
