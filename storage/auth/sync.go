@@ -11,8 +11,8 @@ import (
 	blake2b "github.com/minio/blake2b-simd"
 	"github.com/rs/zerolog"
 
-	"github.com/iryonetwork/wwm/log/errorChecker"
 	"github.com/iryonetwork/encrypted-bolt"
+	"github.com/iryonetwork/wwm/log/errorChecker"
 )
 
 // GetChecksum calculates and returns checksum of the whole database
@@ -65,7 +65,7 @@ func (s *Storage) ReplaceDB(src io.ReadCloser, checksum []byte) error {
 	src.Close()
 
 	// create new instance from received db and check checksum
-	testStorage, err := New(tmpFileName, s.encryptionKey, true, false, zerolog.New(ioutil.Discard))
+	testStorage, _, err := New(tmpFileName, s.encryptionKey, true, false, NewEnforcer, zerolog.New(ioutil.Discard))
 	if err != nil {
 		os.Remove(tmpFileName)
 		return err

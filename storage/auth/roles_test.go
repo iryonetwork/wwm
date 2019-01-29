@@ -25,7 +25,7 @@ func getTestRoles() (*models.Role, *models.Role) {
 }
 
 func TestAddRole(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testRole, _ := getTestRoles()
@@ -41,7 +41,7 @@ func TestAddRole(t *testing.T) {
 }
 
 func TestGetRole(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testRole, _ := getTestRoles()
@@ -79,7 +79,7 @@ func TestGetRole(t *testing.T) {
 }
 
 func TestGetRoles(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testRole, testRole2 := getTestRoles()
@@ -112,7 +112,7 @@ func TestGetRoles(t *testing.T) {
 }
 
 func TestUpdateRole(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testRole, testRole2 := getTestRoles()
@@ -137,7 +137,7 @@ func TestUpdateRole(t *testing.T) {
 }
 
 func TestRemoveRole(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testRole, _ := getTestRoles()

@@ -17,6 +17,9 @@ type Service interface {
 	// Users returns all users
 	Users(ctx context.Context) ([]*models.User, error)
 
+	// UserByUsername returns user by username
+	UserByUsername(ctx context.Context, username string) (*models.User, error)
+
 	// Users returns user by its ID
 	User(ctx context.Context, id string) (*models.User, error)
 
@@ -153,6 +156,7 @@ type Service interface {
 // Storage describes methods required from the storage used by the service
 type Storage interface {
 	GetUsers() ([]*models.User, error)
+	GetUserByUsername(string) (*models.User, error)
 	GetUser(id string) (*models.User, error)
 	AddUser(user *models.User) (*models.User, error)
 	UpdateUser(user *models.User) (*models.User, error)
@@ -225,6 +229,11 @@ func (a *authDataManager) Users(_ context.Context) ([]*models.User, error) {
 	return a.storage.GetUsers()
 }
 
+// UserByUsername returns user by username
+func (a *authDataManager) UserByUsername(_ context.Context, username string) (*models.User, error) {
+	return a.storage.GetUserByUsername(username)
+}
+
 // User returns user by ID
 func (a *authDataManager) User(_ context.Context, userID string) (*models.User, error) {
 	return a.storage.GetUser(userID)
@@ -265,6 +274,7 @@ func (a *authDataManager) UserOrganizationIDs(_ context.Context, id string, role
 
 	// find user roles
 	userRoles, err := a.storage.FindUserRoles(&id, roleID, &authCommon.DomainTypeOrganization, nil)
+
 	if err != nil {
 		return nil, err
 	}

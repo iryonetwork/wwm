@@ -26,7 +26,7 @@ func getTestUserRole(userID, roleID, domainType, domainID string) *models.UserRo
 }
 
 func TestAddUserRole(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testRole, _ := getTestRoles()
@@ -55,7 +55,7 @@ func TestAddUserRole(t *testing.T) {
 }
 
 func TestAddUserRoleUserDoesNotExist(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testRole, _ := getTestRoles()
@@ -81,7 +81,7 @@ func TestAddUserRoleUserDoesNotExist(t *testing.T) {
 }
 
 func TestAddUserRoleRoleDoesNotExist(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
@@ -107,7 +107,7 @@ func TestAddUserRoleRoleDoesNotExist(t *testing.T) {
 }
 
 func TestAddUserRoleDomainClinicDoesNotExist(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
@@ -136,7 +136,7 @@ func TestAddUserRoleDomainClinicDoesNotExist(t *testing.T) {
 }
 
 func TestAddUserRoleDomainOrganizationDoesNotExist(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
@@ -165,7 +165,7 @@ func TestAddUserRoleDomainOrganizationDoesNotExist(t *testing.T) {
 }
 
 func TestAddUserRoleDomainLocationDoesNotExist(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
@@ -194,7 +194,7 @@ func TestAddUserRoleDomainLocationDoesNotExist(t *testing.T) {
 }
 
 func TestAddUserRoleDomainUserDoesNotExist(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
@@ -223,7 +223,7 @@ func TestAddUserRoleDomainUserDoesNotExist(t *testing.T) {
 }
 
 func TestAddUserRoleInvalidDomainType(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
@@ -250,7 +250,7 @@ func TestAddUserRoleInvalidDomainType(t *testing.T) {
 }
 
 func TestGetUserRole(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
@@ -297,7 +297,7 @@ func TestGetUserRole(t *testing.T) {
 }
 
 func TestGetUserRoles(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testRole, _ := getTestRoles()
@@ -341,7 +341,7 @@ func TestGetUserRoles(t *testing.T) {
 }
 
 func TestGetUserRoleByContent(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
@@ -378,7 +378,7 @@ func TestGetUserRoleByContent(t *testing.T) {
 }
 
 func TestFindUserRoles(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	// populate DB varied set of user roles
@@ -691,7 +691,7 @@ func TestFindUserRoles(t *testing.T) {
 }
 
 func TestRemoveUserRole(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()

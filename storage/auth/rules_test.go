@@ -26,7 +26,7 @@ func getTestRules() (*models.Rule, *models.Rule) {
 }
 
 func TestAddRule(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testRule, _ := getTestRules()
@@ -72,7 +72,7 @@ func TestAddRule(t *testing.T) {
 }
 
 func TestGetRule(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testRule, _ := getTestRules()
@@ -117,7 +117,7 @@ func TestGetRule(t *testing.T) {
 }
 
 func TestGetRules(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testRule, testRule2 := getTestRules()
@@ -161,7 +161,7 @@ func TestGetRules(t *testing.T) {
 }
 
 func TestUpdateRule(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testRule, _ := getTestRules()
@@ -201,7 +201,7 @@ func TestUpdateRule(t *testing.T) {
 }
 
 func TestRemoveRule(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testRule, _ := getTestRules()

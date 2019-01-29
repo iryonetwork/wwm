@@ -62,16 +62,16 @@ var bucketDomainUserRolesIndex = []byte("domainUserRolesIndex")
 var dbPermissions os.FileMode = 0666
 
 // New returns a new instance of storage
-func New(path string, key []byte, readOnly, refreshRules bool, logger zerolog.Logger) (*Storage, error) {
+func New(path string, key []byte, readOnly, refreshRules bool, getEnforcer func(*Storage, zerolog.Logger) (Enforcer, error), logger zerolog.Logger) (*Storage, Enforcer, error) {
 	logger = logger.With().Str("component", "storage/auth").Logger()
 	logger.Debug().Msg("Initialize auth storage")
 	if len(key) != 32 {
-		return nil, fmt.Errorf("Encryption key must be 32 bytes long")
+		return nil, nil, fmt.Errorf("Encryption key must be 32 bytes long")
 	}
 
 	db, err := bolt.Open(key, path, dbPermissions, &bolt.Options{ReadOnly: readOnly})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// initialize database
@@ -135,7 +135,7 @@ func New(path string, key []byte, readOnly, refreshRules bool, logger zerolog.Lo
 
 		})
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
@@ -148,9 +148,9 @@ func New(path string, key []byte, readOnly, refreshRules bool, logger zerolog.Lo
 		loadPolicyLock: &sync.Mutex{},
 	}
 
-	e, err := NewEnforcer(storage)
+	e, err := getEnforcer(storage, logger)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	storage.enforcer = e
@@ -160,7 +160,7 @@ func New(path string, key []byte, readOnly, refreshRules bool, logger zerolog.Lo
 		errorChecker.LogError(storage.initializeRoles())
 	}
 
-	return storage, nil
+	return storage, e, nil
 }
 
 func (s *Storage) loadPolicy() {
@@ -233,6 +233,7 @@ func (s *Storage) Close() error {
 
 // LoadInitData inserts into database initial data, errors are generally ignored and only loggeda as info
 func (s *Storage) LoadInitData(data InitData) {
+	s.logger.Debug().Msg("loading init data")
 	for _, location := range data.Locations {
 		if location.ID == "" {
 			_, err := s.AddLocation(location)

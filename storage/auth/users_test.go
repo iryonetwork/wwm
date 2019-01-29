@@ -38,7 +38,7 @@ func getTestUsers() (*models.User, *models.User) {
 	return testUser, testUser2
 }
 
-func newTestStorage(key []byte) *testStorage {
+func newTestStorage(key []byte) (*testStorage, Enforcer) {
 	// retrieve a temporary path
 	file, err := ioutil.TempFile("", "")
 	if err != nil {
@@ -56,13 +56,13 @@ func newTestStorage(key []byte) *testStorage {
 	}
 
 	// open the database
-	db, err := New(path, key, false, false, zerolog.New(ioutil.Discard))
+	db, enforcer, err := New(path, key, false, false, NewEnforcer, zerolog.New(ioutil.Discard))
 	if err != nil {
 		panic(err)
 	}
 
 	// return wrapped type
-	return &testStorage{db}
+	return &testStorage{db}, enforcer
 }
 
 func (storage *testStorage) Close() {
@@ -71,7 +71,7 @@ func (storage *testStorage) Close() {
 }
 
 func TestAddUser(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
@@ -96,7 +96,7 @@ func TestAddUser(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
@@ -134,7 +134,7 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestGetUserByUsername(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testUser, _ := getTestUsers()
@@ -162,7 +162,7 @@ func TestGetUserByUsername(t *testing.T) {
 }
 
 func TestGetUsers(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testUser, testUser2 := getTestUsers()
@@ -197,7 +197,7 @@ func TestGetUsers(t *testing.T) {
 }
 
 func TestUpdateUser(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testUser1, testUser2 := getTestUsers()
@@ -265,7 +265,7 @@ func TestUpdateUser(t *testing.T) {
 }
 
 func TestRemoveUser(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testUser, testUser2 := getTestUsers()

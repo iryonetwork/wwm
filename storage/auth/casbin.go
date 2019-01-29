@@ -11,13 +11,11 @@ import (
 	"github.com/casbin/casbin"
 	casbinmodel "github.com/casbin/casbin/model"
 	"github.com/casbin/casbin/persist"
-	"github.com/go-openapi/swag"
 	"github.com/gobwas/glob"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 
 	authCommon "github.com/iryonetwork/wwm/auth"
-	"github.com/iryonetwork/wwm/gen/auth/models"
 	"github.com/iryonetwork/wwm/metrics"
 )
 
@@ -33,8 +31,8 @@ const loadPolicySeconds metrics.ID = "load_policy_seconds"
 const enforceSeconds metrics.ID = "enforce_seconds"
 
 // NewAdapter returns new Adapter
-func NewAdapter(storage *Storage) *Adapter {
-	logger := storage.logger.With().Str("component", "storage/auth/casbin").Logger()
+func NewAdapter(storage *Storage, logger zerolog.Logger) *Adapter {
+	logger = logger.With().Str("component", "storage/auth/casbinAdapter").Logger()
 	logger.Debug().Msg("Initialize casbin bolt adapter")
 
 	metricsCollection := make(map[metrics.ID]prometheus.Collector)
@@ -251,7 +249,7 @@ type enforcer struct {
 }
 
 // NewEnforcer returns new casbin enforcer
-func NewEnforcer(storage *Storage) (*enforcer, error) {
+func NewEnforcer(storage *Storage, logger zerolog.Logger) (Enforcer, error) {
 	m := casbin.NewModel(`[request_definition]
 r = sub, dom, obj, act
 [dom actual location]
@@ -268,7 +266,7 @@ e = some(where (p.eft == allow)) && !some(where (p.eft == deny))
 [matchers]
 m = (g(r.sub, p.sub, r.dom) ||  g(r.sub, p.sub, "*")) && (wildcardMatch(r.obj, p.obj) || wildcardMatch(r.obj, selfReplace(p.obj, r.sub))) && binaryMatch(r.act, p.act)`)
 
-	a := NewAdapter(storage)
+	a := NewAdapter(storage, logger)
 	e := casbin.NewEnforcer(m, a, false)
 	e.AddFunction("binaryMatch", BinaryMatchFunc)
 	e.AddFunction("selfReplace", SelfReplaceFunc)
@@ -312,25 +310,4 @@ func (e *enforcer) GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Co
 	}
 
 	return collection
-}
-
-// FindACL loads all the matching rules
-func (s *Storage) FindACL(subject string, actions []*models.ValidationPair) []*models.ValidationResult {
-	results := make([]*models.ValidationResult, len(actions))
-
-	for i, validation := range actions {
-		var domain string
-		if *validation.DomainType == authCommon.DomainTypeGlobal {
-			domain = "*"
-		} else {
-			domain = fmt.Sprintf("%s.%s", *validation.DomainType, *validation.DomainID)
-		}
-
-		results[i] = &models.ValidationResult{
-			Query:  validation,
-			Result: swag.Bool(s.enforcer.Enforce(subject, domain, *validation.Resource, strconv.FormatInt(*validation.Actions, 10))),
-		}
-	}
-
-	return results
 }

@@ -62,7 +62,8 @@ func main() {
 	dbPath := cfg.BoltDBFilepath
 	// if there is no database file download it from cloud
 	if _, err := os.Stat(dbPath); err != nil {
-		storage, err := auth.New(dbPath, key, false, false, logger)
+		storage, _, err := auth.New(dbPath, key, false, false, auth.NewEnforcer, logger)
+
 		if err != nil {
 			logger.Fatal().Err(err).Msg("Failed to initialize auth storage")
 		}
@@ -85,8 +86,7 @@ func main() {
 		}
 		storage.Close()
 	}
-
-	storage, err := auth.New(dbPath, key, true, true, logger)
+	storage, enforcer, err := auth.New(cfg.BoltDBFilepath, key, true, true, auth.NewEnforcer, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to initialize auth storage")
 	}
@@ -99,7 +99,8 @@ func main() {
 	}
 
 	// initialize the services
-	auth, err := authenticator.New(cfg.DomainType, cfg.DomainID, storage, cfg.ServiceCertsAndPaths.Map, logger)
+	authData := authDataManager.New(storage, logger.With().Str("component", "service/authDataManager").Logger())
+	auth, err := authenticator.New(cfg.DomainType, cfg.DomainID, authData, enforcer, cfg.ServiceCertsAndPaths.Map, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to initialize authenticator service")
 	}
@@ -107,7 +108,6 @@ func main() {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to initialize authSync service")
 	}
-	authData := authDataManager.New(storage, logger.With().Str("component", "service/authDataManager").Logger())
 
 	// setup API
 	api := operations.NewCloudAuthAPI(swaggerSpec)

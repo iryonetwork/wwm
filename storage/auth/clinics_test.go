@@ -28,7 +28,7 @@ func getTestClinics() (*models.Clinic, *models.Clinic) {
 }
 
 func TestAddClinic(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testOrganization, _ := getTestOrganizations()
@@ -93,7 +93,7 @@ func TestAddClinic(t *testing.T) {
 }
 
 func TestGetClinic(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testOrganization, _ := getTestOrganizations()
@@ -142,7 +142,7 @@ func TestGetClinic(t *testing.T) {
 }
 
 func TestGetClinics(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testOrganization, _ := getTestOrganizations()
@@ -193,7 +193,7 @@ func TestGetClinics(t *testing.T) {
 }
 
 func TestGetClinicOrganization(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	// populate DB
@@ -244,7 +244,7 @@ func TestGetClinicOrganization(t *testing.T) {
 }
 
 func TestGetClinicLocation(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	// populate DB
@@ -295,7 +295,7 @@ func TestGetClinicLocation(t *testing.T) {
 }
 
 func TestUpdateClinic(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testOrganization, _ := getTestOrganizations()
@@ -371,7 +371,7 @@ func TestUpdateClinic(t *testing.T) {
 }
 
 func TestRemoveClinic(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testOrganization, _ := getTestOrganizations()

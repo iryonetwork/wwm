@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"testing"
 
 	"github.com/gobwas/glob"
@@ -23,25 +24,29 @@ import (
 var (
 	testClinicID = "d826c3f7-e9cf-4000-8783-4e1b938c87b2"
 	sampleUser   = &models.User{ID: "8853C7BC-599A-4F43-8080-6D22B777433E", Username: swag.String("username"), Password: "$2a$10$USp/p1VpbjFETLEbtMkVseGu02NgXpaLDP4eYpZiNV5j/nY/qPviW"}
-	aclRequest   = &models.ValidationPair{Actions: swag.Int64(auth.Write), DomainType: swag.String(authCommon.DomainTypeClinic), DomainID: swag.String(testClinicID), Resource: swag.String("/auth/login")}
+	domain       = fmt.Sprintf("%s.%s", authCommon.DomainTypeClinic, testClinicID)
+	action       = strconv.FormatInt(int64(auth.Write), 10)
+	resource     = "/auth/login"
 )
 
 func TestLogin(t *testing.T) {
-	// prepare mocked storage
+	// prepare mocked authData
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	storage := mock.NewMockStorage(ctrl)
+	authData := mock.NewMockAuthDataService(ctrl)
+	enforcer := mock.NewMockEnforcer(ctrl)
 	gomock.InOrder(
-		storage.EXPECT().GetUserByUsername("username").Times(1).Return(sampleUser, nil),
-		storage.EXPECT().FindACL(sampleUser.ID, gomock.Any()).Times(1).Return([]*models.ValidationResult{{Query: aclRequest, Result: swag.Bool(true)}}),
-		storage.EXPECT().GetUserByUsername("username").Times(1).Return(sampleUser, nil),
-		storage.EXPECT().FindACL(sampleUser.ID, gomock.Any()).Times(1).Return([]*models.ValidationResult{{Query: aclRequest, Result: swag.Bool(true)}}),
-		storage.EXPECT().GetUserByUsername("missing").Times(1).Return(nil, fmt.Errorf("Not found")),
-		storage.EXPECT().GetUserByUsername("username").Times(1).Return(sampleUser, nil),
-		storage.EXPECT().FindACL(sampleUser.ID, gomock.Any()).Times(1).Return([]*models.ValidationResult{{Query: aclRequest, Result: swag.Bool(false)}}))
+		authData.EXPECT().UserByUsername(gomock.Any(), "username").Times(1).Return(sampleUser, nil),
+		enforcer.EXPECT().Enforce(sampleUser.ID, domain, resource, action).Times(1).Return(true),
+		authData.EXPECT().UserByUsername(gomock.Any(), "username").Times(1).Return(sampleUser, nil),
+		enforcer.EXPECT().Enforce(sampleUser.ID, domain, resource, action).Times(1).Return(true),
+		authData.EXPECT().UserByUsername(gomock.Any(), "missing").Times(1).Return(nil, fmt.Errorf("Not found")),
+		authData.EXPECT().UserByUsername(gomock.Any(), "username").Times(1).Return(sampleUser, nil),
+		enforcer.EXPECT().Enforce(sampleUser.ID, domain, resource, action).Times(1).Return(false),
+	)
 
 	// initialize service
-	svc := &service{domainType: authCommon.DomainTypeClinic, domainID: testClinicID, storage: storage}
+	svc := &service{domainType: authCommon.DomainTypeClinic, domainID: testClinicID, authData: authData, enforcer: enforcer}
 
 	// #1 call with a valid username and password
 	out, err := svc.Login(context.Background(), "username", "password")
@@ -61,7 +66,7 @@ func TestLogin(t *testing.T) {
 		t.Errorf("Expected error to be nil; got %v", err)
 	}
 
-	// #3 call with an error from storage
+	// #3 call with an error from authData
 	out, err = svc.Login(context.Background(), "missing", "password")
 	if out != "" {
 		t.Errorf("Expected login to return an empty string, got %v", out)
@@ -83,17 +88,18 @@ func TestLogin(t *testing.T) {
 func TestNew(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	storage := mock.NewMockStorage(ctrl)
+	authData := mock.NewMockAuthDataService(ctrl)
+	enforcer := mock.NewMockEnforcer(ctrl)
 
 	allowedServiceCertsAndPaths := map[string][]string{
 		"testdata/testCert.pem": {
 			"/auth/login",
-			"/storage/*",
+			"/authData/*",
 			"/something/other*",
 		},
 	}
 
-	ss, err := New(authCommon.DomainTypeClinic, testClinicID, storage, allowedServiceCertsAndPaths, zerolog.New(ioutil.Discard))
+	ss, err := New(authCommon.DomainTypeClinic, testClinicID, authData, enforcer, allowedServiceCertsAndPaths, zerolog.New(ioutil.Discard))
 	if err != nil {
 		t.Fatalf("Expected error to be nil; got %v", err)
 	}

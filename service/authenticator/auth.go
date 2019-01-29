@@ -1,6 +1,6 @@
 package authenticator
 
-//go:generate ../../bin/mockgen.sh service/authenticator Service,Storage $GOFILE
+//go:generate ../../bin/mockgen.sh service/authenticator Service,AuthDataService,Enforcer $GOFILE
 
 import (
 	"context"
@@ -10,17 +10,21 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag"
 	"github.com/gobwas/glob"
+	authCommon "github.com/iryonetwork/wwm/auth"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/acme"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/iryonetwork/wwm/gen/auth/models"
+	"github.com/iryonetwork/wwm/metrics"
 	"github.com/iryonetwork/wwm/storage/auth"
 	"github.com/iryonetwork/wwm/utils"
 )
@@ -46,29 +50,35 @@ type Service interface {
 	Authorizer() runtime.Authorizer
 }
 
-// Storage describes the functionality required for the service to function
-type Storage interface {
-	GetUserByUsername(string) (*models.User, error)
-	FindACL(subject string, actions []*models.ValidationPair) []*models.ValidationResult
-	GetUser(id string) (*models.User, error)
+// AuthDataService describes the functionality of AuthData service needed by authenicator service
+type AuthDataService interface {
+	UserByUsername(ctx context.Context, username string) (*models.User, error)
+}
+
+type Enforcer interface {
+	Enforce(rvals ...interface{}) bool
+	LoadPolicy() error
+	HasPolicy(params ...interface{}) bool
+	GetPrometheusMetricsCollection() map[metrics.ID]prometheus.Collector
 }
 
 type service struct {
 	domainType   string
 	domainID     string
-	storage      Storage
+	authData     AuthDataService
+	enforcer     Enforcer
 	syncServices map[string]syncService
 	logger       zerolog.Logger
 }
 
 // Login authenticates the user
-func (a *service) Login(_ context.Context, username, password string) (string, error) {
-	user, err := a.storage.GetUserByUsername(username)
+func (a *service) Login(ctx context.Context, username, password string) (string, error) {
+	user, err := a.authData.UserByUsername(ctx, username)
 	if err != nil {
 		return "", err
 	}
 
-	permissions := a.storage.FindACL(user.ID, []*models.ValidationPair{{
+	permissions := a.validatePairs(user.ID, []*models.ValidationPair{{
 		Actions:    swag.Int64(auth.Write),
 		DomainType: swag.String(a.domainType),
 		DomainID:   swag.String(a.domainID),
@@ -80,7 +90,11 @@ func (a *service) Login(_ context.Context, username, password string) (string, e
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) == nil {
-		return createTokenForUserID(&user.ID)
+		token, err := createTokenForUserID(&user.ID)
+		if err != nil {
+			return "", err
+		}
+		return token, nil
 	}
 
 	return "", fmt.Errorf("User not found by username / password")
@@ -88,7 +102,7 @@ func (a *service) Login(_ context.Context, username, password string) (string, e
 
 // Validate checks if the user has the capability to execute the specific
 // actions on a resource
-func (a *service) Validate(_ context.Context, userID *string, queries []*models.ValidationPair) ([]*models.ValidationResult, error) {
+func (a *service) Validate(ctx context.Context, userID *string, queries []*models.ValidationPair) ([]*models.ValidationResult, error) {
 	// validate queries
 	for _, query := range queries {
 		if query.Actions == nil || query.Resource == nil || query.DomainType == nil || query.DomainID == nil {
@@ -109,7 +123,7 @@ func (a *service) Validate(_ context.Context, userID *string, queries []*models.
 		return results, nil
 	}
 
-	return a.storage.FindACL(*userID, queries), nil
+	return a.validatePairs(*userID, queries), nil
 }
 
 // CreateTokenForUser creates a new token for user
@@ -145,6 +159,7 @@ func (a *service) GetPrincipalFromToken(tokenString string) (*string, error) {
 	})
 
 	if err != nil {
+		a.logger.Error().Err(err).Msgf("failed to parse token: %v", tokenString)
 		return swag.String(""), err
 	}
 
@@ -185,7 +200,7 @@ func (a *service) Authorizer() runtime.Authorizer {
 			action = auth.Read
 		}
 
-		result := a.storage.FindACL(*userID, []*models.ValidationPair{{
+		result := a.validatePairs(*userID, []*models.ValidationPair{{
 			DomainType: &a.domainType,
 			DomainID:   &a.domainID,
 			Actions:    &action,
@@ -198,6 +213,27 @@ func (a *service) Authorizer() runtime.Authorizer {
 
 		return nil
 	})
+}
+
+// validatePairs validates ValidationPair array
+func (a *service) validatePairs(subject string, actions []*models.ValidationPair) []*models.ValidationResult {
+	results := make([]*models.ValidationResult, len(actions))
+
+	for i, validation := range actions {
+		var domain string
+		if *validation.DomainType == authCommon.DomainTypeGlobal {
+			domain = "*"
+		} else {
+			domain = fmt.Sprintf("%s.%s", *validation.DomainType, *validation.DomainID)
+		}
+
+		results[i] = &models.ValidationResult{
+			Query:  validation,
+			Result: swag.Bool(a.enforcer.Enforce(subject, domain, *validation.Resource, strconv.FormatInt(*validation.Actions, 10))),
+		}
+	}
+
+	return results
 }
 
 // GetPublicKey returns public key matching the pubID
@@ -215,7 +251,7 @@ type syncService struct {
 }
 
 // New returns a new instance of authenticator service
-func New(domainType, domainID string, storage Storage, allowedServiceCertsAndPaths map[string][]string, logger zerolog.Logger) (Service, error) {
+func New(domainType, domainID string, authData AuthDataService, enforcer Enforcer, allowedServiceCertsAndPaths map[string][]string, logger zerolog.Logger) (Service, error) {
 	logger = logger.With().Str("component", "service/authenticator").Logger()
 	logger.Debug().Msg("Initialize authenticator service")
 
@@ -258,7 +294,8 @@ func New(domainType, domainID string, storage Storage, allowedServiceCertsAndPat
 	return &service{
 		domainType:   domainType,
 		domainID:     domainID,
-		storage:      storage,
+		authData:     authData,
+		enforcer:     enforcer,
 		syncServices: syncServices,
 		logger:       logger,
 	}, nil

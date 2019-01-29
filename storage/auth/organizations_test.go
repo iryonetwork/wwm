@@ -36,7 +36,7 @@ func getTestOrganizations() (*models.Organization, *models.Organization) {
 }
 
 func TestAddOrganization(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testOrganization1, _ := getTestOrganizations()
@@ -66,7 +66,7 @@ func TestAddOrganization(t *testing.T) {
 }
 
 func TestGetOrganization(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testOrganization1, _ := getTestOrganizations()
@@ -104,7 +104,7 @@ func TestGetOrganization(t *testing.T) {
 }
 
 func TestGetOrganizations(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testOrganization1, testOrganization2 := getTestOrganizations()
@@ -137,7 +137,7 @@ func TestGetOrganizations(t *testing.T) {
 }
 
 func TestGetOrganizationClinics(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	// populate DB
@@ -203,7 +203,7 @@ func TestGetOrganizationClinics(t *testing.T) {
 }
 
 func TestGetOrganizationLocationIDs(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	// populate DB
@@ -270,7 +270,7 @@ func TestGetOrganizationLocationIDs(t *testing.T) {
 }
 
 func TestUpdateOrganization(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testOrganization1, testOrganization2 := getTestOrganizations()
@@ -306,7 +306,7 @@ func TestUpdateOrganization(t *testing.T) {
 }
 
 func TestRemoveOrganization(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, _ := newTestStorage(nil)
 	defer storage.Close()
 
 	testOrganization, _ := getTestOrganizations()

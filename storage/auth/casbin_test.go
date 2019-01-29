@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/go-openapi/swag"
@@ -12,7 +13,7 @@ import (
 )
 
 func TestRules(t *testing.T) {
-	storage := newTestStorage(nil)
+	storage, enforcer := newTestStorage(nil)
 	defer storage.Close()
 
 	// add locations, organization, clinics
@@ -482,7 +483,20 @@ func TestRules(t *testing.T) {
 	for testIndex, test := range tests {
 		errorChecker.FatalTesting(t, storage.enforcer.LoadPolicy())
 
-		results := storage.FindACL(test.userID, test.validations)
+		results := []*models.ValidationResult{}
+		for _, validation := range test.validations {
+			var domain string
+			if *validation.DomainType == authCommon.DomainTypeGlobal {
+				domain = "*"
+			} else {
+				domain = fmt.Sprintf("%s.%s", *validation.DomainType, *validation.DomainID)
+			}
+
+			results = append(results, &models.ValidationResult{
+				Query:  validation,
+				Result: swag.Bool(enforcer.Enforce(test.userID, domain, *validation.Resource, strconv.FormatInt(*validation.Actions, 10))),
+			})
+		}
 
 		for i, res := range results {
 			if *res.Result != test.results[i] {
