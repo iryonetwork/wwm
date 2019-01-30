@@ -319,16 +319,28 @@
 			"revisionTime": "2018-01-21T16:00:31Z"
 		},
 		{
-			"checksumSHA1": "/5JpULDw51Em+1+OJHcfDkbw/e0=",
+			"checksumSHA1": "RTmzY+6HWQJivvVhW5Ho7Zxk9Xs=",
 			"path": "github.com/golang/mock/gomock",
-			"revision": "b3e60bcdc577185fce3cf625fc96b62857ce5574",
-			"revisionTime": "2017-12-16T01:26:12Z"
+			"revision": "51421b967af1f557f93a59e0057aaf15ca02e29c",
+			"revisionTime": "2018-12-05T17:17:00Z",
+			"version": "v1.2.0",
+			"versionExact": "v1.2.0"
 		},
 		{
-			"checksumSHA1": "PD2yvdc0t2YyPvN9z423IG5t6j4=",
+			"checksumSHA1": "6vJaj7avDaB01Pr0E/T+FddB7RY=",
+			"path": "github.com/golang/mock/mockgen",
+			"revision": "51421b967af1f557f93a59e0057aaf15ca02e29c",
+			"revisionTime": "2018-12-05T17:17:00Z",
+			"version": "v1.2.0",
+			"versionExact": "v1.2.0"
+		},
+		{
+			"checksumSHA1": "ZLfcOCWwchyxBONS7J8ban1wFgQ=",
 			"path": "github.com/golang/mock/mockgen/model",
-			"revision": "600781dde9cca80734169b9e969d9054ccc57937",
-			"revisionTime": "2018-08-20T16:13:58Z"
+			"revision": "51421b967af1f557f93a59e0057aaf15ca02e29c",
+			"revisionTime": "2018-12-05T17:17:00Z",
+			"version": "v1.2.0",
+			"versionExact": "v1.2.0"
 		},
 		{
 			"checksumSHA1": "CbzNfOvaT1G3G9WILmsyjYfYTO0=",
