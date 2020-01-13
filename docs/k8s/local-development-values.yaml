@@ -48,4 +48,5 @@ localSymmetric:
     dbUser: localsymmetric
     dbPassword: symmetric
     dbRole: localdiscoveryservice
-    cloudSymmetricHost: cloudsymmetric.cloud.svc.cluster.local
+    cloudSymmetricProtocol: http
+    cloudSymmetricPublicHost: cloudsymmetric.cloud.svc.cluster.local

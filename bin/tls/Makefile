@@ -13,10 +13,10 @@ clean:
 	@find . -type f \( -name '*.pem' -o -name '*.csr' \) -not -name "ca*" -delete
 
 ca.pem:
-	$(DOCKER) ./createCert.sh
+	$(DOCKER) /bin/bash createCert.sh
 
 %.pem: %.json
-	$(DOCKER) ./createProfileCert.sh $(TYPE) $*
+	$(DOCKER) /bin/bash createProfileCert.sh $(TYPE) $*
 
 certs/%.pem:
 	mkdir -p $(CDIR)/certs

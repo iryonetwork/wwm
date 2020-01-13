@@ -1,0 +1,24 @@
+Local:
+  storage:
+    urlType: Internal
+    url: https://localStorage:4433/status
+  auth:
+    urlType: Internal
+    url: https://localAuth:4433/status
+  discovery:
+    urlType: Internal
+    url: https://localDiscovery:4433/status
+  waitlist:
+    urlType: Internal
+    url: https://waitlist:4433/status
+Cloud:
+  cloud:
+    urlType: Internal
+    url: https://cloud.stg.iryo.io/api/v1/status
+External:
+  Lebanese National News Agency:
+    urlType: External
+    url: http://nna-leb.gov.lb
+  Google:
+    urlType: External
+    url: https://www.google.com

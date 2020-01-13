@@ -1,0 +1,12 @@
+{
+    "locale": "en",
+    "baseUrl": "https://iryo.local",
+    "apiUrl": "https://iryo.local/api/v1",
+    "clinicId": "c14b34ce-c855-40e6-99fd-87c360546714",
+    "locationId": "499d7014-7318-4b8d-8388-092a7d81fcee",
+    "babyMaxAge": 1,
+    "childMaxAge": 7,
+    "waitlistId": "22afd921-0630-49f4-89a8-d1ad7639ee83",
+    "advancedRoleIDs": ["338fae76-9859-4803-8441-c5c441319cfd", "d91ff466-125b-4250-9dde-bbc282489430", "3720198b-74ed-40de-a45e-8756f22e67d2"],
+    “readOnlyKeys”: [“readOnlyKeys”, “baseUrl”, “apiUrl”, “clinicId”, “locationId”, “babyMaxAge”, “childMaxAge”]
+}

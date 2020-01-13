@@ -70,7 +70,8 @@ cloudSymmetric:
   dbUser: cloudsymmetric
   dbPassword: symmetric
   dbRole: clouddiscoveryservice
-  cloudSymmetricHost: cloudsymmetric.cloud.svc.cluster.local
+  cloudSymmetricProtocol: http
+  cloudSymmetricPublicHost: cloudsymmetric.cloud.svc.cluster.local
   nodePassword: jtpmff6bfm9lm51vykn3hz8dor053833
   localNodes:
     - id: 2d04b22e-1cc3-46b4-96dd-2bee5bad9ffa
